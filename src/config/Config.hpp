@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 enum class EConfigType
@@ -41,7 +42,7 @@ public:
 class CConfig
 {
 public:
-    static inline const std::string DEFAULT_CONFIG_PATH = "config/config.conf";
+    static inline const std::string DEFAULT_CONFIG_PATH = "config/config.nwdl";
     static const std::string DEFAULT_CONFIG;
 
     CConfig(const std::string& configPath = DEFAULT_CONFIG_PATH);
@@ -83,14 +84,24 @@ private:
         std::string group;
     };
 
+    enum EEqualType
+    {
+        eGroup,
+        eValue
+    };
+
     void                                EnsureDirectoriesExist();
     void                                ResetIfConfigDoesNotExist();
     void                                ParseInto();
-    void                                RemoveLineWhitespaceKeepStringWhitespace(std::string&);
-    SConfigValue                        ParseLine(const std::string&, SParseContext& context);
+    void                                RemoveComments(std::string&);
+    void                                RemoveWhitespaceKeepStringWhitespace(std::string&);
+    std::string_view                    ParseName(std::string_view&);
+    void                                ParseValue(std::string_view&);
+    void                                ParseGroup(std::string_view&);
+    void                                Parse(const std::string&);
     void                                NotifySubscribers();
 
-    std::string                         m_path;
+    std::string                         m_path = DEFAULT_CONFIG_PATH;
     std::vector<SConfigValue>           m_values;
     std::vector<const IConfigurable*>   m_subscribers;
 };

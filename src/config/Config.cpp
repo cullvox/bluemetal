@@ -10,6 +10,7 @@
 #include <cctype>
 
 #include <fmt/core.h>
+#include <string_view>
 
 #include "core/Debug.hpp"
 #include "Config.hpp"
@@ -28,16 +29,17 @@ IConfigurable::~IConfigurable()
 }
 
 const std::string CConfig::DEFAULT_CONFIG = "\
-    window{ \
-        width=1920 \
-        height=1080 \
-    } \
-    renderer{ \
-        antialias=1 \
-    } \
+    window{\n \
+        width=1920\n \
+        height=1080\n \
+    }\n \
+    renderer{\n \
+        antialias=1\n \
+    }\n \
 ";
 
 CConfig::CConfig(const std::string& configPath)
+    : m_path(configPath)
 {
     EnsureDirectoriesExist();
     ResetIfConfigDoesNotExist();
@@ -84,53 +86,102 @@ void CConfig::ResetIfConfigDoesNotExist()
 
 void CConfig::ParseInto()
 {
-        
     Debug::Log("Opening config file.");
 
     /* Open the config file. */
-    std::ifstream configFile;
-    try {
-        configFile.open(m_path, std::ios::in | std::ios::binary);
-    } catch (const std::exception& except) {
-        fmt::print("{}", except.what());
-        return;
-    }  
+    std::ifstream configFile(m_path, std::ios::in);
+    if (configFile.bad()) throw std::runtime_error("Could not open config file.");
 
     /* Read in the whole config. */
-    std::string config;
-    std::stringstream buffer;
-    buffer << configFile.rdbuf();
-    config = buffer.str();
+    std::string content((std::istreambuf_iterator<char>(configFile)),
+                        (std::istreambuf_iterator<char>()));
 
-    RemoveLineWhitespaceKeepStringWhitespace(config);
+    RemoveComments(content);
+    RemoveWhitespaceKeepStringWhitespace(content);
+    Parse(content);
 
     size_t offset = 0;
-    while (offset < config.size())
+    while (offset < content.size())
     {
-        auto equalIt = config.find('=');
-        auto bracketBeginIt = config.find("{");
-        auto bracketEndIt = config.find("}");
+        auto equalIt = content.find('=');
+        auto bracketBeginIt = content.find("{");
+        auto bracketEndIt = content.find("}");
     }
 
     Debug::Log("Finished reading in config.");
 }
 
-void CConfig::RemoveLineWhitespaceKeepStringWhitespace(std::string& line)
+void CConfig::RemoveComments(std::string& content)
+{
+    bool inComment = false;
+    for (auto it = content.begin(); it != content.end(); )
+    {
+        if (*it == '#')
+            inComment = true;
+        else if (*it == '\n')
+            inComment = false;
+        
+        if (inComment)
+            it = content.erase(it);
+        else
+            ++it;
+    }
+}
+
+void CConfig::RemoveWhitespaceKeepStringWhitespace(std::string& content)
 {
     bool inString = false;
-    int pos;
-    std::for_each(line.begin(), line.end(), [&](char c){
-        inString = (c=='\"' && !inString);
-        if (inString) return;
-        if (std::isspace(c)) line.erase(pos);
-        pos++;
+    auto it = std::remove_if(content.begin(), content.end(), [&](unsigned char c){
+        if (c == '\"' && !inString)
+            inString = true;
+        else if (c =='\"' && inString)
+            inString = false;
+
+        if (inString) return false;
+        if (std::isspace(c)) return true;
+        return false;
     });
+
+    content.erase(it, content.end());
 
     if (inString) throw std::runtime_error("Unterminated string");
 }
 
-SConfigValue CConfig::ParseLine(const std::string& dirtyLine, SParseContext&context)
+std::string_view CConfig::ParseName(std::string_view& view)
+{
+    auto equals = view.find('=');
+    std::string_view name = view.substr(0, equals);
+
+    view = std::string_view(view.begin() + equals + 1, view.end());
+}
+
+void CConfig::ParseEqualType(std::string_view& view)
 {
 
-    return SConfigValue();
+}
+
+void CConfig::Parse(const std::string& content)
+{
+    std::string_view view = content;
+    std::string_view name;
+    EEqualType       postEqualType;
+    std::string_view value;
+
+    uint32_t index = 0;
+    while (view.size() > 0)
+    {
+        name = ParseName(view);
+        postEqualType = ParsePostEquals(view);
+        
+        switch (postEqualType) {
+            case eValue: ParseValue(view);
+            case eGroup: ParseGroup(view);
+        }
+
+
+        if (view[0] == '{')
+            ParseGroup(view);
+
+    }
+
 }
