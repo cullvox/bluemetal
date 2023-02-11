@@ -1,16 +1,10 @@
-#include <assert.h>
-
-#include <exception>
-#include <stdexcept>
+#include <cctype>
+#include <cassert>
+#include <cstdlib>
 #include <string>
-#include <sstream>
 #include <fstream>
 #include <algorithm>
 #include <filesystem>
-#include <cctype>
-
-#include <fmt/core.h>
-#include <string_view>
 
 #include "core/Debug.hpp"
 #include "Config.hpp"
@@ -29,12 +23,13 @@ IConfigurable::~IConfigurable()
 }
 
 const std::string CConfig::DEFAULT_CONFIG = "\
-    window{\n \
-        width=1920\n \
-        height=1080\n \
+    # Default configuration\n \
+    window={\n \
+        width=1920;\n \
+        height=1080;\n \
     }\n \
-    renderer{\n \
-        antialias=1\n \
+    renderer={\n \
+        antialias=1;\n \
     }\n \
 ";
 
@@ -52,7 +47,7 @@ CConfig::~CConfig()
 
 void CConfig::Reset()
 {
-    std::ofstream config("config/config.conf", std::ios::out);
+    std::ofstream config(DEFAULT_CONFIG_PATH, std::ios::out);
     config << DEFAULT_CONFIG;
 }
 
@@ -78,10 +73,68 @@ void CConfig::EnsureDirectoriesExist()
 
 void CConfig::ResetIfConfigDoesNotExist()
 {
-    if (!std::filesystem::exists("config/config.conf"))
+    if (!std::filesystem::exists(DEFAULT_CONFIG_PATH))
     {
         Reset();
     }
+}
+
+
+struct Value
+{
+    std::string_view name;
+    std::string_view value;
+};
+struct Group
+{
+    std::string_view name;
+    std::vector<Value> values;
+};
+
+enum class ParsingState
+{
+    None,
+    ReadName,
+    ReadValue,
+};
+
+void Tokenize(const std::string& content)
+{
+
+    Group defaultGroup{};
+
+    size_t size;
+    ParsingState state = ParsingState::ReadName;
+    std::string_view view = content;
+    std::string_view name;
+    std::string_view value;
+
+    while (view.size() > 0)
+    {
+
+        auto groupTokenizer = [&]() {
+            
+        };
+
+        auto valueTokenizer = [&]() {
+            
+            auto it = view.find('=');
+            auto name = view.substr(0, it);
+            view = std::string_view(view.begin()+it+1, view.end());
+
+            /* Special check for a group. */
+            switch (view[0])
+            {
+                case '{': 
+                    groupTokenizer();
+                    break;
+                case '\"':
+                    value = std::string_view(view.begin()+1, view.find('\''));
+            }            
+        };
+
+        valueTokenizer();
+    }           
 }
 
 void CConfig::ParseInto()
@@ -98,15 +151,9 @@ void CConfig::ParseInto()
 
     RemoveComments(content);
     RemoveWhitespaceKeepStringWhitespace(content);
-    Parse(content);
-
-    size_t offset = 0;
-    while (offset < content.size())
-    {
-        auto equalIt = content.find('=');
-        auto bracketBeginIt = content.find("{");
-        auto bracketEndIt = content.find("}");
-    }
+    
+   Tokenize(content);
+    //ParseValue(view);
 
     Debug::Log("Finished reading in config.");
 }
@@ -153,35 +200,92 @@ std::string_view CConfig::ParseName(std::string_view& view)
     std::string_view name = view.substr(0, equals);
 
     view = std::string_view(view.begin() + equals + 1, view.end());
+    return name;
 }
 
-void CConfig::ParseEqualType(std::string_view& view)
+std::string_view CConfig::TokenizeGroup(std::string_view& content)
 {
+    uint32_t pos = 0;
+    uint32_t groupsCount = 0;
+    char c = content[0];
 
-}
-
-void CConfig::Parse(const std::string& content)
-{
-    std::string_view view = content;
-    std::string_view name;
-    EEqualType       postEqualType;
-    std::string_view value;
-
-    uint32_t index = 0;
-    while (view.size() > 0)
+    do 
     {
-        name = ParseName(view);
-        postEqualType = ParsePostEquals(view);
-        
-        switch (postEqualType) {
-            case eValue: ParseValue(view);
-            case eGroup: ParseGroup(view);
+        c = content[pos];
+        if (c == '{') groupsCount++;
+        if (c == '}') groupsCount--;
+        pos++;
+    } while (groupsCount != 0);
+
+    return std::string_view(content.begin(), content.begin() + pos);
+}
+
+
+std::string_view CConfig::TokenizeValue(std::string_view& content)
+{
+    return {};
+}
+
+void CConfig::ParseGroup(std::string_view& view)
+{
+    while (true)
+    {
+        /* Check if the group is over. */
+        if (view[0] == '}')
+        {
+            return;
         }
-
-
-        if (view[0] == '{')
-            ParseGroup(view);
-
+        
+        /* Get the name of the value. */
+        std::string_view name = ParseName(view);
+        ParseValue(name, view);
     }
+}
+
+void CConfig::ParseValue(const std::string_view& name, std::string_view& view)
+{
+    
+    /* Check if this value is starting another group. */
+    if (view[0] == '{')
+    {   
+        std::string_view group = TokenizeGroup(view);
+        ParseGroup(group);
+        return;
+    }
+
+    /* Get the substring for the actual value. */
+    std::string_view value = view.substr(0, view.find(';'));
+    view = std::string_view(value.begin(), view.end());
+
+    /* Determine the string type. */
+    char* strend = nullptr;
+
+    long i = std::strtol(value.data(), &strend, 10);
+    if (strend == value.end())
+    {
+        m_values.push_back((SConfigValue){std::string(name), EConfigType::eInteger, true, i, 0.0f, ""});
+        return;
+    }
+
+    float f = std::strtof(value.data(), &strend);
+    if (strend == value.end())
+    {
+        m_values.push_back((SConfigValue){std::string(name), EConfigType::eFloat, true, 0, 0.f, ""});
+        return;
+    }
+
+    if (value == "true")
+    {
+        m_values.push_back((SConfigValue){std::string(name), EConfigType::eBoolean, true, 0, 0.0f, ""});
+        return;
+    } else if (value == "false") 
+    {
+        m_values.push_back((SConfigValue){std::string(name), EConfigType::eBoolean, false, 0, 0.0f, ""});
+        return;
+    } else if (value[0] == '\"')
+    {
+        //m_values.push_back((SConfigValue){std::string(name)})
+    }
+    
 
 }

@@ -19,7 +19,7 @@ struct SConfigValue
     std::string name;
     EConfigType type;
     bool b;
-    int i;
+    long i;
     float f;
     std::string s;
 };
@@ -61,44 +61,38 @@ public:
     void                SubscribeEvents(IConfigurable const*);
     void                UnsubscribeEvents(IConfigurable const*);
 private:
-    class CExceptConfigParserError : public std::runtime_error
+    class CToken
     {
     public:
-        CExceptConfigParserError(const char* what, int character) noexcept
-            : std::runtime_error(what), m_character(character)
+        enum EKind
         {
-        }
-        inline int character() const noexcept { return m_character; }
+            eNumber,
+            eIdentifier,
+            eLeftCurly,
+            eRightCurly,
+            eEqual,
+            eSemiColon,
+            eComma,
+            eEnd,
+            eUnexpected,
+        };
+
+        
+
     private:
-        int m_character;
-    };
 
-    struct SParseResult
-    {
-        bool hasValue;
-        SConfigValue value;
-    };
+    }
+    class CLexer {
 
-    struct SParseContext
-    {
-        std::string group;
-    };
-
-    enum EEqualType
-    {
-        eGroup,
-        eValue
-    };
+    }
 
     void                                EnsureDirectoriesExist();
     void                                ResetIfConfigDoesNotExist();
     void                                ParseInto();
     void                                RemoveComments(std::string&);
     void                                RemoveWhitespaceKeepStringWhitespace(std::string&);
-    std::string_view                    ParseName(std::string_view&);
-    void                                ParseValue(std::string_view&);
-    void                                ParseGroup(std::string_view&);
-    void                                Parse(const std::string&);
+    std::string_view                    TokenizeGroup(std::string_view&);
+    
     void                                NotifySubscribers();
 
     std::string                         m_path = DEFAULT_CONFIG_PATH;
