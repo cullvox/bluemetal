@@ -22,6 +22,8 @@ IConfigurable::~IConfigurable()
     if (m_pConfig) m_pConfig->UnsubscribeEvents(this);
 }
 
+
+
 const std::string CConfig::DEFAULT_CONFIG = "\
     # Default configuration\n \
     window={\n \
@@ -152,7 +154,28 @@ void CConfig::ParseInto()
     RemoveComments(content);
     RemoveWhitespaceKeepStringWhitespace(content);
     
-   Tokenize(content);
+    CLexer lexer(content);
+    CToken token = lexer.Next();
+    while (token.Kind() != CToken::eEnd)
+    {
+        const char* kind = "";
+        switch (token.Kind())
+        {
+            case CToken::eNumber: kind = "Number";break;
+            case CToken::eIdentifier: kind = "Identifier";break;
+            case CToken::eString: kind = "String";break;
+            case CToken::eLeftCurly: kind = "LeftCurly";break;
+            case CToken::eRightCurly: kind = "RightCurly";break;
+            case CToken::eEqual: kind = "Equal";break;
+            case CToken::eComma: kind = "Comma";break;
+            case CToken::eEnd: kind = "End";break;
+            case CToken::eUnexpected: kind = "Unexpected";break;
+        }
+
+        fmt::print("{} | {}\n", kind, token.Lexeme());
+
+        token = lexer.Next();
+    }
     //ParseValue(view);
 
     Debug::Log("Finished reading in config.");
@@ -194,98 +217,240 @@ void CConfig::RemoveWhitespaceKeepStringWhitespace(std::string& content)
     if (inString) throw std::runtime_error("Unterminated string");
 }
 
-std::string_view CConfig::ParseName(std::string_view& view)
+//==========
+// CLexerUtils
+//==========
+
+bool CLexerUtils::IsSpace(char c) noexcept
 {
-    auto equals = view.find('=');
-    std::string_view name = view.substr(0, equals);
-
-    view = std::string_view(view.begin() + equals + 1, view.end());
-    return name;
-}
-
-std::string_view CConfig::TokenizeGroup(std::string_view& content)
-{
-    uint32_t pos = 0;
-    uint32_t groupsCount = 0;
-    char c = content[0];
-
-    do 
+    switch (c)
     {
-        c = content[pos];
-        if (c == '{') groupsCount++;
-        if (c == '}') groupsCount--;
-        pos++;
-    } while (groupsCount != 0);
-
-    return std::string_view(content.begin(), content.begin() + pos);
-}
-
-
-std::string_view CConfig::TokenizeValue(std::string_view& content)
-{
-    return {};
-}
-
-void CConfig::ParseGroup(std::string_view& view)
-{
-    while (true)
-    {
-        /* Check if the group is over. */
-        if (view[0] == '}')
-        {
-            return;
-        }
-        
-        /* Get the name of the value. */
-        std::string_view name = ParseName(view);
-        ParseValue(name, view);
+        case ' ':
+        case '\t':
+        case '\r':
+        case '\n':
+            return true;
+        default:
+            return false;
     }
 }
 
-void CConfig::ParseValue(const std::string_view& name, std::string_view& view)
+bool CLexerUtils::IsDigit(char c) noexcept
 {
-    
-    /* Check if this value is starting another group. */
-    if (view[0] == '{')
-    {   
-        std::string_view group = TokenizeGroup(view);
-        ParseGroup(group);
-        return;
+    switch (c)
+    {
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            return true;
+        default:
+            return false;
     }
+}
 
-    /* Get the substring for the actual value. */
-    std::string_view value = view.substr(0, view.find(';'));
-    view = std::string_view(value.begin(), view.end());
-
-    /* Determine the string type. */
-    char* strend = nullptr;
-
-    long i = std::strtol(value.data(), &strend, 10);
-    if (strend == value.end())
+bool CLexerUtils::IsIdentifierChar(char c) noexcept
+{
+    switch (c)
     {
-        m_values.push_back((SConfigValue){std::string(name), EConfigType::eInteger, true, i, 0.0f, ""});
-        return;
+        case 'a':
+        case 'b':
+        case 'c':
+        case 'd':
+        case 'e':
+        case 'f':
+        case 'g':
+        case 'h':
+        case 'i':
+        case 'j':
+        case 'k':
+        case 'l':
+        case 'm':
+        case 'n':
+        case 'o':
+        case 'p':
+        case 'q':
+        case 'r':
+        case 's':
+        case 't':
+        case 'u':
+        case 'v':
+        case 'w':
+        case 'x':
+        case 'y':
+        case 'z':
+        case 'A':
+        case 'B':
+        case 'C':
+        case 'D':
+        case 'E':
+        case 'F':
+        case 'G':
+        case 'H':
+        case 'I':
+        case 'J':
+        case 'K':
+        case 'L':
+        case 'M':
+        case 'N':
+        case 'O':
+        case 'P':
+        case 'Q':
+        case 'R':
+        case 'S':
+        case 'T':
+        case 'U':
+        case 'V':
+        case 'W':
+        case 'X':
+        case 'Y':
+        case 'Z':
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+        case '_':
+            return true;
+        default:
+            return false;
     }
+}
 
-    float f = std::strtof(value.data(), &strend);
-    if (strend == value.end())
+//==========
+// CLexer
+//==========
+
+CLexer::CLexer(const std::string& content) noexcept
+    : m_content(content)
+{
+    m_it = content.begin();
+}
+
+CToken CLexer::Next() noexcept
+{
+    while (CLexerUtils::IsSpace(Peek())) Get();
+
+    switch (Peek())
     {
-        m_values.push_back((SConfigValue){std::string(name), EConfigType::eFloat, true, 0, 0.f, ""});
-        return;
+        case '\0':
+            return CToken(CToken::eEnd, std::string_view(m_it, m_it+1));
+        default:
+            return Atom(CToken::eUnexpected);
+        case 'a':
+        case 'b':
+        case 'c':
+        case 'd':
+        case 'e':
+        case 'f':
+        case 'g':
+        case 'h':
+        case 'i':
+        case 'j':
+        case 'k':
+        case 'l':
+        case 'm':
+        case 'n':
+        case 'o':
+        case 'p':
+        case 'q':
+        case 'r':
+        case 's':
+        case 't':
+        case 'u':
+        case 'v':
+        case 'w':
+        case 'x':
+        case 'y':
+        case 'z':
+        case 'A':
+        case 'B':
+        case 'C':
+        case 'D':
+        case 'E':
+        case 'F':
+        case 'G':
+        case 'H':
+        case 'I':
+        case 'J':
+        case 'K':
+        case 'L':
+        case 'M':
+        case 'N':
+        case 'O':
+        case 'P':
+        case 'Q':
+        case 'R':
+        case 'S':
+        case 'T':
+        case 'U':
+        case 'V':
+        case 'W':
+        case 'X':
+        case 'Y':
+        case 'Z':
+            return Identifier();
+        case '0':
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            return Number();
+        case '{':
+            return Atom(CToken::eLeftCurly);
+        case '}':
+            return Atom(CToken::eRightCurly);
+        case '=':
+            return Atom(CToken::eEqual);
+        case '"':
+            return String();
+        case ',':
+            return Atom(CToken::eComma);
     }
+}
 
-    if (value == "true")
-    {
-        m_values.push_back((SConfigValue){std::string(name), EConfigType::eBoolean, true, 0, 0.0f, ""});
-        return;
-    } else if (value == "false") 
-    {
-        m_values.push_back((SConfigValue){std::string(name), EConfigType::eBoolean, false, 0, 0.0f, ""});
-        return;
-    } else if (value[0] == '\"')
-    {
-        //m_values.push_back((SConfigValue){std::string(name)})
-    }
-    
+CToken CLexer::Identifier() noexcept
+{
+    std::string::const_iterator start = m_it;
+    Get();
+    while (CLexerUtils::IsIdentifierChar(Peek())) Get();
+    return CToken(CToken::eIdentifier, std::string_view{start, m_it});
+}
 
+CToken CLexer::String() noexcept
+{
+    std::string::const_iterator start = m_it;
+    Get();
+    while (Peek() != '\"' && Peek() != '\0') Get();
+    Get();
+    return CToken{CToken::eString, std::string_view{start, m_it}};
+}
+
+CToken CLexer::Number() noexcept
+{
+    std::string::const_iterator start = m_it;
+    Get();
+    while (CLexerUtils::IsDigit(Peek())) Get();
+    return CToken(CToken::eNumber, std::string_view{start, m_it});
+}
+
+CToken CLexer::Atom(CToken::EKind kind) noexcept
+{
+    return CToken{kind, std::string_view{m_it++, m_it}};
 }
