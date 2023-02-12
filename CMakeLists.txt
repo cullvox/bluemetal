@@ -12,8 +12,16 @@ endif()
 add_subdirectory("lib")
 
 set(sources
+
+    
+
     "src/core/Debug.cpp"
+
+    "src/config/ConfigToken.cpp"
+    "src/config/ConfigLexer.cpp"
+    "src/config/ConfigParser.cpp"
     "src/config/Config.cpp"
+
     "src/render/RenderDevice.cpp"
     "src/render/Buffer.cpp"
     "src/Main.cpp")

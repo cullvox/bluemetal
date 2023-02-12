@@ -6,6 +6,8 @@
 #include <string_view>
 #include <vector>
 
+#include "ConfigLexer.hpp"
+
 enum class EConfigType
 {
     eInteger,
@@ -24,62 +26,7 @@ struct SConfigValue
     std::string s;
 };
 
-class CToken
-{
-public:
-    enum EKind
-    {
-        eNumber,
-        eIdentifier,
-        eString,
-        eLeftCurly,
-        eRightCurly,
-        eEqual,
-        eComma,
-        eEnd,
-        eUnexpected,
-    };
 
-public:
-    inline CToken(EKind kind, const std::string_view lexeme) noexcept
-        : m_kind(kind), m_lexeme(lexeme) {}
-    
-    inline CToken& operator=(const CToken& other) = default;
-
-    inline EKind            Kind() const noexcept { return m_kind; }
-    inline std::string_view Lexeme() const noexcept { return m_lexeme; }
-    inline void             Lexeme(const std::string_view& lexeme) noexcept { m_lexeme = lexeme; } 
-
-private:
-    EKind m_kind;
-    std::string_view m_lexeme;
-};
-
-class CLexerUtils
-{
-public:
-    static bool IsSpace(char c) noexcept;
-    static bool IsDigit(char c) noexcept;
-    static bool IsIdentifierChar(char c) noexcept;
-};
-
-class CLexer {
-public:
-    CLexer(const std::string& content) noexcept;
-
-    CToken Next() noexcept;
-
-private:
-    CToken Identifier() noexcept;
-    CToken String() noexcept;
-    CToken Number() noexcept;
-    CToken Atom(CToken::EKind kind) noexcept;
-    inline char Peek() const noexcept { return *m_it; }
-    inline char Get() noexcept { return *m_it++; }
-
-    const std::string& m_content;
-    std::string::const_iterator m_it;
-};
 
 class CConfig;
 class IConfigurable
