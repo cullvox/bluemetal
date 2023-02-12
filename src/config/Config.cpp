@@ -10,6 +10,11 @@
 #include "Config.hpp"
 
 
+
+//==============================================================================
+// IConfigurable
+//==============================================================================
+
 IConfigurable::IConfigurable(CConfig *const pConfig)
     : m_pConfig(pConfig)
 {
@@ -23,6 +28,9 @@ IConfigurable::~IConfigurable()
 }
 
 
+//==============================================================================
+// CConfig
+//==============================================================================
 
 const std::string CConfig::DEFAULT_CONFIG = "\
     # Default configuration\n \
@@ -81,62 +89,40 @@ void CConfig::ResetIfConfigDoesNotExist()
     }
 }
 
-
-struct Value
+void CConfig::RemoveComments(std::string& content)
 {
-    std::string_view name;
-    std::string_view value;
-};
-struct Group
-{
-    std::string_view name;
-    std::vector<Value> values;
-};
-
-enum class ParsingState
-{
-    None,
-    ReadName,
-    ReadValue,
-};
-
-void Tokenize(const std::string& content)
-{
-
-    Group defaultGroup{};
-
-    size_t size;
-    ParsingState state = ParsingState::ReadName;
-    std::string_view view = content;
-    std::string_view name;
-    std::string_view value;
-
-    while (view.size() > 0)
+    bool inComment = false;
+    for (auto it = content.begin(); it != content.end(); )
     {
+        if (*it == '#')
+            inComment = true;
+        else if (*it == '\n')
+            inComment = false;
+        
+        if (inComment)
+            it = content.erase(it);
+        else
+            ++it;
+    }
+}
 
-        auto groupTokenizer = [&]() {
-            
-        };
+void CConfig::RemoveWhitespaceKeepStringWhitespace(std::string& content)
+{
+    bool inString = false;
+    auto it = std::remove_if(content.begin(), content.end(), [&](unsigned char c){
+        if (c == '\"' && !inString)
+            inString = true;
+        else if (c =='\"' && inString)
+            inString = false;
 
-        auto valueTokenizer = [&]() {
-            
-            auto it = view.find('=');
-            auto name = view.substr(0, it);
-            view = std::string_view(view.begin()+it+1, view.end());
+        if (inString) return false;
+        if (std::isspace(c)) return true;
+        return false;
+    });
 
-            /* Special check for a group. */
-            switch (view[0])
-            {
-                case '{': 
-                    groupTokenizer();
-                    break;
-                case '\"':
-                    value = std::string_view(view.begin()+1, view.find('\''));
-            }            
-        };
+    content.erase(it, content.end());
 
-        valueTokenizer();
-    }           
+    if (inString) throw std::runtime_error("Unterminated string");
 }
 
 void CConfig::ParseInto()
@@ -181,45 +167,10 @@ void CConfig::ParseInto()
     Debug::Log("Finished reading in config.");
 }
 
-void CConfig::RemoveComments(std::string& content)
-{
-    bool inComment = false;
-    for (auto it = content.begin(); it != content.end(); )
-    {
-        if (*it == '#')
-            inComment = true;
-        else if (*it == '\n')
-            inComment = false;
-        
-        if (inComment)
-            it = content.erase(it);
-        else
-            ++it;
-    }
-}
 
-void CConfig::RemoveWhitespaceKeepStringWhitespace(std::string& content)
-{
-    bool inString = false;
-    auto it = std::remove_if(content.begin(), content.end(), [&](unsigned char c){
-        if (c == '\"' && !inString)
-            inString = true;
-        else if (c =='\"' && inString)
-            inString = false;
-
-        if (inString) return false;
-        if (std::isspace(c)) return true;
-        return false;
-    });
-
-    content.erase(it, content.end());
-
-    if (inString) throw std::runtime_error("Unterminated string");
-}
-
-//==========
+//==============================================================================
 // CLexerUtils
-//==========
+//==============================================================================
 
 bool CLexerUtils::IsSpace(char c) noexcept
 {
@@ -328,9 +279,11 @@ bool CLexerUtils::IsIdentifierChar(char c) noexcept
     }
 }
 
-//==========
+
+//==============================================================================
 // CLexer
-//==========
+//==============================================================================
+
 
 CLexer::CLexer(const std::string& content) noexcept
     : m_content(content)
