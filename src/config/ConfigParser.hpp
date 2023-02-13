@@ -11,7 +11,7 @@ enum class EParsedType
     eString,
 };
 
-struct CParsedValue
+struct SParsedValue
 {
     EParsedType type;
     long int i;
@@ -29,16 +29,15 @@ public:
 
     CParser(const std::string& content) noexcept;
 
-    const std::unordered_map<std::string, CParsedValue>& Parse() noexcept;
+    const std::unordered_map<std::string, SParsedValue>& Parse(); // throws on parser error
 private:
     void Next();
     void RecomputeGroups();
 
-    std::string m_content;
     CLexer m_lexer;
     CToken m_token;
     ETokenKind m_tokenKind;
     std::vector<std::string_view> m_groups;
     std::string m_groupsStr;
-    std::unordered_map<std::string, CParsedValue> m_values;
+    std::unordered_map<std::string, SParsedValue> m_values;
 };

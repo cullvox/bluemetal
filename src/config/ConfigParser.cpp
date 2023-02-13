@@ -1,15 +1,14 @@
-#include <queue>
+#include <fmt/core.h>
 
 #include "ConfigParser.hpp"
 
 CParser::CParser(const std::string& content) noexcept
-    : m_content(content), m_lexer(m_content), m_token()
+    : m_lexer(content), m_token()
 {
 }
 
-const std::unordered_map<std::string, CParsedValue>& CParser::Parse() noexcept
+const std::unordered_map<std::string, SParsedValue>& CParser::Parse()
 {
-
     Next();
     while (m_tokenKind != ETokenKind::eEnd)
     {
@@ -17,7 +16,9 @@ const std::unordered_map<std::string, CParsedValue>& CParser::Parse() noexcept
         std::string_view value{};
 
         /* The first token must be an identifier. */
-        if (m_tokenKind != ETokenKind::eIdentifier) throw;
+        if (m_tokenKind != ETokenKind::eIdentifier) 
+        {
+            fmt::print("Config: Invalid token, expected identifier");
         identifier = m_token.Lexeme();
 
         /* Must be an equals. */
@@ -36,7 +37,7 @@ const std::unordered_map<std::string, CParsedValue>& CParser::Parse() noexcept
             case ETokenKind::eNumber:
                 m_values.insert({
                     m_groupsStr + std::string{identifier}, 
-                    CParsedValue{ 
+                    SParsedValue{ 
                         .type = EParsedType::eInt, 
                         .i = strtol(m_token.Lexeme().data(), nullptr, 10)
                     }
@@ -46,7 +47,7 @@ const std::unordered_map<std::string, CParsedValue>& CParser::Parse() noexcept
             case ETokenKind::eString:
                 m_values.insert({
                     m_groupsStr + std::string{identifier}, 
-                    CParsedValue{ 
+                    SParsedValue{ 
                         .type = EParsedType::eString, 
                         .s = m_token.Lexeme()
                     }

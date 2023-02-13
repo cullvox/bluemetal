@@ -6,7 +6,7 @@
 #include <string_view>
 #include <vector>
 
-#include "ConfigLexer.hpp"
+#include "ConfigParser.hpp"
 
 enum class EConfigType
 {
@@ -72,12 +72,11 @@ private:
     void                                ParseInto();
     void                                RemoveComments(std::string&);
     void                                RemoveWhitespaceKeepStringWhitespace(std::string&);
-    std::string_view                    TokenizeGroup(std::string_view&);
     
     void                                NotifySubscribers();
 
     std::string                         m_path = DEFAULT_CONFIG_PATH;
-    std::vector<SConfigValue>           m_values;
+    std::unordered_map<std::string, SParsedValue>           m_values;
     std::vector<const IConfigurable*>   m_subscribers;
 };
 
