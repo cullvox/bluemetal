@@ -4,13 +4,13 @@
 
 # Information about the window
 window={
-    width   =1920,
-    height  =1080
+    width=1920,
+    height=1080
 }
 
 renderer={
-    antialias   =1,
-    api         ="DirectX 12",
+    antialias=1,
+    api="DirectX 12",
     vulkan={
         physicalDevice=0
     }

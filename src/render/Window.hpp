@@ -3,17 +3,16 @@
 #include <memory>
 
 #include "config/Config.hpp"
-#include "vulkan/vulkan_core.h"
 
 
+class CRenderDevice;
 class IWindow : public IConfigurable
 {
 public:
-    IWindow(uint32_t windowIndex = 0, CConfig* pConfig = g_pConfig.get());
-    ~IWindow();
-
-    virtual VkSurfaceKHR    GetSurface() const noexcept = 0;
+    virtual VkSurfaceKHR    CreateSurface(const CRenderDevice *const) = 0;
     virtual VkExtent2D      GetExtent() const noexcept = 0;
 };
+
+IWindow* CreateWindow();
 
 inline std::unique_ptr<IWindow> g_pWindow;

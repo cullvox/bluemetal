@@ -4,7 +4,6 @@
 
 class CBuffer
 {
-
 public:
     CBuffer(CRenderDevice* pRenderDevice = g_pRenderDevice.get());
     ~CBuffer();
@@ -15,5 +14,4 @@ public:
 private:
     VmaAllocation m_allocation;
     VkBuffer m_buffer;
-
 };
