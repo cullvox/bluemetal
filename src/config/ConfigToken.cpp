@@ -1,7 +1,7 @@
 #include "ConfigToken.hpp"
 
-CToken::CToken(ETokenKind kind, const std::string_view lexeme) noexcept
-    : m_kind(kind), m_lexeme(lexeme)
+CToken::CToken(ETokenKind kind, const std::string_view lexeme, int lineNumber) noexcept
+    : m_kind(kind), m_lexeme(lexeme), m_lineNumber(lineNumber)
 {
 }
 

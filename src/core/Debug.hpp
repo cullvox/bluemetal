@@ -28,7 +28,10 @@ public:
 private:
     static void vlog(const format_string& format, fmt::format_args args) {
         const auto& loc = format.loc;
-        fmt::print("{}:{}: ", loc.file_name(), loc.line());
+        const std::string path = loc.file_name();
+        const std::string filename = path.substr(path.find_last_of("/\\") + 1);
+
+        fmt::print("{}:{}: ", filename, loc.line());
         fmt::vprint(format.str, args);
     }
 };

@@ -33,6 +33,7 @@ public:
 private:
     void Next();
     void RecomputeGroups();
+    void PrintError(const std::string& expected);
 
     CLexer m_lexer;
     CToken m_token;

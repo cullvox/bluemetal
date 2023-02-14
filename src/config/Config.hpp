@@ -36,8 +36,6 @@ private:
     void                                            EnsureDirectoriesExist();
     void                                            ResetIfConfigDoesNotExist();
     void                                            ParseInto();
-    void                                            RemoveComments(std::string&);
-    void                                            RemoveWhitespaceKeepStringWhitespace(std::string&);
     void                                            NotifySubscribers();
 
     std::string                                     m_path = DEFAULT_CONFIG_PATH;

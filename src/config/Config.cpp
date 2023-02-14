@@ -8,6 +8,7 @@
 
 #include "core/Debug.hpp"
 #include "Config.hpp"
+#include "Configurable.hpp"
 #include "ConfigParser.hpp"
 
 
@@ -90,45 +91,9 @@ void CConfig::ResetIfConfigDoesNotExist()
     }
 }
 
-void CConfig::RemoveComments(std::string& content)
-{
-    bool inComment = false;
-    for (auto it = content.begin(); it != content.end(); )
-    {
-        if (*it == '#')
-            inComment = true;
-        else if (*it == '\n')
-            inComment = false;
-        
-        if (inComment)
-            it = content.erase(it);
-        else
-            ++it;
-    }
-}
-
-void CConfig::RemoveWhitespaceKeepStringWhitespace(std::string& content)
-{
-    bool inString = false;
-    auto it = std::remove_if(content.begin(), content.end(), [&](unsigned char c){
-        if (c == '\"' && !inString)
-            inString = true;
-        else if (c =='\"' && inString)
-            inString = false;
-
-        if (inString) return false;
-        if (std::isspace(c)) return true;
-        return false;
-    });
-
-    content.erase(it, content.end());
-
-    if (inString) throw std::runtime_error("Unterminated string");
-}
-
 void CConfig::ParseInto()
 {
-    Debug::Log("Opening config file.");
+    Debug::Log("Opening config: {}\n", m_path);
 
     /* Open the config file. */
     std::ifstream configFile(m_path, std::ios::in);
@@ -138,20 +103,15 @@ void CConfig::ParseInto()
     std::string content((std::istreambuf_iterator<char>(configFile)),
                         (std::istreambuf_iterator<char>()));
 
-    RemoveComments(content);
-    RemoveWhitespaceKeepStringWhitespace(content);
-
     CParser parser{content};
     auto values = parser.Parse();
 
     for (auto pair : values)
     {
-        fmt::print("{} : {} | {} \n", pair.first, (int)(pair.second.type), (pair.second.type == EParsedType::eInt) ? std::to_string(pair.second.i) : std::string{pair.second.s});
+        Debug::Log("Value [{}, {}, {}] \n", pair.first, (int)(pair.second.type), (pair.second.type == EParsedType::eInt) ? std::to_string(pair.second.i) : std::string{pair.second.s});
     }
 
-    //ParseValue(view);
-
-    Debug::Log("Finished reading in config.");
+    Debug::Log("Parsed config: {}\n", m_path);
 }
 
 

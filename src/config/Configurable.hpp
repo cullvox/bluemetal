@@ -1,4 +1,6 @@
-#include "Config.hpp"
+#include <unordered_map>
+
+#include "ConfigParser.hpp"
 
 class CConfig;
 
@@ -12,5 +14,5 @@ public:
 
     virtual void OnConfigReceive(const std::unordered_map<std::string, SParsedValue>&) {}
     virtual void OnConfigPreSave() {}
-    virtual void OnConfigChanged(const SConfigValue&) {}
+    virtual void OnConfigChanged(const SParsedValue&) {}
 };

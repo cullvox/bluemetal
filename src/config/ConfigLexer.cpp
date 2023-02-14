@@ -131,12 +131,40 @@ CLexer::CLexer(const std::string& content) noexcept
 
 CToken CLexer::Next() noexcept
 {
-    while (CLexerUtils::IsSpace(Peek())) Get();
+    /* Removes white space, counts lines. */
+    while (CLexerUtils::IsSpace(Peek()))
+    {
+        if (Peek() == '\n') m_lineNumber++;
+        Get();
+    }
+
+    while (true)
+    {
+        if (Peek() == '#')
+        {
+            while(Peek() != '\n' || Peek() == '\0')
+            {   
+                Get();
+            }
+            m_lineNumber++;
+            Get();
+        }
+        else if (CLexerUtils::IsSpace(Peek()))
+        {
+            if (Peek() == '\n') m_lineNumber++;
+            Get();
+        }
+        else
+        {
+            break;
+        }
+    }
+
 
     switch (Peek())
     {
         case '\0':
-            return CToken(ETokenKind::eEnd, std::string_view(m_it, m_it+1));
+            return CToken(ETokenKind::eEnd, std::string_view(m_it, m_it+1), 0);
         default:
             return Atom(ETokenKind::eUnexpected);
         case 'a':
@@ -221,7 +249,7 @@ CToken CLexer::Identifier() noexcept
     std::string::const_iterator start = m_it;
     Get();
     while (CLexerUtils::IsIdentifierChar(Peek())) Get();
-    return CToken(ETokenKind::eIdentifier, std::string_view{start, m_it});
+    return CToken(ETokenKind::eIdentifier, std::string_view{start, m_it}, m_lineNumber);
 }
 
 CToken CLexer::String() noexcept
@@ -230,7 +258,7 @@ CToken CLexer::String() noexcept
     Get();
     while (Peek() != '\"' && Peek() != '\0') Get();
     Get();
-    return CToken{ETokenKind::eString, std::string_view{start, m_it}};
+    return CToken{ETokenKind::eString, std::string_view{start, m_it}, m_lineNumber};
 }
 
 CToken CLexer::Number() noexcept
@@ -238,10 +266,15 @@ CToken CLexer::Number() noexcept
     std::string::const_iterator start = m_it;
     Get();
     while (CLexerUtils::IsDigit(Peek())) Get();
-    return CToken(ETokenKind::eNumber, std::string_view{start, m_it});
+    return CToken(ETokenKind::eNumber, std::string_view{start, m_it}, m_lineNumber);
 }
 
 CToken CLexer::Atom(ETokenKind kind) noexcept
 {
-    return CToken{kind, std::string_view{m_it++, m_it}};
+    return CToken{kind, std::string_view{m_it++, m_it}, m_lineNumber};
+}
+
+int CLexer::Line() const noexcept
+{
+    return m_lineNumber;
 }

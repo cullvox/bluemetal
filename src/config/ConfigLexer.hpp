@@ -18,8 +18,9 @@ public:
     CLexer(const std::string& content) noexcept;
 
     CToken Next() noexcept;
-
+    int Line() const noexcept;
 private:
+    void StripCommentsAndWhitespace() noexcept;
     CToken Identifier() noexcept;
     CToken String() noexcept;
     CToken Number() noexcept;
@@ -29,4 +30,5 @@ private:
 
     const std::string& m_content;
     std::string::const_iterator m_it;
+    int m_lineNumber;
 };
