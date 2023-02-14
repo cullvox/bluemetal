@@ -131,17 +131,13 @@ CLexer::CLexer(const std::string& content) noexcept
 
 CToken CLexer::Next() noexcept
 {
-    /* Removes white space, counts lines. */
-    while (CLexerUtils::IsSpace(Peek()))
-    {
-        if (Peek() == '\n') m_lineNumber++;
-        Get();
-    }
 
+    /* Removes whitespaces and comments, but keeps track of line counts. */
     while (true)
     {
         if (Peek() == '#')
         {
+            /* Keep going until end line or eof. */
             while(Peek() != '\n' || Peek() == '\0')
             {   
                 Get();
@@ -156,10 +152,10 @@ CToken CLexer::Next() noexcept
         }
         else
         {
+            /* Encountered a token that is not a comment or space. */
             break;
         }
     }
-
 
     switch (Peek())
     {
@@ -258,7 +254,11 @@ CToken CLexer::String() noexcept
     Get();
     while (Peek() != '\"' && Peek() != '\0') Get();
     Get();
-    return CToken{ETokenKind::eString, std::string_view{start, m_it}, m_lineNumber};
+
+    return CToken{
+        (*(m_it-1) != '\"') ? ETokenKind::eUnexpected : ETokenKind::eString, /* Checks if the end was actually a double quote, if it wasn't change the string to unknown. */ 
+        std::string_view{start+1, m_it-1}, /* Contents of string. */
+        m_lineNumber};
 }
 
 CToken CLexer::Number() noexcept
@@ -266,12 +266,18 @@ CToken CLexer::Number() noexcept
     std::string::const_iterator start = m_it;
     Get();
     while (CLexerUtils::IsDigit(Peek())) Get();
-    return CToken(ETokenKind::eNumber, std::string_view{start, m_it}, m_lineNumber);
+    return CToken{
+        ETokenKind::eNumber,
+        std::string_view{start, m_it},
+        m_lineNumber};
 }
 
 CToken CLexer::Atom(ETokenKind kind) noexcept
 {
-    return CToken{kind, std::string_view{m_it++, m_it}, m_lineNumber};
+    return CToken{
+        kind, 
+        std::string_view{m_it++, m_it},
+        m_lineNumber};
 }
 
 int CLexer::Line() const noexcept

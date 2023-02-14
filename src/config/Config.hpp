@@ -20,12 +20,8 @@ public:
     ~CConfig();
 
     int                 GetIntValue(const std::string&) const;
-    float               GetFloatValue(const std::string&) const;
-    bool                GetBooleanValue(const std::string&) const;
     const std::string&  GetStringValue(const std::string&) const;
     void                SetIntValue(const std::string&, int);
-    void                SetFloatValue(const std::string&, float);
-    void                SetBooleanValue(const std::string&, bool);
     void                SetStringValue(const std::string&, const std::string&);
     void                Reset();
     void                Save();
