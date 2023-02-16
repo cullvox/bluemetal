@@ -1,6 +1,8 @@
+#pragma once
+
 #include <unordered_map>
 
-#include "ConfigParser.hpp"
+#include "Config.hpp"
 
 class CConfig;
 

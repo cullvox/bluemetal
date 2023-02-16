@@ -63,6 +63,16 @@ void CConfig::Reset()
     config << DEFAULT_CONFIG;
 }
 
+bool CConfig::HasValue(const std::string& name) const noexcept
+{
+    return m_values.contains(name);
+}
+
+int CConfig::GetIntValue(const std::string& name)
+{
+    
+}
+
 void CConfig::SubscribeEvents(const IConfigurable* pConfigurable)
 {
     m_subscribers.push_back(pConfigurable);

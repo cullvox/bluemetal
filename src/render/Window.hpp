@@ -2,14 +2,14 @@
 
 #include <memory>
 
-#include "config/Config.hpp"
+#include <vulkan/vulkan.h>
 
+#include "config/Configurable.hpp"
 
-class CRenderDevice;
 class IWindow : public IConfigurable
 {
 public:
-    virtual VkSurfaceKHR    CreateSurface(const CRenderDevice *const) = 0;
+    virtual VkSurfaceKHR    CreateSurface(VkInstance instance) = 0;
     virtual VkExtent2D      GetExtent() const noexcept = 0;
 };
 

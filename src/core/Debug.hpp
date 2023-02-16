@@ -2,7 +2,7 @@
 
 #include <source_location>
 
-#include <fmt/core.h>
+#include <spdlog/spdlog.h>
     
 class Debug
 {

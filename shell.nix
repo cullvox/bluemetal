@@ -10,5 +10,13 @@ stdenv.mkDerivation {
     vulkan-loader
     vulkan-tools
     vulkan-validation-layers
+    #X11
+    xorg.libX11
+    xorg.libXrandr
+    xorg.libxcb
+    xorg.libXinerama
+    xorg.libXcursor
+    xorg.libXi
+    wayland
   ];
 }

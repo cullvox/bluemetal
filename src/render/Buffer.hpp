@@ -1,17 +1,23 @@
 #pragma once
 
 #include "RenderDevice.hpp"
+#include "vulkan/vulkan_core.h"
 
 class CBuffer
 {
 public:
-    CBuffer(CRenderDevice* pRenderDevice = g_pRenderDevice.get());
+    CBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, CRenderDevice* const pRenderDevice = g_pRenderDevice.get());
     ~CBuffer();
 
-    VmaAllocation getAllocation() const noexcept;
-    VkBuffer getBuffer() const noexcept;
+    void Upload();
+
+    VmaAllocation   GetAllocation() const noexcept;
+    VkBuffer        GetBuffer() const noexcept;
+    VkDeviceSize    GetSize() const noexcept;
 
 private:
-    VmaAllocation m_allocation;
-    VkBuffer m_buffer;
+    CRenderDevice* const m_pRenderDevice;
+    VmaAllocation   m_allocation;
+    VkBuffer        m_buffer;
+    VkDeviceSize    m_size;
 };

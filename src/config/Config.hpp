@@ -9,7 +9,6 @@
 #include "ConfigParser.hpp"
 
 class IConfigurable;
-
 class CConfig
 {
 public:
@@ -19,20 +18,21 @@ public:
     CConfig(const std::string& configPath = DEFAULT_CONFIG_PATH);
     ~CConfig();
 
-    int                 GetIntValue(const std::string&) const;
-    const std::string&  GetStringValue(const std::string&) const;
-    void                SetIntValue(const std::string&, int);
-    void                SetStringValue(const std::string&, const std::string&);
-    void                Reset();
-    void                Save();
+    bool HasValue(const std::string&) const noexcept;
+    int  GetIntValue(const std::string&) const;
+    const std::string& GetStringValue(const std::string&) const;
+    void SetIntValue(const std::string&, int);
+    void SetStringValue(const std::string&, const std::string&);
+    void Reset();
+    void Save();
 
-    void                SubscribeEvents(IConfigurable const*);
-    void                UnsubscribeEvents(IConfigurable const*);
+    void SubscribeEvents(IConfigurable const*);
+    void UnsubscribeEvents(IConfigurable const*);
 private:
-    void                                            EnsureDirectoriesExist();
-    void                                            ResetIfConfigDoesNotExist();
-    void                                            ParseInto();
-    void                                            NotifySubscribers();
+    void EnsureDirectoriesExist();
+    void ResetIfConfigDoesNotExist();
+    void ParseInto();
+    void NotifySubscribers();
 
     std::string                                     m_path = DEFAULT_CONFIG_PATH;
     std::unordered_map<std::string, SParsedValue>   m_values;

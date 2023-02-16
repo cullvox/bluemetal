@@ -8,13 +8,12 @@ if(CMAKE_EXPORT_COMPILE_COMMANDS)
       ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
 endif()
 
+set(BLOODLUST_ENGINE_USE_WAYLAND ON)
+
 # Build some libraries
 add_subdirectory("lib")
 
 set(sources
-
-    
-
     "src/core/Debug.cpp"
 
     "src/config/ConfigToken.cpp"
@@ -23,6 +22,7 @@ set(sources
     "src/config/Config.cpp"
 
     "src/render/RenderDevice.cpp"
+    "src/render/WindowGLFW.cpp"
     "src/render/Buffer.cpp"
     "src/Main.cpp")
 
@@ -37,7 +37,7 @@ ENDIF(CMAKE_COMPILER_IS_GNUCC)
 target_include_directories(DarkRed PUBLIC "src")
 
 # Link
-target_link_libraries(DarkRed fmt)
+target_link_libraries(DarkRed spdlog glfw)
 
 # Include vulkan headers
 find_package(Vulkan REQUIRED)

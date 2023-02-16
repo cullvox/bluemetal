@@ -4,11 +4,11 @@
 #include "vk_mem_alloc.h"
 
 #include "config/Config.hpp"
-
+#include "Window.hpp"
 class CRenderDevice
 {
 public:
-    CRenderDevice(CConfig* pConfig = g_pConfig.get());
+    CRenderDevice(IWindow* pWindow, CConfig* pConfig = g_pConfig.get());
     ~CRenderDevice();
 
     VkInstance          GetInstance() const noexcept;
@@ -21,6 +21,15 @@ public:
     VmaAllocator        GetAllocator() const noexcept;
     inline bool         AreQueuesSame() const noexcept { return m_graphicsFamilyIndex == m_presentFamilyIndex; }
 private:
+    std::vector<const char*> GetValidationLayers() const;
+    std::vector<const char*> GetInstanceExtensions() const;
+    void                CreateInstance();
+    VkPhysicalDevice    ChoosePhysicalDevice();
+    std::vector<const char*> GetDeviceExtensions() const;
+    void                CreateDevice();
+    void                CreateAllocator();
+    CConfig*            m_pConfig;
+    IWindow*            m_pWindow;
     VkInstance          m_instance;
     VkPhysicalDevice    m_physicalDevice;
     uint32_t            m_graphicsFamilyIndex, m_presentFamilyIndex;

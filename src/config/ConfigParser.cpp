@@ -1,5 +1,4 @@
-#include <fmt/core.h>
-
+#include <spdlog/spdlog.h>
 #include "ConfigParser.hpp"
 
 CParser::CParser(const std::string& content) noexcept
@@ -122,5 +121,5 @@ void CParser::RecomputeGroups()
 
 void CParser::PrintError(const std::string& expected)
 {
-    fmt::print("({}): Invalid token, expected \"{}\", got \"{}\".\n", m_lexer.Line(), expected, m_token.Lexeme());
+    spdlog::log(spdlog::level::err, "({}): Invalid token, expected \"{}\", got \"{}\".\n", m_lexer.Line(), expected, m_token.Lexeme());
 }
