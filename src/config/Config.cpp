@@ -68,9 +68,19 @@ bool CConfig::HasValue(const std::string& name) const noexcept
     return m_values.contains(name);
 }
 
-int CConfig::GetIntValue(const std::string& name)
+int CConfig::GetIntValue(const std::string& name) const
 {
+    assert(HasValue(name));
+    assert(m_values.at(name).type == EParsedType::eInt);
+    return m_values.at(name).i;
+}
+
+const std::string_view CConfig::GetStringValue(const std::string& name) const
+{
+    assert(HasValue(name));
+    assert(m_values.at(name).type == EParsedType::eString);
     
+    return m_values.at(name).s;
 }
 
 void CConfig::SubscribeEvents(const IConfigurable* pConfigurable)

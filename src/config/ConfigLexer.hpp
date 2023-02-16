@@ -20,7 +20,6 @@ public:
     CToken Next() noexcept;
     int Line() const noexcept;
 private:
-    void StripCommentsAndWhitespace() noexcept;
     CToken Identifier() noexcept;
     CToken String() noexcept;
     CToken Number() noexcept;

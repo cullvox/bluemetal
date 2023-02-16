@@ -20,7 +20,7 @@ public:
 
     bool HasValue(const std::string&) const noexcept;
     int  GetIntValue(const std::string&) const;
-    const std::string& GetStringValue(const std::string&) const;
+    const std::string_view GetStringValue(const std::string&) const;
     void SetIntValue(const std::string&, int);
     void SetStringValue(const std::string&, const std::string&);
     void Reset();
