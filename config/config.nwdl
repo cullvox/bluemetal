@@ -3,23 +3,12 @@
 # Designed to work with humans.
 
 # Information about the window
-test=1,
-window={
-    width=1920,
-    height=1080
+window = {
+    width = 1920,
+    height = 1080,
+    fullscreen = 1,
+    monitor = 0
 }
-
-render={
-    window={
-        width=800,
-        height=400
-    }
-    antialias=1,
-    api="DirectX 12",
-    vulkan={
-        physicalDevice=0
-    }
-    opengl={
-        physicalDevice="Nvidia"
-    }
+render = {
+    physicalDevice = 1
 }

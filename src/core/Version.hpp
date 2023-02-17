@@ -2,7 +2,7 @@
 
 #include <string_view>
 
-const inline std::string_view engineName = "Bloodlust Engine";
+const inline std::string_view engineName = "Octane Engine";
 const inline int engineVersionMajor = 0;
 const inline int engineVersionMinor = 1;
 const inline int engineVersionPatch = 1;

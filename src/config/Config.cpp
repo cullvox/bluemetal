@@ -1,15 +1,18 @@
 #include <cctype>
 #include <cassert>
 #include <cstdlib>
+#include <cstring>
 #include <string>
 #include <fstream>
 #include <algorithm>
 #include <filesystem>
+#include <map>
 
 #include "core/Debug.hpp"
 #include "Config.hpp"
 #include "Configurable.hpp"
 #include "ConfigParser.hpp"
+#include "spdlog/common.h"
 
 
 
@@ -124,9 +127,9 @@ void CConfig::ParseInto()
                         (std::istreambuf_iterator<char>()));
 
     CParser parser{content};
-    auto values = parser.Parse();
+    m_values = parser.Parse();
 
-    for (auto pair : values)
+    for (auto pair : m_values)
     {
         Debug::Log("Value [{}, {}, {}] \n", pair.first, (int)(pair.second.type), (pair.second.type == EParsedType::eInt) ? std::to_string(pair.second.i) : std::string{pair.second.s});
     }
@@ -134,4 +137,26 @@ void CConfig::ParseInto()
     Debug::Log("Parsed config: {}\n", m_path);
 }
 
+void CConfig::Save()
+{
+    
+    /* Sort the keys so the values will properly be placed in groups. */
+    std::vector<std::string> keys;
 
+    keys.reserve (m_values.size());
+    for (auto& it : m_values) {
+        keys.push_back(it.first);
+    }
+    std::sort(keys.begin(), keys.end());
+
+    
+
+    for (auto it : keys)
+    {
+        
+
+
+        spdlog::log(spdlog::level::info, "{}", it);
+    }
+
+}

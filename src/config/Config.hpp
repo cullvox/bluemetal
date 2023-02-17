@@ -19,6 +19,8 @@ public:
     ~CConfig();
 
     bool HasValue(const std::string&) const noexcept;
+    void RequireStringValue(const std::string&, const std::string&);
+    void RequireIntValue(const std::string&, int);
     int  GetIntValue(const std::string&) const;
     const std::string_view GetStringValue(const std::string&) const;
     void SetIntValue(const std::string&, int);
