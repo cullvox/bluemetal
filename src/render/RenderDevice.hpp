@@ -24,7 +24,7 @@ private:
     std::vector<const char*> GetValidationLayers() const;
     std::vector<const char*> GetInstanceExtensions() const;
     void                CreateInstance();
-    VkPhysicalDevice    ChoosePhysicalDevice();
+    void                ChoosePhysicalDevice();
     std::vector<const char*> GetDeviceExtensions() const;
     void                CreateDevice();
     void                CreateAllocator();

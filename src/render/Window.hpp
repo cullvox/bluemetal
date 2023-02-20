@@ -1,18 +1,19 @@
 #pragma once
 
-#include <memory>
-
+//===========================//
 #include <vulkan/vulkan.h>
+//===========================//
 
-#include "config/Configurable.hpp"
+/* Notice: You can create a window using the IWindowPlatform interface. */
 
-class IWindow : public IConfigurable
+class IWindow
 {
 public:
-    virtual VkSurfaceKHR    CreateSurface(VkInstance instance) = 0;
-    virtual VkExtent2D      GetExtent() const noexcept = 0;
+    static inline const int DEFAULT_WIDTH = 1080;
+    static inline const int DEFAULT_HEIGHT = 720;
+    static inline const int DEFAULT_FULLSCREEN = 1;
+    IWindow() = default;
+    ~IWindow() = default;
+    virtual VkSurfaceKHR CreateSurface(VkInstance instance) = 0;
+    virtual VkExtent2D GetExtent() const noexcept = 0;
 };
-
-IWindow* CreateWindow();
-
-inline std::unique_ptr<IWindow> g_pWindow;

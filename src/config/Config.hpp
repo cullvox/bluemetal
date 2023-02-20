@@ -1,12 +1,14 @@
 #pragma once
 
+//===========================//
 #include <stdexcept>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
-
+//===========================//
 #include "ConfigParser.hpp"
+//===========================//
 
 class IConfigurable;
 class CConfig
@@ -25,6 +27,9 @@ public:
     const std::string_view GetStringValue(const std::string&) const;
     void SetIntValue(const std::string&, int);
     void SetStringValue(const std::string&, const std::string&);
+
+    int GetIntOrSetDefault(const std::string&, int);
+
     void Reset();
     void Save();
 
@@ -36,6 +41,14 @@ private:
     void ParseInto();
     void NotifySubscribers();
 
+    struct SValueNode
+    {
+        std::vector<SValueNode*> children;
+        bool isValue;
+        std::string name;
+    };
+
+    SValueNode*                                     m_pConfigTree;
     std::string                                     m_path = DEFAULT_CONFIG_PATH;
     std::unordered_map<std::string, SParsedValue>   m_values;
     std::vector<const IConfigurable*>               m_subscribers;

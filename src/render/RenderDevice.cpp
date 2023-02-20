@@ -18,10 +18,14 @@ CRenderDevice::CRenderDevice(IWindow* pWindow, CConfig* pConfig)
     CreateInstance();
     ChoosePhysicalDevice();
     CreateDevice();
+    CreateAllocator();
 }
 
 CRenderDevice::~CRenderDevice()
 {
+    vmaDestroyAllocator(m_allocator);
+    vkDestroyDevice(m_device, nullptr);
+    vkDestroyInstance(m_instance, nullptr);
 }
 
 VkInstance CRenderDevice::GetInstance() const noexcept
@@ -139,6 +143,8 @@ std::vector<const char*> CRenderDevice::GetInstanceExtensions() const
 
 void CRenderDevice::CreateInstance()
 {
+    spdlog::log(spdlog::level::info, "Creating the vulkan instance.");
+
     const VkApplicationInfo applicationInfo{
         .sType = VK_STRUCTURE_TYPE_APPLICATION_INFO,
         .pNext = nullptr,
@@ -169,7 +175,7 @@ void CRenderDevice::CreateInstance()
     }
 }
 
-VkPhysicalDevice CRenderDevice::ChoosePhysicalDevice()
+void CRenderDevice::ChoosePhysicalDevice()
 {
     /* Find the physical devices. */
     uint32_t physicalDevicesCount;
@@ -187,15 +193,13 @@ VkPhysicalDevice CRenderDevice::ChoosePhysicalDevice()
     }
 
     /* Determine if we are going to use */
-    if (m_pConfig->HasValue("renderer.vulkan.physicalDevice"))
-    {
-        const int physicalDeviceIndex = m_pConfig->GetIntValue("renderer.vulkan.physicalDevice");
-        return physicalDevices[physicalDeviceIndex];
-    }
-    else
-    {
-        return physicalDevices[0];
-    }
+    const int physicalDeviceIndex = m_pConfig->GetIntOrSetDefault("renderer.vulkan.physicalDevice", 0);
+    m_physicalDevice = physicalDevices[physicalDeviceIndex];
+
+    VkPhysicalDeviceProperties physicalDeviceProperties{};
+    vkGetPhysicalDeviceProperties(m_physicalDevice, &physicalDeviceProperties);
+
+    spdlog::log(spdlog::level::info, "Using vulkan physical device: {}", physicalDeviceProperties.deviceName);
 }
 
 std::vector<const char*> CRenderDevice::GetDeviceExtensions() const
@@ -316,9 +320,28 @@ void CRenderDevice::CreateDevice()
     {
         throw std::runtime_error("Could not create a vulkan logical device!");
     }
+
+    vkGetDeviceQueue(m_device, m_graphicsFamilyIndex, 0, &m_graphicsQueue);
+    vkGetDeviceQueue(m_device, m_presentFamilyIndex, 0, &m_presentQueue);
 }
 
 void CRenderDevice::CreateAllocator()
 {
+    const VmaAllocatorCreateInfo createInfo{
+        .flags = 0,
+        .physicalDevice = m_physicalDevice,
+        .device = m_device,
+        .preferredLargeHeapBlockSize = 0,
+        .pAllocationCallbacks = nullptr,
+        .pDeviceMemoryCallbacks = nullptr,
+        .pHeapSizeLimit = nullptr,
+        .pVulkanFunctions = nullptr,
+        .instance = m_instance,
+        .pTypeExternalMemoryHandleTypes = nullptr,
+    };
 
+    if (vmaCreateAllocator(&createInfo, &m_allocator) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not create the vulkan memory allocator!");
+    }
 }

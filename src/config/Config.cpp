@@ -86,6 +86,21 @@ const std::string_view CConfig::GetStringValue(const std::string& name) const
     return m_values.at(name).s;
 }
 
+int CConfig::GetIntOrSetDefault(const std::string& key, int defaultValue)
+{
+    assert(!HasValue(key) || m_values.at(key).type == EParsedType::eInt);
+
+    if (HasValue(key))
+    {
+        return m_values[key].i;
+    }
+    else
+    {
+        m_values[key].i = defaultValue;
+        return defaultValue;
+    }
+}
+
 void CConfig::SubscribeEvents(const IConfigurable* pConfigurable)
 {
     m_subscribers.push_back(pConfigurable);
@@ -137,6 +152,29 @@ void CConfig::ParseInto()
     Debug::Log("Parsed config: {}\n", m_path);
 }
 
+std::vector<std::string> DetermineGroups(const std::string& key)
+{
+    std::vector<std::string> groups;
+    auto startDot = key.begin();
+
+    for (auto it = key.begin(); it < key.end(); it++)
+    {
+        switch (*it)
+        {
+            case '.':
+                groups.push_back(std::string{startDot, it});
+                startDot = it;
+                break;
+            case '\0':
+                break;
+            default:
+                continue;
+        }
+    }
+
+    return groups;
+}
+
 void CConfig::Save()
 {
     
@@ -150,12 +188,18 @@ void CConfig::Save()
     std::sort(keys.begin(), keys.end());
 
     
+    std::vector<std::string> groups;
+
 
     for (auto it : keys)
     {
+
+        /* If the groups are the same, we don't need to apply a different grouping structure. */
+        std::vector<std::string> currentGroups = DetermineGroups(it);
+        if (currentGroups != groups)
         
 
-
+        /* Find the last '.' and determine if the groups are the same. */
         spdlog::log(spdlog::level::info, "{}", it);
     }
 

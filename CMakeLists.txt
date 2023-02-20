@@ -21,8 +21,11 @@ set(sources
     "src/config/ConfigParser.cpp"
     "src/config/Config.cpp"
 
+    "src/render/window/WindowPlatformGLFW.cpp"
+    "src/render/window/MonitorGLFW.cpp"
+    "src/render/window/WindowGLFW.cpp"
+    "src/render/WindowPlatform.cpp"
     "src/render/RenderDevice.cpp"
-    "src/render/WindowGLFW.cpp"
     "src/render/Buffer.cpp"
     "src/Main.cpp")
 
