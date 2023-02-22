@@ -88,10 +88,10 @@ const std::string_view CConfig::GetStringValue(const std::string& name) const
 
 int CConfig::GetIntOrSetDefault(const std::string& key, int defaultValue)
 {
-    assert(!HasValue(key) || m_values.at(key).type == EParsedType::eInt);
-
     if (HasValue(key))
     {
+        assert(m_values.at(key).type == EParsedType::eInt);
+        
         return m_values[key].i;
     }
     else

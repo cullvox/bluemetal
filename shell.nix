@@ -19,4 +19,5 @@ stdenv.mkDerivation {
     xorg.libXi
     wayland
   ];
+  VULKAN_SDK = "${vulkan-validation-layers}/share/vulkan/explicit_layer.d";
 }

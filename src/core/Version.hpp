@@ -1,13 +1,13 @@
 #pragma once
 
-#include <string_view>
+#include <string>
 
-const inline std::string_view engineName = "Octane Engine";
+const inline std::string engineName = std::string("Octane Engine");
 const inline int engineVersionMajor = 0;
 const inline int engineVersionMinor = 1;
 const inline int engineVersionPatch = 1;
 
-const inline std::string_view applicationName = "Dark Red";
+const inline std::string applicationName = std::string("Dark Red");
 const inline int applicationVersionMajor = 0;
 const inline int applicationVersionMinor = 1;
 const inline int applicationVersionPatch = 0;

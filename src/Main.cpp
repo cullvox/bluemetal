@@ -2,6 +2,7 @@
 
 #include "config/Config.hpp"
 #include "render/WindowPlatform.hpp"
+#include "render/RenderDevice.hpp"
 
 int main(int argc, const char** argv)
 {
@@ -9,6 +10,12 @@ int main(int argc, const char** argv)
     CConfig newConfig{};
 
     auto windowPlatform = CreateWindowPlatform(EWindowPlatformAPI::eGLFW);
-    windowPlatform->CreateWindow("Dark Red");
+    std::shared_ptr<IWindow> window = windowPlatform->CreateWindow("Dark Red", &newConfig);
+    std::shared_ptr<CRenderDevice> renderDevice = std::make_shared<CRenderDevice>(windowPlatform.get(), window.get(), &newConfig);
+
+    while(true)
+    {
+        windowPlatform->PollEvents();
+    }
 
 }
