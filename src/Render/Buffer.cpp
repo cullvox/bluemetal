@@ -1,10 +1,13 @@
 #include "Buffer.hpp"
 
-CBuffer::CBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, CRenderDevice* const pRenderDevice)
-    : m_pRenderDevice(pRenderDevice)
+namespace bl
 {
 
-    const uint32_t graphicsFamilyIndex = m_pRenderDevice->GetGraphicsFamilyIndex();
+Buffer::Buffer(RenderDevice& renderDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties)
+    : m_renderDevice(renderDevice)
+{
+
+    const uint32_t graphicsFamilyIndex = m_renderDevice.getGraphicsFamilyIndex();
     const VkBufferCreateInfo bufferCreateInfo{
         .sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO,
         .pNext = nullptr,
@@ -27,8 +30,10 @@ CBuffer::CBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFl
         .priority = 0.0f,
     };
 
-    if (vmaCreateBuffer(m_pRenderDevice->GetAllocator(), &bufferCreateInfo, &allocationCreateInfo, &m_buffer, &m_allocation, nullptr) != VK_SUCCESS)
+    if (vmaCreateBuffer(m_renderDevice.getAllocator(), &bufferCreateInfo, &allocationCreateInfo, &m_buffer, &m_allocation, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a vulkan buffer!");
     }
 }
+
+} /* namespace bl */

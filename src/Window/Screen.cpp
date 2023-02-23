@@ -55,7 +55,9 @@ std::vector<Screen> Screen::getScreens()
         {
             const GLFWvidmode* pVideoMode = &pVideoModes[j];
             const VideoMode videoMode{
-                Extent2D{(unsigned int)pVideoMode->width, (unsigned int)pVideoMode->height},
+                Extent2D{
+                    (unsigned int)pVideoMode->width, 
+                    (unsigned int)pVideoMode->height},
                 (unsigned int)pVideoMode->redBits,
                 (unsigned int)pVideoMode->refreshRate,
             };

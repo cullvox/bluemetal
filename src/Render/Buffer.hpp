@@ -7,19 +7,24 @@
 #include "Render/RenderDevice.hpp"
 //===========================//
 
-class CBuffer
+namespace bl
+{
+
+class Buffer
 {
 public:
-    CBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, CRenderDevice* const pRenderDevice = g_pRenderDevice.get());
-    ~CBuffer();
+    Buffer(RenderDevice& renderDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties);
+    ~Buffer();
 
     void            Upload(size_t dataSize, const uint8_t* pData);
     VmaAllocation   GetAllocation() const noexcept;
     VkBuffer        GetBuffer() const noexcept;
     VkDeviceSize    GetSize() const noexcept;
 private:
-    RenderDevice& const     m_pRenderDevice;
-    VmaAllocation           m_allocation;
-    VkBuffer                m_buffer;
-    VkDeviceSize            m_size;
+    RenderDevice&   m_renderDevice;
+    VmaAllocation   m_allocation;
+    VkBuffer        m_buffer;
+    VkDeviceSize    m_size;
 };
+
+} /* namespace bl */

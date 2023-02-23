@@ -19,12 +19,13 @@ set(sources
     "src/config/ConfigParser.cpp"
     "src/config/Config.cpp"
 
+    "src/Window/GLFW.cpp"
     "src/Window/VideoMode.cpp"
     "src/Window/Screen.cpp"
     "src/Window/Window.cpp"
     
-
     "src/Render/RenderDevice.cpp"
+    "src/Render/Swapchain.cpp"
     "src/Render/Buffer.cpp"
     "src/Main.cpp")
 

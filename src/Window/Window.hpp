@@ -1,12 +1,12 @@
 #pragma once
 
+#include "Math/Vector2.hpp"
 #include "Window/VideoMode.hpp"
+#include "Window/Screen.hpp"
 #include "core/Version.hpp"
 
-
-#include <glm/vec2.hpp>
-
 #define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
 #include <vulkan/vulkan.h>
@@ -24,16 +24,19 @@ public:
     Window(VideoMode videoMode, std::string title = "Window");
     ~Window();
 
-    void create(VideoMode videoMode = VideoMode::getDesktopMode(), std::string title = "Window");
-    
-    glm::ivec2 getExtent() noexcept;
-    bool createVulkanSurface(VkInstance& instance, VkSurfaceKHR& surface) noexcept;
+    void create(VideoMode videoMode, std::string title = "Window");
+    Extent2D getExtent() const noexcept;
+    bool createVulkanSurface(VkInstance instance, VkSurfaceKHR& surface) noexcept;
 
 private:
-    static GLFWwindow* m_pWindow;
+    GLFWwindow* m_pWindow;
+
+//==== Static ====//
+public: 
+    static const std::vector<const char*>& getSurfaceExtensions();
 
 };
 
-inline Window g_window{VideoMode::getDesktopMode(), applicationName};
+inline Window g_window{Screen::getScreen(0).getDesktopMode(), applicationName};
 
 }; /* namespace bl */

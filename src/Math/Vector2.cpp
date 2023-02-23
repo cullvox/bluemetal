@@ -139,7 +139,7 @@ Vector2f& Vector2f::operator/(const Vector2f& rhs) noexcept
 
 int Vector2f::magnitude() const noexcept
 {
-
+    
 }
 
 int Vector2f::distance(const Vector2f& other) const noexcept
@@ -149,7 +149,6 @@ int Vector2f::distance(const Vector2f& other) const noexcept
 
 Vector2f Vector2f::cross(const Vector2f& other) const noexcept
 {
-
 }
 
 } /* namespace bl */

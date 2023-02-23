@@ -10,71 +10,68 @@
 #include "vk_mem_alloc.h"
 //===========================//
 #include "core/Version.hpp"
-#include "RenderDevice.hpp"
+#include "Render/RenderDevice.hpp"
 //===========================//
 
-CRenderDevice::CRenderDevice(
-    IWindowPlatform*    pWindowPlatform, 
-    IWindow*            pWindow, 
-    CConfig*            pConfig)
-    : m_pWindowPlatform(pWindowPlatform)
-    , m_pWindow(pWindow)
-    , m_pConfig(pConfig)
+namespace bl {
+
+RenderDevice::RenderDevice(Window& window)
+    : m_window(window)
 {
-    CreateInstance();
-    ChoosePhysicalDevice();
-    CreateDevice();
-    CreateAllocator();
+    createInstance();
+    choosePhysicalDevice();
+    createDevice();
+    createAllocator();
 }
 
-CRenderDevice::~CRenderDevice()
+RenderDevice::~RenderDevice()
 {
     vmaDestroyAllocator(m_allocator);
     vkDestroyDevice(m_device, nullptr);
     vkDestroyInstance(m_instance, nullptr);
 }
 
-VkInstance CRenderDevice::GetInstance() const noexcept
+VkInstance RenderDevice::getInstance() const noexcept
 {
     return m_instance;
 }
 
-VkPhysicalDevice CRenderDevice::GetPhysicalDevice() const noexcept
+VkPhysicalDevice RenderDevice::getPhysicalDevice() const noexcept
 {
     return m_physicalDevice;
 }
 
-uint32_t CRenderDevice::GetGraphicsFamilyIndex() const noexcept
+uint32_t RenderDevice::getGraphicsFamilyIndex() const noexcept
 {
     return m_graphicsFamilyIndex;
 }
 
-uint32_t CRenderDevice::GetPresentFamilyIndex() const noexcept
+uint32_t RenderDevice::getPresentFamilyIndex() const noexcept
 {
     return m_presentFamilyIndex;
 }
 
-VkDevice CRenderDevice::GetDevice() const noexcept
+VkDevice RenderDevice::getDevice() const noexcept
 {
     return m_device;
 }
 
-VkQueue CRenderDevice::GetGraphicsQueue() const noexcept
+VkQueue RenderDevice::getGraphicsQueue() const noexcept
 {
     return m_graphicsQueue;
 }
 
-VkQueue CRenderDevice::GetPresentQueue() const noexcept
+VkQueue RenderDevice::getPresentQueue() const noexcept
 {
     return m_presentQueue;
 }
 
-VmaAllocator CRenderDevice::GetAllocator() const noexcept
+VmaAllocator RenderDevice::getAllocator() const noexcept
 {
     return m_allocator;
 }
 
-std::vector<const char*> CRenderDevice::GetValidationLayers() const
+std::vector<const char*> RenderDevice::getValidationLayers() const
 {
     static const std::vector<const char*> requiredLayers = {
         "VK_LAYER_KHRONOS_validation",  
@@ -120,18 +117,18 @@ std::vector<const char*> CRenderDevice::GetValidationLayers() const
     return requiredLayers;
 }
 
-std::vector<const char*> CRenderDevice::GetInstanceExtensions() const
+std::vector<const char*> RenderDevice::getInstanceExtensions() const
 {
 
     /* Get our engines required extensions. */
-    const std::vector<const char*> requiredExtensions = {
+    std::vector<const char*> requiredExtensions = {
 #ifndef NDEBUG
         VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 #endif
     };
 
     /* The surface extensions are required too. */
-    const std::vector<const char*>& surfaceExtensions = m_pWindowPlatform->GetRequiredInstanceExtensions();
+    const std::vector<const char*>& surfaceExtensions = Window::getSurfaceExtensions();
     requiredExtensions.insert(requiredExtensions.end(), surfaceExtensions.begin(), surfaceExtensions.end());
 
     /* Get all the current vulkan instance extensions. */
@@ -169,7 +166,7 @@ std::vector<const char*> CRenderDevice::GetInstanceExtensions() const
     return requiredExtensions;
 }
 
-void CRenderDevice::CreateInstance()
+void RenderDevice::createInstance()
 {
     spdlog::log(spdlog::level::info, "Creating the vulkan instance.");
 
@@ -186,7 +183,7 @@ void CRenderDevice::CreateInstance()
             VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
-        .pfnUserCallback = DebugCallback,
+        .pfnUserCallback = debugCallback,
         .pUserData = nullptr,
         
     };
@@ -201,8 +198,8 @@ void CRenderDevice::CreateInstance()
         .apiVersion         = VK_API_VERSION_1_2,
     };
 
-    std::vector<const char*> instanceExtensions = GetInstanceExtensions();
-    std::vector<const char*> validationLayers   = GetValidationLayers();
+    std::vector<const char*> instanceExtensions = getInstanceExtensions();
+    std::vector<const char*> validationLayers   = getValidationLayers();
 
     const VkInstanceCreateInfo createInfo{
         .sType                      = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -221,7 +218,7 @@ void CRenderDevice::CreateInstance()
     }
 }
 
-void CRenderDevice::ChoosePhysicalDevice()
+void RenderDevice::choosePhysicalDevice()
 {
     /* Find the physical devices. */
     uint32_t physicalDevicesCount;
@@ -239,8 +236,8 @@ void CRenderDevice::ChoosePhysicalDevice()
     }
 
     /* Determine if we are going to use */
-    const int physicalDeviceIndex = m_pConfig->GetIntOrSetDefault("renderer.vulkan.physicalDevice", 0);
-    m_physicalDevice = physicalDevices[physicalDeviceIndex];
+    //const int physicalDeviceIndex = m_pConfig->GetIntOrSetDefault("renderer.vulkan.physicalDevice", 0);
+    m_physicalDevice = physicalDevices[0]; /* TODO: Add a config of some kind for selecting physical devices. */
 
     VkPhysicalDeviceProperties physicalDeviceProperties{};
     vkGetPhysicalDeviceProperties(m_physicalDevice, &physicalDeviceProperties);
@@ -248,7 +245,7 @@ void CRenderDevice::ChoosePhysicalDevice()
     spdlog::log(spdlog::level::info, "Using vulkan physical device: {}", physicalDeviceProperties.deviceName);
 }
 
-std::vector<const char*> CRenderDevice::GetDeviceExtensions() const
+std::vector<const char*> RenderDevice::getDeviceExtensions() const
 {
 
     std::vector<const char*> requiredExtensions{
@@ -285,7 +282,7 @@ std::vector<const char*> CRenderDevice::GetDeviceExtensions() const
     return requiredExtensions;
 }
 
-void CRenderDevice::CreateDevice()
+void RenderDevice::createDevice()
 {
     spdlog::log(spdlog::level::info, "Creating the vulkan device.");
 
@@ -300,7 +297,11 @@ void CRenderDevice::CreateDevice()
 
     /* Create a temporary surface for device creation. 
         A CSwapchain will be created later to complete the actual surface. */
-    VkSurfaceKHR temporarySurface = m_pWindow->CreateSurface(m_instance);
+    VkSurfaceKHR temporarySurface;
+    if (not m_window.createVulkanSurface(m_instance, temporarySurface))
+    {
+        throw std::runtime_error("Could not create the temporary vulkan surface for device creation!");
+    }
 
     /* Determine a queue for a graphics rendering. */
     uint32_t queueFamilyIndex = 0;
@@ -345,8 +346,8 @@ void CRenderDevice::CreateDevice()
         }
     };
 
-    const std::vector<const char*> validationLayers = GetValidationLayers();
-    const std::vector<const char*> deviceExtensions = GetDeviceExtensions();
+    const std::vector<const char*> validationLayers = getValidationLayers();
+    const std::vector<const char*> deviceExtensions = getDeviceExtensions();
 
     const VkPhysicalDeviceFeatures features{};
 
@@ -372,7 +373,7 @@ void CRenderDevice::CreateDevice()
     vkGetDeviceQueue(m_device, m_presentFamilyIndex, 0, &m_presentQueue);
 }
 
-void CRenderDevice::CreateAllocator()
+void RenderDevice::createAllocator()
 {
     const VmaAllocatorCreateInfo createInfo{
         .flags = 0,
@@ -393,7 +394,7 @@ void CRenderDevice::CreateAllocator()
     }
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL CRenderDevice::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+VKAPI_ATTR VkBool32 VKAPI_CALL RenderDevice::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
     if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     {
@@ -410,3 +411,5 @@ VKAPI_ATTR VkBool32 VKAPI_CALL CRenderDevice::DebugCallback(VkDebugUtilsMessageS
 
     return false;
 }
+
+} /* namespace bl */

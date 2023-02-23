@@ -13,27 +13,27 @@ namespace bl
 class RenderDevice
 {
 public:
-    RenderDevice(Window& initialWindow);
+    RenderDevice(Window& window);
     ~RenderDevice();
 
-    VkInstance          GetInstance() const noexcept;
-    VkPhysicalDevice    GetPhysicalDevice() const noexcept;
-    uint32_t            GetGraphicsFamilyIndex() const noexcept;
-    uint32_t            GetPresentFamilyIndex() const noexcept;
-    VkDevice            GetDevice() const noexcept;
-    VkQueue             GetGraphicsQueue() const noexcept;
-    VkQueue             GetPresentQueue() const noexcept;
-    VmaAllocator        GetAllocator() const noexcept;
-    inline bool         AreQueuesSame() const noexcept { return m_graphicsFamilyIndex == m_presentFamilyIndex; }
+    VkInstance          getInstance() const noexcept;
+    VkPhysicalDevice    getPhysicalDevice() const noexcept;
+    uint32_t            getGraphicsFamilyIndex() const noexcept;
+    uint32_t            getPresentFamilyIndex() const noexcept;
+    VkDevice            getDevice() const noexcept;
+    VkQueue             getGraphicsQueue() const noexcept;
+    VkQueue             getPresentQueue() const noexcept;
+    VmaAllocator        getAllocator() const noexcept;
+    inline bool         areQueuesSame() const noexcept { return m_graphicsFamilyIndex == m_presentFamilyIndex; }
 private:
-    std::vector<const char*> GetValidationLayers() const;
-    std::vector<const char*> GetInstanceExtensions() const;
-    void                CreateInstance();
-    void                ChoosePhysicalDevice();
-    std::vector<const char*> GetDeviceExtensions() const;
-    void                CreateDevice();
-    void                CreateAllocator();
-    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT,VkDebugUtilsMessageTypeFlagsEXT,const VkDebugUtilsMessengerCallbackDataEXT*,void*);
+    std::vector<const char*> getValidationLayers() const;
+    std::vector<const char*> getInstanceExtensions() const;
+    void                createInstance();
+    void                choosePhysicalDevice();
+    std::vector<const char*> getDeviceExtensions() const;
+    void                createDevice();
+    void                createAllocator();
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT,VkDebugUtilsMessageTypeFlagsEXT,const VkDebugUtilsMessengerCallbackDataEXT*,void*);
     
     Window&             m_window;
     VkInstance          m_instance;
@@ -45,5 +45,3 @@ private:
 };
 
 } /* namespace bl */
-
-inline RenderDevice g_renderDevice{g_window};

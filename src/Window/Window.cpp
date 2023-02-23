@@ -5,9 +5,18 @@
 
 namespace bl {
 
-Window::Window(VideoMode videoMode, const std::string& title)
+Window::Window(VideoMode videoMode, std::string title)
 {
+    create(videoMode, title);
+}
 
+Window::~Window()
+{
+    if (m_pWindow) glfwDestroyWindow(m_pWindow);
+}
+
+void Window::create(VideoMode videoMode, std::string title)
+{
     std::string windowName = (title == applicationName) ? "window" : "window-" + title; 
 
     /* Apply the window hints for vulkan. */
@@ -20,31 +29,28 @@ Window::Window(VideoMode videoMode, const std::string& title)
     }
 
     glfwMakeContextCurrent(m_pWindow);
-    glfwShowWindow(m_pWindow);
 }
 
-Window::~Window()
+bool Window::createVulkanSurface(VkInstance instance, VkSurfaceKHR& surface) noexcept
 {
-    glfwDestroyWindow(m_pWindow);
+    return glfwCreateWindowSurface(instance, m_pWindow, nullptr, &surface) == VK_SUCCESS;
 }
 
-VkSurfaceKHR Window::CreateSurface(VkInstance instance)
-{
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
-
-    if (glfwCreateWindowSurface(instance, m_pWindow, nullptr, &surface) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not create a vulkan surface!");
-    }
-
-    return surface;
-}
-
-Extent2D Window::GetExtent() const noexcept
+Extent2D Window::getExtent() const noexcept
 {
     int width = 0, height = 0;
     glfwGetWindowSize(m_pWindow, &width, &height);
-    return VkExtent2D{(uint32_t)width, (uint32_t)height};
+    return Extent2D{(uint32_t)width, (uint32_t)height};
+}
+
+const std::vector<const char*>& Window::getSurfaceExtensions()
+{
+    uint32_t extensionsCount = 0;
+    const char** ppExtensions = glfwGetRequiredInstanceExtensions(&extensionsCount);
+
+    static std::vector<const char*> instanceExtensions{ppExtensions, ppExtensions + extensionsCount};
+    
+    return instanceExtensions;
 }
 
 } /* namespace bl; */
