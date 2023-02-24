@@ -72,7 +72,30 @@ void Swapchain::findSurfaceFormat()
     m_surfaceFormat = surfaceFormats.front();
 }
 
+void Swapchain::findPresentMode()
+{
 
+    /* Obtain the present modes from the physical device. */
+    uint32_t presentModesCount = 0;
+    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &presentModesCount, nullptr) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get the vulkan physical device surface formats!");
+    }
+
+    std::vector<VkPresentModeKHR> presentModes{};
+    presentModes.resize(presentModesCount);
+
+    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &presentModesCount, presentModes.data()) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get the vulkan physical device surface formats!");
+    }
+
+    /* Find if we have the requested present mode. */
+    auto foundMode = std::find(presentModes.begin(), presentModes.end(), DEFAULT_PRESENT_MODE);
+    if (foundMode == presentModes.end()) m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    else m_presentMode = DEFAULT_PRESENT_MODE;
+
+}
 
 void Swapchain::recreateSwapchain()
 {

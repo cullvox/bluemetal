@@ -17,9 +17,8 @@ public:
     Vector2i& operator*(const Vector2i& rhs) noexcept;
     Vector2i& operator/(const Vector2i& rhs) noexcept;
 
-    int         magnitude() const noexcept;
-    int         distance(const Vector2i& other) const noexcept;
-    Vector2i    cross(const Vector2i& other) const noexcept;
+    int magnitude() const noexcept;
+    int distance(const Vector2i& other) const noexcept;
 
     long x;
     long y;
@@ -31,17 +30,15 @@ public:
     Vector2f() noexcept;
     Vector2f(float x, float z) noexcept;
     Vector2f(float xy) noexcept;
-    Vector2f(const Vector2i& rhs) noexcept;
 
-    Vector2f& operator=(const Vector2f& rhs) const noexcept;
-    Vector2f& operator+(const Vector2f& rhs) const noexcept;
-    Vector2f& operator-(const Vector2f& rhs) const noexcept;
-    Vector2f& operator*(const Vector2f& rhs) const noexcept;
-    Vector2f& operator/(const Vector2f& rhs) const noexcept;
+    Vector2f& operator=(const Vector2f& rhs) noexcept;
+    Vector2f& operator+(const Vector2f& rhs) noexcept;
+    Vector2f& operator-(const Vector2f& rhs) noexcept;
+    Vector2f& operator*(const Vector2f& rhs) noexcept;
+    Vector2f& operator/(const Vector2f& rhs) noexcept;
 
     float magnitude() const noexcept;
-    float distance(const Vector2i& other) const noexcept;
-    Vector2i cross(const Vector2i& other) const noexcept;
+    float distance(const Vector2f& other) const noexcept;
 
     float x;
     float y;
@@ -52,7 +49,7 @@ class Extent2D
 public:
     Extent2D();
     Extent2D(unsigned long width, unsigned long height);
-    Extent2D(unsigned long wh);
+    Extent2D(unsigned long widthHeight);
 
     unsigned long width;
     unsigned long height;

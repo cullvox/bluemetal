@@ -14,6 +14,8 @@ add_subdirectory("lib")
 set(sources
     "src/core/Debug.cpp"
 
+    "src/Math/Vector2.cpp"
+
     "src/config/ConfigToken.cpp"
     "src/config/ConfigLexer.cpp"
     "src/config/ConfigParser.cpp"

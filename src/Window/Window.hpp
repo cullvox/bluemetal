@@ -17,6 +17,13 @@
 namespace bl
 {
 
+enum class Style
+{
+    eFullscreen,
+    eWindowed,
+    eFullscreenWindowed
+};
+
 class Window
 {
 public:

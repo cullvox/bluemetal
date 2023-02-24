@@ -1,4 +1,5 @@
 #include "Window/Window.hpp"
+#include "GLFW/glfw3.h"
 
 #include <stdexcept>
 
@@ -17,7 +18,6 @@ Window::~Window()
 
 void Window::create(VideoMode videoMode, std::string title)
 {
-    std::string windowName = (title == applicationName) ? "window" : "window-" + title; 
 
     /* Apply the window hints for vulkan. */
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -40,7 +40,7 @@ Extent2D Window::getExtent() const noexcept
 {
     int width = 0, height = 0;
     glfwGetWindowSize(m_pWindow, &width, &height);
-    return Extent2D{(uint32_t)width, (uint32_t)height};
+    return Extent2D{(unsigned long)width, (unsigned long)height};
 }
 
 const std::vector<const char*>& Window::getSurfaceExtensions()

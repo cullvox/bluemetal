@@ -1,4 +1,5 @@
 #include "Math/Vector2.hpp"
+#include <cmath>
 
 namespace bl
 {
@@ -65,17 +66,14 @@ Vector2i& Vector2i::operator/(const Vector2i& rhs) noexcept
 
 int Vector2i::magnitude() const noexcept
 {
-
+    return std::sqrt(x*x + y*y);
 }
 
 int Vector2i::distance(const Vector2i& other) const noexcept
 {
-
-}
-
-Vector2i Vector2i::cross(const Vector2i& other) const noexcept
-{
-
+    const int xm = (other.x - x);
+    const int ym = (other.y - y);
+    return std::sqrt(xm*xm + ym*ym);
 }
 
 //===========================//
@@ -94,11 +92,6 @@ Vector2f::Vector2f(float x, float y) noexcept
 
 Vector2f::Vector2f(float xy) noexcept
     : x(xy), y(xy)
-{
-}
-
-Vector2f::Vector2f(const Vector2f& rhs) noexcept
-    : x(rhs.x), y(rhs.y)
 {
 }
 
@@ -137,17 +130,34 @@ Vector2f& Vector2f::operator/(const Vector2f& rhs) noexcept
     return *this;
 }
 
-int Vector2f::magnitude() const noexcept
+float Vector2f::magnitude() const noexcept
 {
-    
+    return std::sqrt(x*x + y*y);
 }
 
-int Vector2f::distance(const Vector2f& other) const noexcept
+float Vector2f::distance(const Vector2f& other) const noexcept
 {
-
+    const float xm = (other.x - x);
+    const float ym = (other.y - y);
+    return std::sqrt(xm*xm + ym*ym);
 }
 
-Vector2f Vector2f::cross(const Vector2f& other) const noexcept
+//===========================//
+/* Extent2D */
+//===========================//
+
+Extent2D::Extent2D()
+    : width(0), height(0)
+{
+}
+
+Extent2D::Extent2D(unsigned long width, unsigned long height)
+    : width(width), height(height)
+{
+}
+
+Extent2D::Extent2D(unsigned long widthHeight)
+    : width(widthHeight), height(widthHeight)
 {
 }
 
