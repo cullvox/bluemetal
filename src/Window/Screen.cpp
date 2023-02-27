@@ -14,14 +14,20 @@ Screen::~Screen()
 {
 }
 
-const std::vector<VideoMode>& Screen::getVideoModes()
+const std::vector<VideoMode>& Screen::getVideoModes() const
 {
     return m_videoModes;
 }
 
-VideoMode Screen::getDesktopMode()
+VideoMode Screen::getDesktopMode() const
 {
     return m_desktopMode;
+}
+
+
+GLFWmonitor* Screen::getHandle() const noexcept
+{
+    return m_pMonitor;
 }
 
 Screen Screen::getScreen(unsigned int index)

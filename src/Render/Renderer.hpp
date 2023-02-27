@@ -1,19 +1,21 @@
 #pragma once
 
-#include "RenderDevice.hpp"
+#include "Render/RenderDevice.hpp"
+#include "Render/Swapchain.hpp"
 
 namespace bl {
 
 class Renderer
 {
 public:
-    Renderer(RenderDevice& renderDevice);
+    Renderer(RenderDevice& renderDevice, Swapchain& swapchain);
     ~Renderer();
 
     void renderFrame();
     void presentFrame();    
 private:
     RenderDevice& m_renderDevice;
+    Swapchain& m_swapchain;
     VkRenderPass m_pass;
 };
 

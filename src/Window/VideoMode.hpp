@@ -3,8 +3,12 @@
 #include "Math/Vector2.hpp"
 
 #include <vector>
+#include <optional>
+#include <functional>
 
 namespace bl {
+
+class Screen;
 
 class VideoMode {
 public:
@@ -15,6 +19,7 @@ public:
     Extent2D resolution;
     unsigned int bitsPerPixel;
     unsigned int refreshRate;
+    std::optional<std::reference_wrapper<Screen>> screen;
 };
 
 };

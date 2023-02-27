@@ -242,20 +242,21 @@ void RenderDevice::choosePhysicalDevice()
     VkPhysicalDeviceProperties physicalDeviceProperties{};
     vkGetPhysicalDeviceProperties(m_physicalDevice, &physicalDeviceProperties);
 
-    spdlog::log(spdlog::level::info, "Using vulkan physical device: {}", physicalDeviceProperties.deviceName);
+    spdlog::info("Using vulkan physical device: {}", physicalDeviceProperties.deviceName);
 }
 
 std::vector<const char*> RenderDevice::getDeviceExtensions() const
 {
 
     std::vector<const char*> requiredExtensions{
+        VK_KHR_SWAPCHAIN_EXTENSION_NAME
     };
 
     /* Find the device extensions. */
     uint32_t deviceExtensionsCount = 0;
     if (vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &deviceExtensionsCount, nullptr) != VK_SUCCESS)
     {
-        spdlog::log(spdlog::level::err, "Could not enumerate vulkan device extensions!");
+        spdlog::error("Could not enumerate vulkan device extensions!");
         return {};
     }
 
@@ -274,7 +275,7 @@ std::vector<const char*> RenderDevice::getDeviceExtensions() const
         [pName](const VkExtensionProperties& properties){
                 return std::strcmp(pName, properties.extensionName) == 0; }) == extensionProperties.end())
         {
-            spdlog::log(spdlog::level::err, "Could not find required instance extension: {}", pName);
+            spdlog::error("Could not find required instance extension: {}", pName);
             return {};
         }
     }
@@ -398,15 +399,15 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderDevice::debugCallback(VkDebugUtilsMessageSe
 {
     if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     {
-        spdlog::log(spdlog::level::err, "{}", pCallbackData->pMessage);
+        spdlog::error("{}", pCallbackData->pMessage);
     }
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
-        spdlog::log(spdlog::level::warn, "{}", pCallbackData->pMessage);
+        spdlog::warn("{}", pCallbackData->pMessage);
     }
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
     {
-        spdlog::log(spdlog::level::info, "{}", pCallbackData->pMessage);
+        spdlog::info("{}", pCallbackData->pMessage);
     }
 
     return false;

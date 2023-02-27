@@ -1,5 +1,6 @@
-#include <spdlog/spdlog.h>
 #include "ConfigParser.hpp"
+
+#include <spdlog/spdlog.h>
 
 CParser::CParser(const std::string& content) noexcept
     : m_lexer(content), m_token()

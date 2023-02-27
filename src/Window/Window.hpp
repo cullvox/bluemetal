@@ -28,10 +28,10 @@ class Window
 {
 public:
     Window();
-    Window(VideoMode videoMode, std::string title = "Window");
+    Window(VideoMode videoMode, std::optional<Screen> screen, std::string title = "Window");
     ~Window();
 
-    void create(VideoMode videoMode, std::string title = "Window");
+    void create(VideoMode videoMode, std::optional<Screen> screen, std::string title = "Window");
     Extent2D getExtent() const noexcept;
     bool createVulkanSurface(VkInstance instance, VkSurfaceKHR& surface) noexcept;
 
@@ -41,9 +41,6 @@ private:
 //==== Static ====//
 public: 
     static const std::vector<const char*>& getSurfaceExtensions();
-
 };
-
-inline Window g_window{Screen::getScreen(0).getDesktopMode(), applicationName};
 
 }; /* namespace bl */

@@ -15,8 +15,9 @@ class Screen {
 public:
     ~Screen();
 
-    const std::vector<VideoMode>& getVideoModes();
-    VideoMode getDesktopMode();
+    const std::vector<VideoMode>& getVideoModes() const;
+    VideoMode getDesktopMode() const;
+    GLFWmonitor* getHandle() const noexcept;
 
     unsigned int screen;
     std::string name;

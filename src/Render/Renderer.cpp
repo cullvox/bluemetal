@@ -1,9 +1,14 @@
-//===========================//
-#include "Renderer.hpp"
-//===========================//
+#include "Render/Renderer.hpp"
 
-CRenderer::CRenderer(CConfig* pConfig, CRenderDevice* pRenderDevice)
-    : m_pRenderDevice(pRenderDevice), m_pConfig(pConfig) 
+namespace bl {
+
+Renderer::Renderer(RenderDevice& renderDevice, Swapchain& swapchain)
+    : m_renderDevice(renderDevice), m_swapchain(swapchain) 
 {
-    
 }
+
+Renderer::~Renderer()
+{
+}
+
+} /* namespace bl */

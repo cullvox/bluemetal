@@ -31,6 +31,8 @@ private:
     VkSurfaceFormatKHR  m_surfaceFormat;
     VkPresentModeKHR    m_presentMode;
     VkSwapchainKHR      m_swapchain;
+    std::vector<VkImage> m_swapImages;
+    std::vector<VkCommandBuffer> m_swapBuffers;
 };
 
 } /* namespace bl */

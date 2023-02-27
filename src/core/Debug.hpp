@@ -3,6 +3,7 @@
 #include <source_location>
 
 #include <spdlog/spdlog.h>
+#include <spdlog/fmt/fmt.h>
     
 class Debug
 {
@@ -31,7 +32,7 @@ private:
         const std::string path = loc.file_name();
         const std::string filename = path.substr(path.find_last_of("/\\") + 1);
 
-        fmt::print("{}:{}: ", filename, loc.line());
+        spdlog::log(spdlog::level::debug, "{}:{}: ", filename, loc.line());
         fmt::vprint(format.str, args);
     }
 };

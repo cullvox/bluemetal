@@ -28,21 +28,19 @@ set(sources
     
     "src/Render/RenderDevice.cpp"
     "src/Render/Swapchain.cpp"
+    "src/Render/Renderer.cpp"
     "src/Render/Buffer.cpp"
     "src/Main.cpp")
 
 add_executable(DarkRed ${sources})
 set_property(TARGET DarkRed PROPERTY CXX_STANDARD 20)
-# Add -O0 to remove optimizations when using gcc
-IF(CMAKE_COMPILER_IS_GNUCC)
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0")
-ENDIF(CMAKE_COMPILER_IS_GNUCC)
 
 target_include_directories(DarkRed PUBLIC "src")
 
+target_compile_definitions(DarkRed PUBLIC SPDLOG_FMT_EXTERNAL) # Use an external version of FMT
+
 # Link
-target_link_libraries(DarkRed spdlog glfw glm)
+target_link_libraries(DarkRed fmt spdlog glfw)
 
 # Include vulkan headers
 find_package(Vulkan REQUIRED)

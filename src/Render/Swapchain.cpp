@@ -11,11 +11,17 @@
 namespace bl {
 
 Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
-    : m_window(window), m_renderDevice(renderDevice)
+    : m_window(window)
+    , m_renderDevice(renderDevice)
+    , m_surface(VK_NULL_HANDLE)
+    , m_imageCount(0)
+    , m_surfaceFormat({})
+    , m_presentMode(VK_PRESENT_MODE_FIFO_KHR)
+    , m_swapchain(VK_NULL_HANDLE)
 {
-    ensureSurfaceSupported();
-
     m_window.createVulkanSurface(m_renderDevice.getInstance(), m_surface);
+    ensureSurfaceSupported();
+    recreateSwapchain();
 }
 
 Swapchain::~Swapchain()
@@ -111,8 +117,7 @@ void Swapchain::recreateSwapchain()
         m_renderDevice.getPresentFamilyIndex() 
     };
 
-    const Extent2D windowExtent = m_window.getExtent();
-
+    const Extent2D extent = m_window.getExtent();
     const VkSwapchainCreateInfoKHR createInfo = {
         .sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR,
         .pNext = nullptr,
@@ -121,7 +126,7 @@ void Swapchain::recreateSwapchain()
         .minImageCount = m_imageCount,
         .imageFormat = m_surfaceFormat.format,
         .imageColorSpace = m_surfaceFormat.colorSpace,
-        .imageExtent = VkExtent2D{(unsigned int)windowExtent.width, (unsigned int)windowExtent.height},
+        .imageExtent = VkExtent2D{(unsigned int)extent.width, (unsigned int)extent.height},
         .imageArrayLayers = 1,
         .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
         .imageSharingMode = m_renderDevice.areQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
