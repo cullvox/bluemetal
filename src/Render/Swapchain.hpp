@@ -22,6 +22,9 @@ private:
     void getImageCount();
     void findSurfaceFormat();
     void findPresentMode();
+    void getImages();
+    void createBuffers();
+    void destroySwapchain();
     void recreateSwapchain();
 
     RenderDevice&       m_renderDevice;

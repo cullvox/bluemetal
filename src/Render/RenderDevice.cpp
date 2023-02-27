@@ -18,15 +18,20 @@ namespace bl {
 RenderDevice::RenderDevice(Window& window)
     : m_window(window)
 {
+    spdlog::info("Creating vulkan render device.");
     createInstance();
     choosePhysicalDevice();
     createDevice();
+    createCommandPool();
     createAllocator();
 }
 
 RenderDevice::~RenderDevice()
 {
+    spdlog::info("Destroying vulkan render device.");
+
     vmaDestroyAllocator(m_allocator);
+    vkDestroyCommandPool(m_device, m_commandPool, nullptr);
     vkDestroyDevice(m_device, nullptr);
     vkDestroyInstance(m_instance, nullptr);
 }
@@ -64,6 +69,11 @@ VkQueue RenderDevice::getGraphicsQueue() const noexcept
 VkQueue RenderDevice::getPresentQueue() const noexcept
 {
     return m_presentQueue;
+}
+
+VkCommandPool RenderDevice::getCommandPool() const noexcept
+{
+    return m_commandPool;
 }
 
 VmaAllocator RenderDevice::getAllocator() const noexcept
@@ -372,6 +382,21 @@ void RenderDevice::createDevice()
 
     vkGetDeviceQueue(m_device, m_graphicsFamilyIndex, 0, &m_graphicsQueue);
     vkGetDeviceQueue(m_device, m_presentFamilyIndex, 0, &m_presentQueue);
+}
+
+void RenderDevice::createCommandPool()
+{
+    const VkCommandPoolCreateInfo createInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        .queueFamilyIndex = m_graphicsFamilyIndex
+    };
+
+    if (vkCreateCommandPool(m_device, &createInfo, nullptr, &m_commandPool) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not create a vulkan command pool!");
+    }
 }
 
 void RenderDevice::createAllocator()

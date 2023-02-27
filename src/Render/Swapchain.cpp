@@ -2,7 +2,10 @@
 #include <algorithm>
 #include <cstdint>
 #include <stdexcept>
+//===========================//
 #include <vulkan/vulkan_core.h>
+//===========================//
+#include <spdlog/spdlog.h>
 //===========================//
 #include "config/Config.hpp"
 #include "Swapchain.hpp"
@@ -19,6 +22,8 @@ Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
     , m_presentMode(VK_PRESENT_MODE_FIFO_KHR)
     , m_swapchain(VK_NULL_HANDLE)
 {
+    spdlog::info("Creating vulkan swapchain.");
+    
     m_window.createVulkanSurface(m_renderDevice.getInstance(), m_surface);
     ensureSurfaceSupported();
     recreateSwapchain();
@@ -26,7 +31,8 @@ Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
 
 Swapchain::~Swapchain()
 {
-    vkDestroySwapchainKHR(m_renderDevice.getDevice(), m_swapchain, nullptr);
+    spdlog::info("Destroying vulkan swapchain.");
+    destroySwapchain();
     vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
 }
 
@@ -103,9 +109,51 @@ void Swapchain::findPresentMode()
 
 }
 
+void Swapchain::getImages()
+{
+    if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, nullptr) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get the vulkan swapchain images count!");
+    }
+
+    m_swapImages.resize(m_imageCount);
+
+    if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, m_swapImages.data()) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get the vulkan swapchain images!");
+    }
+}
+
+void Swapchain::createBuffers()
+{
+    const VkCommandBufferAllocateInfo allocateInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .pNext = nullptr,
+        .commandPool = m_renderDevice.getCommandPool(),
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = m_imageCount
+    };
+
+    m_swapBuffers.resize(m_imageCount);
+
+    if (vkAllocateCommandBuffers(m_renderDevice.getDevice(), &allocateInfo, m_swapBuffers.data()) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not allocate vulkan swapchain command buffers!");
+    }
+}
+
+void Swapchain::destroySwapchain()
+{
+    vkDestroySwapchainKHR(m_renderDevice.getDevice(), m_swapchain, nullptr);
+    vkFreeCommandBuffers(m_renderDevice.getDevice(), m_renderDevice.getCommandPool(), m_imageCount, m_swapBuffers.data());
+}
+
 void Swapchain::recreateSwapchain()
 {
-    if (m_swapchain != VK_NULL_HANDLE) vkDestroySwapchainKHR(m_renderDevice.getDevice(), m_swapchain, nullptr);
+    if (!m_swapchain)
+    {
+        destroySwapchain();
+    }
 
     getImageCount();
     findSurfaceFormat();
@@ -143,6 +191,9 @@ void Swapchain::recreateSwapchain()
     {
         throw std::runtime_error("Couldn't create a vulkan swapchain!");
     }
+
+    getImages();
+    createBuffers();
 }
 
 } /* namespace bl*/

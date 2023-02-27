@@ -23,16 +23,18 @@ public:
     VkDevice            getDevice() const noexcept;
     VkQueue             getGraphicsQueue() const noexcept;
     VkQueue             getPresentQueue() const noexcept;
+    VkCommandPool       getCommandPool() const noexcept;
     VmaAllocator        getAllocator() const noexcept;
     inline bool         areQueuesSame() const noexcept { return m_graphicsFamilyIndex == m_presentFamilyIndex; }
 private:
     std::vector<const char*> getValidationLayers() const;
     std::vector<const char*> getInstanceExtensions() const;
-    void                createInstance();
-    void                choosePhysicalDevice();
+    void createInstance();
+    void choosePhysicalDevice();
     std::vector<const char*> getDeviceExtensions() const;
-    void                createDevice();
-    void                createAllocator();
+    void  createDevice();
+    void createCommandPool();
+    void createAllocator();
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT,VkDebugUtilsMessageTypeFlagsEXT,const VkDebugUtilsMessengerCallbackDataEXT*,void*);
     
     Window&             m_window;
@@ -41,6 +43,7 @@ private:
     uint32_t            m_graphicsFamilyIndex, m_presentFamilyIndex;
     VkDevice            m_device;
     VkQueue             m_graphicsQueue, m_presentQueue;
+    VkCommandPool       m_commandPool;
     VmaAllocator        m_allocator;
 };
 
