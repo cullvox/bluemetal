@@ -5,6 +5,7 @@
 #include <stdexcept>
 //===========================//
 #include <spdlog/spdlog.h>
+#include <vulkan/vulkan_core.h>
 //===========================//
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
@@ -79,6 +80,27 @@ VkCommandPool RenderDevice::getCommandPool() const noexcept
 VmaAllocator RenderDevice::getAllocator() const noexcept
 {
     return m_allocator;
+}
+
+VkFormat RenderDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+{
+    for (VkFormat format : candidates)
+    {
+        VkFormatProperties properties = {};
+        vkGetPhysicalDeviceFormatProperties(m_physicalDevice, format, &properties);
+
+
+        if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features)
+        {
+            return format;
+        }
+        else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features)
+        {
+            return format;
+        }
+    }
+
+    throw std::runtime_error("Could not find any valid format!");
 }
 
 std::vector<const char*> RenderDevice::getValidationLayers() const

@@ -5,20 +5,50 @@
 
 namespace bl {
 
+struct Pipeline;
+struct Buffer;
+
+struct Submission
+{
+    Pipeline& pipeline;
+    Buffer& indexBuffer;
+    Buffer& vertexBuffer;
+    int instanceCount;
+};
+
 class Renderer
 {
 public:
-    Renderer(RenderDevice& renderDevice, Swapchain& swapchain);
+    static const inline uint32_t DEFAULT_FRAMES_IN_FLIGHT = 2; 
+
+    Renderer(Window& window, RenderDevice& renderDevice, Swapchain& swapchain);
     ~Renderer();
 
-    void renderFrame();
-    void presentFrame();    
+    void submit(const Submission& submission);
+    void displayFrame();
 private:
+    void getDepthFormat();
     void createRenderPass();
+    void createCommandBuffers();
+    void createFrameBuffers();
+    void createSyncObjects();
+    void rebuildForSwapchain();
+    void destroyForSwapchain();
 
+    Window& m_window;
     RenderDevice& m_renderDevice;
     Swapchain& m_swapchain;
+    VkFormat m_depthFormat;
     VkRenderPass m_pass;
+    uint32_t m_currentFrame;
+    uint32_t m_imageIndex;
+    std::vector<VkCommandBuffer> m_swapCommandBuffers;
+    std::vector<VkImageView> m_swapImageViews;
+    std::vector<VkFramebuffer> m_swapFramebuffers;
+    std::vector<VkSemaphore> m_imageAvailableSemaphores;
+    std::vector<VkSemaphore> m_renderFinishedSemaphores;
+    std::vector<VkFence> m_inFlightFences;
+    
 };
 
 } /* namespace bl */

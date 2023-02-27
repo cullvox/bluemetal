@@ -14,6 +14,6 @@ int main(int argc, const char** argv)
 
     bl::RenderDevice renderDevice{window};
     bl::Swapchain swapchain{window, renderDevice};
-    bl::Renderer renderer{renderDevice, swapchain};
+    bl::Renderer renderer{window, renderDevice, swapchain};
 
 }

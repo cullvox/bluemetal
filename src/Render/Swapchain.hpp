@@ -7,23 +7,27 @@ namespace bl {
 
 class Swapchain {
 public:
-    static inline const VkFormat DEFAULT_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
-    static inline const VkColorSpaceKHR DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    static inline const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
+    static inline const VkFormat            DEFAULT_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
+    static inline const VkColorSpaceKHR     DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    static inline const VkPresentModeKHR    DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
     Swapchain(Window& window, RenderDevice& renderDevice);
     ~Swapchain();
 
     VkSwapchainKHR getSwapchain() const noexcept;
     VkSurfaceKHR getSurface() const noexcept;
+    VkFormat getColorFormat() const noexcept;
+    uint32_t getImageCount() const noexcept;
+    const std::vector<VkImage>& getSwapchainImages() const noexcept;
+    uint32_t next();
+    bool wasRecreated() const noexcept;
 
 private:
     void ensureSurfaceSupported();
-    void getImageCount();
+    void findImageCount();
     void findSurfaceFormat();
     void findPresentMode();
     void getImages();
-    void createBuffers();
     void destroySwapchain();
     void recreateSwapchain();
 

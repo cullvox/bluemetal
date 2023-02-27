@@ -36,6 +36,31 @@ Swapchain::~Swapchain()
     vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
 }
 
+VkSwapchainKHR Swapchain::getSwapchain() const noexcept
+{
+    return m_swapchain;
+}
+
+VkSurfaceKHR Swapchain::getSurface() const noexcept
+{
+    return m_surface;
+}
+
+VkFormat Swapchain::getColorFormat() const noexcept
+{
+    return m_surfaceFormat.format;
+}
+
+uint32_t Swapchain::getImageCount() const noexcept
+{
+    return m_imageCount;
+}
+
+const std::vector<VkImage>& Swapchain::getSwapchainImages() const noexcept
+{
+    return m_swapImages;
+}
+
 void Swapchain::ensureSurfaceSupported()
 {
     /* Our surface should be supported... if not thats a sin. */
@@ -46,7 +71,7 @@ void Swapchain::ensureSurfaceSupported()
     }
 }
 
-void Swapchain::getImageCount()
+void Swapchain::findImageCount()
 {
     /* Get the minimum image count to be used. */
     VkSurfaceCapabilitiesKHR capabilities = {};
@@ -124,28 +149,9 @@ void Swapchain::getImages()
     }
 }
 
-void Swapchain::createBuffers()
-{
-    const VkCommandBufferAllocateInfo allocateInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-        .pNext = nullptr,
-        .commandPool = m_renderDevice.getCommandPool(),
-        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = m_imageCount
-    };
-
-    m_swapBuffers.resize(m_imageCount);
-
-    if (vkAllocateCommandBuffers(m_renderDevice.getDevice(), &allocateInfo, m_swapBuffers.data()) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not allocate vulkan swapchain command buffers!");
-    }
-}
-
 void Swapchain::destroySwapchain()
 {
     vkDestroySwapchainKHR(m_renderDevice.getDevice(), m_swapchain, nullptr);
-    vkFreeCommandBuffers(m_renderDevice.getDevice(), m_renderDevice.getCommandPool(), m_imageCount, m_swapBuffers.data());
 }
 
 void Swapchain::recreateSwapchain()
@@ -155,7 +161,7 @@ void Swapchain::recreateSwapchain()
         destroySwapchain();
     }
 
-    getImageCount();
+    findImageCount();
     findSurfaceFormat();
     findPresentMode();
 
@@ -193,7 +199,6 @@ void Swapchain::recreateSwapchain()
     }
 
     getImages();
-    createBuffers();
 }
 
 } /* namespace bl*/

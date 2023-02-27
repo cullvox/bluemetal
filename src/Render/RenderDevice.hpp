@@ -6,6 +6,7 @@
 #include <vulkan/vulkan.h>
 
 #include <memory>
+#include <vector>
 
 namespace bl
 {
@@ -26,13 +27,14 @@ public:
     VkCommandPool       getCommandPool() const noexcept;
     VmaAllocator        getAllocator() const noexcept;
     inline bool         areQueuesSame() const noexcept { return m_graphicsFamilyIndex == m_presentFamilyIndex; }
+    VkFormat            findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 private:
     std::vector<const char*> getValidationLayers() const;
     std::vector<const char*> getInstanceExtensions() const;
     void createInstance();
     void choosePhysicalDevice();
     std::vector<const char*> getDeviceExtensions() const;
-    void  createDevice();
+    void createDevice();
     void createCommandPool();
     void createAllocator();
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT,VkDebugUtilsMessageTypeFlagsEXT,const VkDebugUtilsMessengerCallbackDataEXT*,void*);
