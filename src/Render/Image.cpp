@@ -4,11 +4,11 @@
 namespace bl {
 
 Image::Image()
-    : m_pRenderDevice(nullptr), m_image(VK_NULL_HANDLE), m_allocation(VK_NULL_HANDLE)
+    : m_pRenderDevice(nullptr), m_image(VK_NULL_HANDLE), m_allocation(VK_NULL_HANDLE), m_imageView(VK_NULL_HANDLE)
 {
 }
 
-Image::Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Extent2D extent, uint32_t mipLevels, VkImageUsageFlags usage)
+Image::Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Extent2D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask)
     : m_pRenderDevice(&renderDevice)
 {
     const uint32_t graphicsFamilyIndex = m_pRenderDevice->getGraphicsFamilyIndex();
@@ -45,11 +45,28 @@ Image::Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Exte
     {
         throw std::runtime_error("Could not create an image!");
     }
+
+    const VkImageViewCreateInfo viewCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .image = m_image,
+        .viewType = (VkImageViewType)type,
+        .format = format,
+        .components = (const VkComponentMapping){.r = VK_COMPONENT_SWIZZLE_IDENTITY, .g = VK_COMPONENT_SWIZZLE_IDENTITY, .b = VK_COMPONENT_SWIZZLE_IDENTITY, .a = VK_COMPONENT_SWIZZLE_IDENTITY},
+        .subresourceRange = (const VkImageSubresourceRange){.aspectMask = aspectMask, .baseMipLevel = 0, .levelCount = mipLevels, .baseArrayLayer = 0, .layerCount = 1} 
+    };
+
+    if (vkCreateImageView(m_pRenderDevice->getDevice(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not create a vulkan image's view!");
+    }
 }
 
 Image::~Image()
 {
-    vmaDestroyImage(m_pRenderDevice->getAllocator(), m_image, m_allocation);
+    if (m_image)
+        vmaDestroyImage(m_pRenderDevice->getAllocator(), m_image, m_allocation);
 }
 
 Image& Image::operator=(Image&& rhs) noexcept
@@ -63,6 +80,16 @@ Image& Image::operator=(Image&& rhs) noexcept
     m_allocation = std::move(rhs.m_allocation);
 
     return *this;
+}
+
+VkImage Image::getImage() const noexcept
+{
+    return m_image;
+}
+
+VkImageView Image::getImageView() const noexcept
+{
+    return m_imageView;
 }
 
 } // namespace bl

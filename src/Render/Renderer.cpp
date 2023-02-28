@@ -51,8 +51,6 @@ void Renderer::displayFrame()
     }
 
 
-
-
 }
 
 void Renderer::createRenderPass()
@@ -149,7 +147,14 @@ void Renderer::createFrameBuffers()
     Extent2D extent = m_swapchain.getSwapchainExtent();
 
     /* Create the depth image. */
-    m_depthImage = Image{m_renderDevice, VK_IMAGE_TYPE_2D, m_depthFormat, extent, 1, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT};
+    m_depthImage = Image{
+        m_renderDevice, 
+        VK_IMAGE_TYPE_2D, 
+        m_depthFormat, 
+        extent, 
+        1, 
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+        VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT};
 
     /* The previous objects must be destroyed before this point. */
     m_swapImageViews.clear();
@@ -185,15 +190,18 @@ void Renderer::createFrameBuffers()
             throw std::runtime_error("Could not create a vulkan image view for the renderer!");
         }
 
-
+        const std::array<VkImageView, 2> attachments = {
+            imageView,
+            m_depthImage.getImageView()
+        };
 
         const VkFramebufferCreateInfo framebufferCreateInfo{
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
             .renderPass = m_pass,
-            .attachmentCount = 2,
-            .pAttachments = &imageView,
+            .attachmentCount = attachments.size(),
+            .pAttachments = attachments.data(),
             .width = (uint32_t)extent.width,
             .height = (uint32_t)extent.height,
             .layers = 1,
@@ -268,4 +276,4 @@ void Renderer::destroySwappable()
     }
 }
 
-} /* namespace bl */
+} // namespace bl
