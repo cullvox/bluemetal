@@ -27,6 +27,7 @@ set(sources
     "src/Window/Window.cpp"
     
     "src/Render/RenderDevice.cpp"
+    "src/Render/Image.cpp"
     "src/Render/Swapchain.cpp"
     "src/Render/Renderer.cpp"
     "src/Render/Buffer.cpp"

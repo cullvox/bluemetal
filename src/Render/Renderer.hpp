@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Render/RenderDevice.hpp"
+#include "Render/Image.hpp"
 #include "Render/Swapchain.hpp"
 
 namespace bl {
@@ -39,7 +40,7 @@ private:
     RenderDevice& m_renderDevice;
     Swapchain& m_swapchain;
     VkFormat m_depthFormat;
-    VkImage m_depthImage;
+    Image m_depthImage;
     VkRenderPass m_pass;
     uint32_t m_currentFrame;
     uint32_t m_imageIndex;

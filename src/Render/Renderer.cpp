@@ -11,7 +11,7 @@
 namespace bl {
 
 Renderer::Renderer(Window& window, RenderDevice& renderDevice, Swapchain& swapchain)
-    : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain) 
+    : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain), m_depthImage()
 {
     spdlog::info("Creating vulkan renderer.");
     
@@ -146,30 +146,10 @@ void Renderer::createCommandBuffers()
 
 void Renderer::createFrameBuffers()
 {
-    Extent2D extent = m_window.getExtent();
+    Extent2D extent = m_swapchain.getSwapchainExtent();
 
     /* Create the depth image. */
-    const uint32_t graphicsFamilyIndex = m_renderDevice.getGraphicsFamilyIndex();
-
-    const VkImageCreateInfo depthImageCreateInfo{
-        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .imageType = VK_IMAGE_TYPE_2D,
-        .format = m_depthFormat,
-        .extent = VkExtent3D{(uint32_t)extent.width, (uint32_t)extent.height, 1},
-        .mipLevels = 1,
-        .arrayLayers = 1,
-        .samples = VK_SAMPLE_COUNT_1_BIT,
-        .tiling = VK_IMAGE_TILING_OPTIMAL,
-        .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
-        .queueFamilyIndexCount = 1,
-        .pQueueFamilyIndices = &graphicsFamilyIndex,
-        .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-    };
-
-    vkCreateImage(m_renderDevice.getDevice(), &depthImageCreateInfo, nullptr, &m_depthImage);
+    m_depthImage = Image{m_renderDevice, VK_IMAGE_TYPE_2D, m_depthFormat, extent, 1, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT};
 
     /* The previous objects must be destroyed before this point. */
     m_swapImageViews.clear();
@@ -205,16 +185,18 @@ void Renderer::createFrameBuffers()
             throw std::runtime_error("Could not create a vulkan image view for the renderer!");
         }
 
+
+
         const VkFramebufferCreateInfo framebufferCreateInfo{
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
             .renderPass = m_pass,
-            .attachmentCount = 1,
+            .attachmentCount = 2,
             .pAttachments = &imageView,
             .width = (uint32_t)extent.width,
             .height = (uint32_t)extent.height,
-            .layers = 0,
+            .layers = 1,
         };
 
         VkFramebuffer framebuffer = {};
