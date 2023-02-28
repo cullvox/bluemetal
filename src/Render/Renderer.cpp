@@ -14,13 +14,19 @@ Renderer::Renderer(Window& window, RenderDevice& renderDevice, Swapchain& swapch
     : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain) 
 {
     spdlog::info("Creating vulkan renderer.");
+    
+    /* Create the swapchain based objects and the render pass. */
     createRenderPass();
-    rebuildForSwapchain();
+    recreateSwappable(false);
 }
 
 Renderer::~Renderer()
 {
     spdlog::info("Destroying vulkan renderer.");
+
+    /* Destroy the renderer objects. */
+    destroySwappable();
+    vkDestroyRenderPass(m_renderDevice.getDevice(), m_pass, nullptr);   
 }
 
 void Renderer::submit(const Submission& submission)
@@ -31,15 +37,20 @@ void Renderer::submit(const Submission& submission)
 void Renderer::displayFrame()
 {
 
+    /* Acquire the next image from the swapchain. */
     uint32_t index = 0;
     bool wasRecreated = false;
     m_swapchain.acquireNext(VK_NULL_HANDLE, VK_NULL_HANDLE, index, wasRecreated);
 
+    /* If the swapchain was recreated we must destroy and 
+        recreate the objects based on the swapchain images. */
     if (wasRecreated) 
     {
-        rebuildForSwapchain();
+        recreateSwappable();
         return;
     }
+
+
 
 
 }
@@ -157,7 +168,7 @@ void Renderer::createFrameBuffers()
                 .a = VK_COMPONENT_SWIZZLE_IDENTITY
             },
             .subresourceRange = (const VkImageSubresourceRange){
-                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT | VK_IMAGE_ASPECT_DEPTH_BIT,
+                .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                 .baseMipLevel = 0,
                 .levelCount = 1,
                 .baseArrayLayer = 0,
@@ -196,19 +207,44 @@ void Renderer::createFrameBuffers()
 
 void Renderer::createSyncObjects()
 {
-    vkCreateSemaphore()
+    const VkSemaphoreCreateInfo semaphoreCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0
+    };
+
+    const VkFenceCreateInfo fenceCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = VK_FENCE_CREATE_SIGNALED_BIT
+    };
+
+    m_imageAvailableSemaphores.resize(DEFAULT_FRAMES_IN_FLIGHT);
+    m_renderFinishedSemaphores.resize(DEFAULT_FRAMES_IN_FLIGHT);
+    m_inFlightFences.resize(DEFAULT_FRAMES_IN_FLIGHT);
+
+    for (uint32_t i = 0; i < DEFAULT_FRAMES_IN_FLIGHT; i++)
+    {
+        if (vkCreateSemaphore(m_renderDevice.getDevice(), &semaphoreCreateInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(m_renderDevice.getDevice(), &semaphoreCreateInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(m_renderDevice.getDevice(), &fenceCreateInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
+        {
+            throw std::runtime_error("Could not create a vulkan frame semaphore!");
+        }
+    }
 }
 
-void Renderer::rebuildForSwapchain()
+void Renderer::recreateSwappable(bool destroy)
 {
-    destroyForSwapchain();
+    if (destroy)
+        destroySwappable();
 
     createFrameBuffers();
     createCommandBuffers();
     createSyncObjects();
 }
 
-void Renderer::destroyForSwapchain()
+void Renderer::destroySwappable()
 {
     /* Destroy the objects used with the swapchain. */
     vkFreeCommandBuffers(m_renderDevice.getDevice(), m_renderDevice.getCommandPool(), m_swapchain.getImageCount(), m_swapCommandBuffers.data());

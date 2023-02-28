@@ -195,7 +195,7 @@ void Swapchain::destroySwapchain()
 
 void Swapchain::recreateSwapchain()
 {
-    if (!m_swapchain)
+    if (m_swapchain)
     {
         destroySwapchain();
     }

@@ -32,8 +32,8 @@ private:
     void createCommandBuffers();
     void createFrameBuffers();
     void createSyncObjects();
-    void rebuildForSwapchain();
-    void destroyForSwapchain();
+    void recreateSwappable(bool destroy = true);
+    void destroySwappable();
 
     Window& m_window;
     RenderDevice& m_renderDevice;
