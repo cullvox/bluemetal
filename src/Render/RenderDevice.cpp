@@ -361,7 +361,7 @@ void RenderDevice::createDevice()
 
     const float queuePriorities[] = { 1.0f, 1.0f };
     const std::vector<VkDeviceQueueCreateInfo> queueCreateInfos{
-        (VkDeviceQueueCreateInfo){
+        {
             .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
@@ -369,7 +369,7 @@ void RenderDevice::createDevice()
             .queueCount = 1,
             .pQueuePriorities = queuePriorities,
         },
-        (VkDeviceQueueCreateInfo){
+        {
             .sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
@@ -388,7 +388,7 @@ void RenderDevice::createDevice()
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .queueCreateInfoCount = (uint32_t)queueCreateInfos.size(),
+        .queueCreateInfoCount = areQueuesSame() ? 1UL : 2UL,
         .pQueueCreateInfos = queueCreateInfos.data(),
         .enabledLayerCount = (uint32_t)validationLayers.size(),
         .ppEnabledLayerNames = validationLayers.data(),

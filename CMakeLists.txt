@@ -38,10 +38,10 @@ set_property(TARGET DarkRed PROPERTY CXX_STANDARD 20)
 
 target_include_directories(DarkRed PUBLIC "src")
 
-target_compile_definitions(DarkRed PUBLIC SPDLOG_FMT_EXTERNAL) # Use an external version of FMT
+#target_compile_definitions(DarkRed PUBLIC SPDLOG_FMT_EXTERNAL) # Use an external version of FMT
 
 # Link
-target_link_libraries(DarkRed fmt spdlog glfw)
+target_link_libraries(DarkRed spdlog glfw)
 
 # Include vulkan headers
 find_package(Vulkan REQUIRED)

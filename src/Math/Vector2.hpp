@@ -17,8 +17,8 @@ public:
     Vector2i& operator*(const Vector2i& rhs) noexcept;
     Vector2i& operator/(const Vector2i& rhs) noexcept;
 
-    int magnitude() const noexcept;
-    int distance(const Vector2i& other) const noexcept;
+    long magnitude() const noexcept;
+    long distance(const Vector2i& other) const noexcept;
 
     long x;
     long y;

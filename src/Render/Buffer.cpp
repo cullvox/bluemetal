@@ -1,5 +1,7 @@
 #include "Buffer.hpp"
 
+#include <stdexcept>
+
 namespace bl
 {
 
@@ -36,4 +38,4 @@ Buffer::Buffer(RenderDevice& renderDevice, VkDeviceSize size, VkBufferUsageFlags
     }
 }
 
-} /* namespace bl */
+} // namespace bl

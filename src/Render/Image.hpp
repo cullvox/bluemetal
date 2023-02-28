@@ -16,6 +16,8 @@ public:
     VkImage getImage() const noexcept;
     VkImageView getImageView() const noexcept;
 private:
+    void destroy();
+
     RenderDevice* m_pRenderDevice;
     VkImage m_image;
     VkImageView m_imageView;

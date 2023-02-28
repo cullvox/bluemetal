@@ -44,7 +44,7 @@ std::vector<Screen> Screen::getScreens()
 
     std::vector<Screen> screens;
 
-    for (unsigned int i = 0; i < monitorCount; i++)
+    for (int i = 0; i < monitorCount; i++)
     {
         GLFWmonitor* pMonitor = ppMonitors[i];
 
@@ -57,7 +57,7 @@ std::vector<Screen> Screen::getScreens()
         int videoModeCount = 0;
         const GLFWvidmode* pVideoModes = glfwGetVideoModes(pMonitor, &videoModeCount);        
 
-        for (unsigned int j = 0; j < videoModeCount; j++)
+        for (int j = 0; j < videoModeCount; j++)
         {
             const GLFWvidmode* pVideoMode = &pVideoModes[j];
             const VideoMode videoMode{
@@ -82,7 +82,7 @@ std::vector<Screen> Screen::getScreens()
 
         VideoMode desktopMode{desktopModeResolution, bestMode.bitsPerPixel, bestMode.refreshRate};
 
-        const Screen screen{i, name, bestMode.resolution, contentScale, bestMode.refreshRate, videoModes, desktopMode};
+        const Screen screen{(unsigned int)i, name, bestMode.resolution, contentScale, bestMode.refreshRate, videoModes, desktopMode};
 
         screens.emplace_back(screen);
     }

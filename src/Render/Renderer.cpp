@@ -59,30 +59,30 @@ void Renderer::createRenderPass()
         {VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
         VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
-    const std::array<VkAttachmentDescription, 2> attachmentDescriptions{
-        (const VkAttachmentDescription){ // Color Attachment
-            .flags = 0,
-            .format = m_swapchain.getColorFormat(),
-            .samples = VK_SAMPLE_COUNT_1_BIT,
-            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-            .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+    const std::array<VkAttachmentDescription, 2> attachmentDescriptions = {{
+        { // Color Attachment
+            0, // flags
+            m_swapchain.getColorFormat(), // format
+            VK_SAMPLE_COUNT_1_BIT, // samples
+            VK_ATTACHMENT_LOAD_OP_CLEAR, // loadOp
+            VK_ATTACHMENT_STORE_OP_STORE, // storeOp
+            VK_ATTACHMENT_LOAD_OP_DONT_CARE, // stencilLoadOp
+            VK_ATTACHMENT_STORE_OP_DONT_CARE, // stencilStoreOp
+            VK_IMAGE_LAYOUT_UNDEFINED, // initialLayout
+            VK_IMAGE_LAYOUT_PRESENT_SRC_KHR // finalLayout
         },
-        (const VkAttachmentDescription){ // Depth Attachment
-            .flags = 0,
-            .format = m_depthFormat,
-            .samples = VK_SAMPLE_COUNT_1_BIT,
-            .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-            .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
-            .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
-            .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
-            .finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
-        },
-    };
+        { // Depth Attachment
+            0, // flags
+            m_depthFormat, // format
+            VK_SAMPLE_COUNT_1_BIT, // samples
+            VK_ATTACHMENT_LOAD_OP_CLEAR, // loadOp
+            VK_ATTACHMENT_STORE_OP_DONT_CARE, // storeOp
+            VK_ATTACHMENT_LOAD_OP_CLEAR, // stencilLoadOp
+            VK_ATTACHMENT_STORE_OP_DONT_CARE, // stencilStoreOp
+            VK_IMAGE_LAYOUT_UNDEFINED, // initialLayout
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL // finalLayout
+        }
+    }};
 
     const VkAttachmentReference colorAttachmentReference{
         .attachment = 0,
@@ -90,17 +90,17 @@ void Renderer::createRenderPass()
     };
     
     const std::array<VkSubpassDescription, 1> subpassDescriptions{
-        (const VkSubpassDescription){
-            .flags = 0,
-            .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
-            .inputAttachmentCount = 0,
-            .pInputAttachments = nullptr,
-            .colorAttachmentCount = 1,
-            .pColorAttachments = &colorAttachmentReference,
-            .pResolveAttachments = nullptr,
-            .pDepthStencilAttachment = nullptr,
-            .preserveAttachmentCount = 0,
-            .pPreserveAttachments = nullptr
+        {
+            0, // flags
+            VK_PIPELINE_BIND_POINT_GRAPHICS, // pipelineBindPoint
+            0, // inputAttachmentCount
+            nullptr, // pInputAttachments
+            1, // colorAttachmentCount
+            &colorAttachmentReference, // pColorAttachments
+            nullptr, // pResolveAttachments
+            nullptr, // pDepthStencilAttachment
+            0, // preserveAttachmentCount
+            nullptr, // pPreserveAttachments
         }
     };
 
@@ -110,11 +110,11 @@ void Renderer::createRenderPass()
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .attachmentCount = attachmentDescriptions.size(),
+        .attachmentCount = (uint32_t)attachmentDescriptions.size(),
         .pAttachments = attachmentDescriptions.data(),
-        .subpassCount = subpassDescriptions.size(),
+        .subpassCount = (uint32_t)subpassDescriptions.size(),
         .pSubpasses = subpassDescriptions.data(),
-        .dependencyCount = subpassDependencies.size(),
+        .dependencyCount = (uint32_t)subpassDependencies.size(),
         .pDependencies = subpassDependencies.data()
     };
 
@@ -146,7 +146,7 @@ void Renderer::createFrameBuffers()
 {
     Extent2D extent = m_swapchain.getSwapchainExtent();
 
-    /* Create the depth image. */
+    // Create the depth image
     m_depthImage = Image{
         m_renderDevice, 
         VK_IMAGE_TYPE_2D, 
@@ -169,13 +169,13 @@ void Renderer::createFrameBuffers()
             .image = image,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
             .format = m_swapchain.getColorFormat(),
-            .components = (const VkComponentMapping){
+            .components = {
                 .r = VK_COMPONENT_SWIZZLE_IDENTITY,
                 .g = VK_COMPONENT_SWIZZLE_IDENTITY,
                 .b = VK_COMPONENT_SWIZZLE_IDENTITY,
                 .a = VK_COMPONENT_SWIZZLE_IDENTITY
             },
-            .subresourceRange = (const VkImageSubresourceRange){
+            .subresourceRange = {
                 .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
                 .baseMipLevel = 0,
                 .levelCount = 1,
@@ -200,7 +200,7 @@ void Renderer::createFrameBuffers()
             .pNext = nullptr,
             .flags = 0,
             .renderPass = m_pass,
-            .attachmentCount = attachments.size(),
+            .attachmentCount = (uint32_t)attachments.size(),
             .pAttachments = attachments.data(),
             .width = (uint32_t)extent.width,
             .height = (uint32_t)extent.height,

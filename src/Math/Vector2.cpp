@@ -64,15 +64,15 @@ Vector2i& Vector2i::operator/(const Vector2i& rhs) noexcept
     return *this;
 }
 
-int Vector2i::magnitude() const noexcept
+long Vector2i::magnitude() const noexcept
 {
     return std::sqrt(x*x + y*y);
 }
 
-int Vector2i::distance(const Vector2i& other) const noexcept
+long Vector2i::distance(const Vector2i& other) const noexcept
 {
-    const int xm = (other.x - x);
-    const int ym = (other.y - y);
+    const long xm = (other.x - x);
+    const long ym = (other.y - y);
     return std::sqrt(xm*xm + ym*ym);
 }
 

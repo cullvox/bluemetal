@@ -1,5 +1,6 @@
 #include "Render/Image.hpp"
-#include <vulkan/vulkan_core.h>
+
+#include <stdexcept>
 
 namespace bl {
 
@@ -53,8 +54,8 @@ Image::Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Exte
         .image = m_image,
         .viewType = (VkImageViewType)type,
         .format = format,
-        .components = (const VkComponentMapping){.r = VK_COMPONENT_SWIZZLE_IDENTITY, .g = VK_COMPONENT_SWIZZLE_IDENTITY, .b = VK_COMPONENT_SWIZZLE_IDENTITY, .a = VK_COMPONENT_SWIZZLE_IDENTITY},
-        .subresourceRange = (const VkImageSubresourceRange){.aspectMask = aspectMask, .baseMipLevel = 0, .levelCount = mipLevels, .baseArrayLayer = 0, .layerCount = 1} 
+        .components = {.r = VK_COMPONENT_SWIZZLE_IDENTITY, .g = VK_COMPONENT_SWIZZLE_IDENTITY, .b = VK_COMPONENT_SWIZZLE_IDENTITY, .a = VK_COMPONENT_SWIZZLE_IDENTITY},
+        .subresourceRange = {.aspectMask = aspectMask, .baseMipLevel = 0, .levelCount = mipLevels, .baseArrayLayer = 0, .layerCount = 1} 
     };
 
     if (vkCreateImageView(m_pRenderDevice->getDevice(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
@@ -66,18 +67,24 @@ Image::Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Exte
 Image::~Image()
 {
     if (m_image)
-        vmaDestroyImage(m_pRenderDevice->getAllocator(), m_image, m_allocation);
+        destroy();
 }
 
 Image& Image::operator=(Image&& rhs) noexcept
 {
     // In order to assign another image we must actually destroy the first one.
     if (m_image)
-        vmaDestroyImage(m_pRenderDevice->getAllocator(), m_image, m_allocation);
+        destroy();
 
     m_pRenderDevice = std::move(rhs.m_pRenderDevice);
     m_image = std::move(rhs.m_image);
     m_allocation = std::move(rhs.m_allocation);
+    m_imageView = std::move(rhs.m_imageView);
+
+    rhs.m_pRenderDevice = nullptr;
+    rhs.m_image = VK_NULL_HANDLE;
+    rhs.m_allocation = VK_NULL_HANDLE;
+    rhs.m_imageView = VK_NULL_HANDLE;
 
     return *this;
 }
@@ -90,6 +97,12 @@ VkImage Image::getImage() const noexcept
 VkImageView Image::getImageView() const noexcept
 {
     return m_imageView;
+}
+
+void Image::destroy()
+{
+    vmaDestroyImage(m_pRenderDevice->getAllocator(), m_image, m_allocation);
+    vkDestroyImageView(m_pRenderDevice->getDevice(), m_imageView, nullptr);
 }
 
 } // namespace bl
