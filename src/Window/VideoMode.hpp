@@ -19,7 +19,6 @@ public:
     Extent2D resolution;
     unsigned int bitsPerPixel;
     unsigned int refreshRate;
-    std::optional<std::reference_wrapper<Screen>> screen;
 };
 
 };

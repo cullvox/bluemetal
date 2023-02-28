@@ -31,10 +31,17 @@ void Renderer::submit(const Submission& submission)
 void Renderer::displayFrame()
 {
 
-    vkAcquireNextImageKHR(m_renderDevice.getDevice(), m_swapchain.getSwapchain(), UINT64_MAX, m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &m_imageIndex);
+    uint32_t index = 0;
+    bool wasRecreated = false;
+    m_swapchain.acquireNext(VK_NULL_HANDLE, VK_NULL_HANDLE, index, wasRecreated);
 
-    if (m_swapchain.wasRecreated())
+    if (wasRecreated) 
+    {
         rebuildForSwapchain();
+        return;
+    }
+
+
 }
 
 void Renderer::createRenderPass()
@@ -185,6 +192,11 @@ void Renderer::createFrameBuffers()
         m_swapImageViews.push_back(imageView);
         m_swapFramebuffers.push_back(framebuffer);
     }
+}
+
+void Renderer::createSyncObjects()
+{
+    vkCreateSemaphore()
 }
 
 void Renderer::rebuildForSwapchain()

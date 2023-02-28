@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Math/Vector2.hpp"
 #include "Window/Window.hpp"
 #include "Render/RenderDevice.hpp"
 
@@ -17,11 +18,10 @@ public:
     VkSwapchainKHR getSwapchain() const noexcept;
     VkSurfaceKHR getSurface() const noexcept;
     VkFormat getColorFormat() const noexcept;
+    Extent2D getSwapchainExtent();
     uint32_t getImageCount() const noexcept;
     const std::vector<VkImage>& getSwapchainImages() const noexcept;
-    uint32_t next();
-    bool wasRecreated() const noexcept;
-
+    void acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& wasRecreated);
 private:
     void ensureSurfaceSupported();
     void findImageCount();
@@ -30,6 +30,7 @@ private:
     void getImages();
     void destroySwapchain();
     void recreateSwapchain();
+    
 
     RenderDevice&       m_renderDevice;
     Window&             m_window;
@@ -38,6 +39,7 @@ private:
     VkSurfaceFormatKHR  m_surfaceFormat;
     VkPresentModeKHR    m_presentMode;
     VkSwapchainKHR      m_swapchain;
+    bool                m_wasRecreated;
     std::vector<VkImage> m_swapImages;
     std::vector<VkCommandBuffer> m_swapBuffers;
 };

@@ -1,6 +1,7 @@
 //===========================//
 #include <algorithm>
 #include <cstdint>
+#include <limits>
 #include <stdexcept>
 //===========================//
 #include <vulkan/vulkan_core.h>
@@ -51,6 +52,28 @@ VkFormat Swapchain::getColorFormat() const noexcept
     return m_surfaceFormat.format;
 }
 
+Extent2D Swapchain::getSwapchainExtent()
+{
+    VkSurfaceCapabilitiesKHR capabilities{};
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get the vulkan physical device surface capabilities!");
+    }
+
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+    {
+        return Extent2D{capabilities.currentExtent.width, capabilities.currentExtent.height};
+    }
+    else
+    {
+        const Extent2D extent = m_window.getExtent();
+        return Extent2D{
+            std::clamp(extent.width, (unsigned long)capabilities.minImageExtent.width, (unsigned long)capabilities.maxImageExtent.width),
+            std::clamp(extent.height, (unsigned long)capabilities.minImageExtent.height, (unsigned long)capabilities.maxImageExtent.height)
+        };
+    }
+}
+
 uint32_t Swapchain::getImageCount() const noexcept
 {
     return m_imageCount;
@@ -59,6 +82,22 @@ uint32_t Swapchain::getImageCount() const noexcept
 const std::vector<VkImage>& Swapchain::getSwapchainImages() const noexcept
 {
     return m_swapImages;
+}
+
+void Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& wasRecreated)
+{
+    VkResult result = vkAcquireNextImageKHR(m_renderDevice.getDevice(), m_swapchain, UINT64_MAX, semaphore, fence, &imageIndex);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        recreateSwapchain();
+        wasRecreated = true;
+        return;
+    }
+    else if (result != VK_SUCCESS || result != VK_SUBOPTIMAL_KHR)
+    {
+        throw std::runtime_error("Could not acquire swap chain image!");
+    }
 }
 
 void Swapchain::ensureSurfaceSupported()
