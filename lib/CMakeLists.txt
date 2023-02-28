@@ -7,8 +7,6 @@ find_library (LIB_SPDLOG "spdlog")
 find_library (LIB_GLFW "glfw")
 find_library (LIB_GLM "glm")
 
-
-
 if (NOT LIB_SPDLOG)
     if (EXISTS "spdlog")
         add_subdirectory("spdlog")
