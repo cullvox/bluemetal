@@ -39,6 +39,7 @@ private:
     RenderDevice& m_renderDevice;
     Swapchain& m_swapchain;
     VkFormat m_depthFormat;
+    VkImage m_depthImage;
     VkRenderPass m_pass;
     uint32_t m_currentFrame;
     uint32_t m_imageIndex;

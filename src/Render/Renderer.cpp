@@ -148,6 +148,29 @@ void Renderer::createFrameBuffers()
 {
     Extent2D extent = m_window.getExtent();
 
+    /* Create the depth image. */
+    const uint32_t graphicsFamilyIndex = m_renderDevice.getGraphicsFamilyIndex();
+
+    const VkImageCreateInfo depthImageCreateInfo{
+        .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .imageType = VK_IMAGE_TYPE_2D,
+        .format = m_depthFormat,
+        .extent = VkExtent3D{(uint32_t)extent.width, (uint32_t)extent.height, 1},
+        .mipLevels = 1,
+        .arrayLayers = 1,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .tiling = VK_IMAGE_TILING_OPTIMAL,
+        .usage = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
+        .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+        .queueFamilyIndexCount = 1,
+        .pQueueFamilyIndices = &graphicsFamilyIndex,
+        .initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
+
+    vkCreateImage(m_renderDevice.getDevice(), &depthImageCreateInfo, nullptr, &m_depthImage);
+
     /* The previous objects must be destroyed before this point. */
     m_swapImageViews.clear();
     m_swapFramebuffers.clear();
@@ -253,8 +276,13 @@ void Renderer::destroySwappable()
     {
         vkDestroyFramebuffer(m_renderDevice.getDevice(), m_swapFramebuffers[i], nullptr);
         vkDestroyImageView(m_renderDevice.getDevice(), m_swapImageViews[i], nullptr);
+    }
+
+    for (uint32_t i = 0; i < DEFAULT_FRAMES_IN_FLIGHT; i++)
+    {
         vkDestroySemaphore(m_renderDevice.getDevice(), m_imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(m_renderDevice.getDevice(), m_renderFinishedSemaphores[i], nullptr);
+        vkDestroyFence(m_renderDevice.getDevice(), m_inFlightFences[i], nullptr);
     }
 }
 
