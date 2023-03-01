@@ -11,7 +11,7 @@
 namespace bl {
 
 Renderer::Renderer(Window& window, RenderDevice& renderDevice, Swapchain& swapchain)
-    : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain), m_depthImage()
+    : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain), m_depthImage(), m_currentFrame(0)
 {
     spdlog::info("Creating vulkan renderer.");
     
@@ -37,10 +37,12 @@ void Renderer::submit(const Submission& submission)
 void Renderer::displayFrame()
 {
 
+    vkWaitForFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+
     /* Acquire the next image from the swapchain. */
-    uint32_t index = 0;
+    uint32_t imageIndex = 0;
     bool wasRecreated = false;
-    m_swapchain.acquireNext(VK_NULL_HANDLE, VK_NULL_HANDLE, index, wasRecreated);
+    m_swapchain.acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, imageIndex, wasRecreated);
 
     /* If the swapchain was recreated we must destroy and 
         recreate the objects based on the swapchain images. */
@@ -48,6 +50,76 @@ void Renderer::displayFrame()
     {
         recreateSwappable();
         return;
+    }
+
+    vkResetFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame]);
+
+    vkResetCommandBuffer(m_swapCommandBuffers[m_currentFrame], 0);
+
+    /* Record command buffer. */
+
+
+    const VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[m_currentFrame]};
+    const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    const VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphores[m_currentFrame]};
+    const VkSubmitInfo submitInfo{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .pNext = nullptr,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = waitSemaphores,
+        .pWaitDstStageMask = waitStages,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &m_swapCommandBuffers[m_currentFrame],
+        .signalSemaphoreCount = 1,
+        .pSignalSemaphores = signalSemaphores,
+    };
+
+    if (vkQueueSubmit(m_renderDevice.getGraphicsQueue(), 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not submit a draw command buffer!");
+    }
+
+    VkResult result = {};
+
+    const VkSwapchainKHR swapChains[] = {m_swapchain.getSwapchain()};
+    const VkPresentInfoKHR presentInfo{
+        .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
+        .pNext = nullptr,
+        .waitSemaphoreCount = 1,
+        .pWaitSemaphores = signalSemaphores,
+        .swapchainCount = 1,
+        .pSwapchains = swapChains,
+        .pImageIndices = &imageIndex,
+        .pResults = nullptr,
+    };
+
+    result = vkQueuePresentKHR(m_renderDevice.getPresentQueue(), &presentInfo);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized)
+    {
+        //m_framebufferResized = false;
+        
+        // Swapchain must be recreated
+        return;
+    }
+    else if (result != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not queue the vulkan present!");
+    }
+
+    m_currentFrame = (m_currentFrame + 1) % DEFAULT_FRAMES_IN_FLIGHT;
+
+    // Begin recording the next frame
+    const VkCommandBufferBeginInfo beginInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .pInheritanceInfo = nullptr
+    };
+
+    if (vkBeginCommandBuffer(m_swapCommandBuffers[m_currentFrame], &beginInfo) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not ")
     }
 
 

@@ -15,13 +15,8 @@
 namespace bl {
 
 Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
-    : m_window(window)
-    , m_renderDevice(renderDevice)
-    , m_surface(VK_NULL_HANDLE)
-    , m_imageCount(0)
-    , m_surfaceFormat({})
-    , m_presentMode(VK_PRESENT_MODE_FIFO_KHR)
-    , m_swapchain(VK_NULL_HANDLE)
+    : m_window(window), m_renderDevice(renderDevice), m_surface(VK_NULL_HANDLE), m_imageCount(0)
+    , m_surfaceFormat({}), m_presentMode(VK_PRESENT_MODE_FIFO_KHR), m_swapchain(VK_NULL_HANDLE)
 {
     spdlog::info("Creating vulkan swapchain.");
     
@@ -94,7 +89,7 @@ void Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imag
         wasRecreated = true;
         return;
     }
-    else if (result != VK_SUCCESS || result != VK_SUBOPTIMAL_KHR)
+    else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
     {
         throw std::runtime_error("Could not acquire swap chain image!");
     }

@@ -16,4 +16,8 @@ int main(int argc, const char** argv)
     bl::Swapchain swapchain{window, renderDevice};
     bl::Renderer renderer{window, renderDevice, swapchain};
 
+    while (true) // window.shouldNotClose()
+    {
+        renderer.displayFrame();
+    }
 }
