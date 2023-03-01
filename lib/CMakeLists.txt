@@ -3,8 +3,8 @@
 # If we don't find them ask the user to pull recursively.
 
 
-find_library (LIB_SPDLOG "spdlog")
-find_library (LIB_GLFW "glfw")
+find_package (spdlog)
+find_package (glfw3)
 find_package (GLM)
 
 

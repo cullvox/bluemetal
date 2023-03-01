@@ -388,7 +388,7 @@ void RenderDevice::createDevice()
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .queueCreateInfoCount = areQueuesSame() ? 1UL : 2UL,
+        .queueCreateInfoCount = areQueuesSame() ? (uint32_t)1 : (uint32_t)2,
         .pQueueCreateInfos = queueCreateInfos.data(),
         .enabledLayerCount = (uint32_t)validationLayers.size(),
         .ppEnabledLayerNames = validationLayers.data(),

@@ -42,8 +42,10 @@ target_include_directories(DarkRed PUBLIC "src")
 
 #target_compile_definitions(DarkRed PUBLIC SPDLOG_FMT_EXTERNAL) # Use an external version of FMT
 
+find_package(spdlog REQUIRED)
+
 # Link
-target_link_libraries(DarkRed spdlog glfw)
+target_link_libraries(DarkRed spdlog::spdlog glfw)
 
 # Include vulkan headers
 find_package(Vulkan REQUIRED)

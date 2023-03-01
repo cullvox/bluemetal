@@ -1,18 +1,4 @@
-with import <nixpkgs> {
-  overlays = [
-    (self: super:
-    {
-      spdlog = super.spdlog.overrideAttrs (old: {
-        src = super.fetchFromGitHub {
-          owner = "gabime";
-          repo = "spdlog";
-          rev = "v1.11.0";
-          sha256 = "0i3a1cqrg1sz0w50g7zz9x73rf838igqri12q8ijh4rzpq0qq3ch";
-        };
-      });
-    })
-  ];
-};
+with import <nixpkgs> {};
 
 
 stdenv.mkDerivation {
@@ -48,11 +34,10 @@ stdenv.mkDerivation {
     libffi
 
     # Miscellanious libraries
-    fmt_8 # spdlog has issues with newer versions of fmt
-    spdlog
+    #fmt_8 # spdlog has issues with newer versions of fmt
+    spdlog_1
     glfw
     glm
-    
 
   ];
   VULKAN_SDK = "${vulkan-validation-layers}/share/vulkan/explicit_layer.d";

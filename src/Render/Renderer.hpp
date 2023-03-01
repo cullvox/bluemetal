@@ -45,6 +45,7 @@ private:
     uint32_t m_currentFrame;
     uint32_t m_imageIndex;
     bool m_framebufferResized;
+    bool m_firstFrame;
     std::vector<VkCommandBuffer> m_swapCommandBuffers;
     std::vector<VkImageView> m_swapImageViews;
     std::vector<VkFramebuffer> m_swapFramebuffers;

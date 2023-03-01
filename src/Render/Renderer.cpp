@@ -11,7 +11,7 @@
 namespace bl {
 
 Renderer::Renderer(Window& window, RenderDevice& renderDevice, Swapchain& swapchain)
-    : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain), m_depthImage(), m_currentFrame(0)
+    : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain), m_depthImage(), m_currentFrame(0), m_firstFrame(true)
 {
     spdlog::info("Creating vulkan renderer.");
     
@@ -37,6 +37,12 @@ void Renderer::submit(const Submission& submission)
 void Renderer::displayFrame()
 {
 
+    /* End the previous command buffer. */
+    if (!m_firstFrame)
+    {
+        vkEndCommandBuffer(m_swapCommandBuffers[m_currentFrame]);
+    }
+
     vkWaitForFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
     /* Acquire the next image from the swapchain. */
@@ -53,11 +59,6 @@ void Renderer::displayFrame()
     }
 
     vkResetFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame]);
-
-    vkResetCommandBuffer(m_swapCommandBuffers[m_currentFrame], 0);
-
-    /* Record command buffer. */
-
 
     const VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[m_currentFrame]};
     const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -107,6 +108,8 @@ void Renderer::displayFrame()
         throw std::runtime_error("Could not queue the vulkan present!");
     }
 
+    vkResetCommandBuffer(m_swapCommandBuffers[m_currentFrame], 0);
+
     m_currentFrame = (m_currentFrame + 1) % DEFAULT_FRAMES_IN_FLIGHT;
 
     // Begin recording the next frame
@@ -117,12 +120,13 @@ void Renderer::displayFrame()
         .pInheritanceInfo = nullptr
     };
 
+    m_firstFrame = false;
+
+
     if (vkBeginCommandBuffer(m_swapCommandBuffers[m_currentFrame], &beginInfo) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not ")
+        throw std::runtime_error("Could not begin a command buffer after this frame!");
     }
-
-
 }
 
 void Renderer::createRenderPass()

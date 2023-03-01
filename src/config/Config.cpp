@@ -12,9 +12,6 @@
 #include "Config.hpp"
 #include "Configurable.hpp"
 #include "ConfigParser.hpp"
-#include "spdlog/common.h"
-
-
 
 //==============================================================================
 // IConfigurable
