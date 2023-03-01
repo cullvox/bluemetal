@@ -1,7 +1,25 @@
-with import <nixpkgs> {};
+with import <nixpkgs> {
+  overlays = [
+    (self: super:
+    {
+      spdlog = super.spdlog.overrideAttrs (old: {
+        src = super.fetchFromGitHub {
+          owner = "gabime";
+          repo = "spdlog";
+          rev = "v1.11.0";
+          sha256 = "0i3a1cqrg1sz0w50g7zz9x73rf838igqri12q8ijh4rzpq0qq3ch";
+        };
+      });
+    })
+  ];
+};
+
+
 stdenv.mkDerivation {
   name = "env";
   nativeBuildInputs = [ pkg-config ];
+
+
   buildInputs = [
 
     # Build requirements

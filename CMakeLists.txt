@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(DarkRed)
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # Compile commands for clangd
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 if(CMAKE_EXPORT_COMPILE_COMMANDS)

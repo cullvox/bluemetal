@@ -5,7 +5,8 @@
 
 find_library (LIB_SPDLOG "spdlog")
 find_library (LIB_GLFW "glfw")
-find_library (LIB_GLM "glm")
+find_package (GLM)
+
 
 if (NOT LIB_SPDLOG)
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/spdlog")
@@ -23,7 +24,7 @@ if (NOT LIB_GLFW)
     endif ()
 endif ()
 
-if (NOT LIB_GLM)
+if (NOT GLM_FOUND)
     if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/glm")
         add_subdirectory("glm")
     else ()
