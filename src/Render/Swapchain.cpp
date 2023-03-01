@@ -49,24 +49,7 @@ VkFormat Swapchain::getColorFormat() const noexcept
 
 Extent2D Swapchain::getSwapchainExtent()
 {
-    VkSurfaceCapabilitiesKHR capabilities{};
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not get the vulkan physical device surface capabilities!");
-    }
-
-    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-    {
-        return Extent2D{capabilities.currentExtent.width, capabilities.currentExtent.height};
-    }
-    else
-    {
-        const Extent2D extent = m_window.getExtent();
-        return Extent2D{
-            std::clamp(extent.width, (unsigned long)capabilities.minImageExtent.width, (unsigned long)capabilities.maxImageExtent.width),
-            std::clamp(extent.height, (unsigned long)capabilities.minImageExtent.height, (unsigned long)capabilities.maxImageExtent.height)
-        };
-    }
+    return m_extent;
 }
 
 uint32_t Swapchain::getImageCount() const noexcept
@@ -168,6 +151,28 @@ void Swapchain::findPresentMode()
 
 }
 
+void Swapchain::findExtent()
+{
+    VkSurfaceCapabilitiesKHR capabilities{};
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get the vulkan physical device surface capabilities!");
+    }
+
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
+    {
+        m_extent = Extent2D{capabilities.currentExtent.width, capabilities.currentExtent.height};
+    }
+    else
+    {
+        const Extent2D extent = m_window.getExtent();
+        m_extent = Extent2D{
+            std::clamp(extent.width, (unsigned long)capabilities.minImageExtent.width, (unsigned long)capabilities.maxImageExtent.width),
+            std::clamp(extent.height, (unsigned long)capabilities.minImageExtent.height, (unsigned long)capabilities.maxImageExtent.height)
+        };
+    }
+}
+
 void Swapchain::getImages()
 {
     if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, nullptr) != VK_SUCCESS)
@@ -198,6 +203,7 @@ void Swapchain::recreateSwapchain()
     findImageCount();
     findSurfaceFormat();
     findPresentMode();
+    findExtent();
 
     /* Build the create info structure for the swapchain. */
     const uint32_t pQueueFamilyIndices[2] = { 

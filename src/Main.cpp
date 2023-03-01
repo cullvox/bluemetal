@@ -18,6 +18,7 @@ int main(int argc, const char** argv)
 
     while (true) // window.shouldNotClose()
     {
-        renderer.displayFrame();
+        renderer.beginFrame();
+        renderer.endFrame();
     }
 }

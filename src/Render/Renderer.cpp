@@ -11,7 +11,7 @@
 namespace bl {
 
 Renderer::Renderer(Window& window, RenderDevice& renderDevice, Swapchain& swapchain)
-    : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain), m_depthImage(), m_currentFrame(0), m_imageIndex(0), m_firstFrame(true), m_framebufferResized(false)
+    : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain), m_depthImage(), m_currentFrame(0), m_imageIndex(0), m_deadFrame(false), m_framebufferResized(false)
 {
     spdlog::info("Creating vulkan renderer.");
     
@@ -34,33 +34,85 @@ void Renderer::submit(const Submission& submission)
 
 }
 
-void Renderer::displayFrame()
+void Renderer::beginFrame()
 {
-    if (!m_firstFrame) endRender();
-
-    if (m_firstFrame)
-    {
-        beginRender();
-        m_firstFrame = false;
-        return;
-    }
-
     vkWaitForFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
-    /* Acquire the next image from the swapchain. */
+    // Acquire the next image from the swapchain.
     bool wasRecreated = false;
     m_swapchain.acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex, wasRecreated);
 
-    /* If the swapchain was recreated we must destroy and 
-        recreate the objects based on the swapchain images. */
+    // If the swapchain was recreated we must destroy and 
+    // recreate the objects based on the swapchain images.
     if (wasRecreated) 
     {
         recreateSwappable();
+        m_deadFrame = true;
         return;
     }
 
     vkResetFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame]);
 
+    // Reset the prevous frames command buffer.
+    vkResetCommandBuffer(m_swapCommandBuffers[m_currentFrame], 0);
+
+    // Begin the command buffer for this frame, submissions are open.
+    const VkCommandBufferBeginInfo beginInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .pInheritanceInfo = nullptr
+    };
+
+    if (vkBeginCommandBuffer(m_swapCommandBuffers[m_currentFrame], &beginInfo) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not begin a command buffer after this frame!");
+    }
+
+    const std::array<VkClearValue, 2> clearValues{{
+        {
+            .color = {
+                .float32 = { 0.596f, 0.757f, 0.851f, 1.0f }
+            }
+        },
+        {
+            .depthStencil = {
+                .depth = 0.0f,
+                .stencil = 0
+            }
+        }
+    }};
+    const Extent2D extent = m_swapchain.getSwapchainExtent();
+    const VkRenderPassBeginInfo renderPassBeginInfo{
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
+        .pNext = nullptr,
+        .renderPass = m_pass,
+        .framebuffer = m_swapFramebuffers[m_imageIndex],
+        .renderArea = { 
+            {0, 0}, // offset
+            {(uint32_t)extent.width, (uint32_t)extent.height}, //extent
+        },
+        .clearValueCount = (uint32_t)clearValues.size(),
+        .pClearValues = clearValues.data(),
+    };
+
+    vkCmdBeginRenderPass(m_swapCommandBuffers[m_currentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    
+}
+
+void Renderer::endFrame()
+{
+    if (m_deadFrame)
+    {
+        m_deadFrame = false;
+        return;
+    }
+
+    // End the previous command buffer.
+    vkCmdEndRenderPass(m_swapCommandBuffers[m_currentFrame]);
+    vkEndCommandBuffer(m_swapCommandBuffers[m_currentFrame]);
+
+    // Submit the command buffer for rendering.
     const VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[m_currentFrame]};
     const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
     const VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphores[m_currentFrame]};
@@ -83,6 +135,7 @@ void Renderer::displayFrame()
 
     VkResult result = {};
 
+    // Present the rendered image.
     const VkSwapchainKHR swapChains[] = {m_swapchain.getSwapchain()};
     const VkPresentInfoKHR presentInfo{
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -99,21 +152,15 @@ void Renderer::displayFrame()
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized)
     {
-        //m_framebufferResized = false;
-        
-        // Swapchain must be recreated
-        return;
+        // Recreate the swapchain next frame.
     }
     else if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Could not queue the vulkan present!");
     }
 
-    vkResetCommandBuffer(m_swapCommandBuffers[m_currentFrame], 0);
-
+    // Move the frame number to the next in sequence.
     m_currentFrame = (m_currentFrame + 1) % DEFAULT_FRAMES_IN_FLIGHT;
-
-    beginRender();
 }
 
 void Renderer::createRenderPass()
@@ -312,6 +359,8 @@ void Renderer::createSyncObjects()
 
 void Renderer::recreateSwappable(bool destroy)
 {
+    vkDeviceWaitIdle(m_renderDevice.getDevice());
+    
     if (destroy)
         destroySwappable();
 
@@ -337,61 +386,6 @@ void Renderer::destroySwappable()
         vkDestroySemaphore(m_renderDevice.getDevice(), m_renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(m_renderDevice.getDevice(), m_inFlightFences[i], nullptr);
     }
-}
-
-void Renderer::beginRender()
-{
-    // Begin recording the next frame
-    const VkCommandBufferBeginInfo beginInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .pInheritanceInfo = nullptr
-    };
-
-    if (vkBeginCommandBuffer(m_swapCommandBuffers[m_currentFrame], &beginInfo) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not begin a command buffer after this frame!");
-    }
-
-    const std::array<VkClearValue, 2> clearValues{{
-        {
-            .color = {
-                .float32 = { 1.0f, 1.0f, 1.0f, 1.0f }
-            }
-        },
-        {
-            .depthStencil = {
-                .depth = 0.0f,
-                .stencil = 0
-            }
-        }
-    }};
-    const Extent2D extent = m_swapchain.getSwapchainExtent();
-    const VkRenderPassBeginInfo renderPassBeginInfo{
-        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
-        .pNext = nullptr,
-        .renderPass = m_pass,
-        .framebuffer = m_swapFramebuffers[m_imageIndex],
-        .renderArea = { 
-            {0, 0}, // offset
-            {(uint32_t)extent.width, (uint32_t)extent.height}, //extent
-        },
-        .clearValueCount = (uint32_t)clearValues.size(),
-        .pClearValues = clearValues.data(),
-    };
-
-    vkCmdBeginRenderPass(m_swapCommandBuffers[m_currentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    
-}
-
-void Renderer::endRender()
-{
-
-    /* End the previous command buffer. */
-
-    vkCmdEndRenderPass(m_swapCommandBuffers[m_currentFrame]);
-    vkEndCommandBuffer(m_swapCommandBuffers[m_currentFrame]);
 }
 
 } // namespace bl

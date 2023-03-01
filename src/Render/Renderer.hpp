@@ -25,6 +25,8 @@ public:
     Renderer(Window& window, RenderDevice& renderDevice, Swapchain& swapchain);
     ~Renderer();
 
+    void beginFrame();
+    void endFrame();
     void submit(const Submission& submission);
     void displayFrame();
 private:
@@ -45,9 +47,10 @@ private:
     Image m_depthImage;
     VkRenderPass m_pass;
     uint32_t m_currentFrame;
+    uint32_t m_previousFrame;
     uint32_t m_imageIndex;
     bool m_framebufferResized;
-    bool m_firstFrame;
+    bool m_deadFrame;
     std::vector<VkCommandBuffer> m_swapCommandBuffers;
     std::vector<VkImageView> m_swapImageViews;
     std::vector<VkFramebuffer> m_swapFramebuffers;

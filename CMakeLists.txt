@@ -11,7 +11,14 @@ if(CMAKE_EXPORT_COMPILE_COMMANDS)
 endif()
 
 # Build some libraries
-set (DARKRED_USE_PACKAGE_MANAGER OFF)
+set (DARKRED_USE_PACKAGE_MANAGER ON CACHE BOOL "If you use a package manager we will find the packages.")
+
+if (DARKRED_USE_PACKAGE_MANAGER)
+    message("Using package manager")
+    find_package(glfw3)
+    find_package(glm)
+    find_package(spdlog)
+endif()
 
 if (NOT DARKRED_USE_PACKAGE_MANAGER)
     add_subdirectory("lib")
@@ -52,3 +59,6 @@ find_package(Vulkan REQUIRED)
 
 target_include_directories(DarkRed PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(DarkRed ${Vulkan_LIBRARY})
+
+# Disable optimizations when debugging
+target_compile_options(DarkRed PUBLIC -Og)

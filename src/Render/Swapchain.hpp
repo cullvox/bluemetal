@@ -27,6 +27,7 @@ private:
     void findImageCount();
     void findSurfaceFormat();
     void findPresentMode();
+    void findExtent();
     void getImages();
     void destroySwapchain();
     void recreateSwapchain();
@@ -38,6 +39,7 @@ private:
     uint32_t            m_imageCount;
     VkSurfaceFormatKHR  m_surfaceFormat;
     VkPresentModeKHR    m_presentMode;
+    Extent2D            m_extent;
     VkSwapchainKHR      m_swapchain;
     bool                m_wasRecreated;
     std::vector<VkImage> m_swapImages;
