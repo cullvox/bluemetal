@@ -1,35 +1,7 @@
 
-# Find the libraries we need on the system.
-# If we don't find them ask the user to pull recursively.
+# On windows/macos or platforms without package managers 
+# use recursively cloned libraries using it.
 
-
-find_package (spdlog)
-find_package (glfw3)
-find_package (GLM)
-
-
-if (NOT LIB_SPDLOG)
-    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/spdlog")
-        add_subdirectory("spdlog")
-    else ()
-        message (FATAL_ERROR "Could not find required library: \"spdlog\". Consider recursivly cloning the project.")
-    endif ()
-endif ()
-
-if (NOT LIB_GLFW)
-    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/glfw")
-        add_subdirectory("glfw")
-    else ()
-        message (FATAL_ERROR "Could not find required library: \"glfw\". Consider recursivly cloning the project.")
-    endif ()
-endif ()
-
-if (NOT GLM_FOUND)
-    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/glm")
-        add_subdirectory("glm")
-    else ()
-        message (FATAL_ERROR "Could not find required library: \"glm\". Consider recursivly cloning the project.")
-    endif ()
-endif ()
-
-
+add_subdirectory("spdlog") # spdlog v1.10.0+
+add_subdirectory("glfw") # glfw 3.4+
+add_subdirectory("glm") # glm 9.9.9.8+ (go to 1.0 already...)

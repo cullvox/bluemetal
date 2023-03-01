@@ -35,6 +35,8 @@ private:
     void createSyncObjects();
     void recreateSwappable(bool destroy = true);
     void destroySwappable();
+    void beginRender();
+    void endRender();
 
     Window& m_window;
     RenderDevice& m_renderDevice;

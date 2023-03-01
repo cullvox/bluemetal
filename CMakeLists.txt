@@ -11,7 +11,11 @@ if(CMAKE_EXPORT_COMPILE_COMMANDS)
 endif()
 
 # Build some libraries
-add_subdirectory("lib")
+set (DARKRED_USE_PACKAGE_MANAGER OFF)
+
+if (NOT DARKRED_USE_PACKAGE_MANAGER)
+    add_subdirectory("lib")
+endif()
 
 set(sources
     "src/core/Debug.cpp"
@@ -39,10 +43,6 @@ add_executable(DarkRed ${sources})
 set_property(TARGET DarkRed PROPERTY CXX_STANDARD 20)
 
 target_include_directories(DarkRed PUBLIC "src")
-
-#target_compile_definitions(DarkRed PUBLIC SPDLOG_FMT_EXTERNAL) # Use an external version of FMT
-
-find_package(spdlog REQUIRED)
 
 # Link
 target_link_libraries(DarkRed spdlog::spdlog glfw)
