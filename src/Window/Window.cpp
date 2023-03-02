@@ -26,9 +26,16 @@ void Window::create(VideoMode videoMode, std::optional<Screen> screen, std::stri
 
     // Apply the window hints for vulkan.
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    glfwWindowHint(GLFW_REFRESH_RATE, 0);
 
     // Create the GLFW window
-    m_pWindow = glfwCreateWindow(videoMode.resolution.width, videoMode.resolution.height, title.c_str(), nullptr, nullptr);
+    GLFWmonitor* pMonitor = nullptr;
+    if (screen.has_value())
+    {
+        pMonitor = (GLFWmonitor*)screen->getHandle();
+    }
+
+    m_pWindow = glfwCreateWindow(videoMode.resolution.width, videoMode.resolution.height, title.c_str(), pMonitor, nullptr);
     if (!m_pWindow)
     {
         throw std::runtime_error("Could not create the GLFW window!");       

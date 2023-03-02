@@ -5,8 +5,8 @@
 
 namespace bl {
 
-Screen::Screen(unsigned int screen, const std::string& name, Extent2D resolution, Vector2f contentScale, unsigned int refreshRate, const std::vector<VideoMode>& videoModes, VideoMode desktopMode)
-    : screen(screen), name(name), resolution(resolution), contentScale(contentScale), refreshRate(refreshRate), m_videoModes(videoModes), m_desktopMode(desktopMode)
+Screen::Screen(GLFWmonitor* pMonitor, unsigned int screen, const std::string& name, Extent2D resolution, Vector2f contentScale, unsigned int refreshRate, const std::vector<VideoMode>& videoModes, VideoMode desktopMode)
+    : m_pMonitor(pMonitor), screen(screen), name(name), resolution(resolution), contentScale(contentScale), refreshRate(refreshRate), m_videoModes(videoModes), m_desktopMode(desktopMode)
 {
 }
 
@@ -82,7 +82,7 @@ std::vector<Screen> Screen::getScreens()
 
         VideoMode desktopMode{desktopModeResolution, bestMode.bitsPerPixel, bestMode.refreshRate};
 
-        const Screen screen{(unsigned int)i, name, bestMode.resolution, contentScale, bestMode.refreshRate, videoModes, desktopMode};
+        const Screen screen{pMonitor, (unsigned int)i, name, bestMode.resolution, contentScale, bestMode.refreshRate, videoModes, desktopMode};
 
         screens.emplace_back(screen);
     }

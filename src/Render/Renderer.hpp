@@ -22,7 +22,7 @@ class Renderer
 public:
     static const inline uint32_t DEFAULT_FRAMES_IN_FLIGHT = 2; 
 
-    Renderer(Window& window, RenderDevice& renderDevice, Swapchain& swapchain);
+    Renderer(RenderDevice& renderDevice, Swapchain& swapchain);
     ~Renderer();
 
     void beginFrame();
@@ -40,7 +40,6 @@ private:
     void beginRender();
     void endRender();
 
-    Window& m_window;
     RenderDevice& m_renderDevice;
     Swapchain& m_swapchain;
     VkFormat m_depthFormat;

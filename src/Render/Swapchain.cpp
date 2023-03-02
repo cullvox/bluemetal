@@ -228,7 +228,7 @@ void Swapchain::recreateSwapchain()
         .pQueueFamilyIndices = pQueueFamilyIndices,
         .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
         .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
-        .presentMode = m_presentMode,
+        .presentMode = VK_PRESENT_MODE_FIFO_KHR, // m_presentMode,
         .clipped = VK_TRUE,
         .oldSwapchain = VK_NULL_HANDLE,
     };
@@ -237,6 +237,8 @@ void Swapchain::recreateSwapchain()
     {
         throw std::runtime_error("Couldn't create a vulkan swapchain!");
     }
+
+    spdlog::info("Resizing Swapchain: \n\tExtent2D: {{ Width: {}, Height: {} }}", m_extent.width, m_extent.height);
 
     getImages();
 }

@@ -10,8 +10,8 @@
 
 namespace bl {
 
-Renderer::Renderer(Window& window, RenderDevice& renderDevice, Swapchain& swapchain)
-    : m_window(window), m_renderDevice(renderDevice), m_swapchain(swapchain), m_depthImage(), m_currentFrame(0), m_imageIndex(0), m_deadFrame(false), m_framebufferResized(false)
+Renderer::Renderer(RenderDevice& renderDevice, Swapchain& swapchain)
+    : m_renderDevice(renderDevice), m_swapchain(swapchain), m_depthImage(), m_currentFrame(0), m_imageIndex(0), m_deadFrame(false), m_framebufferResized(false)
 {
     spdlog::info("Creating vulkan renderer.");
     
@@ -31,7 +31,7 @@ Renderer::~Renderer()
 
 void Renderer::submit(const Submission& submission)
 {
-
+    vkCmdBindPipeline(m_swapCommandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, submission.pipeline);
 }
 
 void Renderer::beginFrame()

@@ -26,7 +26,7 @@ public:
     unsigned int refreshRate;
 
 private:
-    Screen(unsigned int screen, const std::string& name, Extent2D resolution, Vector2f contentScale, unsigned int refreshRate, const std::vector<VideoMode>& videoModes, VideoMode desktopMode);
+    Screen(GLFWmonitor* pMonitor, unsigned int screen, const std::string& name, Extent2D resolution, Vector2f contentScale, unsigned int refreshRate, const std::vector<VideoMode>& videoModes, VideoMode desktopMode);
 
     GLFWmonitor*            m_pMonitor;
     std::vector<VideoMode>  m_videoModes;
