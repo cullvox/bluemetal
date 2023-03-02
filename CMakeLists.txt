@@ -13,16 +13,7 @@ endif()
 # Build some libraries
 set (DARKRED_USE_PACKAGE_MANAGER ON CACHE BOOL "If you use a package manager we will find the packages.")
 
-if (DARKRED_USE_PACKAGE_MANAGER)
-    message("Using package manager")
-    find_package(glfw3)
-    find_package(glm)
-    find_package(spdlog)
-endif()
-
-if (NOT DARKRED_USE_PACKAGE_MANAGER)
-    add_subdirectory("lib")
-endif()
+add_subdirectory("lib")
 
 set(sources
     "src/core/Debug.cpp"
@@ -40,10 +31,16 @@ set(sources
     "src/Window/Window.cpp"
     
     "src/Render/RenderDevice.cpp"
+    "src/Render/Buffer.cpp"
     "src/Render/Image.cpp"
+    "src/Render/Pipeline.cpp"
     "src/Render/Swapchain.cpp"
     "src/Render/Renderer.cpp"
-    "src/Render/Buffer.cpp"
+    
+    "src/Render/FrameCounter.cpp"
+
+    "src/Input/Input.cpp"
+
     "src/Main.cpp")
 
 add_executable(DarkRed ${sources})
@@ -52,7 +49,7 @@ set_property(TARGET DarkRed PROPERTY CXX_STANDARD 20)
 target_include_directories(DarkRed PUBLIC "src")
 
 # Link
-target_link_libraries(DarkRed spdlog::spdlog glfw)
+target_link_libraries(DarkRed spdlog::spdlog glfw spirv-reflect-static)
 
 # Include vulkan headers
 find_package(Vulkan REQUIRED)
@@ -61,4 +58,6 @@ target_include_directories(DarkRed PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(DarkRed ${Vulkan_LIBRARY})
 
 # Disable optimizations when debugging
-target_compile_options(DarkRed PUBLIC -Og)
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(DarkRed PUBLIC -Og)
+endif()

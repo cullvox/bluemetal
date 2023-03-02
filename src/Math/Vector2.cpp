@@ -66,7 +66,7 @@ Vector2i& Vector2i::operator/(const Vector2i& rhs) noexcept
 
 long Vector2i::magnitude() const noexcept
 {
-    return std::sqrt(x*x + y*y);
+    return std::sqrtl(x*x + y*y);
 }
 
 long Vector2i::distance(const Vector2i& other) const noexcept

@@ -6,10 +6,10 @@
 #include "Render/RenderDevice.hpp"
 #include "Render/Swapchain.hpp"
 #include "Render/Renderer.hpp"
+#include "Render/FrameCounter.hpp"
+#include "Input/Input.hpp"
 
 #include <spdlog/spdlog.h>
-
-#include <chrono>
 
 int main(int argc, const char** argv)
 {
@@ -17,25 +17,22 @@ int main(int argc, const char** argv)
     bl::RenderDevice renderDevice{window};
     bl::Swapchain swapchain{window, renderDevice};
     bl::Renderer renderer{renderDevice, swapchain};
+    bl::FrameCounter frameCounter{};
 
-    int frames;
-    auto previous = std::chrono::system_clock::now();
-    auto now = std::chrono::system_clock::now();
     while (true) // window.shouldNotClose()
     {
-        now = std::chrono::system_clock::now();
-        if (now - previous > std::chrono::seconds(1))
-        {
-            previous = now;
-            spdlog::info("FPS: {}", frames);
-            frames = 0;
-        }
+        frameCounter.beginFrame();
+
+        bl::Input::poll();        
 
         renderer.beginFrame();
-
         
-
         renderer.endFrame();
-        frames++;
+
+        if (frameCounter.endFrame())
+        {
+            spdlog::info("Rendering at: {} f/s and {} ms/f\n\tavg f/s: {} and avg ms/f: {}", frameCounter.getFramesPerSecond(), frameCounter.getMillisecondsPerFrame(), frameCounter.getAverageFramesPerSecond(10), frameCounter.getAverageMillisecondsPerFrame(10));
+        }
+        
     }
 }

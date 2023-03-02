@@ -75,6 +75,10 @@
         "variant": "cpp",
         "charconv": "cpp",
         "span": "cpp",
-        "format": "cpp"
+        "format": "cpp",
+        "xhash": "cpp",
+        "xstring": "cpp",
+        "xmemory": "cpp",
+        "filesystem": "cpp"
     }
 }

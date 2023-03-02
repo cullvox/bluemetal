@@ -31,7 +31,7 @@ Renderer::~Renderer()
 
 void Renderer::submit(const Submission& submission)
 {
-    vkCmdBindPipeline(m_swapCommandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, submission.pipeline);
+    //vkCmdBindPipeline(m_swapCommandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, submission.pipeline);
 }
 
 void Renderer::beginFrame()
