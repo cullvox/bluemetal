@@ -1,6 +1,7 @@
 
 list(APPEND MathSources
-    "Source/Vector2.cpp")
+    "Source/Vector2.cpp"
+    "Source/Vector3.cpp")
 
 add_library(BloodLustMath SHARED ${MathSources})
 add_library( bl::Math ALIAS BloodLustMath)

@@ -1,38 +1,64 @@
 #pragma once
 
+#include "Input/InputEvents.hpp"
+#include "Input/InputSystem.hpp"
+
+#include <string>
+
 namespace bl {
-enum class InputDevice {
-    keyboardAndMouse,
-    gamePad,
+
+struct InputActionBindInfo
+{
+    InputAction actionType;
+    union action
+    {
+        KeyEvent key;
+        MouseButtonEvent mouse;
+        GamepadButtonEvent gamepad;
+    };
 };
 
-enum class ActionType {
-    key,
-    mouseButton,
-    gamePadButton,
+struct InputAxisBindInfo
+{
+    InputAxis axisType;
 };
 
-enum class AxisType {
-    mousePosition,
-    gamePadStick,
-}
+template<class TClass>
+class InputActionDelegate
+{
+public:
+    typedef void (TClass::*DelegateFunction)();
 
+    void Execute();
+    
+private:
+    DelegateFunction function;
+    TClass* pObject;
+};
+
+// Handles individual inputs for actions/axis as bindable for player controls
 class InputController
 {
 public:
     InputController(InputSystem& system);
     ~InputController();
 
-    void registerAction();
+    void registerAction(const std::string& name, InputActionBindInfo& binding);
+    void registerAxis(const std::string& name, InputAxisBindInfo& binding);
+
+    template<class T>
+    void bindAction(const std::string& name, T* pObject, void(T::pCallback)());
 
 private:
     struct InputAction
     {
+        int joystickId;
 
     };
 
     struct InputAxis
     {
+        int joystickId;
         Vector3f axis;
     };
 
