@@ -1,63 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
-project(DarkRed)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+project(BloodLust)
 
-# Compile commands for clangd
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-if(CMAKE_EXPORT_COMPILE_COMMANDS)
-  set(CMAKE_CXX_STANDARD_INCLUDE_DIRECTORIES 
-      ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES})
-endif()
+OPTION(BLOODLUST_USE_PACKAGE_MANAGER ON "Uses the system to find packages.")
+OPTION(BLOODLUST_DEBUGGING ON "Enables debugging commands in engine.")
 
-# Build some libraries
-set (DARKRED_USE_PACKAGE_MANAGER ON CACHE BOOL "If you use a package manager we will find the packages.")
+find_package(PkgConfig REQUIRED)
 
-add_subdirectory("lib")
-
-set(sources
-    "src/core/Debug.cpp"
-
-    "src/Math/Vector2.cpp"
-
-    "src/config/ConfigToken.cpp"
-    "src/config/ConfigLexer.cpp"
-    "src/config/ConfigParser.cpp"
-    "src/config/Config.cpp"
-
-    "src/Window/GLFW.cpp"
-    "src/Window/VideoMode.cpp"
-    "src/Window/Screen.cpp"
-    "src/Window/Window.cpp"
-    
-    "src/Render/RenderDevice.cpp"
-    "src/Render/Buffer.cpp"
-    "src/Render/Image.cpp"
-    "src/Render/Pipeline.cpp"
-    "src/Render/Swapchain.cpp"
-    "src/Render/Renderer.cpp"
-    
-    "src/Render/FrameCounter.cpp"
-
-    "src/Input/Input.cpp"
-
-    "src/Main.cpp")
-
-add_executable(DarkRed ${sources})
-set_property(TARGET DarkRed PROPERTY CXX_STANDARD 20)
-
-target_include_directories(DarkRed PUBLIC "src")
-
-# Link
-target_link_libraries(DarkRed spdlog::spdlog glfw spirv-reflect-static)
-
-# Include vulkan headers
-find_package(Vulkan REQUIRED)
-
-target_include_directories(DarkRed PUBLIC ${Vulkan_INCLUDE_DIRS})
-target_link_libraries(DarkRed ${Vulkan_LIBRARY})
-
-# Disable optimizations when debugging
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(DarkRed PUBLIC -Og)
-endif()
+add_subdirectory("ThirdParty")
+add_subdirectory("Engine")
+add_subdirectory("Game")

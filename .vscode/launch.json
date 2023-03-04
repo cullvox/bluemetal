@@ -19,7 +19,7 @@
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/DarkRed",
+            "program": "${workspaceFolder}/build/Game/DarkRed",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
