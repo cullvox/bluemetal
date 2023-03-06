@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 namespace bl
 {
 
@@ -7,8 +9,8 @@ class Vector2i
 {
 public:
     Vector2i() noexcept;
-    Vector2i(long x, long z) noexcept;
-    Vector2i(long xy) noexcept;
+    Vector2i(int32_t x, int32_t z) noexcept;
+    Vector2i(int32_t xy) noexcept;
     Vector2i(const Vector2i& rhs) noexcept;
 
     Vector2i& operator=(const Vector2i& rhs) noexcept;
@@ -17,11 +19,11 @@ public:
     Vector2i& operator*(const Vector2i& rhs) noexcept;
     Vector2i& operator/(const Vector2i& rhs) noexcept;
 
-    long magnitude() const noexcept;
-    long distance(const Vector2i& other) const noexcept;
+    int32_t magnitude() const noexcept;
+    int32_t distance(const Vector2i& other) const noexcept;
 
-    long x;
-    long y;
+    int32_t x;
+    int32_t y;
 };
 
 class Vector2f
@@ -48,11 +50,38 @@ class Extent2D
 {
 public:
     Extent2D();
-    Extent2D(unsigned long width, unsigned long height);
-    Extent2D(unsigned long widthHeight);
+    Extent2D(uint32_t width, uint32_t height);
+    Extent2D(uint32_t widthHeight);
 
-    unsigned long width;
-    unsigned long height;
+    uint32_t width;
+    uint32_t height;
+};
+
+struct Rect2D
+{
+public:
+    /// @brief Default constructor
+    Rect2D() = default;
+
+    /// @brief Constructs with the offset and extent filled
+    /// @param offset Where the rect starts
+    /// @param extent How far the rect goes
+    Rect2D(Vector2i offset, Extent2D extent)
+        : offset(offset), extent(extent) { }
+
+    /// @brief Constructs an expanded version of the rect
+    /// @param offsetX offset.x
+    /// @param offsetY offset.y
+    /// @param extentX extent.x
+    /// @param extentY extent.y 
+    Rect2D(int32_t offsetX, int32_t offsetY, uint32_t extentX, uint32_t extentY)
+        : offset(Vector2i{offsetX, offsetY}), extent(Extent2D{extentX, extentY}) { }
+
+    /// @brief Where the rect starts
+    Vector2i offset;
+
+    /// @brief How far the rect goes
+    Extent2D extent;
 };
 
 } /* namespace bl*/

@@ -1,77 +1,88 @@
+#include "Core/Precompiled.hpp"
+#include "Core/Log.hpp"
 #include "Window/Window.hpp"
-#include "GLFW/glfw3.h"
-#include "Window/Screen.hpp"
+#include "Window/Display.hpp"
 
-#include <stdexcept>
-
+#include <SDL2/SDL_vulkan.h>
 
 namespace bl {
 
-Window::Window()
+Window::Window(VideoMode videoMode, const std::string& title, bool fullscreen) noexcept
 {
-}
-
-Window::Window(VideoMode videoMode, std::optional<Screen> screen, std::string title)
-{
-    create(videoMode, screen, title);
+    if (!open(videoMode, title, fullscreen))
+    {
+        Logger::Log("Could not properly construct a window!");
+    }
 }
 
 Window::~Window()
 {
-    if (m_pWindow) glfwDestroyWindow(m_pWindow);
+    if (m_pWindow)
+    {
+        SDL_DestroyWindow(m_pWindow);
+    }
 }
 
-void Window::create(VideoMode videoMode, std::optional<Screen> screen, std::string title)
+bool Window::open(VideoMode videoMode, const std::string& title, bool fullscreen) noexcept
 {
 
-    // Apply the window hints for vulkan.
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-    glfwWindowHint(GLFW_REFRESH_RATE, 0);
-
-    // Check if we are going to be using a specific full screen monitor.
-    GLFWmonitor* pMonitor = nullptr;
-    if (screen.has_value())
-    {
-        pMonitor = (GLFWmonitor*)screen->getHandle();
-    }
+    // Build the flags for the window.
+    uint32_t flags = SDL_WINDOW_VULKAN;
+    
+    if (fullscreen)
+        flags |= SDL_WINDOW_FULLSCREEN;
 
     // Create the window.
-    m_pWindow = glfwCreateWindow(videoMode.resolution.width, videoMode.resolution.height, title.c_str(), pMonitor, nullptr);
+    m_pWindow = SDL_CreateWindow(title.c_str(), videoMode.rect.offset.x, videoMode.rect.offset.y, videoMode.rect.extent.width, videoMode.rect.extent.height, flags);
+    
     if (!m_pWindow)
     {
-        throw std::runtime_error("Could not create the GLFW window!");       
+        Logger::Log("Could not create an SDL2 window!");
+        return false;
     }
 
-    // Set the user pointer to this window for later usage in callbacks.
-    glfwSetWindowUserPointer(m_pWindow, this);
+    return true;
 }
 
-bool Window::createVulkanSurface(VkInstance instance, VkSurfaceKHR& surface) noexcept
+bool Window::good() const noexcept
 {
-    return glfwCreateWindowSurface(instance, m_pWindow, nullptr, &surface) == VK_SUCCESS;
-}
-
-GLFWwindow* Window::getHandle() const noexcept
-{
-    return m_pWindow;
+    // A window is considered bad if it was not created.
+    return m_pWindow != nullptr;
 }
 
 Extent2D Window::getExtent() const noexcept
 {
     int width = 0, height = 0;
-    glfwGetWindowSize(m_pWindow, &width, &height);
-    return Extent2D{(unsigned long)width, (unsigned long)height};
+    SDL_GetWindowSize(m_pWindow, &width, &height);
+    return Extent2D{(uint32_t)width, (uint32_t)height};
 }
 
-const std::vector<const char*>& Window::getSurfaceExtensions()
+SDL_Window* Window::getHandle() const noexcept
 {
-    uint32_t extensionsCount = 0;
-    const char** ppExtensions = glfwGetRequiredInstanceExtensions(&extensionsCount);
+    return m_pWindow;
+}
 
-    /* I don't like having to make this static, but it really isn't that bad for a function guaranteed to be used only once. */
-    static std::vector<const char*> instanceExtensions{ppExtensions, ppExtensions + extensionsCount};
+bool Window::createVulkanSurface(VkInstance instance, VkSurfaceKHR& surface) const noexcept
+{
+    return SDL_Vulkan_CreateSurface(m_pWindow, instance, &surface);
+}
+
+bool Window::getVulkanInstanceExtensions(std::vector<const char*>& extensions) const noexcept
+{
+    unsigned int extensionsCount = 0;
+    if (!SDL_Vulkan_GetInstanceExtensions(m_pWindow, &extensionsCount, nullptr))
+    {
+        Logger::Log("Could not get the vulkan instance extension count!");
+    }
+
+    extensions.resize(extensionsCount);
     
-    return instanceExtensions;
+    if (!SDL_Vulkan_GetInstanceExtensions(m_pWindow, &extensionsCount, extensions.data()))
+    {
+        Logger::Log("Could not get the vulkan instance extensions!");
+    }
+
+    return true;
 }
 
 } /* namespace bl */

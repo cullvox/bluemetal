@@ -10,6 +10,9 @@
 #include "Config/ConfigParser.hpp"
 //===========================//
 
+namespace bl
+{
+
 class IConfigurable;
 class CConfig
 {
@@ -54,4 +57,4 @@ private:
     std::vector<const IConfigurable*>               m_subscribers;
 };
 
-inline std::unique_ptr<CConfig> g_pConfig;
+} // namespace bl

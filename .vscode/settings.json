@@ -79,6 +79,9 @@
         "xhash": "cpp",
         "xstring": "cpp",
         "xmemory": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "bitset": "cpp",
+        "regex": "cpp",
+        "cassert": "cpp"
     }
 }

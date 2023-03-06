@@ -15,12 +15,12 @@ Vector2i::Vector2i() noexcept
 {
 }
 
-Vector2i::Vector2i(long x, long y) noexcept
+Vector2i::Vector2i(int32_t x, int32_t y) noexcept
     : x(x), y(y)
 {
 }
 
-Vector2i::Vector2i(long xy) noexcept
+Vector2i::Vector2i(int32_t xy) noexcept
     : x(xy), y(xy)
 {
 }
@@ -65,15 +65,15 @@ Vector2i& Vector2i::operator/(const Vector2i& rhs) noexcept
     return *this;
 }
 
-long Vector2i::magnitude() const noexcept
+int32_t Vector2i::magnitude() const noexcept
 {
     return std::sqrt(x*x + y*y);
 }
 
-long Vector2i::distance(const Vector2i& other) const noexcept
+int32_t Vector2i::distance(const Vector2i& other) const noexcept
 {
-    const long xm = (other.x - x);
-    const long ym = (other.y - y);
+    const int32_t xm = (other.x - x);
+    const int32_t ym = (other.y - y);
     return std::sqrt(xm*xm + ym*ym);
 }
 
@@ -141,25 +141,6 @@ float Vector2f::distance(const Vector2f& other) const noexcept
     const float xm = (other.x - x);
     const float ym = (other.y - y);
     return std::sqrt(xm*xm + ym*ym);
-}
-
-//===========================//
-/* Extent2D */
-//===========================//
-
-Extent2D::Extent2D()
-    : width(0), height(0)
-{
-}
-
-Extent2D::Extent2D(unsigned long width, unsigned long height)
-    : width(width), height(height)
-{
-}
-
-Extent2D::Extent2D(unsigned long widthHeight)
-    : width(widthHeight), height(widthHeight)
-{
 }
 
 } /* namespace bl */

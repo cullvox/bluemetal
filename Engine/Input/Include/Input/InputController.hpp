@@ -1,66 +1,68 @@
 #pragma once
 
+#include "Core/Delegate.hpp"
 #include "Input/InputEvents.hpp"
-#include "Input/InputSystem.hpp"
 
+#include <memory>
+#include <vector>
 #include <string>
 
 namespace bl {
 
-struct InputActionBindInfo
+using ActionDelegate = Delegate<void(void)>;
+using AxisDelegate = Delegate<void(float)>;
+
+struct InputActionBinding
 {
-    InputAction actionType;
-    union action
-    {
-        KeyEvent key;
-        MouseButtonEvent mouse;
-        GamepadButtonEvent gamepad;
-    };
+    std::string name;
+    InputEvent event;
+    ActionDelegate actionDelegate;
 };
 
-struct InputAxisBindInfo
+struct InputAxisBinding
 {
-    InputAxis axisType;
-};
-
-template<class TClass>
-class InputActionDelegate
-{
-public:
-    typedef void (TClass::*DelegateFunction)();
-
-    void Execute();
-    
-private:
-    DelegateFunction function;
-    TClass* pObject;
+    std::string name;
+    AxisDelegate axisDelegate;
+    float scale;
 };
 
 // Handles individual inputs for actions/axis as bindable for player controls
 class InputController
 {
 public:
-    InputController(InputSystem& system);
-    ~InputController();
 
-    void registerAction(const std::string& name, InputActionBindInfo& binding);
-    void registerAxis(const std::string& name, InputAxisBindInfo& binding);
+    InputController() = default;
+    ~InputController() = default;
 
-    template<class T>
-    void bindAction(const std::string& name, T* pObject, void(T::pCallback)());
+    template<auto TCandidate, class TClass>
+    void bindAction(const std::string& name, InputEvent event, TClass* pObject)
+    {
+        ActionDelegate delegate{};
+        delegate.connect<TCandidate, TClass>(pObject);
+        m_actionBindings.emplace_back(InputActionBinding{name, event, delegate});
+    }
+
+    void bindAction(const std::string& name, InputEvent event, void (*pFunction)(const void*), const void* data)
+    {
+        ActionDelegate delegate{pFunction, data};
+        m_actionBindings.emplace_back(InputActionBinding{name, event, delegate});
+    }
+
+    template<auto TCandidate, class TClass>
+    void bindAxis(const std::string& name, TClass* pObject)
+    {
+        AxisDelegate delegate{};
+        delegate.connect<TCandidate, TClass>(pObject);
+        m_axisBindings.emplace_back(InputAxisBinding{name, delegate, 0.0f});
+    }
+
+    void onActionEvent(const std::string& name, InputEvent input);
+    void onAxisEvent(const std::string& name, float axis);
 
 private:
-    struct InputAction
-    {
-        int joystickId;
+    std::vector<InputActionBinding> m_actionBindings;
+    std::vector<InputAxisBinding> m_axisBindings;
 
-    };
-
-    struct InputAxis
-    {
-        int joystickId;
-        Vector3f axis;
-    };
-
+    friend class InputSystem;
 };
 } // namespace bl

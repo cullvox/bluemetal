@@ -4,6 +4,9 @@
 
 #include "Config.hpp"
 
+namespace bl
+{
+
 class CConfig;
 
 class IConfigurable
@@ -18,3 +21,5 @@ public:
     virtual void OnConfigPreSave() {}
     virtual void OnConfigChanged(const SParsedValue&) {}
 };
+
+} // namespace bl

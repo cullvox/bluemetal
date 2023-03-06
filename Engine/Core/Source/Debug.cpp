@@ -1,1 +1,1 @@
-#include "Core/Debug.hpp"
+#include "Core/Log.hpp"

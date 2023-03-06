@@ -17,7 +17,10 @@ Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
 {
     spdlog::info("Creating vulkan swapchain.");
     
-    m_window.createVulkanSurface(m_renderDevice.getInstance(), m_surface);
+    if (!m_window.createVulkanSurface(m_renderDevice.getInstance(), m_surface))
+    {
+        throw std::runtime_error("Could not create the vulkan surface!");
+    }
     ensureSurfaceSupported();
     recreateSwapchain();
 }
@@ -164,8 +167,8 @@ void Swapchain::findExtent()
     {
         const Extent2D extent = m_window.getExtent();
         m_extent = Extent2D{
-            std::clamp(extent.width, (unsigned long)capabilities.minImageExtent.width, (unsigned long)capabilities.maxImageExtent.width),
-            std::clamp(extent.height, (unsigned long)capabilities.minImageExtent.height, (unsigned long)capabilities.maxImageExtent.height)
+            std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
+            std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
         };
     }
 }

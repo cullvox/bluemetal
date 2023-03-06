@@ -358,9 +358,7 @@ void Renderer::createSyncObjects()
 }
 
 void Renderer::recreateSwappable(bool destroy)
-{
-    vkDeviceWaitIdle(m_renderDevice.getDevice());
-    
+{   
     if (destroy)
         destroySwappable();
 
@@ -371,6 +369,8 @@ void Renderer::recreateSwappable(bool destroy)
 
 void Renderer::destroySwappable()
 {
+    vkDeviceWaitIdle(m_renderDevice.getDevice());
+
     /* Destroy the objects used with the swapchain. */
     vkFreeCommandBuffers(m_renderDevice.getDevice(), m_renderDevice.getCommandPool(), m_swapchain.getImageCount(), m_swapCommandBuffers.data());
     

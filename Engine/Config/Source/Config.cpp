@@ -1,4 +1,4 @@
-#include "Core/Debug.hpp"
+#include "Core/Log.hpp"
 #include "Config/Config.hpp"
 #include "Config/Configurable.hpp"
 #include "Config/ConfigParser.hpp"
@@ -12,6 +12,9 @@
 #include <algorithm>
 #include <filesystem>
 #include <map>
+
+namespace bl
+{
 
 IConfigurable::IConfigurable(CConfig *const pConfig)
     : m_pConfig(pConfig)
@@ -119,7 +122,7 @@ void CConfig::ResetIfConfigDoesNotExist()
 
 void CConfig::ParseInto()
 {
-    Debug::Log("Opening config: {}\n", m_path);
+    Logger::Debug("Opening config: {}\n", m_path);
 
     /* Open the config file. */
     std::ifstream configFile(m_path, std::ios::in);
@@ -134,10 +137,10 @@ void CConfig::ParseInto()
 
     for (auto pair : m_values)
     {
-        Debug::Log("Value [{}, {}, {}] \n", pair.first, (int)(pair.second.type), (pair.second.type == EParsedType::eInt) ? std::to_string(pair.second.i) : std::string{pair.second.s});
+        Logger::Debug("Value [{}, {}, {}] \n", pair.first, (int)(pair.second.type), (pair.second.type == EParsedType::eInt) ? std::to_string(pair.second.i) : std::string{pair.second.s});
     }
 
-    Debug::Log("Parsed config: {}\n", m_path);
+    Logger::Debug("Parsed config: {}\n", m_path);
 }
 
 std::vector<std::string> DetermineGroups(const std::string& key)
@@ -192,3 +195,5 @@ void CConfig::Save()
     }
 
 }
+
+} // namespace bl

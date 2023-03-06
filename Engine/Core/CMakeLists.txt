@@ -1,5 +1,6 @@
 list(APPEND CoreSources
-    "Source/Debug.cpp")
+    "Source/Debug.cpp"
+    "Source/Delegate.cpp")
 
 add_library(BloodLustCore SHARED ${CoreSources})
 add_library(bl::Core ALIAS BloodLustCore)
@@ -12,6 +13,7 @@ pkg_check_modules(FMT REQUIRED IMPORTED_TARGET fmt)
 target_include_directories(BloodLustCore PUBLIC ${FMT_INCLUDE_DIR} ${SPDLOG_INCLUDE_DIR})
 target_link_libraries(BloodLustCore ${FMT_LIBRARIES} ${SPDLOG_LIBRARIES})
 target_compile_definitions(BloodLustCore PUBLIC SPDLOG_FMT_EXTERNAL)
+target_precompile_headers(BloodLustCore PUBLIC "Include/Core/Precompiled.hpp")
 
 set_target_properties(
     BloodLustCore

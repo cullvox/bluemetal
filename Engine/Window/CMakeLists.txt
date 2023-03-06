@@ -1,7 +1,5 @@
 list(APPEND WindowSources
-    "Source/GLFW.cpp"
-    "Source/VideoMode.cpp"
-    "Source/Screen.cpp"
+    "Source/Display.cpp"
     "Source/Window.cpp")
 
 add_library(BloodLustWindow SHARED ${WindowSources})

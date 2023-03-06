@@ -5,9 +5,13 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
     
-class Debug
+namespace bl 
+{
+
+class Logger
 {
 public:
+
     struct format_string {
         fmt::string_view str;
         std::source_location loc;
@@ -21,13 +25,20 @@ public:
     template<typename... Args>
     static void Log(const format_string& format, Args&&... args)
     {
-#ifndef NDEBUG
         vlog(format, fmt::make_format_args(args...));
+    }
+
+    template<typename... Args>
+    static void Debug(const format_string& format, Args&&... args)
+    {
+#ifndef NDEBUG
+        vdlog(format, fmt::make_format_args(args...));
 #endif
     }
 
+
 private:
-    static void vlog(const format_string& format, fmt::format_args args) {
+    static void vdlog(const format_string& format, fmt::format_args args) {
         const auto& loc = format.loc;
         const std::string path = loc.file_name();
         const std::string filename = path.substr(path.find_last_of("/\\") + 1);
@@ -35,4 +46,15 @@ private:
         spdlog::log(spdlog::level::debug, "{}:{}: ", filename, loc.line());
         fmt::vprint(format.str, args);
     }
+
+    static void vlog(const format_string& format, fmt::format_args args) {
+        const auto& loc = format.loc;
+        const std::string path = loc.file_name();
+        const std::string filename = path.substr(path.find_last_of("/\\") + 1);
+
+        spdlog::log(spdlog::level::info, "{}:{}: ", filename, loc.line());
+        fmt::vprint(format.str, args);
+    }
 };
+
+} // namespace bl

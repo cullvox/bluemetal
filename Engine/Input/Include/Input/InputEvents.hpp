@@ -2,29 +2,28 @@
 
 #include "Math/Vector2.hpp"
 #include "Window/Window.hpp"
+
 namespace bl {
 
-enum class WindowEvent
+enum class Key
 {
-    Resize,
-    Minimize,
-    Maximize,
-    Close,
-    Move,
-};
 
-enum class KeyEvent
-{
-/* The unknown key */
-    Unknown = -1,
+// WINDOW EVENTS
+    WindowResize,
+    WindowMinimize,
+    WindowMaximize,
+    WindowClose,
+    WindowMove,
 
-/* Printable keys */
+// KEYBOARD EVENTS
+    Unknown = -1, // The unknown key 
+    // Printable keys
     Space = 32,
-    Apostrophe = 39,  /* ' */
-    Comma = 44,  /* , */
-    Minus = 45,  /* - */
-    Period = 46,  /* . */
-    Slash = 47,  /* / */
+    Apostrophe = 39, // '
+    Comma = 44, // ,
+    Minus = 45, // -
+    Period = 46, // .
+    Slash = 47, // /
     NumberLine0 = 48,
     NumberLine1 = 49,
     NumberLine2 = 50,
@@ -35,8 +34,8 @@ enum class KeyEvent
     NumberLine7 = 55,
     NumberLine8 = 56,
     NumberLine9 = 57,
-    Semicolon = 59,  /* ; */
-    Equal = 61,  /* = */
+    Semicolon = 59, // ;
+    Equal = 61, // =
     A = 65,
     B = 66,
     C = 67,
@@ -63,14 +62,13 @@ enum class KeyEvent
     X = 88,
     Y = 89,
     Z = 90,
-    LeftBracket = 91,  /* [ */
-    Backslash = 92,  /* \ */
-    RightBracket = 93,  /* ] */
-    GraveAccent = 96,  /* ` */
-    World1 = 161, /* non-US #1 */
-    World2 = 162, /* non-US #2 */
-
-    /* Function keys */
+    LeftBracket = 91, // [
+    Backslash = 92, // \
+    RightBracket = 93, // ] 
+    GraveAccent = 96, // `
+    World1 = 161, // non-US #1
+    World2 = 162, // non-US #2
+    // Function keys
     Escape = 256,
     Enter = 257,
     Tab = 258,
@@ -141,90 +139,44 @@ enum class KeyEvent
     RightAlt = 346,
     RightSuper = 347,
     Menu = 348,
+    KeyboardFirst = Space,
+    KeyboardLast = Menu,
+    KeyboardSize = KeyboardLast - KeyboardFirst,
+
+// MOUSE
+    MouseLeft,
+    MouseRight,
+    MouseMiddle,
+    MouseSideFront,
+    MouseSideBack,
+    MouseYAxis,
+    MouseXAxis,
+
+// GAMEPAD
+    GamepadA,
+    GamepadB,
+    GamepadX,
+    GamepadY,
+    GamepadLeftBumper,
+    GamepadRightBumper,
+    GamepadBack,
+    GamepadStart,
+    GamepadGuide,
+    GamepadLeftThumb,
+    GamepadRightThumb,
+    GamepadDPadUp,
+    GamepadDPadRight,
+    GamepadDPadDown,
+    GamepadDPadLeft,
+    GamepadLeftThumbstickXAxis,
+    GamepadLeftThumbstickYAxis,
+    GamepadRightThumbstickXAxis,
+    GamepadRightThumbstickYAxis,
 };
 
-enum class MouseButtonEvent
-{
-    Left = 0,
-    Right = 1,
-    Middle = 2,
-    SideFront = 3,
-    SideBack = 4,
-};
-
-enum class GamepadButtonEvent
-{
-    A = 0,
-    B = 1,
-    X = 2,
-    Y = 3,
-    LeftBumper = 4,
-    RightBumper = 5,
-    Back = 6,
-    Start = 7,
-    Guide = 8,
-    LeftThumb = 9,
-    RightThumb = 10,
-    DPadUp = 11,
-    DPadRight = 12,
-    DPadDown = 13,
-    DPadLeft = 14,
-};
-
-
-
-enum class EventType
-{
-    // Miscellaneous events
-    Window,
-
-    // Action events
-    KeyAction,
-    MouseButtonAction,
-    GamepadButtonAction,
-
-    // Axis events
-    MouseAxis,
-    LeftJoystickAxis,
-    RightJoystickAxis,
-};
-
-enum class InputAction
-{
-    KeyAction,
-    MouseButtonAction,
-    GamepadButtonAction,
-};
-
-enum class InputAxis
-{
-    MouseAxis,
-    LeftJoystickAxis,
-    RightJoystickAxis,
-};
-
-enum class InputDevice {
-    Keyboard,
-    Mouse,
-    Gamepad,
-};
-
-struct InputEvent
-{
-    InputDevice device;
-    int deviceId;
-    EventType type;
-    union
-    {
-        // Actions
-        WindowEvent windowEvent;
-        KeyEvent keyEvent;
-        MouseButtonEvent mouseButtonEvent;
-        GamepadButtonEvent gamepadButtonEvent;
-
-        // The axis
-        Vector2f axis; // Later if 3D a axis is required we should support that for VR or others.
-    };
+enum class InputEvent {
+    Released,
+    Pressed,
 };
 
 } // namespace bl

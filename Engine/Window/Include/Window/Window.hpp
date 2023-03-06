@@ -3,45 +3,68 @@
 #include "Core/Version.hpp"
 #include "Math/Vector2.hpp"
 #include "Window/VideoMode.hpp"
-#include "Window/Screen.hpp"
+#include "Window/Display.hpp"
 
-#define GLFW_INCLUDE_NONE
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+#include <SDL2/SDL.h>
 
 #include <vulkan/vulkan.h>
 
 #include <string>
 
-
 namespace bl
 {
-
-enum class Style
-{
-    eFullscreen,
-    eWindowed,
-    eFullscreenWindowed
-};
 
 class Window
 {
 public:
-    Window();
-    Window(VideoMode videoMode, std::optional<Screen> screen, std::string title = "Window");
-    ~Window();
 
-    void create(VideoMode videoMode, std::optional<Screen> screen, std::string title = "Window");
-    Extent2D getExtent() const noexcept;
-    bool createVulkanSurface(VkInstance instance, VkSurfaceKHR& surface) noexcept;
-    GLFWwindow* getHandle() const noexcept;
+    /// @brief Default constructor
+    Window() noexcept = default;
 
+    /// @brief Construct a proper window.
+    /// @param videoMode Position and size of the window.
+    /// @param title What the title bar displays as the name of the window.
+    /// @param fullscreen If the window is in a fullscreen mode.
+    Window(VideoMode videoMode, const std::string& title = "Window", bool fullscreen = true) noexcept;
+
+    /// @brief Destruct the window if it was opened.
+    ~Window() noexcept;
+
+
+    /// @brief Opens a new window, will do nothing if window previously created.
+    /// @param videoMode Position and size of the window.
+    /// @param title What the title bar displays as the name of the window.
+    /// @param fullscreen If the window is in a fullscreen mode.
+    /// @return True on success, false on failure.
+    [[nodiscard]] bool open(VideoMode videoMode, const std::string& title = "Window", bool fullscreen = true) noexcept;
+    
+    /// @brief Checks if the window construction was a success. 
+    /// @return True on good window creation, false on bad window creation.
+    [[nodiscard]] bool good() const noexcept;
+
+    /// @brief Gets the size of the windows surface in pixels.
+    /// @return Size in pixels of window.
+    [[nodiscard]] Extent2D getExtent() const noexcept;
+
+    /// @brief Gets the internal SDL_Window structure for other usages.
+    ///         Only use if you know what you are doing so you don't screw anything up.
+    /// @return SDL_Window Internal handle.
+    [[nodiscard]] SDL_Window* getHandle() const noexcept;
+
+    /// @brief Creates a VkSurfaceKHR for this window.
+    ///         This window claims no ownership on the returned value, YOU are responsible for deleting it.
+    /// @param instance Vulkan instance
+    /// @param surface Your new surface.
+    /// @return True on success, false on failure
+    [[nodiscard]] bool createVulkanSurface(VkInstance instance, VkSurfaceKHR& surface) const noexcept;
+
+    /// @brief Gets the vulkan instance surface extensions required for this window. 
+    /// @param extensions The extensions to be added.
+    /// @return True on success, false on failure.
+    [[nodiscard]] bool getVulkanInstanceExtensions(std::vector<const char*>& extensions) const noexcept;
+    
 private:
-    GLFWwindow* m_pWindow;
-
-//==== Static ====//
-public: 
-    static const std::vector<const char*>& getSurfaceExtensions();
+    SDL_Window* m_pWindow;    
 };
 
 }; /* namespace bl */

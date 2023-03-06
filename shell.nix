@@ -36,7 +36,7 @@ stdenv.mkDerivation {
     # Miscellanious libraries
     #fmt_8 # spdlog has issues with newer versions of fmt
     spdlog_1
-    glfw
+    SDL2
     glm
 
   ];
