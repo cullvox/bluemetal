@@ -13,7 +13,8 @@ void InputSystem::registerAction(const std::string& name, std::vector<Key> keys)
     // Add the keys to the key event
     for (Key key : m_actionsEvents.back().keys)
     {
-        m_usedKeys.set(SDL_GetScancodeFromKey((SDL_KeyCode)key));
+        if (IsKeyFromKeyboard(key))
+            m_usedKeys.set(SDL_GetScancodeFromKey((SDL_KeyCode)key));
     }
 }
 
@@ -24,7 +25,8 @@ void InputSystem::registerAxis(const std::string& name, std::vector<std::pair<Ke
         // Add the keys to the key event
     for (auto pair : m_axisEvents.back().keys)
     {
-        m_usedKeys.set(SDL_GetScancodeFromKey((SDL_KeyCode)pair.first));
+        if (IsKeyFromKeyboard(pair.first))
+            m_usedKeys.set(SDL_GetScancodeFromKey((SDL_KeyCode)pair.first));
     }
 }
 
@@ -46,7 +48,13 @@ void InputSystem::poll()
     {
         switch(event.type)
         {
-            case SDL_WINDOWEVENT:break;   
+            case SDL_WINDOWEVENT:
+                processWindow(&event);   
+                break;
+            case SDL_MOUSEBUTTONDOWN:
+            case SDL_MOUSEBUTTONUP:
+                processMouseButtons(&event);
+                break;
         }
     }
 }
@@ -80,6 +88,41 @@ void InputSystem::processKeyboard()
         {
             axisEvent(key, 1.0f);
         }
+    }
+}
+
+void InputSystem::processMouseButtons(SDL_Event* pEvent)
+{
+
+    const Key key = GetSDLMouseButtonIndex(pEvent->button.button);
+    InputEvent input;
+    switch (pEvent->button.type)
+    {
+        default:
+        case SDL_MOUSEBUTTONDOWN:
+            input = InputEvent::Pressed;
+            break;
+        case SDL_MOUSEBUTTONUP:
+            input = InputEvent::Released;
+            break;
+    }
+
+    actionEvent(key, input);
+}
+
+void InputSystem::processGamepad()
+{
+    
+}
+
+void InputSystem::processWindow(SDL_Event* pEvent)
+{
+    // Detect the window state
+    switch (pEvent->window.event)
+    {
+        case SDL_WINDOWEVENT_CLOSE: 
+            actionEvent(Key::WindowClose, InputEvent::Pressed);
+            break;
     }
 }
 

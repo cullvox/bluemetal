@@ -11,13 +11,14 @@ namespace bl {
 enum class Key
 {
 
-// WINDOW EVENTS
+// Window Events
     WindowResize,
     WindowMinimize,
     WindowMaximize,
     WindowClose,
     WindowMove,
 
+// Keyboard Events
     KeyUnknown = SDLK_UNKNOWN,
     KeyReturn = SDLK_RETURN,
     KeyEscape = SDLK_ESCAPE,
@@ -263,16 +264,16 @@ enum class Key
     KeyCall = SDLK_CALL,
     KeyEndCall = SDLK_ENDCALL,
 
-// MOUSE
-    MouseLeft,
-    MouseRight,
-    MouseMiddle,
-    MouseSideFront,
-    MouseSideBack,
-    MouseYAxis,
-    MouseXAxis,
+// Mouse Button Events
+    MouseButtonLeft,
+    MouseButtonRight,
+    MouseButtonMiddle,
+    MouseButtonSideFront,
+    MouseButtonSideBack,
+    MouseButtonYAxis,
+    MouseButtonXAxis,
 
-// GAMEPAD
+// Gamepad Button Events
     GamepadA,
     GamepadB,
     GamepadX,
@@ -298,5 +299,273 @@ enum class InputEvent {
     Released = SDL_RELEASED,
     Pressed = SDL_PRESSED,
 };
+
+static inline Key GetSDLMouseButtonIndex(uint8_t key)
+{
+    switch (key)
+    {
+        case SDL_BUTTON_LEFT: return Key::MouseButtonLeft;
+        case SDL_BUTTON_RIGHT: return Key::MouseButtonRight;
+        case SDL_BUTTON_MIDDLE: return Key::MouseButtonMiddle;
+        case SDL_BUTTON_X1: return Key::MouseButtonSideFront;
+        case SDL_BUTTON_X2: return Key::MouseButtonSideBack;
+        default:
+            return Key::KeyUnknown;
+    }
+}
+
+static inline bool IsKeyFromKeyboard(Key key)
+{
+    switch (key)
+    {
+        case Key::KeyUnknown:
+        case Key::KeyReturn:
+        case Key::KeyEscape:
+        case Key::KeyBackspace:
+        case Key::KeyTab:
+        case Key::KeySpace:
+        case Key::KeyExclaim:
+        case Key::KeyQuoteDbl:
+        case Key::KeyHash:
+        case Key::KeyPercent:
+        case Key::KeyDollar:
+        case Key::KeyAmpersand:
+        case Key::KeyQuote:
+        case Key::KeyLeftParen:
+        case Key::KeyRightParen:
+        case Key::KeyAsterisk:
+        case Key::KeyPlus:
+        case Key::KeyComma:
+        case Key::KeyMinus:
+        case Key::KeyPeriod:
+        case Key::KeySlash:
+        case Key::Key0:
+        case Key::Key1:
+        case Key::Key2:
+        case Key::Key3:
+        case Key::Key4:
+        case Key::Key5:
+        case Key::Key6:
+        case Key::Key7:
+        case Key::Key8:
+        case Key::Key9:
+        case Key::KeyColon:
+        case Key::KeySemicolon:
+        case Key::KeyLess:
+        case Key::KeyEquals:
+        case Key::KeyGreater:
+        case Key::KeyQuestion:
+        case Key::KeyAt:
+        case Key::KeyLeftBracket:
+        case Key::KeyBackslash:
+        case Key::KeyRightBracket:
+        case Key::KeyCaret:
+        case Key::KeyUnderscore:
+        case Key::KeyBackquote:
+        case Key::KeyA:
+        case Key::KeyB:
+        case Key::KeyC:
+        case Key::KeyD:
+        case Key::KeyE:
+        case Key::KeyF:
+        case Key::KeyG:
+        case Key::KeyH:
+        case Key::KeyI:
+        case Key::KeyJ:
+        case Key::KeyK:
+        case Key::KeyL:
+        case Key::KeyM:
+        case Key::KeyN:
+        case Key::KeyO:
+        case Key::KeyP:
+        case Key::KeyQ:
+        case Key::KeyR:
+        case Key::KeyS:
+        case Key::KeyT:
+        case Key::KeyU:
+        case Key::KeyV:
+        case Key::KeyW:
+        case Key::KeyX:
+        case Key::KeyY:
+        case Key::KeyZ:
+        case Key::KeyCapsLock:
+        case Key::KeyF1:
+        case Key::KeyF2:
+        case Key::KeyF3:
+        case Key::KeyF4:
+        case Key::KeyF5:
+        case Key::KeyF6:
+        case Key::KeyF7:
+        case Key::KeyF8:
+        case Key::KeyF9:
+        case Key::KeyF10:
+        case Key::KeyF11:
+        case Key::KeyF12:
+        case Key::KeyPrintScreen:
+        case Key::KeyScrollLock:
+        case Key::KeyPause:
+        case Key::KeyInsert:
+        case Key::KeyHome:
+        case Key::KeyPageUp:
+        case Key::KeyDelete:
+        case Key::KeyEnd:
+        case Key::KeyPageDown:
+        case Key::KeyRight:
+        case Key::KeyLeft:
+        case Key::KeyDown:
+        case Key::KeyUp:
+        case Key::KeyNumlockClear:
+        case Key::KeyKpDivide:
+        case Key::KeyKpMultiply:
+        case Key::KeyKpMinus:
+        case Key::KeyKpPlus:
+        case Key::KeyKpEnter:
+        case Key::KeyKp_1:
+        case Key::KeyKp_2:
+        case Key::KeyKp_3:
+        case Key::KeyKp_4:
+        case Key::KeyKp_5:
+        case Key::KeyKp_6:
+        case Key::KeyKp_7:
+        case Key::KeyKp_8:
+        case Key::KeyKp_9:
+        case Key::KeyKp_0:
+        case Key::KeyKpPeriod:
+        case Key::KeyApplication:
+        case Key::KeyPower:
+        case Key::KeyKpEquals:
+        case Key::KeyF13:
+        case Key::KeyF14:
+        case Key::KeyF15:
+        case Key::KeyF16:
+        case Key::KeyF17:
+        case Key::KeyF18:
+        case Key::KeyF19:
+        case Key::KeyF20:
+        case Key::KeyF21:
+        case Key::KeyF22:
+        case Key::KeyF23:
+        case Key::KeyF24:
+        case Key::KeyExecute:
+        case Key::KeyHelp:
+        case Key::KeyMenu:
+        case Key::KeySelect:
+        case Key::KeyStop:
+        case Key::KeyAgain:
+        case Key::KeyUndo:
+        case Key::KeyCut:
+        case Key::KeyCopy:
+        case Key::KeyPaste:
+        case Key::KeyFind:
+        case Key::KeyMute:
+        case Key::KeyVolumeUp:
+        case Key::KeyVolumeDown:
+        case Key::KeyKpComma:
+        case Key::KeyKpEqualSas400:
+        case Key::KeyAltErase:
+        case Key::KeySysReq:
+        case Key::KeyCancel:
+        case Key::KeyClear:
+        case Key::KeyPrior:
+        case Key::KeyReturn2:
+        case Key::KeySeparator:
+        case Key::KeyOut:
+        case Key::KeyOper:
+        case Key::KeyClearAgain:
+        case Key::KeyCrsel:
+        case Key::KeyExsel:
+        case Key::KeyKp_00:
+        case Key::KeyKp_000:
+        case Key::KeyThousandsSeparator:
+        case Key::KeyDecimalSeparator:
+        case Key::KeyCurrencyUnit:
+        case Key::KeyCurrencySubUnit:
+        case Key::KeyKpLeftParen:
+        case Key::KeyKpRightParen:
+        case Key::KeyKpLeftBrace:
+        case Key::KeyKpRightBrace:
+        case Key::KeyKpTab:
+        case Key::KeyKpBackspace:
+        case Key::KeyKpA:
+        case Key::KeyKpB:
+        case Key::KeyKpC:
+        case Key::KeyKpD:
+        case Key::KeyKpE:
+        case Key::KeyKpF:
+        case Key::KeyKpXor:
+        case Key::KeyKpPower:
+        case Key::KeyKpPercent:
+        case Key::KeyKpLess:
+        case Key::KeyKpGreater:
+        case Key::KeyKpAmpersand:
+        case Key::KeyKpDblAmpersand:
+        case Key::KeyKpVerticalBar:
+        case Key::KeyKpDblVerticalBar:
+        case Key::KeyKpColon:
+        case Key::KeyKpHash:
+        case Key::KeyKpSpace:
+        case Key::KeyKpAt:
+        case Key::KeyKpExclam:
+        case Key::KeyKpMemStore:
+        case Key::KeyKpMemRecall:
+        case Key::KeyKpMemClear:
+        case Key::KeyKpMemAdd:
+        case Key::KeyKpMemSubtract:
+        case Key::KeyKpMemMultiply:
+        case Key::KeyKpMemDivide:
+        case Key::KeyKpPlusMinus:
+        case Key::KeyKpClear:
+        case Key::KeyKpClearEntry:
+        case Key::KeyKpBinary:
+        case Key::KeyKpOctal:
+        case Key::KeyKpDecimal:
+        case Key::KeyKpHexadecimal:
+        case Key::KeyLCtrl:
+        case Key::KeyLShift:
+        case Key::KeyLAlt:
+        case Key::KeyLGui:
+        case Key::KeyRCtrl:
+        case Key::KeyRShift:
+        case Key::KeyRAlt:
+        case Key::KeyRGui:
+        case Key::KeyMode:
+        case Key::KeyAudioNext:
+        case Key::KeyAudioPrev:
+        case Key::KeyAudioStop:
+        case Key::KeyAudioPlay:
+        case Key::KeyAudioMute:
+        case Key::KeyMediaSelect:
+        case Key::KeyWww:
+        case Key::KeyMail:
+        case Key::KeyCalculator:
+        case Key::KeyComputer:
+        case Key::KeyAcSearch:
+        case Key::KeyAcHome:
+        case Key::KeyAcBack:
+        case Key::KeyAcForward:
+        case Key::KeyAcStop:
+        case Key::KeyAcRefresh:
+        case Key::KeyAcBookmarks:
+        case Key::KeyBrightnessDown:
+        case Key::KeyBrightnessUp:
+        case Key::KeyDisplaySwitch:
+        case Key::KeyKbdIllumToggle:
+        case Key::KeyKbdIllumDown:
+        case Key::KeyKbdIllumUp:
+        case Key::KeyEject:
+        case Key::KeySleep:
+        case Key::KeyApp1:
+        case Key::KeyApp2:
+        case Key::KeyAudioRewind:
+        case Key::KeyAudioFastForward:
+        case Key::KeySoftLeft:
+        case Key::KeySoftRight:
+        case Key::KeyCall:
+        case Key::KeyEndCall:
+            return true;
+        default:
+            return false;
+    }
+} 
 
 } // namespace bl

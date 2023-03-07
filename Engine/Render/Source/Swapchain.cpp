@@ -219,7 +219,7 @@ void Swapchain::recreateSwapchain()
         .minImageCount = m_imageCount,
         .imageFormat = m_surfaceFormat.format,
         .imageColorSpace = m_surfaceFormat.colorSpace,
-        .imageExtent = VkExtent3D{(uint32_t)m_extent.width, (uint32_t)m_extent.height, 1},
+        .imageExtent = VkExtent2D{m_extent.width, m_extent.height},
         .imageArrayLayers = 1,
         .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
         .imageSharingMode = m_renderDevice.areQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,

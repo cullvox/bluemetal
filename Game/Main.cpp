@@ -20,12 +20,18 @@ public:
 
     CharacterController()
     {
+        inputController.bindAction<&CharacterController::Fire>("Fire", bl::InputEvent::Pressed, this);
         inputController.bindAxis<&CharacterController::Walk>("Walk", this);
         inputController.bindAxis<&CharacterController::Strafe>("Strafe", this);
     }
 
     ~CharacterController()
     {
+    }
+
+    void Fire()
+    {
+        spdlog::info("FIRE!");
     }
 
     void Walk(float axis)
@@ -64,9 +70,10 @@ int main(int argc, const char** argv)
     windowInput.bindAction("Exit", bl::InputEvent::Pressed, closeWindowFunctor, &closeWindow);
 
     inputSystem.registerAction("Exit", {bl::Key::WindowClose});
+    inputSystem.registerAction("Fire", {bl::Key::MouseButtonLeft});
     inputSystem.registerAxis("Walk", {{bl::Key::KeyW, 1.0f}, {bl::Key::KeyS, -1.0f}});
     inputSystem.registerAxis("Strafe", {{bl::Key::KeyD, 1.0f}, {bl::Key::KeyA, -1.0f}});
-
+    
     inputSystem.registerController(characterController.getInputController());
     inputSystem.registerController(windowInput);
 

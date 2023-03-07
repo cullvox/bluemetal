@@ -35,15 +35,26 @@ public:
     void poll();
 private:
 
+
+    /// @brief Processes window events
+    void processWindow(SDL_Event* pEvent);
+
     /// @brief Processes keyboard events and ensures repeat events are called.
     void processKeyboard();
+
+    /// @brief Processes mouse button input
+    void processMouseButtons(SDL_Event* pEvent);
+
+    /// @brief Processes gamepad events and ensures repeat events are called.
+    void processGamepad();
+
 
     /// @brief Triggers input controller action events.
     /// @param key The that triggered the event.
     /// @param event What happened that triggered an event.
     void actionEvent(Key key, InputEvent event);
 
-    
+        
     void axisEvent(Key key, float value);
     
     /// @brief A fast way of determining key usage when iterating.
