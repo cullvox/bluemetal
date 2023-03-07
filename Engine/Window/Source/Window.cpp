@@ -47,6 +47,8 @@ bool Window::open(DisplayMode videoMode, const std::string& title, std::optional
         return false;
     }
 
+    SDL_ShowWindow(m_pWindow);
+
     return true;
 }
 

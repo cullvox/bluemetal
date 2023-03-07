@@ -11,12 +11,8 @@ class Display
 {
 public:
 
-    /// @brief Deleted default constructor, displays are only to be created by this class.
-    Display() = delete;
-
     /// @brief Default destructor
     ~Display() noexcept = default;
-
 
     /// @brief Gets the index of this display under the settings of the computer.
     /// @return The index of the display.
@@ -44,22 +40,17 @@ public:
 
 private:
 
-    /// @brief A private constructor for screen, they can only be created by this class.
-    /// @param index The index of this monitor on the system.
-    /// @param name The name of the monitor given by the system.
-    /// @param rect The position and size of the monitor.
-    /// @param videoModes All video modes of the display.
-    /// @param desktopMode The desktop mode of the display.
-    Display(uint32_t index, const std::string& name, Rect2D rect, const std::vector<DisplayMode>& videoModes, DisplayMode desktopMode);
+    /// @brief Private default constructor
+    Display() = default;
 
     /// @brief The index of this monitor on the system.
-    uint32_t index;
+    uint32_t m_index;
 
     /// @brief The name of the monitor given by the system.
-    std::string name;
+    std::string m_name;
 
     /// @brief The position and size of the monitor.
-    Rect2D rect;
+    Rect2D m_rect;
 
     /// @brief All video modes of the display.
     std::vector<DisplayMode> m_videoModes;

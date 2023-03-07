@@ -44,14 +44,15 @@ public:
 
 int main(int argc, const char** argv)
 {
-    bl::Display display{};
-    
-    bl::Window window{bl::Display::getScreens()[0].getDesktopMode(), std::nullopt};
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER);
+
+    std::vector<bl::Display> displays = bl::Display::getDisplays();
+    bl::Window window{displays[0].getDesktopMode()};
     bl::RenderDevice renderDevice{window};
     bl::Swapchain swapchain{window, renderDevice};
     bl::Renderer renderer{renderDevice, swapchain};
     bl::FrameCounter frameCounter{};
-    bl::InputSystem inputSystem{window};
+    bl::InputSystem inputSystem{};
     bl::InputController windowInput{};
     CharacterController characterController{};
     bool closeWindow = false;
@@ -63,8 +64,8 @@ int main(int argc, const char** argv)
     windowInput.bindAction("Exit", bl::InputEvent::Pressed, closeWindowFunctor, &closeWindow);
 
     inputSystem.registerAction("Exit", {bl::Key::WindowClose});
-    inputSystem.registerAxis("Walk", {{bl::Key::W, 1.0f}, {bl::Key::S, -1.0f}});
-    inputSystem.registerAxis("Strafe", {{bl::Key::D, 1.0f}, {bl::Key::A, -1.0f}});
+    inputSystem.registerAxis("Walk", {{bl::Key::KeyW, 1.0f}, {bl::Key::KeyS, -1.0f}});
+    inputSystem.registerAxis("Strafe", {{bl::Key::KeyD, 1.0f}, {bl::Key::KeyA, -1.0f}});
 
     inputSystem.registerController(characterController.getInputController());
     inputSystem.registerController(windowInput);
@@ -83,4 +84,6 @@ int main(int argc, const char** argv)
             spdlog::info("Rendering at: {} f/s and {} ms/f\n\tavg f/s: {} and avg ms/f: {}", frameCounter.getFramesPerSecond(), frameCounter.getMillisecondsPerFrame(), frameCounter.getAverageFramesPerSecond(10), frameCounter.getAverageMillisecondsPerFrame(10));
         }
     }
+
+    SDL_Quit();
 }

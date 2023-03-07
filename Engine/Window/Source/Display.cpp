@@ -8,6 +8,21 @@
 namespace bl
 {
 
+uint32_t Display::getIndex() const noexcept
+{
+    return m_index;
+}
+
+const std::string& Display::getName() const noexcept
+{
+    return m_name;
+}
+
+Rect2D Display::getRect() const noexcept
+{
+    return m_rect;
+}
+
 const std::vector<DisplayMode> &Display::getVideoModes() const noexcept
 {
     return m_videoModes;
@@ -21,23 +36,24 @@ DisplayMode Display::getDesktopMode() const noexcept
 std::vector<Display> Display::getDisplays() noexcept
 {
     // Get the number of displays and create an array for them all.
-    std::vector<Display> displays{};
+    int displayCount = SDL_GetNumVideoDisplays();
 
-    for (uint32_t displayIndex = 0; displayIndex < displays.size(); displayIndex++)
+    std::vector<Display> displays{};
+    for (uint32_t displayIndex = 0; displayIndex < displayCount; displayIndex++)
     {
-        Display &display = displays[displayIndex];
+        Display display{};
 
         // Set the displays index.
-        display.index = displayIndex;
+        display.m_index = displayIndex;
 
         // Set the displays name.
-        display.name = SDL_GetDisplayName(displayIndex);
+        display.m_name = SDL_GetDisplayName(displayIndex);
 
         // Set the displays rect.
         SDL_Rect rect = {};
         SDL_GetDisplayUsableBounds(displayIndex, &rect);
 
-        display.rect = {
+        display.m_rect = {
             rect.x, 
             rect.y, 
             (uint32_t)rect.w, 
@@ -102,6 +118,9 @@ std::vector<Display> Display::getDisplays() noexcept
 
         // Set the display modes.
         display.m_videoModes = displayModes;
+
+        // Add the display to the list.
+        displays.emplace_back(display);
     }
 
     return displays;

@@ -49,11 +49,25 @@ public:
 class Extent2D
 {
 public:
-    Extent2D();
-    Extent2D(uint32_t width, uint32_t height);
-    Extent2D(uint32_t widthHeight);
 
+    /// @brief Default constructor
+    Extent2D() = default;
+
+    /// @brief Construct filling members.
+    /// @param width Width of the extent.
+    /// @param height Height of the extent.
+    Extent2D(uint32_t width, uint32_t height)
+        : width(width), height(height) { }
+    
+    /// @brief Construct filling both members to the same value.
+    /// @param widthHeight Value of the width and height.
+    Extent2D(uint32_t widthHeight)
+        : width(widthHeight), height(widthHeight) { }
+
+    /// @brief Width of the extent, usually in pixels.
     uint32_t width;
+
+    /// @brief Height of the extent, usually in pixels.
     uint32_t height;
 };
 

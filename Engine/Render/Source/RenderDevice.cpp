@@ -161,7 +161,11 @@ std::vector<const char*> RenderDevice::getInstanceExtensions() const
 
     /* The surface extensions are required too. */
     std::vector<const char*> surfaceExtensions{}; 
-    m_window.getVulkanInstanceExtensions(surfaceExtensions);
+    if (not m_window.getVulkanInstanceExtensions(surfaceExtensions))
+    {
+        spdlog::log(spdlog::level::err, "Could not get the vulkan instance extensions!");
+        return {};
+    }
     
     requiredExtensions.insert(requiredExtensions.end(), surfaceExtensions.begin(), surfaceExtensions.end());
 
