@@ -3,6 +3,9 @@
 #include "Math/Vector2.hpp"
 #include "Window/Window.hpp"
 
+#include <SDL2/SDL_keycode.h>
+
+
 namespace bl {
 
 enum class Key

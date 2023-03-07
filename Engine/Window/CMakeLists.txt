@@ -8,7 +8,7 @@ target_include_directories(BloodLustWindow PUBLIC "Include")
 target_link_libraries(BloodLustWindow bl::Core bl::Math)
 
 # Find required libraries
-pkg_check_modules(GLFW REQUIRED IMPORTED_TARGET glfw3)
+pkg_check_modules(SDL2 REQUIRED IMPORTED_TARGET sdl2)
 
-target_include_directories(BloodLustWindow PRIVATE ${GLFW_INCLUDE_DIR})
-target_link_libraries(BloodLustWindow ${GLFW_LIBRARIES})
+target_include_directories(BloodLustWindow PRIVATE ${SDL2_INCLUDE_DIR})
+target_link_libraries(BloodLustWindow ${SDL2_LIBRARIES})

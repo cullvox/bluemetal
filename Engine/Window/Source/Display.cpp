@@ -1,78 +1,110 @@
+#include "Core/Log.hpp"
 #include "Math/Vector2.hpp"
 #include "Window/VideoMode.hpp"
 #include "Window/Display.hpp"
 
 #include <SDL2/SDL.h>
 
-namespace bl {
+namespace bl
+{
 
-const std::vector<VideoMode>& Display::getVideoModes() const noexcept
+const std::vector<DisplayMode> &Display::getVideoModes() const noexcept
 {
     return m_videoModes;
 }
 
-VideoMode Display::getDesktopMode() const noexcept
+DisplayMode Display::getDesktopMode() const noexcept
 {
     return m_desktopMode;
-}
-
-bool Display::getDisplay(unsigned int index, Display& display)
-{
-    const auto displays = getDisplays();
-    
-    if (index >= displays.size())
-    {
-        Logger::Log("Out of bounds display requested!");
-        return false;
-    }
-
-    display = displays[index];
-    return true;
 }
 
 std::vector<Display> Display::getDisplays() noexcept
 {
     // Get the number of displays and create an array for them all.
-    std::vector<Display> screens{SDL_GetNumVideoDisplays()};
+    std::vector<Display> displays{};
 
-    for (uint32_t i = 0; i < screens.size(); i++)
+    for (uint32_t displayIndex = 0; displayIndex < displays.size(); displayIndex++)
     {
-        Display& display = screens[i];
+        Display &display = displays[displayIndex];
 
-        // Set the displays index. 
-        display.index = i;
+        // Set the displays index.
+        display.index = displayIndex;
 
         // Set the displays name.
-        display.name = SDL_GetDisplayName(i);
-        
+        display.name = SDL_GetDisplayName(displayIndex);
+
         // Set the displays rect.
         SDL_Rect rect = {};
-        SDL_GetDisplayUsableBounds(i, &rect);
-        display.rect = Rect2D{rect.x, rect.y, (uint32_t)rect.w, (uint32_t)rect.h};
+        SDL_GetDisplayUsableBounds(displayIndex, &rect);
 
-        // Set the video modes.
-        display.m_videoModes = std::vector<VideoMode>{SDL_GetNumDisplayModes(i)};
+        display.rect = {
+            rect.x, 
+            rect.y, 
+            (uint32_t)rect.w, 
+            (uint32_t)rect.h
+        };
 
-        for (uint32_t j = 0; j < display.m_videoModes.size(); j++)
+        // Get the amount of display modes.
+        int displayModeCount = SDL_GetNumDisplayModes(displayIndex);
+        if (displayModeCount < 1)
         {
-            
-            SDL_DisplayMode displayMode{};
-            if (SDL_GetDisplayMode(i, j, &displayMode) != 0)
+            Logger::Error("Could not get any display modes for display #{}: {}", display.getIndex(), display.getName());
+            continue; // Skip adding this display because it has no modes.
+        }
+
+        // Get the desktop display mode
+        SDL_DisplayMode rawDisplayMode{};
+        if (SDL_GetDesktopDisplayMode(displayIndex, &rawDisplayMode) < 0)
+        {
+            Logger::Error("Could not get the desktop display mode for display #{}: {}", display.getIndex(), display.getName());
+            continue; // Skip adding this display.
+        }
+
+        // Create the bl::DisplayMode using the SDL_DisplayMode data.
+        const DisplayMode desktopMode{
             {
-                displayMode
-                SDL_BITSPERPIXEL(displayMode.format)
-                displayMode.w
+                (uint32_t)rawDisplayMode.w, 
+                (uint32_t)rawDisplayMode.h,
+            },
+            SDL_BITSPERPIXEL(rawDisplayMode.format),
+            (uint16_t)rawDisplayMode.refresh_rate
+        };
+
+        // Set the desktop mode.
+        display.m_desktopMode = desktopMode;
+        
+        // Iterate through all the SDL_DisplayMode's and create our own bl::DisplayMode.
+        std::vector<DisplayMode> displayModes{};
+        
+        for (uint32_t displayModeIndex = 0; displayModeIndex < displayModeCount; displayModeIndex++)
+        {
+
+            // Get the SDL_DisplayMode of this index.
+            if (SDL_GetDisplayMode(displayIndex, displayModeIndex, &rawDisplayMode) < 0)
+            {
+                Logger::Error("Could not get a display mode #{} for display #{}: {}", displayModeIndex, display.getIndex(), display.getName());
+                continue; // Skip adding this display mode because it's invalid.
             }
 
+            // Create our bl::DisplayMode from the SDL_DisplayMode.
+            const DisplayMode mode{
+                {
+                    (uint32_t)rawDisplayMode.w, 
+                    (uint32_t)rawDisplayMode.h
+                },
+                SDL_BITSPERPIXEL(rawDisplayMode.format),
+                (uint16_t)rawDisplayMode.refresh_rate,
+            };
 
-            const VideoMode mode{}
+            // Add the display mode.
+            displayModes.emplace_back(mode);
         }
+
+        // Set the display modes.
+        display.m_videoModes = displayModes;
     }
 
-    return screens;
+    return displays;
 }
 
-Display::Display(uint32_t index, const std::string& name, Rect2D rect, uint32_t refreshRate, const std::vector<VideoMode>& videoModes, VideoMode desktopMode)
-    : index(index), name(name), rect(rect), refreshRate(refreshRate), m_videoModes(videoModes), m_desktopMode(desktopMode) { }
-
-};
+} // namespace bl

@@ -5,24 +5,26 @@
 namespace bl {
 
 /// @brief Video modes for creating windows.
-struct VideoMode {
+struct DisplayMode {
 public:
 
     /// @brief Default constructor
-    VideoMode() = default;
+    DisplayMode() = default;
 
     /// @brief Constructs a user defined video mode, may be invalid.
-    /// @param resolution Position of the window along with its extent.
+    /// @param extent The size of the display mode in pixels.
     /// @param bitsPerPixel Amount of bits for each pixel.
     /// @param refreshRate Refresh rate in hz of the monitor.
-    VideoMode(Rect2D rect, uint8_t bitsPerPixel, uint16_t refreshRate);
+    DisplayMode(Extent2D extent, uint8_t bitsPerPixel, uint16_t refreshRate)
+        : extent(extent), bitsPerPixel(bitsPerPixel), refreshRate(refreshRate)
+    { }
 
     /// @brief Default destructor
-    ~VideoMode() = default;
+    ~DisplayMode() = default;
 
 
-    /// @brief Position of the window along with its extent.
-    Rect2D rect;
+    /// @brief The size of the display mode in pixels.
+    Extent2D extent;
 
     /// @brief Amount of bits for each pixel.
     uint8_t bitsPerPixel;

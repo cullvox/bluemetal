@@ -6,6 +6,7 @@
 #include <vector>
 #include <algorithm>
 #include <stdexcept>
+#include <optional>
 
 #include <cassert>
 #include <cstdint>

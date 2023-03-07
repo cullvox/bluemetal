@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Precompiled.hpp"
 #include "Core/Version.hpp"
 #include "Math/Vector2.hpp"
 #include "Window/VideoMode.hpp"
@@ -25,7 +26,7 @@ public:
     /// @param videoMode Position and size of the window.
     /// @param title What the title bar displays as the name of the window.
     /// @param fullscreen If the window is in a fullscreen mode.
-    Window(VideoMode videoMode, const std::string& title = "Window", bool fullscreen = true) noexcept;
+    Window(DisplayMode videoMode, const std::string& title = "Window", std::optional<Display> display = std::nullopt) noexcept;
 
     /// @brief Destruct the window if it was opened.
     ~Window() noexcept;
@@ -36,7 +37,7 @@ public:
     /// @param title What the title bar displays as the name of the window.
     /// @param fullscreen If the window is in a fullscreen mode.
     /// @return True on success, false on failure.
-    [[nodiscard]] bool open(VideoMode videoMode, const std::string& title = "Window", bool fullscreen = true) noexcept;
+    [[nodiscard]] bool open(DisplayMode videoMode, const std::string& title = "Window", std::optional<Display> display = std::nullopt) noexcept;
     
     /// @brief Checks if the window construction was a success. 
     /// @return True on good window creation, false on bad window creation.

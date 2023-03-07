@@ -7,15 +7,7 @@ namespace bl
 
 InputSystem::InputSystem(Window& window)
     : m_window(window)
-{
-    
-}
-
-InputSystem::~InputSystem()
-{
-    glfwSetWindowUserPointer(m_window.getHandle(), nullptr);
-    glfwSetCursorPosCallback(m_window.getHandle(), nullptr);
-    glfwSetKeyCallback(m_window.getHandle(), nullptr);
+{ 
 }
 
 void InputSystem::registerAction(const std::string& name, std::vector<Key> keys)
@@ -35,15 +27,53 @@ void InputSystem::registerController(InputController& controller)
 
 void InputSystem::poll()
 {
+    
+    // Pump the events to get the latest states
+    SDL_PumpEvents();
+
+    processKeyboard();
+
     SDL_Event event;
     while(SDL_PollEvent(&event))
     {
         switch(event.type)
         {
+            case SDL_KEYDOWN:
+            case SDL_af
+                break;
+
             case SDL_WINDOWEVENT:
                 
         }
     }
+}
+
+void InputSystem::processKeyboard()
+{
+
+    // Get the current keystate.
+    int keystateCount = 0;
+    uint8_t* pKeystate = SDL_GetKeyboardState(&keystateCount);
+
+    if (!pKeystate)
+    {
+        Logger::Error("Could not get the SDL keystate!");
+        return;
+    }
+
+    // Iterate through the keystates and activate events/axis on down.
+    for (int keystateIndex = 0; keystateIndex < keystateCount; keystateIndex++)
+    {
+        // Skip unbound keys.
+        if (SDL_NUM_SCANCODES)
+
+        // Activate an axis if the key is down.
+        if (pKeystate[keystateIndex] >= SDL_KEYDOWN)
+        {
+            onAxisEvent()
+        }
+    }
+
 }
 
 void InputSystem::keyCallback(GLFWwindow* pWindow, int key, int scancode, int action, int mods)

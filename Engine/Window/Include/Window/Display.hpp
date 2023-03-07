@@ -32,16 +32,11 @@ public:
 
     /// @brief Gets every available video mode of this monitor.
     /// @return The video modes.
-    [[nodiscard]] const std::vector<VideoMode>& getVideoModes() const noexcept;
+    [[nodiscard]] const std::vector<DisplayMode>& getVideoModes() const noexcept;
 
     /// @brief Gets video mode for the main display, no fullscreen.
     /// @return The video mode.
-    [[nodiscard]] VideoMode getDesktopMode() const noexcept;
-
-    /// @brief Gets all screens on the display.
-    /// @param index The index of the specified display.  
-    /// @return True on success, false on failure.
-    [[nodiscard]] static Display getDisplay(unsigned int index);
+    [[nodiscard]] DisplayMode getDesktopMode() const noexcept;
 
     /// @brief Gets all the screens currently on the computer.
     /// @return The displays.
@@ -55,7 +50,7 @@ private:
     /// @param rect The position and size of the monitor.
     /// @param videoModes All video modes of the display.
     /// @param desktopMode The desktop mode of the display.
-    Display(uint32_t index, const std::string& name, Rect2D rect, const std::vector<VideoMode>& videoModes, VideoMode desktopMode);
+    Display(uint32_t index, const std::string& name, Rect2D rect, const std::vector<DisplayMode>& videoModes, DisplayMode desktopMode);
 
     /// @brief The index of this monitor on the system.
     uint32_t index;
@@ -67,10 +62,10 @@ private:
     Rect2D rect;
 
     /// @brief All video modes of the display.
-    std::vector<VideoMode> m_videoModes;
+    std::vector<DisplayMode> m_videoModes;
 
     /// @brief The desktop mode of the display.
-    VideoMode m_desktopMode;
+    DisplayMode m_desktopMode;
 
 };
 

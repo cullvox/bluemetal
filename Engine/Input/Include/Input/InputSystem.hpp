@@ -26,7 +26,7 @@ struct InputAxis
 class InputSystem
 {
 public:
-    InputSystem(Window& window);
+    InputSystem();
     ~InputSystem();
     
     void registerAction(const std::string& name, std::vector<Key> keys);
@@ -36,11 +36,10 @@ public:
 
     void poll();
 private:
+    void processKeyboard();
     void onActionEvent(Key key, InputEvent event);
-    void onAxisEvent(Key key, float axis);
+    void onAxisEvent(Key key, float value);
 
-    Window& m_window;
-    std::array<InputEvent, (std::size_t)Key::KeyboardLast> m_keyValues = {InputEvent::Released};
     std::vector<InputAction> m_actionsEvents;
     std::vector<InputAxis> m_axisEvents;
     std::vector<InputController*> m_inputControllers;

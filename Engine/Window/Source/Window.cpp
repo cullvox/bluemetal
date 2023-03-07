@@ -7,9 +7,9 @@
 
 namespace bl {
 
-Window::Window(VideoMode videoMode, const std::string& title, bool fullscreen) noexcept
+Window::Window(DisplayMode videoMode, const std::string& title, std::optional<Display> display) noexcept
 {
-    if (!open(videoMode, title, fullscreen))
+    if (!open(videoMode, title, display))
     {
         Logger::Log("Could not properly construct a window!");
     }
@@ -23,17 +23,23 @@ Window::~Window()
     }
 }
 
-bool Window::open(VideoMode videoMode, const std::string& title, bool fullscreen) noexcept
+bool Window::open(DisplayMode videoMode, const std::string& title, std::optional<Display> display) noexcept
 {
 
     // Build the flags for the window.
     uint32_t flags = SDL_WINDOW_VULKAN;
     
-    if (fullscreen)
+    if (display.has_value())
         flags |= SDL_WINDOW_FULLSCREEN;
 
+    // Compute the positional values of the window.
+    const int x = display.has_value() ? display->getRect().offset.x : SDL_WINDOWPOS_CENTERED;
+    const int y = display.has_value() ? display->getRect().offset.y : SDL_WINDOWPOS_CENTERED;
+    const int width = videoMode.extent.width;
+    const int height = videoMode.extent.height;
+
     // Create the window.
-    m_pWindow = SDL_CreateWindow(title.c_str(), videoMode.rect.offset.x, videoMode.rect.offset.y, videoMode.rect.extent.width, videoMode.rect.extent.height, flags);
+    m_pWindow = SDL_CreateWindow(title.c_str(), x, y, width, height, flags);
     
     if (!m_pWindow)
     {
