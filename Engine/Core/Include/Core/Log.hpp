@@ -1,14 +1,16 @@
 #pragma once
 
+#include "Core/Export.h"
+
 #include <source_location>
 
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/fmt.h>
-    
+
 namespace bl 
 {
 
-class Logger
+class BLOODLUST_CORE_API Logger
 {
 public:
 

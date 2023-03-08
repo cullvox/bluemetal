@@ -1,8 +1,5 @@
+#include "Core/Log.hpp"
 #include "Render/Swapchain.hpp"
-
-#include <spdlog/spdlog.h>
-
-#include <vulkan/vulkan_core.h>
 
 #include <algorithm>
 #include <cstdint>
@@ -62,20 +59,22 @@ const std::vector<VkImage>& Swapchain::getSwapchainImages() const noexcept
     return m_swapImages;
 }
 
-void Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& wasRecreated)
+bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& wasRecreated) noexcept
 {
     VkResult result = vkAcquireNextImageKHR(m_renderDevice.getDevice(), m_swapchain, UINT64_MAX, semaphore, fence, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         recreateSwapchain();
-        wasRecreated = true;
         return;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
     {
-        throw std::runtime_error("Could not acquire swap chain image!");
+        Logger::Error("Could not acquire the next swapchain image!");
+        return false;
     }
+
+    return true;
 }
 
 void Swapchain::ensureSurfaceSupported()

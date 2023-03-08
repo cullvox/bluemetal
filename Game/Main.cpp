@@ -93,4 +93,5 @@ int main(int argc, const char** argv)
     }
 
     SDL_Quit();
+    return 0;
 }
