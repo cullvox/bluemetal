@@ -15,7 +15,7 @@ add_library( bl::Render ALIAS BloodLustRender)
 target_include_directories(BloodLustRender PUBLIC "Include")
 target_link_libraries(BloodLustRender bl::Core bl::Math bl::Window)
 
-find_package(Vulkan REQUIRED)
+find_package(Vulkan CONFIG REQUIRED)
 
 target_include_directories(BloodLustRender PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(BloodLustRender ${Vulkan_LIBRARIES} spirv-reflect-static)

@@ -5,20 +5,21 @@ list(APPEND CoreSources
 add_library(BloodLustCore SHARED ${CoreSources})
 add_library(bl::Core ALIAS BloodLustCore)
 target_include_directories(BloodLustCore PUBLIC "Include")
-
-# Find the required libraries
-pkg_check_modules(SPDLOG REQUIRED IMPORTED_TARGET spdlog)
-pkg_check_modules(FMT REQUIRED IMPORTED_TARGET fmt)
-
-target_include_directories(BloodLustCore PUBLIC ${FMT_INCLUDE_DIR} ${SPDLOG_INCLUDE_DIR})
-target_link_libraries(BloodLustCore ${FMT_LIBRARIES} ${SPDLOG_LIBRARIES})
-target_compile_definitions(BloodLustCore PUBLIC SPDLOG_FMT_EXTERNAL)
 target_precompile_headers(BloodLustCore PUBLIC "Include/Core/Precompiled.hpp")
 
 set_target_properties(
     BloodLustCore
     PROPERTIES
         CXX_STANDARD 20)
+
+# Find the required libraries
+find_package(spdlog CONFIG REQUIRED)
+find_package(fmt CONFIG REQUIRED)
+
+target_link_libraries(BloodLustCore PUBLIC fmt::fmt spdlog::spdlog)
+target_compile_definitions(BloodLustCore PUBLIC "SPDLOG_FMT_EXTERNAL")
+
+
 
 # Disable optimizations when debugging on GNU compilers.
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
