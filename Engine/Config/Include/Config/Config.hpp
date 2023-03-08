@@ -1,26 +1,22 @@
 #pragma once
 
-//===========================//
+#include "Core/Export.h"
+#include "Config/ConfigParser.hpp"
+
 #include <stdexcept>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
-//===========================//
-#include "Config/ConfigParser.hpp"
-//===========================//
 
 namespace bl
 {
 
 class IConfigurable;
-class CConfig
+class BLOODLUST_API CConfig
 {
 public:
-    static inline const std::string DEFAULT_CONFIG_PATH = "config/config.nwdl";
-    static const std::string DEFAULT_CONFIG;
-
-    CConfig(const std::string& configPath = DEFAULT_CONFIG_PATH);
+    CConfig(const std::string& configPath = "Config/Config.nwdl");
     ~CConfig();
 
     bool HasValue(const std::string&) const noexcept;
@@ -52,7 +48,7 @@ private:
     };
 
     SValueNode*                                     m_pConfigTree;
-    std::string                                     m_path = DEFAULT_CONFIG_PATH;
+    std::string                                     m_path;
     std::unordered_map<std::string, SParsedValue>   m_values;
     std::vector<const IConfigurable*>               m_subscribers;
 };

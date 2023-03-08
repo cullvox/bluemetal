@@ -1,6 +1,7 @@
 #include <iostream>
 #include <optional>
 
+#define SDL_MAIN_HANDLED
 #include "Window/Display.hpp"
 #include "Config/Config.hpp"
 #include "Render/RenderDevice.hpp"
@@ -50,7 +51,8 @@ public:
 
 int main(int argc, const char** argv)
 {
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER);
+    SDL_SetMainReady();
+    SDL_Init(SDL_INIT_EVERYTHING);
 
     std::vector<bl::Display> displays = bl::Display::getDisplays();
     bl::Window window{displays[0].getDesktopMode()};

@@ -11,6 +11,10 @@ FrameCounter::FrameCounter()
 {
 }
 
+FrameCounter::~FrameCounter()
+{
+}
+
 void FrameCounter::beginFrame()
 {
     // Get start time.

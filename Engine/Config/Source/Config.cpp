@@ -28,16 +28,6 @@ IConfigurable::~IConfigurable()
     if (m_pConfig) m_pConfig->UnsubscribeEvents(this);
 }
 
-const std::string CConfig::DEFAULT_CONFIG = "\
-    # Default configuration\n \
-    window={\n \
-        width=1920;\n \
-        height=1080;\n \
-    }\n \
-    renderer={\n \
-        antialias=1;\n \
-    }\n \
-";
 
 CConfig::CConfig(const std::string& configPath)
     : m_path(configPath)
@@ -53,6 +43,18 @@ CConfig::~CConfig()
 
 void CConfig::Reset()
 {
+    const std::string DEFAULT_CONFIG_PATH = "config/config.nwdl";
+    const std::string DEFAULT_CONFIG =
+        "# Default configuration\n \
+        window = { \n \
+            width = 1920; \n \
+            height = 1080; \n \
+    }\n \
+        renderer = { \n \
+            antialias = 1; \n \
+    }\n \
+        ";
+
     std::ofstream config(DEFAULT_CONFIG_PATH, std::ios::out);
     config << DEFAULT_CONFIG;
 }
@@ -114,7 +116,7 @@ void CConfig::EnsureDirectoriesExist()
 
 void CConfig::ResetIfConfigDoesNotExist()
 {
-    if (!std::filesystem::exists(DEFAULT_CONFIG_PATH))
+    if (!std::filesystem::exists("Config/Config.nwdl"))
     {
         Reset();
     }

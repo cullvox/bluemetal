@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Export.h"
 #include "Window/Window.hpp"
 #include "Render/Vulkan/vk_mem_alloc.h"
 
@@ -11,7 +12,7 @@
 namespace bl
 {
 
-class RenderDevice
+class BLOODLUST_API RenderDevice
 {
 public:
     RenderDevice(Window& window);
@@ -26,7 +27,7 @@ public:
     VkQueue             getPresentQueue() const noexcept;
     VkCommandPool       getCommandPool() const noexcept;
     VmaAllocator        getAllocator() const noexcept;
-    inline bool         areQueuesSame() const noexcept { return m_graphicsFamilyIndex == m_presentFamilyIndex; }
+    bool                areQueuesSame() const noexcept;
     VkFormat            findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 private:
     std::vector<const char*> getValidationLayers() const;

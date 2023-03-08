@@ -43,7 +43,7 @@ bool Window::open(DisplayMode videoMode, const std::string& title, std::optional
     
     if (!m_pWindow)
     {
-        Logger::Log("Could not create an SDL2 window!");
+        Logger::Log("Could not create an SDL2 window! {}", SDL_GetError());
         return false;
     }
 

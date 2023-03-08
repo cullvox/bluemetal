@@ -10,7 +10,7 @@
 namespace bl 
 {
 
-class BLOODLUST_CORE_API Logger
+class BLOODLUST_API Logger
 {
 public:
 

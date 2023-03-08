@@ -10,7 +10,7 @@
 namespace bl
 {
 
-class Buffer
+class BLOODLUST_API Buffer
 {
 public:
     Buffer();

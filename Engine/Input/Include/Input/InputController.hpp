@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Export.h"
 #include "Core/Delegate.hpp"
 #include "Input/InputEvents.hpp"
 
@@ -27,24 +28,21 @@ struct InputAxisBinding
 };
 
 // Handles individual inputs for actions/axis as bindable for player controls
-class InputController
+class BLOODLUST_API InputController
 {
 public:
 
-    InputController() = default;
-    ~InputController() = default;
+    InputController();
+    ~InputController();
+
+
+    void bindAction(const std::string& name, InputEvent event, void (*pFunction)(const void*), const void* data);
 
     template<auto TCandidate, class TClass>
     void bindAction(const std::string& name, InputEvent event, TClass* pObject)
     {
         ActionDelegate delegate{};
         delegate.connect<TCandidate, TClass>(pObject);
-        m_actionBindings.emplace_back(InputActionBinding{name, event, delegate});
-    }
-
-    void bindAction(const std::string& name, InputEvent event, void (*pFunction)(const void*), const void* data)
-    {
-        ActionDelegate delegate{pFunction, data};
         m_actionBindings.emplace_back(InputActionBinding{name, event, delegate});
     }
 

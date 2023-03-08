@@ -6,6 +6,14 @@
 namespace bl
 {
 
+InputSystem::InputSystem()
+{
+}
+
+InputSystem::~InputSystem()
+{
+}
+
 void InputSystem::registerAction(const std::string& name, std::vector<Key> keys)
 {
     m_actionsEvents.emplace_back(InputAction{name, keys});

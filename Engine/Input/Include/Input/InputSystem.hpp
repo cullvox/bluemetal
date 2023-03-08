@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Export.h"
 #include "Core/Precompiled.hpp"
 #include "Window/Window.hpp"
 #include "Input/InputEvents.hpp"
@@ -21,11 +22,11 @@ struct InputAxis
 };
 
 // Handles input callbacks from windows
-class InputSystem
+class BLOODLUST_API InputSystem
 {
 public:
-    InputSystem() = default;
-    ~InputSystem() = default;
+    InputSystem();
+    ~InputSystem();
     
     void registerAction(const std::string& name, std::vector<Key> keys);
     void registerAxis(const std::string& name, std::vector<std::pair<Key, float>> axes); // (key, scale)

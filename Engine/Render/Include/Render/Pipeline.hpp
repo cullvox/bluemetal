@@ -12,7 +12,7 @@ struct PipelineInfo
     const std::vector<Shader&>& stages;
 };
 
-class Pipeline {
+class BLOODLUST_API Pipeline {
 public:
     Pipeline();
     Pipeline(RenderDevice& renderDevice, PipelineInfo& info);

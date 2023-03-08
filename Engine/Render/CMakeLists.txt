@@ -19,3 +19,9 @@ find_package(Vulkan REQUIRED)
 
 target_include_directories(BloodLustRender PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(BloodLustRender spirv-reflect-static ${Vulkan_LIBRARIES})
+
+install(TARGETS BloodLustCore 
+        EXPORT BloodLustCore
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})

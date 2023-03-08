@@ -1,26 +1,26 @@
 #pragma once
 
+#include "Core/Export.h"
 #include "Math/Vector2.hpp"
 #include "Window/Window.hpp"
-#include "Render/Export.hpp"
 #include "Render/RenderDevice.hpp"
 
 namespace bl 
 {
 
 /// @brief Creates a Vulkan swapchain to get images from.
-class BLOODLUST_RENDER_API Swapchain 
+class BLOODLUST_API Swapchain 
 {
 public:
 
     /// @brief The default requested format for the swapchain.
-    static inline const VkFormat DEFAULT_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
+    const VkFormat DEFAULT_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
 
     /// @brief The default requested color space for the swapchain.
-    static inline const VkColorSpaceKHR DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    const VkColorSpaceKHR DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     
     /// @brief The default requested present mode for the swapchain.
-    static inline const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
+    const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
     /// @brief Constructs a Vulkan swapchain for a Window using the RenderDevice.
     /// @param window The window to create a swapchain for.
@@ -44,7 +44,7 @@ public:
     [[nodiscard]] Extent2D getSwapchainExtent() const noexcept;
     [[nodiscard]] uint32_t getImageCount() const noexcept;
     [[nodiscard]] const std::vector<VkImage>& getSwapchainImages() const noexcept;
-    [[nodiscard]] bool acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& wasRecreated) const noexcept;
+    [[nodiscard]] bool acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& wasRecreated) noexcept;
 private:
     void ensureSurfaceSupported();
     void findImageCount();

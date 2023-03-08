@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Export.h"
 #include "Core/Precompiled.hpp"
 #include "Core/Version.hpp"
 #include "Math/Vector2.hpp"
@@ -15,7 +16,7 @@
 namespace bl
 {
 
-class Window
+class BLOODLUST_API Window
 {
 public:
 

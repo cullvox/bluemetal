@@ -7,12 +7,15 @@
 namespace bl 
 {
 
-class Display 
+class BLOODLUST_API Display 
 {
 public:
 
     /// @brief Default destructor
-    ~Display() noexcept = default;
+    ~Display() noexcept;
+
+    /// @brief Copy constructor
+    Display(const Display& display);
 
     /// @brief Gets the index of this display under the settings of the computer.
     /// @return The index of the display.
@@ -41,7 +44,7 @@ public:
 private:
 
     /// @brief Private default constructor
-    Display() = default;
+    Display() noexcept;
 
     /// @brief The index of this monitor on the system.
     uint32_t m_index;
@@ -53,10 +56,10 @@ private:
     Rect2D m_rect;
 
     /// @brief All video modes of the display.
-    std::vector<DisplayMode> m_videoModes;
+    std::vector<DisplayMode> m_videoModes{};
 
     /// @brief The desktop mode of the display.
-    DisplayMode m_desktopMode;
+    DisplayMode m_desktopMode{};
 
 };
 

@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Core/Export.h"
+
 namespace bl {
 
-class Vector3i
+class BLOODLUST_API Vector3i
 {
 public:
     Vector3i() noexcept;
@@ -24,7 +26,7 @@ public:
     long z;
 };
 
-class Vector3f
+class BLOODLUST_API Vector3f
 {
 public:
     Vector3f() noexcept;
@@ -45,7 +47,7 @@ public:
     float z;
 };
 
-class Extent3D
+class BLOODLUST_API Extent3D
 {
 public:
     Extent3D();

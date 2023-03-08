@@ -82,6 +82,11 @@ VmaAllocator RenderDevice::getAllocator() const noexcept
     return m_allocator;
 }
 
+bool RenderDevice::areQueuesSame() const noexcept
+{
+    return m_graphicsFamilyIndex == m_presentFamilyIndex;
+}
+
 VkFormat RenderDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
     for (VkFormat format : candidates)

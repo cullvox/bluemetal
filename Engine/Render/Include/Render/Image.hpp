@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Render/RenderDevice.hpp"
-#include <vulkan/vulkan_core.h>
 
-namespace bl {
+namespace bl 
+{
 
-class Image 
+class BLOODLUST_API Image
 {
 public:
     Image();

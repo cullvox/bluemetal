@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/Export.h"
+
 #include <list>
 #include <chrono>
 
@@ -7,11 +9,11 @@ namespace bl
 {
 
 // A Simple class which calculates frame rates and other useful numbers.
-class FrameCounter
+class BLOODLUST_API FrameCounter
 {
 public:
     FrameCounter();
-    ~FrameCounter() = default;
+    ~FrameCounter();
 
     void beginFrame();
     bool endFrame(); // returns true if this frame ended with a frame count.

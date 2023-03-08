@@ -8,6 +8,19 @@
 namespace bl
 {
 
+Display::Display() noexcept
+{
+}
+
+Display::~Display() noexcept
+{
+}
+
+Display::Display(const Display& display)
+    : m_index(display.m_index), m_name(display.m_name), m_rect(display.m_rect), m_videoModes(display.m_videoModes), m_desktopMode(display.m_desktopMode)
+{
+}
+
 uint32_t Display::getIndex() const noexcept
 {
     return m_index;

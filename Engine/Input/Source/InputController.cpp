@@ -3,6 +3,20 @@
 namespace bl
 {
 
+InputController::InputController()
+{
+}
+
+InputController::~InputController()
+{
+}
+
+void InputController::bindAction(const std::string& name, InputEvent event, void (*pFunction)(const void*), const void* data)
+{
+    ActionDelegate delegate{ pFunction, data };
+    m_actionBindings.emplace_back(InputActionBinding{ name, event, delegate });
+}
+
 void InputController::onActionEvent(const std::string& name, InputEvent input)
 {
     // Look if we have any bindings matching the name and input description.

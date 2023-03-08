@@ -44,7 +44,7 @@ VkFormat Swapchain::getColorFormat() const noexcept
     return m_surfaceFormat.format;
 }
 
-Extent2D Swapchain::getSwapchainExtent()
+Extent2D Swapchain::getSwapchainExtent() const noexcept
 {
     return m_extent;
 }
@@ -66,7 +66,7 @@ bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imag
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         recreateSwapchain();
-        return;
+        return false;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
     {

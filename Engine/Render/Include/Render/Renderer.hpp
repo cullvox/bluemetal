@@ -17,7 +17,7 @@ struct Submission
     int instanceCount;
 };
 
-class Renderer
+class BLOODLUST_API Renderer
 {
 public:
     static const inline uint32_t DEFAULT_FRAMES_IN_FLIGHT = 2; 
