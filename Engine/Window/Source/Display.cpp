@@ -9,6 +9,7 @@ namespace bl
 {
 
 Display::Display() noexcept
+    : m_index(0)
 {
 }
 
@@ -62,9 +63,13 @@ std::vector<Display> Display::getDisplays() noexcept
         // Set the displays name.
         display.m_name = SDL_GetDisplayName(displayIndex);
 
-        // Set the displays rect.
-        SDL_Rect rect = {};
-        SDL_GetDisplayUsableBounds(displayIndex, &rect);
+        // Get the desktop display mode
+        SDL_Rect rect{};
+        if (SDL_GetDisplayUsableBounds(displayIndex, &rect) < 0)
+        {
+            Logger::Error("Could not get the desktop display mode for display #{}: {}\n", display.getIndex(), display.getName());
+            continue; // Skip adding this display.
+        }
 
         display.m_rect = {
             rect.x, 
@@ -77,26 +82,19 @@ std::vector<Display> Display::getDisplays() noexcept
         int displayModeCount = SDL_GetNumDisplayModes(displayIndex);
         if (displayModeCount < 1)
         {
-            Logger::Error("Could not get any display modes for display #{}: {}", display.getIndex(), display.getName());
+            Logger::Error("Could not get any display modes for display #{}: {}\n", display.getIndex(), display.getName());
             continue; // Skip adding this display because it has no modes.
         }
 
-        // Get the desktop display mode
-        SDL_DisplayMode rawDisplayMode{};
-        if (SDL_GetDesktopDisplayMode(displayIndex, &rawDisplayMode) < 0)
-        {
-            Logger::Error("Could not get the desktop display mode for display #{}: {}", display.getIndex(), display.getName());
-            continue; // Skip adding this display.
-        }
 
         // Create the bl::DisplayMode using the SDL_DisplayMode data.
         const DisplayMode desktopMode{
             {
-                (uint32_t)rawDisplayMode.w, 
-                (uint32_t)rawDisplayMode.h,
+                (uint32_t)rect.w, 
+                (uint32_t)rect.h,
             },
-            SDL_BITSPERPIXEL(rawDisplayMode.format),
-            (uint16_t)rawDisplayMode.refresh_rate
+            0,
+            0
         };
 
         // Set the desktop mode.
@@ -104,14 +102,14 @@ std::vector<Display> Display::getDisplays() noexcept
         
         // Iterate through all the SDL_DisplayMode's and create our own bl::DisplayMode.
         std::vector<DisplayMode> displayModes{};
-        
+        SDL_DisplayMode rawDisplayMode{};
         for (uint32_t displayModeIndex = 0; displayModeIndex < displayModeCount; displayModeIndex++)
         {
 
             // Get the SDL_DisplayMode of this index.
             if (SDL_GetDisplayMode(displayIndex, displayModeIndex, &rawDisplayMode) < 0)
             {
-                Logger::Error("Could not get a display mode #{} for display #{}: {}", displayModeIndex, display.getIndex(), display.getName());
+                Logger::Error("Could not get a display mode #{} for display #{}: {}\n", displayModeIndex, display.getIndex(), display.getName());
                 continue; // Skip adding this display mode because it's invalid.
             }
 

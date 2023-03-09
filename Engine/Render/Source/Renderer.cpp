@@ -36,18 +36,25 @@ void Renderer::submit(const Submission& submission)
 
 void Renderer::beginFrame()
 {
+
+    // If the swapchain wasn't recreated for some reason skip the frame.
+    if (not m_swapchain.good())
+    {
+        m_deadFrame = true;
+        return;
+    }
+
     vkWaitForFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
     // Acquire the next image from the swapchain.
-    bool wasRecreated = false;
-    m_swapchain.acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex, wasRecreated);
+    bool goodSwapchain = m_swapchain.acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex);
 
     // If the swapchain was recreated we must destroy and 
     // recreate the objects based on the swapchain images.
-    if (wasRecreated) 
+    if (not goodSwapchain)
     {
-        recreateSwappable();
         m_deadFrame = true;
+        recreateSwappable();
         return;
     }
 
@@ -69,7 +76,7 @@ void Renderer::beginFrame()
         throw std::runtime_error("Could not begin a command buffer after this frame!");
     }
 
-    const std::array<VkClearValue, 2> clearValues{{
+    const std::array<VkClearValue, 2> clearValues{ {
         {
             .color = {
                 .float32 = { 0.596f, 0.757f, 0.851f, 1.0f }
@@ -81,7 +88,8 @@ void Renderer::beginFrame()
                 .stencil = 0
             }
         }
-    }};
+    } };
+
     const Extent2D extent = m_swapchain.getSwapchainExtent();
     const VkRenderPassBeginInfo renderPassBeginInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
@@ -361,6 +369,8 @@ void Renderer::recreateSwappable(bool destroy)
 {   
     if (destroy)
         destroySwappable();
+
+    if (!m_swapchain.good()) return;
 
     createFrameBuffers();
     createCommandBuffers();

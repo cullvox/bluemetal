@@ -15,7 +15,6 @@ generate_export_header(
     BASE_NAME "BLOODLUST"
     EXPORT_MACRO_NAME "BLOODLUST_API"
     DEPRECATED_MACRO_NAME "BLOODLUST_DEPRECATED"
-
     EXPORT_FILE_NAME "include/Core/Export.h")
 
 if(NOT BUILD_SHARED_LIBS)
@@ -23,6 +22,11 @@ if(NOT BUILD_SHARED_LIBS)
 endif()
 
 target_include_directories(BloodLustCore PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/include")
+
+# Add debug definitions
+if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
+    target_compile_definitions(BloodLustCore PUBLIC "BLOODLUST_DEBUG")
+endif()
 
 # Use C++ Standard Version 20
 target_compile_features(BloodLustCore PUBLIC cxx_std_20)

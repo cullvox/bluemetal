@@ -1,11 +1,15 @@
 {
-    "name": "blengine",
-    "version-string": "0.1.0",
-    "dependencies": [
-      "pkgconf",
-      "fmt",
-      "spdlog",
-      "glm",
-      "sdl2"
-    ]
+  "name": "blengine",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "pkgconf",
+    "fmt",
+    "spdlog",
+    "glm",
+    "sdl2",
+    {
+      "name": "sdl2",
+      "features": [ "vulkan" ]
+    }
+  ]
 }

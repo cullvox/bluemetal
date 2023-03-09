@@ -6,7 +6,12 @@
 #include <limits>
 #include <stdexcept>
 
-namespace bl {
+namespace bl 
+{
+
+#if BLOODLUST_DEBUG
+    bool g_checkedGood;
+#endif
 
 Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
     : m_window(window), m_renderDevice(renderDevice), m_surface(VK_NULL_HANDLE), m_imageCount(0)
@@ -27,6 +32,11 @@ Swapchain::~Swapchain()
     spdlog::info("Destroying vulkan swapchain.");
     destroySwapchain();
     vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
+}
+
+bool Swapchain::good() const noexcept
+{
+    return m_swapchain != VK_NULL_HANDLE;
 }
 
 VkSwapchainKHR Swapchain::getSwapchain() const noexcept
@@ -59,7 +69,7 @@ const std::vector<VkImage>& Swapchain::getSwapchainImages() const noexcept
     return m_swapImages;
 }
 
-bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& wasRecreated) noexcept
+bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex) noexcept
 {
     VkResult result = vkAcquireNextImageKHR(m_renderDevice.getDevice(), m_swapchain, UINT64_MAX, semaphore, fence, &imageIndex);
 
@@ -79,7 +89,7 @@ bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imag
 
 void Swapchain::ensureSurfaceSupported()
 {
-    /* Our surface should be supported... if not thats a sin. */
+    /* Query the device for surface support. */
     VkBool32 supported = VK_FALSE;
     if (vkGetPhysicalDeviceSurfaceSupportKHR(m_renderDevice.getPhysicalDevice(), m_renderDevice.getPresentFamilyIndex(), m_surface, &supported) != VK_SUCCESS)
     {
@@ -190,6 +200,7 @@ void Swapchain::getImages()
 void Swapchain::destroySwapchain()
 {
     vkDestroySwapchainKHR(m_renderDevice.getDevice(), m_swapchain, nullptr);
+    m_swapchain = VK_NULL_HANDLE;
 }
 
 void Swapchain::recreateSwapchain()
@@ -203,6 +214,12 @@ void Swapchain::recreateSwapchain()
     findSurfaceFormat();
     findPresentMode();
     findExtent();
+
+    if (m_extent.width == 0 || m_extent.height == 0)
+    {
+        Logger::Log("Could not recreate a swapchain with an invalid extent! Waiting for a resize...");
+        return;
+    }
 
     /* Build the create info structure for the swapchain. */
     const uint32_t pQueueFamilyIndices[2] = { 
@@ -239,6 +256,10 @@ void Swapchain::recreateSwapchain()
     spdlog::info("Resizing Swapchain: \n\tExtent2D: {{ Width: {}, Height: {} }}", m_extent.width, m_extent.height);
 
     getImages();
+
+#if BLOODLUST_DEBUG
+    g_checkedGood = false;
+#endif
 }
 
 } /* namespace bl*/

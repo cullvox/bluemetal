@@ -44,7 +44,11 @@ public:
     [[nodiscard]] Extent2D getSwapchainExtent() const noexcept;
     [[nodiscard]] uint32_t getImageCount() const noexcept;
     [[nodiscard]] const std::vector<VkImage>& getSwapchainImages() const noexcept;
-    [[nodiscard]] bool acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& wasRecreated) noexcept;
+
+    /// @brief Gets the next image in the chain.
+    /// @param semaphore Semaphore to signal.
+    /// @param fence
+    [[nodiscard]] bool acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex) noexcept;
 private:
     void ensureSurfaceSupported();
     void findImageCount();

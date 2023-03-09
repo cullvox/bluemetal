@@ -2,6 +2,7 @@
 #include <optional>
 
 #define SDL_MAIN_HANDLED
+#include "Core/Log.hpp"
 #include "Window/Display.hpp"
 #include "Config/Config.hpp"
 #include "Render/RenderDevice.hpp"
@@ -21,9 +22,9 @@ public:
 
     CharacterController()
     {
-        inputController.bindAction<&CharacterController::Fire>("Fire", bl::InputEvent::Pressed, this);
-        inputController.bindAxis<&CharacterController::Walk>("Walk", this);
-        inputController.bindAxis<&CharacterController::Strafe>("Strafe", this);
+        inputController.bindAction<CharacterController>("Fire", bl::InputEvent::Pressed, *this, &CharacterController::Fire);
+        inputController.bindAxis<CharacterController>("Walk", *this, &CharacterController::Walk);
+        inputController.bindAxis<CharacterController>("Strafe", *this, &CharacterController::Strafe);
     }
 
     ~CharacterController()
@@ -49,10 +50,19 @@ public:
 
 };
 
+bool onClose = false;
+void closeWindow()
+{
+    onClose = true;
+}
+
 int main(int argc, const char** argv)
 {
     SDL_SetMainReady();
-    SDL_Init(SDL_INIT_EVERYTHING);
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
+    {
+        bl::Logger::Log("Could not init SDL: {}", SDL_GetError());
+    }
 
     std::vector<bl::Display> displays = bl::Display::getDisplays();
     bl::Window window{displays[0].getDesktopMode()};
@@ -63,13 +73,8 @@ int main(int argc, const char** argv)
     bl::InputSystem inputSystem{};
     bl::InputController windowInput{};
     CharacterController characterController{};
-    bool closeWindow = false;
-    auto closeWindowFunctor = [](const void* pData){
-        bool* pClose = (bool*)pData;
-        *pClose = true;
-    };
-
-    windowInput.bindAction("Exit", bl::InputEvent::Pressed, closeWindowFunctor, &closeWindow);
+    
+    windowInput.bindAction("Exit", bl::InputEvent::Pressed, closeWindow);
 
     inputSystem.registerAction("Exit", {bl::Key::WindowClose});
     inputSystem.registerAction("Fire", {bl::Key::MouseButtonLeft});
@@ -79,7 +84,7 @@ int main(int argc, const char** argv)
     inputSystem.registerController(characterController.getInputController());
     inputSystem.registerController(windowInput);
 
-    while (!closeWindow) // window.shouldNotClose()
+    while (!onClose) // window.shouldNotClose()
     {
         frameCounter.beginFrame();
         inputSystem.poll();

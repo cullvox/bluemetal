@@ -11,9 +11,10 @@ InputController::~InputController()
 {
 }
 
-void InputController::bindAction(const std::string& name, InputEvent event, void (*pFunction)(const void*), const void* data)
+void InputController::bindAction(const std::string& name, InputEvent event, ActionDelegate::FunctionType function)
 {
-    ActionDelegate delegate{ pFunction, data };
+    ActionDelegate delegate{};
+    delegate.bind(function);
     m_actionBindings.emplace_back(InputActionBinding{ name, event, delegate });
 }
 
@@ -26,7 +27,7 @@ void InputController::onActionEvent(const std::string& name, InputEvent input)
         if (binding.event != input) continue;
         
         // Run the delegate.
-        else binding.actionDelegate(); 
+        else binding.actionDelegate.invoke(); 
     }
 }
 
@@ -35,7 +36,7 @@ void InputController::onAxisEvent(const std::string& name, float axis)
     for (InputAxisBinding& binding : m_axisBindings)
     {
         if (binding.name != name) continue;
-        else binding.axisDelegate(axis);
+        else binding.axisDelegate.invoke(axis);
     }
 }
 

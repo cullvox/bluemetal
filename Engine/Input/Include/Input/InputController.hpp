@@ -10,8 +10,8 @@
 
 namespace bl {
 
-using ActionDelegate = Delegate<void(void)>;
-using AxisDelegate = Delegate<void(float)>;
+using ActionDelegate = SingleDelegate<void>;
+using AxisDelegate = SingleDelegate<float>;
 
 struct InputActionBinding
 {
@@ -35,22 +35,21 @@ public:
     InputController();
     ~InputController();
 
+    void bindAction(const std::string& name, InputEvent event, ActionDelegate::FunctionType function);
 
-    void bindAction(const std::string& name, InputEvent event, void (*pFunction)(const void*), const void* data);
-
-    template<auto TCandidate, class TClass>
-    void bindAction(const std::string& name, InputEvent event, TClass* pObject)
+    template<class TClass>
+    void bindAction(const std::string& name, InputEvent event, TClass& instance, ActionDelegate::FunctionMemberType<TClass> function)
     {
         ActionDelegate delegate{};
-        delegate.connect<TCandidate, TClass>(pObject);
+        delegate.bind<TClass>(instance, function);
         m_actionBindings.emplace_back(InputActionBinding{name, event, delegate});
     }
 
-    template<auto TCandidate, class TClass>
-    void bindAxis(const std::string& name, TClass* pObject)
+    template<class TClass>
+    void bindAxis(const std::string& name, TClass& instance, AxisDelegate::FunctionMemberType<TClass> function)
     {
         AxisDelegate delegate{};
-        delegate.connect<TCandidate, TClass>(pObject);
+        delegate.bind<TClass>(instance, function);
         m_axisBindings.emplace_back(InputAxisBinding{name, delegate, 0.0f});
     }
 
