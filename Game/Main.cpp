@@ -31,6 +31,8 @@ public:
     {
     }
 
+    CharacterController(const CharacterController&) = delete;
+
     void Fire()
     {
         spdlog::info("FIRE!");
