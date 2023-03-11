@@ -4,38 +4,40 @@
 #include <algorithm>
 #include <cstdint>
 #include <limits>
-#include <stdexcept>
 
 namespace bl 
 {
 
-#if BLOODLUST_DEBUG
-    bool g_checkedGood;
-#endif
-
 Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
-    : m_window(window), m_renderDevice(renderDevice), m_surface(VK_NULL_HANDLE), m_imageCount(0)
-    , m_surfaceFormat({}), m_presentMode(VK_PRESENT_MODE_FIFO_KHR), m_swapchain(VK_NULL_HANDLE)
+    : m_window(window)
+    , m_renderDevice(renderDevice)
+    , m_surface(VK_NULL_HANDLE)
+    , m_imageCount(0)
+    , m_surfaceFormat({})
+    , m_presentMode(VK_PRESENT_MODE_FIFO_KHR)
+    , m_swapchain(VK_NULL_HANDLE)
 {
-    spdlog::info("Creating vulkan swapchain.");
-    
     if (!m_window.createVulkanSurface(m_renderDevice.getInstance(), m_surface))
     {
-        throw std::runtime_error("Could not create the vulkan surface!");
+        Logger::Error("Could not create the vulkan surface!");
+        return;
     }
-    ensureSurfaceSupported();
+    
+    if (not isSurfaceSupported())
+        vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
 }
 
 Swapchain::~Swapchain()
 {
-    spdlog::info("Destroying vulkan swapchain.");
+    // Destroy the swapchain itself and the surface.
     destroy();
+
     vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
 }
 
 bool Swapchain::good() const noexcept
 {
-    return m_swapchain != VK_NULL_HANDLE;
+    return m_surface != VK_NULL_HANDLE || m_swapchain != VK_NULL_HANDLE;
 }
 
 VkSwapchainKHR Swapchain::getSwapchain() const noexcept
@@ -70,6 +72,13 @@ const std::vector<VkImage>& Swapchain::getSwapchainImages() const noexcept
 
 bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex) noexcept
 {
+
+    if (not good())
+    {
+        Logger::Error("Could not acquire next, swapchain was not good.\n");
+        return false;
+    }
+
     VkResult result = vkAcquireNextImageKHR(m_renderDevice.getDevice(), m_swapchain, UINT64_MAX, semaphore, fence, &imageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
@@ -93,21 +102,26 @@ bool Swapchain::isSurfaceSupported() noexcept
     if (vkGetPhysicalDeviceSurfaceSupportKHR(m_renderDevice.getPhysicalDevice(), m_renderDevice.getPresentFamilyIndex(), m_surface, &supported) != VK_SUCCESS)
     {
         Logger::Error("Could not get vulkan physical device surface support!");
+        return false;
     }
 
     return supported;
 }
 
-void Swapchain::findImageCount()
+bool Swapchain::chooseImageCount() noexcept
 {
     /* Get the minimum image count to be used. */
     VkSurfaceCapabilitiesKHR capabilities = {};
-    vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities);
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
+    {
+        return false;
+    }
 
     m_imageCount = (capabilities.minImageCount + 1 <= capabilities.maxImageCount) ? capabilities.minImageCount + 1 : capabilities.maxImageCount;
+    return true;
 }
 
-void Swapchain::findSurfaceFormat()
+bool Swapchain::chooseFormat() noexcept
 {
     static const VkSurfaceFormatKHR defaultFormat{DEFAULT_FORMAT, DEFAULT_COLOR_SPACE};
 
@@ -136,14 +150,15 @@ void Swapchain::findSurfaceFormat()
     m_surfaceFormat = surfaceFormats.front();
 }
 
-void Swapchain::findPresentMode()
+bool Swapchain::choosePresentMode() noexcept
 {
 
     /* Obtain the present modes from the physical device. */
     uint32_t presentModesCount = 0;
     if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &presentModesCount, nullptr) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not get the vulkan physical device surface formats!");
+        Logger::Error("Could not get the vulkan physical device surface formats!\n");
+        return false;
     }
 
     std::vector<VkPresentModeKHR> presentModes{};
@@ -151,7 +166,8 @@ void Swapchain::findPresentMode()
 
     if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &presentModesCount, presentModes.data()) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not get the vulkan physical device surface formats!");
+        Logger::Error("Could not get the vulkan physical device surface formats!\n");
+        return false;
     }
 
     /* Find if we have the requested present mode. */
@@ -159,14 +175,16 @@ void Swapchain::findPresentMode()
     if (foundMode == presentModes.end()) m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
     else m_presentMode = DEFAULT_PRESENT_MODE;
 
+    return true;
 }
 
-bool Swapchain::chooseExtent()
+bool Swapchain::chooseExtent() noexcept
 {
     VkSurfaceCapabilitiesKHR capabilities{};
     if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not get the vulkan physical device surface capabilities!");
+        Logger::Error("Could not get the vulkan physical device surface capabilities!");
+        return false;
     }
 
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
@@ -181,9 +199,11 @@ bool Swapchain::chooseExtent()
             std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
         };
     }
+
+    return true;
 }
 
-bool Swapchain::getImages_REAL() noexcept
+bool Swapchain::obtainImages() noexcept
 {
     if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, nullptr) != VK_SUCCESS)
     {
@@ -202,31 +222,25 @@ bool Swapchain::getImages_REAL() noexcept
     return true;
 }
 
-void Swapchain::destroy()
+void Swapchain::destroy() noexcept
 {
     vkDestroySwapchainKHR(m_renderDevice.getDevice(), m_swapchain, nullptr);
     m_swapchain = VK_NULL_HANDLE;
 }
 
-bool Swapchain::recreate()
+bool Swapchain::recreate() noexcept
 {
     vkDeviceWaitIdle(m_renderDevice.getDevice());
 
     if (good()) destroy();
- 
-    // Ensure that the window size is greater than 0.
-    Extent2D windowExtent = m_window.getExtent();
-    if (windowExtent.width == 0 || windowExtent.height == 0)
+    
+    if (not chooseImageCount() ||
+        not chooseFormat() ||
+        not chooseExtent())
     {
-        Logger::Error("Tried to recreate swapchain with an invalid size.");
+        Logger::Error("Could not choose a property of swapchain creation.");
         return false;
     }
- 
-    
-    findImageCount();
-    findSurfaceFormat();
-    findPresentMode();
-    findExtent();
 
     if (m_extent.width == 0 || m_extent.height == 0)
     {
@@ -267,11 +281,17 @@ bool Swapchain::recreate()
         return false;
     }
 
-    getImages_REAL();
+    if (not obtainImages())
+    {
+        destroy();
+        return false;
+    }
 
 #if BLOODLUST_DEBUG
     g_checkedGood = false;
 #endif
+
+    return true;
 }
 
 } /* namespace bl*/

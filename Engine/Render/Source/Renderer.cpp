@@ -169,7 +169,7 @@ bool Renderer::endFrame() noexcept
     m_currentFrame = (m_currentFrame + 1) % DEFAULT_FRAMES_IN_FLIGHT;
 }
 
-void Renderer::createRenderPass() noexcept
+bool Renderer::createRenderPass() noexcept
 {
     m_depthFormat = m_renderDevice.findSupportedFormat(
         {VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
