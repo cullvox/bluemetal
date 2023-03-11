@@ -9,9 +9,9 @@ namespace bl
 {
 
 /** 
-* \brief Creates a Vulkan swapchain to get images from.
+* \brief Creates and manages a vulkan swapchain instance.
 * 
-* \description This class manages the Vulkan swapchain from start of litefime 
+* This class manages the Vulkan swapchain from start of litefime 
 * to the end of its lifetime. It will create a surface for the specified 
 * window. It will recreate the swapchain when acquiring an image fails to 
 * create. Renderers can get the images and do their own processing.
@@ -73,7 +73,7 @@ public:
     */
     ~Swapchain() noexcept;
 
-    /* \brief Checks if the swapchain creation was successful.
+    /** \brief Checks if the swapchain creation was successful.
     * 
     * This function checks if the value of the swapchain for a VK_NULL_HANDLE.
     * If the swapchain was not created properly it should be a null handle and
