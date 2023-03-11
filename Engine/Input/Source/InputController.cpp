@@ -13,8 +13,8 @@ InputController::~InputController()
 
 void InputController::bindAction(const std::string& name, InputEvent event, ActionDelegate::FunctionType function)
 {
-    ActionDelegate delegate{};
-    delegate.bind(function);
+    ActionDelegate delegate{function};
+
     m_actionBindings.emplace_back(InputActionBinding{ name, event, delegate });
 }
 

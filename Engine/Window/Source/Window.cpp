@@ -61,7 +61,7 @@ bool Window::good() const noexcept
 Extent2D Window::getExtent() const noexcept
 {
     int width = 0, height = 0;
-    SDL_GetWindowSize(m_pWindow, &width, &height);
+    SDL_Vulkan_GetDrawableSize(m_pWindow, &width, &height);
     return Extent2D{(uint32_t)width, (uint32_t)height};
 }
 

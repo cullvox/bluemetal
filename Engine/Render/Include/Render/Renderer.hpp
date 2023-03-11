@@ -6,6 +6,7 @@
 
 namespace bl {
 
+
 struct Pipeline;
 struct Buffer;
 
@@ -17,29 +18,48 @@ struct Submission
     int instanceCount;
 };
 
+/// @brief Sets up sync, render textures, command buffers, and render passes for submissions.
 class BLOODLUST_API Renderer
 {
 public:
-    static const inline uint32_t DEFAULT_FRAMES_IN_FLIGHT = 2; 
-
     Renderer(RenderDevice& renderDevice, Swapchain& swapchain);
     ~Renderer();
 
-    void beginFrame();
-    void endFrame();
-    void submit(const Submission& submission);
-    void displayFrame();
-private:
-    void getDepthFormat();
-    void createRenderPass();
-    void createCommandBuffers();
-    void createFrameBuffers();
-    void createSyncObjects();
-    void recreateSwappable(bool destroy = true);
-    void destroySwappable();
-    void beginRender();
-    void endRender();
+    [[nodiscard]] bool beginFrame() noexcept;
+    [[nodiscard]] bool endFrame() noexcept;
 
+    void submit(const Submission& submission) noexcept;
+
+private:
+    static const inline uint32_t DEFAULT_FRAMES_IN_FLIGHT = 2;
+
+    /// @brief Determines hte image format for the depth buffer.
+    /// @return The depth format.
+    VkFormat getDepthFormat() noexcept;
+
+    /// @brief Creates the render pass vulkan object.
+    /// @return True on success, false on failure.
+    bool createRenderPass() noexcept;
+
+    /// @brief Creates the command buffers used when rendering.
+    /// @return True on succes, false on failure.
+    bool createCommandBuffers() noexcept;
+
+    /// @brief Creates the frame buffers used to render the swap images to present.
+    /// @return True on success, false on failure.
+    bool createFrameBuffers() noexcept;
+
+    /// @brief Creates the syncronization tools when swapping between images on the GPU/CPU.
+    /// @return True on success, false on failure.
+    bool createSyncObjects() noexcept;
+
+    /// @brief Short hand for creating the command buffers, frame buffers and sync objects.
+    /// @return True on succcess, false on failure.
+    bool recreateSwappable() noexcept;
+
+    /// @brief Destroys the swap objects.
+    void destroySwappable() noexcept;
+    
     RenderDevice& m_renderDevice;
     Swapchain& m_swapchain;
     VkFormat m_depthFormat;

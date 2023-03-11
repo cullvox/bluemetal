@@ -24,13 +24,12 @@ Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
         throw std::runtime_error("Could not create the vulkan surface!");
     }
     ensureSurfaceSupported();
-    recreateSwapchain();
 }
 
 Swapchain::~Swapchain()
 {
     spdlog::info("Destroying vulkan swapchain.");
-    destroySwapchain();
+    destroy();
     vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
 }
 
@@ -49,12 +48,12 @@ VkSurfaceKHR Swapchain::getSurface() const noexcept
     return m_surface;
 }
 
-VkFormat Swapchain::getColorFormat() const noexcept
+VkFormat Swapchain::getFormat() const noexcept
 {
     return m_surfaceFormat.format;
 }
 
-Extent2D Swapchain::getSwapchainExtent() const noexcept
+Extent2D Swapchain::getExtent() const noexcept
 {
     return m_extent;
 }
@@ -75,7 +74,7 @@ bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imag
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        recreateSwapchain();
+        recreate();
         return false;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -87,14 +86,16 @@ bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imag
     return true;
 }
 
-void Swapchain::ensureSurfaceSupported()
+bool Swapchain::isSurfaceSupported() noexcept
 {
     /* Query the device for surface support. */
     VkBool32 supported = VK_FALSE;
     if (vkGetPhysicalDeviceSurfaceSupportKHR(m_renderDevice.getPhysicalDevice(), m_renderDevice.getPresentFamilyIndex(), m_surface, &supported) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not get vulkan surface support!");
+        Logger::Error("Could not get vulkan physical device surface support!");
     }
+
+    return supported;
 }
 
 void Swapchain::findImageCount()
@@ -160,7 +161,7 @@ void Swapchain::findPresentMode()
 
 }
 
-void Swapchain::findExtent()
+bool Swapchain::chooseExtent()
 {
     VkSurfaceCapabilitiesKHR capabilities{};
     if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
@@ -182,34 +183,46 @@ void Swapchain::findExtent()
     }
 }
 
-void Swapchain::getImages()
+bool Swapchain::getImages_REAL() noexcept
 {
     if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, nullptr) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not get the vulkan swapchain images count!");
+        Logger::Error("Could not get the vulkan swapchain images count!");
+        return false;
     }
 
     m_swapImages.resize(m_imageCount);
 
     if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, m_swapImages.data()) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not get the vulkan swapchain images!");
+        Logger::Error("Could not get the vulkan swapchain images!");
+        return false;
     }
+
+    return true;
 }
 
-void Swapchain::destroySwapchain()
+void Swapchain::destroy()
 {
     vkDestroySwapchainKHR(m_renderDevice.getDevice(), m_swapchain, nullptr);
     m_swapchain = VK_NULL_HANDLE;
 }
 
-void Swapchain::recreateSwapchain()
+bool Swapchain::recreate()
 {
-    if (m_swapchain)
-    {
-        destroySwapchain();
-    }
+    vkDeviceWaitIdle(m_renderDevice.getDevice());
 
+    if (good()) destroy();
+ 
+    // Ensure that the window size is greater than 0.
+    Extent2D windowExtent = m_window.getExtent();
+    if (windowExtent.width == 0 || windowExtent.height == 0)
+    {
+        Logger::Error("Tried to recreate swapchain with an invalid size.");
+        return false;
+    }
+ 
+    
     findImageCount();
     findSurfaceFormat();
     findPresentMode();
@@ -218,7 +231,7 @@ void Swapchain::recreateSwapchain()
     if (m_extent.width == 0 || m_extent.height == 0)
     {
         Logger::Log("Could not recreate a swapchain with an invalid extent! Waiting for a resize...");
-        return;
+        return false;
     }
 
     /* Build the create info structure for the swapchain. */
@@ -250,12 +263,11 @@ void Swapchain::recreateSwapchain()
 
     if (vkCreateSwapchainKHR(m_renderDevice.getDevice(), &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
-        throw std::runtime_error("Couldn't create a vulkan swapchain!");
+        Logger::Error("Couldn't create a vulkan swapchain!");
+        return false;
     }
 
-    spdlog::info("Resizing Swapchain: \n\tExtent2D: {{ Width: {}, Height: {} }}", m_extent.width, m_extent.height);
-
-    getImages();
+    getImages_REAL();
 
 #if BLOODLUST_DEBUG
     g_checkedGood = false;

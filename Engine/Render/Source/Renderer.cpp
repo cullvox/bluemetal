@@ -1,12 +1,7 @@
+#include "Core/Log.hpp"
 #include "Render/Renderer.hpp"
-#include "Math/Vector2.hpp"
-
-#include <cstdint>
-#include <spdlog/spdlog.h>
 
 #include <array>
-#include <stdexcept>
-#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -17,7 +12,8 @@ Renderer::Renderer(RenderDevice& renderDevice, Swapchain& swapchain)
     
     /* Create the swapchain based objects and the render pass. */
     createRenderPass();
-    recreateSwappable(false);
+
+    if (swapchain.good()) recreateSwappable();
 }
 
 Renderer::~Renderer()
@@ -29,29 +25,29 @@ Renderer::~Renderer()
     vkDestroyRenderPass(m_renderDevice.getDevice(), m_pass, nullptr);   
 }
 
-void Renderer::submit(const Submission& submission)
+void Renderer::submit(const Submission& submission) noexcept
 {
     //vkCmdBindPipeline(m_swapCommandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, submission.pipeline);
 }
 
-void Renderer::beginFrame()
+bool Renderer::beginFrame() noexcept
 {
 
     // If the swapchain wasn't recreated for some reason skip the frame.
-    if (not m_swapchain.good())
+    if (!m_swapchain.good())
     {
         m_deadFrame = true;
-        return;
+        return true;
     }
 
     vkWaitForFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
     // Acquire the next image from the swapchain.
-    bool goodSwapchain = m_swapchain.acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex);
+    bool acquireGood = m_swapchain.acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex);
 
     // If the swapchain was recreated we must destroy and 
     // recreate the objects based on the swapchain images.
-    if (not goodSwapchain)
+    if (!acquireGood)
     {
         m_deadFrame = true;
         recreateSwappable();
@@ -76,6 +72,7 @@ void Renderer::beginFrame()
         throw std::runtime_error("Could not begin a command buffer after this frame!");
     }
 
+    // Setup the render pass
     const std::array<VkClearValue, 2> clearValues{ {
         {
             .color = {
@@ -90,7 +87,7 @@ void Renderer::beginFrame()
         }
     } };
 
-    const Extent2D extent = m_swapchain.getSwapchainExtent();
+    const Extent2D extent = m_swapchain.getExtent();
     const VkRenderPassBeginInfo renderPassBeginInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .pNext = nullptr,
@@ -108,12 +105,13 @@ void Renderer::beginFrame()
     
 }
 
-void Renderer::endFrame()
+bool Renderer::endFrame() noexcept
 {
+    // If this frame is considered dead don't do anything and goto next frame ready.
     if (m_deadFrame)
     {
         m_deadFrame = false;
-        return;
+        return true;
     }
 
     // End the previous command buffer.
@@ -171,7 +169,7 @@ void Renderer::endFrame()
     m_currentFrame = (m_currentFrame + 1) % DEFAULT_FRAMES_IN_FLIGHT;
 }
 
-void Renderer::createRenderPass()
+void Renderer::createRenderPass() noexcept
 {
     m_depthFormat = m_renderDevice.findSupportedFormat(
         {VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
@@ -180,7 +178,7 @@ void Renderer::createRenderPass()
     const std::array<VkAttachmentDescription, 2> attachmentDescriptions = {{
         { // Color Attachment
             0, // flags
-            m_swapchain.getColorFormat(), // format
+            m_swapchain.getFormat(), // format
             VK_SAMPLE_COUNT_1_BIT, // samples
             VK_ATTACHMENT_LOAD_OP_CLEAR, // loadOp
             VK_ATTACHMENT_STORE_OP_STORE, // storeOp
@@ -238,11 +236,12 @@ void Renderer::createRenderPass()
 
     if (vkCreateRenderPass(m_renderDevice.getDevice(), &createInfo, nullptr, &m_pass) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create a vulkan render pass!");
+        Logger::Error("Could not create a vulkan render pass!");
+        return false;
     }
 }
 
-void Renderer::createCommandBuffers()
+bool Renderer::createCommandBuffers() noexcept
 {
     const VkCommandBufferAllocateInfo allocateInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
@@ -260,9 +259,9 @@ void Renderer::createCommandBuffers()
     }
 }
 
-void Renderer::createFrameBuffers()
+bool Renderer::createFrameBuffers() noexcept
 {
-    Extent2D extent = m_swapchain.getSwapchainExtent();
+    Extent2D extent = m_swapchain.getExtent();
 
     // Create the depth image
     m_depthImage = Image{
@@ -286,7 +285,7 @@ void Renderer::createFrameBuffers()
             .flags = 0,
             .image = image,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = m_swapchain.getColorFormat(),
+            .format = m_swapchain.getFormat(),
             .components = {
                 .r = VK_COMPONENT_SWIZZLE_IDENTITY,
                 .g = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -336,7 +335,7 @@ void Renderer::createFrameBuffers()
     }
 }
 
-void Renderer::createSyncObjects()
+bool Renderer::createSyncObjects() noexcept
 {
     const VkSemaphoreCreateInfo semaphoreCreateInfo{
         .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
@@ -365,30 +364,29 @@ void Renderer::createSyncObjects()
     }
 }
 
-void Renderer::recreateSwappable(bool destroy)
+bool Renderer::recreateSwappable() noexcept
 {   
-    if (destroy)
-        destroySwappable();
+    destroySwappable();
 
-    if (!m_swapchain.good()) return;
-
-    createFrameBuffers();
-    createCommandBuffers();
-    createSyncObjects();
+    return createFrameBuffers() 
+        && createCommandBuffers() 
+        && createSyncObjects();
 }
 
 void Renderer::destroySwappable()
 {
+    // The device must be idle before we destroy anything and command buffers must stop.
     vkDeviceWaitIdle(m_renderDevice.getDevice());
 
-    /* Destroy the objects used with the swapchain. */
+
     vkFreeCommandBuffers(m_renderDevice.getDevice(), m_renderDevice.getCommandPool(), m_swapchain.getImageCount(), m_swapCommandBuffers.data());
-    
-    for (uint32_t i = 0; i < m_swapchain.getImageCount(); i++)
+
+    for (uint32_t i = 0; i < m_swapFramebuffers.size(); i++)
     {
         vkDestroyFramebuffer(m_renderDevice.getDevice(), m_swapFramebuffers[i], nullptr);
         vkDestroyImageView(m_renderDevice.getDevice(), m_swapImageViews[i], nullptr);
     }
+
 
     for (uint32_t i = 0; i < DEFAULT_FRAMES_IN_FLIGHT; i++)
     {
@@ -396,6 +394,8 @@ void Renderer::destroySwappable()
         vkDestroySemaphore(m_renderDevice.getDevice(), m_renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(m_renderDevice.getDevice(), m_inFlightFences[i], nullptr);
     }
+
+
 }
 
 } // namespace bl

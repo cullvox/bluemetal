@@ -1,19 +1,18 @@
 #pragma once
 
-#include <typeinfo>
-#include <typeindex>
 #include <functional>
 
-template<typename TReturn>
+
+template<typename TReturn, typename...TArgs>
 class Delegate;
 
-/// @brief Handles delegates of no parameter functions.
-template<typename TReturn>
-class Delegate<TReturn()>
+/// @brief Handles delegates parameter functions.
+template<typename TReturn, typename...TArgs>
+class Delegate<TReturn(TArgs...)>
 {
 public:
 	/// @brief The type of this delegates function.
-	using FunctionType = std::function<TReturn()>;
+	using FunctionType = std::function<TReturn(TArgs...)>;
 	
 	/// @brief Default constructor
 	Delegate() = default;
@@ -28,19 +27,19 @@ public:
 	/// @brief Constructs a delegate using a const pointer-to-member function.
 	/// @param object The object to bind to when calling the function.
 	/// @param method The method to call.
-	template<typename TFirstObject, typename TSecondObject>
-	Delegate(const TFirstObject& object, TReturn(TSecondObject::* method)() const) noexcept
+	template<typename TObject>
+	Delegate(const TObject& object, TReturn(TObject::* method)(TArgs...) const) noexcept
 	{
-		m_functions.push_back(FunctionType(std::bind_front(method, const_cast<TFirstObject*>(&object))));
+		m_functions.push_back(FunctionType(std::bind_front(method, const_cast<TObject*>(&object))));
 	}
 
 	/// @brief Constructs a delegate using a pointer-to-member function.
 	/// @param object The object to bind to when calling the function.
 	/// @param method The method to call.
-	template<typename TFirstObject, typename TSecondObject>
-	Delegate(const TFirstObject& object, TReturn(TSecondObject::* method)()) noexcept
+	template<typename TObject>
+	Delegate(const TObject& object, TReturn(TObject::* method)(TArgs...)) noexcept
 	{
-		m_functions.push_back(FunctionType(std::bind_front(method, const_cast<TFirstObject*>(&object))));
+		m_functions.push_back(FunctionType(std::bind_front(method, const_cast<TObject*>(&object))));
 	}
 
 	/// @brief Default destructor
@@ -48,17 +47,19 @@ public:
 
 	/// @brief Executes every function added to the delegate.
 	/// @return The value of the last function added.
-	TReturn operator()() const
+	void operator()(TArgs...args) const
 	{
-		if (m_functions.size() == 0) return TResult{};
+		if (m_functions.size() == 0) return;
 
 		for (size_t i = 0; i < m_functions.size() - 1; i++)
 		{
-			m_functions[i]();
+			m_functions[i](args...);
 		}
 
-		return m_functions.back()();
+		m_functions.back()(args...);
 	}
+
+
 
 	Delegate& operator+=(const Delegate& delegate) noexcept
 	{
@@ -125,68 +126,15 @@ public:
 		return m_functions;
 	}
 	
-	TReturn invoke() const
+	TReturn invoke(TArgs...args) const
 	{
-		return operator()();
+		return operator()(args...);
 	}
 
 
 private:
-	void* m_pInstance;
 
-	/// <summary>
-	/// The function 
-	/// </summary>
 	std::vector<FunctionType> m_functions;
-};
-
-template<>
-class SingleDelegate<void>
-{
-public:
-	using FunctionType = void(void);
-
-	template<typename TClass>
-	using FunctionMemberType = void(TClass::*)(void);
-
-	/// @brief Default constructor
-	SingleDelegate()
-		: m_function()
-	{
-	}
-
-	/// @brief Default destructor
-	~SingleDelegate()
-	{
-	}
-
-	/// @brief Binds a free function to the delegate.
-	/// @param freeFunction Function to use when invoking the delegate.
-	void bind(FunctionType freeFunction)
-	{
-		m_function = freeFunction;
-	}
-
-	template<class TClass>
-	void bind(TClass& instance, FunctionMemberType<TClass> function)
-	{
-		m_function = std::bind(function, instance);
-	}
-
-	void call()
-	{
-		std::invoke(m_function);
-	}
-
-private:
-
-
-	void* pInstance;
-
-	/// <summary>
-	/// The function 
-	/// </summary>
-	std::function<void(void)> m_function;
 };
 
 /* What I want

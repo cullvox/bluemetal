@@ -3,3 +3,4 @@
 /compile_commands.json
 /.vs
 /out/build/x64-Debug
+/doxygen

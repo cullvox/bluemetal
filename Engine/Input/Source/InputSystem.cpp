@@ -131,6 +131,9 @@ void InputSystem::processWindow(SDL_Event* pEvent)
         case SDL_WINDOWEVENT_CLOSE: 
             actionEvent(Key::WindowClose, InputEvent::Pressed);
             break;
+        case SDL_WINDOWEVENT_RESIZED:
+            actionEvent(Key::WindowResize, InputEvent::Pressed);
+            break;
     }
 }
 

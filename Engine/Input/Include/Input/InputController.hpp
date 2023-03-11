@@ -10,8 +10,8 @@
 
 namespace bl {
 
-using ActionDelegate = SingleDelegate<void>;
-using AxisDelegate = SingleDelegate<float>;
+using ActionDelegate = Delegate<void(void)>;
+using AxisDelegate = Delegate<void(float)>;
 
 struct InputActionBinding
 {
@@ -22,6 +22,10 @@ struct InputActionBinding
 
 struct InputAxisBinding
 {
+    InputAxisBinding() = default;
+    InputAxisBinding(std::string name, AxisDelegate axisDelegate, float scale)
+        : name(name), axisDelegate(axisDelegate), scale(scale){ }
+
     std::string name;
     AxisDelegate axisDelegate;
     float scale;
@@ -38,19 +42,16 @@ public:
     void bindAction(const std::string& name, InputEvent event, ActionDelegate::FunctionType function);
 
     template<class TClass>
-    void bindAction(const std::string& name, InputEvent event, TClass& instance, ActionDelegate::FunctionMemberType<TClass> function)
+    void bindAction(const std::string& name, InputEvent event, TClass& instance, void(TClass::* function)(void))
     {
-        ActionDelegate delegate{};
-        delegate.bind<TClass>(instance, function);
-        m_actionBindings.emplace_back(InputActionBinding{name, event, delegate});
+        m_actionBindings.emplace_back(InputActionBinding{name, event, ActionDelegate(instance, function)});
     }
 
     template<class TClass>
-    void bindAxis(const std::string& name, TClass& instance, AxisDelegate::FunctionMemberType<TClass> function)
+    void bindAxis(const std::string& name, TClass& instance, void(TClass::* function)(float))
     {
-        AxisDelegate delegate{};
-        delegate.bind<TClass>(instance, function);
-        m_axisBindings.emplace_back(InputAxisBinding{name, delegate, 0.0f});
+        auto delegate = AxisDelegate(instance, function);
+        m_axisBindings.emplace_back(InputAxisBinding(name, delegate, 0.0f));
     }
 
     void onActionEvent(const std::string& name, InputEvent input);

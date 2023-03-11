@@ -22,9 +22,10 @@ public:
 
     CharacterController()
     {
-        inputController.bindAction<CharacterController>("Fire", bl::InputEvent::Pressed, *this, &CharacterController::Fire);
-        inputController.bindAxis<CharacterController>("Walk", *this, &CharacterController::Walk);
-        inputController.bindAxis<CharacterController>("Strafe", *this, &CharacterController::Strafe);
+        inputController.bindAction("Fire", bl::InputEvent::Pressed, *this, &CharacterController::Fire);
+        inputController.bindAction("Fire", bl::InputEvent::Pressed, *this, &CharacterController::Fire);
+        inputController.bindAxis("Walk", *this, &CharacterController::Walk);
+        inputController.bindAxis("Strafe", *this, &CharacterController::Strafe);
     }
 
     ~CharacterController()
@@ -77,11 +78,15 @@ int main(int argc, const char** argv)
     CharacterController characterController{};
     
     windowInput.bindAction("Exit", bl::InputEvent::Pressed, closeWindow);
+    windowInput.bindAction("Resize", bl::InputEvent::Pressed, [&]() {
+        swapchain.recreate();
+        });
 
     inputSystem.registerAction("Exit", {bl::Key::WindowClose});
     inputSystem.registerAction("Fire", {bl::Key::MouseButtonLeft});
     inputSystem.registerAxis("Walk", {{bl::Key::KeyW, 1.0f}, {bl::Key::KeyS, -1.0f}});
     inputSystem.registerAxis("Strafe", {{bl::Key::KeyD, 1.0f}, {bl::Key::KeyA, -1.0f}});
+    inputSystem.registerAction("Resize", { bl::Key::WindowResize });
     
     inputSystem.registerController(characterController.getInputController());
     inputSystem.registerController(windowInput);

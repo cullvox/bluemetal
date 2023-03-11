@@ -20,7 +20,12 @@ class BLOODLUST_API Window
 {
 public:
 
-    /// @brief Default constructor
+    /// @brief Default constructor.
+    ///
+    /// In order to open a window when using this constructor you must call
+    /// open().
+    /// 
+    /// \sa open
     Window() noexcept = default;
 
     /// @brief Construct a proper window.
