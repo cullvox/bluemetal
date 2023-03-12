@@ -8,7 +8,7 @@
 namespace bl 
 {
 
-Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
+Swapchain::Swapchain(Window& window, RenderDevice& renderDevice) noexcept
     : m_window(window)
     , m_renderDevice(renderDevice)
     , m_surface(VK_NULL_HANDLE)
@@ -27,7 +27,7 @@ Swapchain::Swapchain(Window& window, RenderDevice& renderDevice)
         vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
 }
 
-Swapchain::~Swapchain()
+Swapchain::~Swapchain() noexcept
 {
     // Destroy the swapchain itself and the surface.
     destroy();
@@ -57,7 +57,7 @@ VkFormat Swapchain::getFormat() const noexcept
 
 Extent2D Swapchain::getExtent() const noexcept
 {
-    return m_extent;
+    return Extent2D{m_extent.width, m_extent.height};
 }
 
 uint32_t Swapchain::getImageCount() const noexcept
@@ -65,25 +65,27 @@ uint32_t Swapchain::getImageCount() const noexcept
     return m_imageCount;
 }
 
-const std::vector<VkImage>& Swapchain::getSwapchainImages() const noexcept
+const std::vector<VkImage>& Swapchain::getImages() const noexcept
 {
     return m_swapImages;
 }
 
 bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex) noexcept
 {
-
     if (not good())
     {
         Logger::Error("Could not acquire next, swapchain was not good.\n");
         return false;
     }
 
-    VkResult result = vkAcquireNextImageKHR(m_renderDevice.getDevice(), m_swapchain, UINT64_MAX, semaphore, fence, &imageIndex);
 
+    VkResult result = vkAcquireNextImageKHR(m_renderDevice.getDevice(), m_swapchain, UINT64_MAX, semaphore, fence, &imageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        recreate();
+        if (not recreate())
+        {
+            Logger::Error("Could not recreate swapchain on acquire next image!");
+        }
         return false;
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -129,7 +131,8 @@ bool Swapchain::chooseFormat() noexcept
     uint32_t surfaceFormatsCount = 0;
     if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_renderDevice.getPhysicalDevice(), m_surface, &surfaceFormatsCount, nullptr) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not find a vulkan surface format!");
+        Logger::Error("Could not find a vulkan surface format!\n");
+        return false;
     }
     
     std::vector<VkSurfaceFormatKHR> surfaceFormats{};
@@ -143,14 +146,15 @@ bool Swapchain::chooseFormat() noexcept
     if (foundMode != surfaceFormats.end())
     {
         m_surfaceFormat = defaultFormat;
-        return;
+        return true;
     }
 
     /* As fallback use the first format... */
     m_surfaceFormat = surfaceFormats.front();
+    return false;
 }
 
-bool Swapchain::choosePresentMode() noexcept
+bool Swapchain::choosePresentMode(VkPresentModeKHR requestedPresentMode) noexcept
 {
 
     /* Obtain the present modes from the physical device. */
@@ -170,10 +174,13 @@ bool Swapchain::choosePresentMode() noexcept
         return false;
     }
 
+    m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+
     /* Find if we have the requested present mode. */
-    auto foundMode = std::find(presentModes.begin(), presentModes.end(), DEFAULT_PRESENT_MODE);
-    if (foundMode == presentModes.end()) m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
-    else m_presentMode = DEFAULT_PRESENT_MODE;
+    auto foundMode = std::find(presentModes.begin(), presentModes.end(), requestedPresentMode);
+
+    if (foundMode != presentModes.end()) 
+        m_presentMode = requestedPresentMode;
 
     return true;
 }
@@ -189,12 +196,12 @@ bool Swapchain::chooseExtent() noexcept
 
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
     {
-        m_extent = Extent2D{capabilities.currentExtent.width, capabilities.currentExtent.height};
+        m_extent = capabilities.currentExtent;
     }
     else
     {
         const Extent2D extent = m_window.getExtent();
-        m_extent = Extent2D{
+        m_extent = VkExtent2D{
             std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
             std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
         };

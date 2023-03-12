@@ -31,24 +31,24 @@ class BLOODLUST_API Swapchain
 public:
 
     /** \brief The default requested format for the swapchain. */
-    const VkFormat DEFAULT_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
+    static const VkFormat DEFAULT_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
 
     /** \brief The default requested color space for the swapchain. */
-    const VkColorSpaceKHR DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    static const VkColorSpaceKHR DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     
     /** \brief The default requested present mode for the swapchain. */
-    const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
+    static const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
     /** \brief Constructs a Vulkan swapchain.
     * 
     * Creates a VkSurfaceKHR using the function defined by the window. Then 
-    * uses the surface to build data about how the swapchain will work.
-    * Finally creates the swapchain using \ref recreate.
+    * uses the surface to build the swapchain creation info. Finally creates 
+    * the swapchain using \ref recreate.
     * 
     * After this constructor is used you MUST check if the swapchain was
     * created successfully by using \ref good. If you don't the swapchain
-    * will fail when using \ref acquireNext. This is purely for safety
-    * reasons and not to be a pain and since this project likes to use noexcept.
+    * will fail when using \ref acquireNext. This is purely for safety reasons 
+    * and not to be a pain and since this project likes to use noexcept.
     * 
     * 
     * \param window The window the swapchain is built on.
@@ -63,13 +63,14 @@ public:
     */
     Swapchain(Window& window, RenderDevice& renderDevice) noexcept;
 
-    /** \brief Destructs the Vulkan swapchain.
+    /** \brief Destructor
     * 
-    * Destroys the whole swapchain including the surface, and the swapchain.
+    * Destroys the whole swapchain including the surface.
     * 
     * \since BloodLust 1.0.0
     * 
     * \sa Swapchain::Swapchain
+    * 
     */
     ~Swapchain() noexcept;
 
@@ -81,7 +82,7 @@ public:
     * 
     * 
     * \return true The swapchain was created successfully.
-    *         false The sawpchain was not created successfully.
+    * \return false The swapchain was not created successfully.
     * 
     * \since BloodLust 1.0.0
     * 
@@ -89,19 +90,6 @@ public:
     *
     */
     [[nodiscard]] bool good() const noexcept;
-
-    /** \brief Gets the internal vulkan swapchain.
-    * 
-    * Gets the swapchain that was created by \ref recreate. If the swapchain
-    * was improperly created this function will return VK_NULL_HANDLE.
-    * 
-    * \return The swapchain or VK_NULL_HANDLE.
-    * 
-    * \since BloodLust 1.0.0
-    * 
-    * \sa recreate
-    */
-    [[nodiscard]] VkSwapchainKHR getSwapchain() const noexcept;
 
     /** \brief Gets the internal vulkan surface.
     * 
@@ -165,57 +153,218 @@ public:
     */
     [[nodiscard]] uint32_t getImageCount() const noexcept;
     
-    /// @brief Gets the vulkan images that are being used in the swapchain.
-    /// @return const std::vector<VkImage>& The images.
-    [[nodiscard]] const std::vector<VkImage>& getSwapchainImages() const noexcept;
+    /** \brief Gets the vulkan images that are being used in the swapchain.
+     * 
+     * This function retrieves all the images created by the swapchain. When
+     * the swapchain was not created properly returns a vector that has no
+     * elements. Will be regenerated when \ref recreate is called.
+     * 
+     * \return The images that the swapchain is using. On not \ref good the
+     * a value of 0 is returned.
+     * 
+     * \since BloodLust 1.0.0
+     * 
+     * \sa recreate
+     * \sa getImageCount
+     * 
+     */
+    [[nodiscard]] const std::vector<VkImage>& getImages() const noexcept;
 
-    /// @brief Gets the next image in the chain.
-    /// @param semaphore Semaphore to signal.
-    /// @param fence Fence to trigger when done.
-    /// @param imageIndex The current image index we are using. @see getSwapchainImages
-    /// @return True on image acquired and swapchain successfully recreated, false on image not acquired or swapchain failed to recreate.
+    /** \brief Gets the index of the next image in the swapchain.
+     * 
+     * Gets the next image index that the swapchain using to present to the
+     * window. These images can be retrieved through \ref getSwapchainImages.
+     * A renderer can then use the image index to present the specified image.
+     * 
+     * \param semaphore Semaphore to signal when the swapchain image gets 
+     * acquired.
+     * \param fence Fence to trigger when the image is done being acquired.
+     * \param imageIndex The current image index we are using. 
+     * 
+     * \return true The image acquired and swapchain successfully recreated.
+     * \return false The image was not acquired or swapchain failed to recreate.
+     * 
+     * \since BloodLust 1.0.0
+     * 
+     * \sa getImages
+     * \sa getImageCount
+     * 
+     */
     [[nodiscard]] bool acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex) noexcept;
 
-    /// @brief Recreates the swapchain on demand.
-    /// @return True on success, false on failure.
-    [[nodiscard]] bool recreate();
+    /** \brief Recreates the swapchain on demand.
+     * 
+     * Destroys the swapchain if it is currently created. Will regenerate
+     * all the required info including the extent, format, and images. After
+     * this function is called the renderer may need to recreate its 
+     * attachments because they will need to be resized.  
+     * 
+     * \return true The swapchain was successfully recreated.
+     * \return false The swapchain could not be recreated.
+     * 
+     * \since BloodLust 1.0.0
+     * 
+     * \sa getFormat
+     * \sa getExtent
+     * \sa getImages
+     * \sa getSwapchain
+     * 
+     */
+    [[nodiscard]] bool recreate() noexcept;
+
+    /** \brief Gets the internal vulkan swapchain.
+    * 
+    * Gets the swapchain that was created by \ref recreate. If the swapchain
+    * was improperly created this function will return VK_NULL_HANDLE.
+    * 
+    * \return The swapchain or VK_NULL_HANDLE.
+    * 
+    * \since BloodLust 1.0.0
+    * 
+    * \sa recreate
+    * 
+    */
+    [[nodiscard]] VkSwapchainKHR getSwapchain() const noexcept;
 
 private:
     
-    /// @brief Checks if the created surface supports the physical device.
-    /// @return True if supported, false if not.
+    /**
+     * \brief Checks if the created surface supports the physical device.
+     * 
+     * Uses the physical device from the render device at construction to
+     * check if the surface is supported. If the surface isn't checked vulkan
+     * will throw a validation error.
+     * 
+     * \return true The vulkan surface is supported by the physical device.
+     * \return false The vulkan surface is not supported by the physical device.
+     * 
+     * \since BloodLust 1.0.0
+     * 
+     * \sa recreate
+     * 
+     */
     [[nodiscard]] bool isSurfaceSupported() noexcept;
 
-    /// @brief Chooses how many images the swapchain will use.
-    /// @return True on success, false on failure.
+    /** \brief Determines the amount of images the swapchain will use.
+     * 
+     * In order to create a swapchain it must know how many images to create.
+     * Vulkan sets boundaries and this function determines a good in between.
+     * 
+     * \return true The image count was choosen successfully.
+     * \return false The image could could not be choosen.
+     * 
+     * \since BloodLust 1.0.0
+     * 
+     * \sa recreate
+     * 
+     */
     [[nodiscard]] bool chooseImageCount() noexcept;
 
-    /// @brief Chooses the format the swapchain images will be in, requests default and uses first one if not found.
-    /// @return True on success, false on failure.
+    /** \brief Determines the color format used by swapchain images.
+     * 
+     * The swapchain will automatically create some images determined by
+     * \ref chooseImageCount, these images require a format that this function
+     * will find.
+     * 
+     * \return true The image format was chosen successfully.
+     * \return false The image format was not chosen successfully.
+     * 
+     * \since BloodLust 1.0.0
+     * 
+     * \sa recreate
+     * 
+     */
     [[nodiscard]] bool chooseFormat() noexcept;
 
-    /// @brief Chooses the present mode of the swapchain, requests default and if not uses FIFO.
-    /// @return True on success, false on failure.
-    bool choosePresentMode() noexcept;
+    /**
+     * \brief Determines the present mode that the swapchain is created with.
+     * 
+     * A swapchain requires a present mode in order to be created. The present
+     * modes ensure that images presented at the right times. The default
+     * present mode is checked first, otherwise this function uses the FIFO 
+     * mode. 
+     * 
+     * \return true Successfully chose a present mode usable by the swapchain. 
+     * \return false No present mode was found.
+     * 
+     * \since BloodLust 1.0.0
+     * 
+     * \sa recreate 
+     * 
+     */
+    bool choosePresentMode(VkPresentModeKHR requestedPresentMode = DEFAULT_PRESENT_MODE) noexcept;
 
-    /// @brief Chooses the image extent, usually goes with swapchain capabilites, sometimes with the window size.
-    /// @return True on success, false on failure.
+    /** \brief Chooses the image extent of the swapchain.
+     * 
+     * Determines the width and height of the swapchain using information from
+     * the window and vulkan swapchain capabilities. The extent may not be 
+     * directly tied to the window size because they update at different times.
+     * 
+     * All information built on top of the swapchain should use this extent if 
+     * it needs to use it.
+     * 
+     * \return true The extent was properly choosen. 
+     * \return false The extent could not be properly choosen.
+     * 
+     * \since BloodLust 1.0.0
+     * 
+     * \sa recreate.
+     * 
+     */
     bool chooseExtent() noexcept;
-
-    ///
+    
+    /** \brief Gets the images from the swapchain.
+     * 
+     * After the swapchain is created this function can retrieve them and store
+     * them for later. The \ref getImages function will return them.
+     * 
+     * \return true The images were obtained successfully.
+     * \return false The images could not be obtained.
+     * 
+     * \since BloodLust 1.0.0
+     * 
+     * \sa getImages
+     * \sa recreate
+     * 
+     */
     bool obtainImages() noexcept;
+
+    /**
+     * @brief Destroys the swapchain for \ref recreate.
+     * 
+     * Destroys only the swapchain.
+     * 
+     */
     void destroy() noexcept;
 
-    RenderDevice& m_renderDevice;
+    /** \brief Window provided at construction, used to create a surface and 
+        its extent. */
     Window& m_window;
+
+    /** \brief Render device provided at construction, used for its VkDevice. */
+    RenderDevice& m_renderDevice;
+
+    /** \brief Surface created by the constructor to facilitate swapchain 
+        creation. */
     VkSurfaceKHR m_surface;
+
+    /** \brief Amount of images the swapchain uses. \sa chooseImageCount */
     uint32_t m_imageCount;
+
+    /** \brief The surface format of the swapchain. \sa chooseFormat */
     VkSurfaceFormatKHR m_surfaceFormat;
+
+    /** \brief Present mode of the swapchain. \sa choosePresentMode */
     VkPresentModeKHR m_presentMode;
-    Extent2D m_extent;
+
+    /** \brief Extent of the swapchain. \sa chooseExtent */
+    VkExtent2D m_extent;
+
+    /** \brief The swapchain. */
     VkSwapchainKHR m_swapchain;
+
+    /** \brief Images created by the swapchain. \sa obtainImages */
     std::vector<VkImage> m_swapImages;
-    std::vector<VkCommandBuffer> m_swapBuffers;
 
 #ifdef BLOODLUST_DEBUG
     bool m_checkedGood;
