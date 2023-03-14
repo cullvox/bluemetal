@@ -22,11 +22,16 @@ struct Submission
 class BLOODLUST_API Renderer
 {
 public:
-    Renderer(RenderDevice& renderDevice, Swapchain& swapchain);
+
+    Renderer() noexcept;
+    Renderer(RenderDevice& renderDevice, Swapchain& swapchain) noexcept;
+    
     ~Renderer();
 
-    [[nodiscard]] bool beginFrame() noexcept;
-    [[nodiscard]] bool endFrame() noexcept;
+    Renderer& operator=(Renderer&& rhs) noexcept;
+
+    bool beginFrame() noexcept;
+    bool endFrame() noexcept;
 
     void submit(const Submission& submission) noexcept;
 
@@ -59,9 +64,14 @@ private:
 
     /// @brief Destroys the swap objects.
     void destroySwappable() noexcept;
+
+    void collapse() noexcept;
+
+    // TODO: Create a swap renderer class of some kind for the swapped obejects per frame.
+    // This will probably have to include synchronized objects.
     
-    RenderDevice& m_renderDevice;
-    Swapchain& m_swapchain;
+    RenderDevice* m_pRenderDevice;
+    Swapchain* m_pSwapchain;
     VkFormat m_depthFormat;
     Image m_depthImage;
     VkRenderPass m_pass;

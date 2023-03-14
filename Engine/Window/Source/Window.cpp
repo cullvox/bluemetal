@@ -28,6 +28,13 @@ Window::~Window()
     }
 }
 
+Window& Window::operator=(Window&& rhs) noexcept
+{
+    m_pWindow = rhs.m_pWindow;
+    rhs.m_pWindow = nullptr;
+    return *this;
+}
+
 bool Window::open(DisplayMode videoMode, const std::string& title, std::optional<Display> display) noexcept
 {
 

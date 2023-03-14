@@ -1,7 +1,12 @@
 #pragma once
 
+#define SDL_MAIN_HANDLED
+
+#include "Core/Export.h"
 #include "Window/Window.hpp"
 #include "Render/RenderDevice.hpp"
+#include "Render/Swapchain.hpp"
+#include "Render/Renderer.hpp"
 
 namespace bl
 {
@@ -17,7 +22,7 @@ namespace bl
 * \since BloodLust 1.0.0
 * 
 */
-class Engine
+class BLOODLUST_API Engine
 {
 
 public:
@@ -67,9 +72,14 @@ public:
     */
     [[nodiscard]] bool good() const noexcept;
 
+    bool run() noexcept;
+
 private:
     Window m_window;
     RenderDevice m_renderDevice;
+    Swapchain m_swapchain;
+    Renderer m_renderer;
+    bool m_close;
 
 };
 

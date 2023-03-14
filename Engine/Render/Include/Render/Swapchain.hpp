@@ -39,6 +39,18 @@ public:
     /** \brief The default requested present mode for the swapchain. */
     static const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
+    /** \brief Default constructor 
+    *
+    * Doesn't initialize anything just creates a place holder swapchain. 
+    * Checking \ref good() will return false.
+    * 
+    * \since BloodLust 1.0.0
+    * 
+    * \sa Swapchain(Window&, RenderDevice&);
+    * 
+    */
+    Swapchain() noexcept;
+
     /** \brief Constructs a Vulkan swapchain.
     * 
     * Creates a VkSurfaceKHR using the function defined by the window. Then 
@@ -73,6 +85,21 @@ public:
     * 
     */
     ~Swapchain() noexcept;
+    
+    /** \brief Move operator
+    * 
+    * Moves the values from rhs to this and clears the values in rhs.
+    * 
+    * \param rhs A swapchain value from the right side of the equals.
+    * 
+    * \return *this
+    * 
+    * \since BloodLust 1.0.0
+    * 
+    * \sa Swapchain()
+    * 
+    */
+    Swapchain& operator=(Swapchain&& rhs) noexcept;
 
     /** \brief Checks if the swapchain creation was successful.
     * 
@@ -335,14 +362,14 @@ private:
      * Destroys only the swapchain.
      * 
      */
-    void destroy() noexcept;
+    void collapse() noexcept;
 
     /** \brief Window provided at construction, used to create a surface and 
         its extent. */
-    Window& m_window;
+    Window* m_pWindow;
 
     /** \brief Render device provided at construction, used for its VkDevice. */
-    RenderDevice& m_renderDevice;
+    RenderDevice* m_pRenderDevice;
 
     /** \brief Surface created by the constructor to facilitate swapchain 
         creation. */

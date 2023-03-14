@@ -8,16 +8,24 @@
 namespace bl 
 {
 
-Swapchain::Swapchain(Window& window, RenderDevice& renderDevice) noexcept
-    : m_window(window)
-    , m_renderDevice(renderDevice)
+Swapchain::Swapchain() noexcept
+    : m_pWindow(nullptr)
+    , m_pRenderDevice(nullptr)
     , m_surface(VK_NULL_HANDLE)
     , m_imageCount(0)
     , m_surfaceFormat({})
     , m_presentMode(VK_PRESENT_MODE_FIFO_KHR)
     , m_swapchain(VK_NULL_HANDLE)
 {
-    if (not m_window.createVulkanSurface(m_renderDevice.getInstance(), m_surface))
+}
+
+Swapchain::Swapchain(Window& window, RenderDevice& renderDevice) noexcept
+    : Swapchain()
+{
+    m_pWindow = &window;
+    m_pRenderDevice = &renderDevice;
+
+    if (not m_pWindow->createVulkanSurface(m_pRenderDevice->getInstance(), m_surface))
     {
         Logger::Error("Could not create the vulkan surface!");
         return;
@@ -30,17 +38,39 @@ Swapchain::Swapchain(Window& window, RenderDevice& renderDevice) noexcept
         goto failureCleanup;
     }
 
-failureCleanup:
-    vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
+    return;
 
+failureCleanup:
+    vkDestroySurfaceKHR(m_pRenderDevice->getInstance(), m_surface, nullptr);
 }
 
 Swapchain::~Swapchain() noexcept
 {
     // Destroy the swapchain itself and the surface.
-    destroy();
+    collapse();
 
-    vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
+    if (m_surface) vkDestroySurfaceKHR(m_pRenderDevice->getInstance(), m_surface, nullptr);
+}
+
+Swapchain& Swapchain::operator=(Swapchain&& rhs) noexcept
+{
+    m_pWindow = rhs.m_pWindow;
+    m_pRenderDevice = rhs.m_pRenderDevice;
+    m_surface = rhs.m_surface;
+    m_imageCount = rhs.m_imageCount;
+    m_surfaceFormat = rhs.m_surfaceFormat;
+    m_presentMode = rhs.m_presentMode;
+    m_swapchain = rhs.m_swapchain;
+
+    rhs.m_pWindow = nullptr;
+    rhs.m_pRenderDevice = nullptr;
+    rhs.m_surface = VK_NULL_HANDLE;
+    rhs.m_imageCount = 0;
+    rhs.m_surfaceFormat = {};
+    rhs.m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    rhs.m_swapchain = VK_NULL_HANDLE;
+
+    return *this;
 }
 
 bool Swapchain::good() const noexcept
@@ -89,7 +119,7 @@ bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imag
 
     requiresRecreation = false;
 
-    VkResult result = vkAcquireNextImageKHR(m_renderDevice.getDevice(), m_swapchain, UINT64_MAX, semaphore, fence, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(m_pRenderDevice->getDevice(), m_swapchain, UINT64_MAX, semaphore, fence, &imageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         requiresRecreation = true;
@@ -108,7 +138,7 @@ bool Swapchain::isSurfaceSupported() noexcept
 {
     /* Query the device for surface support. */
     VkBool32 supported = VK_FALSE;
-    if (vkGetPhysicalDeviceSurfaceSupportKHR(m_renderDevice.getPhysicalDevice(), m_renderDevice.getPresentFamilyIndex(), m_surface, &supported) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfaceSupportKHR(m_pRenderDevice->getPhysicalDevice(), m_pRenderDevice->getPresentFamilyIndex(), m_surface, &supported) != VK_SUCCESS)
     {
         Logger::Error("Could not get vulkan physical device surface support!\n");
         return false;
@@ -121,7 +151,7 @@ bool Swapchain::chooseImageCount() noexcept
 {
     /* Get the minimum image count to be used. */
     VkSurfaceCapabilitiesKHR capabilities = {};
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_pRenderDevice->getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
     {
         return false;
     }
@@ -136,7 +166,7 @@ bool Swapchain::chooseFormat() noexcept
 
     /* Retrieve the formats from vulkan. */
     uint32_t surfaceFormatsCount = 0;
-    if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_renderDevice.getPhysicalDevice(), m_surface, &surfaceFormatsCount, nullptr) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_pRenderDevice->getPhysicalDevice(), m_surface, &surfaceFormatsCount, nullptr) != VK_SUCCESS)
     {
         Logger::Error("Could not find a vulkan surface format!\n");
         return false;
@@ -145,7 +175,7 @@ bool Swapchain::chooseFormat() noexcept
     std::vector<VkSurfaceFormatKHR> surfaceFormats{};
     surfaceFormats.resize(surfaceFormatsCount);
 
-    vkGetPhysicalDeviceSurfaceFormatsKHR(m_renderDevice.getPhysicalDevice(), m_surface, &surfaceFormatsCount, surfaceFormats.data());
+    vkGetPhysicalDeviceSurfaceFormatsKHR(m_pRenderDevice->getPhysicalDevice(), m_surface, &surfaceFormatsCount, surfaceFormats.data());
 
     /* Find the surface format/colorspace to be used. */
     auto foundMode = std::find_if(surfaceFormats.begin(), surfaceFormats.end(), [](VkSurfaceFormatKHR format){ if (format.colorSpace == defaultFormat.colorSpace && format.format == defaultFormat.format) {return true;} else  {return false;} });
@@ -166,7 +196,7 @@ bool Swapchain::choosePresentMode(VkPresentModeKHR requestedPresentMode) noexcep
 
     /* Obtain the present modes from the physical device. */
     uint32_t presentModesCount = 0;
-    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &presentModesCount, nullptr) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_pRenderDevice->getPhysicalDevice(), m_surface, &presentModesCount, nullptr) != VK_SUCCESS)
     {
         Logger::Error("Could not get the vulkan physical device surface formats!\n");
         return false;
@@ -175,7 +205,7 @@ bool Swapchain::choosePresentMode(VkPresentModeKHR requestedPresentMode) noexcep
     std::vector<VkPresentModeKHR> presentModes{};
     presentModes.resize(presentModesCount);
 
-    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &presentModesCount, presentModes.data()) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_pRenderDevice->getPhysicalDevice(), m_surface, &presentModesCount, presentModes.data()) != VK_SUCCESS)
     {
         Logger::Error("Could not get the vulkan physical device surface formats!\n");
         return false;
@@ -195,7 +225,7 @@ bool Swapchain::choosePresentMode(VkPresentModeKHR requestedPresentMode) noexcep
 bool Swapchain::chooseExtent() noexcept
 {
     VkSurfaceCapabilitiesKHR capabilities{};
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_pRenderDevice->getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
     {
         Logger::Error("Could not get the vulkan physical device surface capabilities!\n");
         return false;
@@ -207,7 +237,7 @@ bool Swapchain::chooseExtent() noexcept
     }
     else
     {
-        const Extent2D extent = m_window.getExtent();
+        const Extent2D extent = m_pWindow->getExtent();
         m_extent = VkExtent2D{
             std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
             std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
@@ -219,7 +249,7 @@ bool Swapchain::chooseExtent() noexcept
 
 bool Swapchain::obtainImages() noexcept
 {
-    if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, nullptr) != VK_SUCCESS)
+    if (vkGetSwapchainImagesKHR(m_pRenderDevice->getDevice(), m_swapchain, &m_imageCount, nullptr) != VK_SUCCESS)
     {
         Logger::Error("Could not get the vulkan swapchain images count!\n");
         return false;
@@ -227,7 +257,7 @@ bool Swapchain::obtainImages() noexcept
 
     m_swapImages.resize(m_imageCount);
 
-    if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, m_swapImages.data()) != VK_SUCCESS)
+    if (vkGetSwapchainImagesKHR(m_pRenderDevice->getDevice(), m_swapchain, &m_imageCount, m_swapImages.data()) != VK_SUCCESS)
     {
         Logger::Error("Could not get the vulkan swapchain images!\n");
         return false;
@@ -236,17 +266,17 @@ bool Swapchain::obtainImages() noexcept
     return true;
 }
 
-void Swapchain::destroy() noexcept
+void Swapchain::collapse() noexcept
 {
-    vkDestroySwapchainKHR(m_renderDevice.getDevice(), m_swapchain, nullptr);
+    if (m_swapchain) vkDestroySwapchainKHR(m_pRenderDevice->getDevice(), m_swapchain, nullptr);
     m_swapchain = VK_NULL_HANDLE;
 }
 
 bool Swapchain::recreate() noexcept
 {
-    vkDeviceWaitIdle(m_renderDevice.getDevice());
+    vkDeviceWaitIdle(m_pRenderDevice->getDevice());
 
-    if (good()) destroy();
+    if (good()) collapse();
     
     if (not chooseImageCount() ||
         not chooseFormat() ||
@@ -263,8 +293,8 @@ bool Swapchain::recreate() noexcept
 
     /* Build the create info structure for the swapchain. */
     const uint32_t pQueueFamilyIndices[2] = { 
-        m_renderDevice.getGraphicsFamilyIndex(), 
-        m_renderDevice.getPresentFamilyIndex() 
+        m_pRenderDevice->getGraphicsFamilyIndex(), 
+        m_pRenderDevice->getPresentFamilyIndex() 
     };
 
     const VkSwapchainCreateInfoKHR createInfo = {
@@ -278,8 +308,8 @@ bool Swapchain::recreate() noexcept
         .imageExtent = VkExtent2D{m_extent.width, m_extent.height},
         .imageArrayLayers = 1,
         .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
-        .imageSharingMode = m_renderDevice.areQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
-        .queueFamilyIndexCount = m_renderDevice.areQueuesSame() ? 1U : 2U,
+        .imageSharingMode = m_pRenderDevice->areQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT,
+        .queueFamilyIndexCount = m_pRenderDevice->areQueuesSame() ? 1U : 2U,
         .pQueueFamilyIndices = pQueueFamilyIndices,
         .preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR,
         .compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR,
@@ -288,7 +318,7 @@ bool Swapchain::recreate() noexcept
         .oldSwapchain = VK_NULL_HANDLE,
     };
 
-    if (vkCreateSwapchainKHR(m_renderDevice.getDevice(), &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
+    if (vkCreateSwapchainKHR(m_pRenderDevice->getDevice(), &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
         Logger::Error("Couldn't create a vulkan swapchain!\n");
         return false;
@@ -296,7 +326,7 @@ bool Swapchain::recreate() noexcept
 
     if (not obtainImages())
     {
-        destroy();
+        collapse();
         return false;
     }
 

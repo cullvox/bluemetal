@@ -1,17 +1,21 @@
+#include "Core/Log.hpp"
 #include "Render/Image.hpp"
-
-#include <stdexcept>
 
 namespace bl {
 
-Image::Image()
-    : m_pRenderDevice(nullptr), m_image(VK_NULL_HANDLE), m_allocation(VK_NULL_HANDLE), m_imageView(VK_NULL_HANDLE)
+Image::Image() noexcept
+    : m_pRenderDevice(nullptr)
+    , m_image(VK_NULL_HANDLE)
+    , m_allocation(VK_NULL_HANDLE)
+    , m_imageView(VK_NULL_HANDLE)
 {
 }
 
-Image::Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Extent2D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask)
-    : m_pRenderDevice(&renderDevice)
+Image::Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Extent2D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask) noexcept
+    : Image()
 {
+    m_pRenderDevice = &renderDevice;
+
     const uint32_t graphicsFamilyIndex = m_pRenderDevice->getGraphicsFamilyIndex();
     const VkImageCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
@@ -44,7 +48,9 @@ Image::Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Exte
 
     if (vmaCreateImage(m_pRenderDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_image, &m_allocation, nullptr) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create an image!");
+        Logger::Error("Could not create an image!\n");
+        collapse();
+        return;
     }
 
     const VkImageViewCreateInfo viewCreateInfo{
@@ -60,21 +66,21 @@ Image::Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Exte
 
     if (vkCreateImageView(m_pRenderDevice->getDevice(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create a vulkan image's view!");
+        Logger::Error("Could not create a vulkan image's view!\n");
+        collapse();
+        return;
     }
 }
 
 Image::~Image()
 {
-    if (m_image)
-        destroy();
+    collapse();
 }
 
 Image& Image::operator=(Image&& rhs) noexcept
 {
     // In order to assign another image we must actually destroy the first one.
-    if (m_image)
-        destroy();
+    collapse();
 
     m_pRenderDevice = std::move(rhs.m_pRenderDevice);
     m_image = std::move(rhs.m_image);
@@ -85,6 +91,8 @@ Image& Image::operator=(Image&& rhs) noexcept
     rhs.m_image = VK_NULL_HANDLE;
     rhs.m_allocation = VK_NULL_HANDLE;
     rhs.m_imageView = VK_NULL_HANDLE;
+
+    rhs.collapse();
 
     return *this;
 }
@@ -99,10 +107,13 @@ VkImageView Image::getImageView() const noexcept
     return m_imageView;
 }
 
-void Image::destroy()
+void Image::collapse() noexcept
 {
-    vmaDestroyImage(m_pRenderDevice->getAllocator(), m_image, m_allocation);
-    vkDestroyImageView(m_pRenderDevice->getDevice(), m_imageView, nullptr);
+    if (m_imageView)vkDestroyImageView(m_pRenderDevice->getDevice(), m_imageView, nullptr);
+    if (m_image) vmaDestroyImage(m_pRenderDevice->getAllocator(), m_image, m_allocation);
+    
+    m_imageView = VK_NULL_HANDLE;
+    m_image = VK_NULL_HANDLE;
 }
 
 } // namespace bl

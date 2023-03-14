@@ -17,14 +17,28 @@ Engine::Engine(const std::string& applicationName) noexcept
 
     std::vector<bl::Display> displays = bl::Display::getDisplays();
 
-    m_window = std::make_shared<Window>(displays[0].getDesktopMode(), applicationName, std::nullopt);
-
-    if (not m_window->good())
+    m_window = Window{ displays[0].getDesktopMode() };
+    if (not m_window.good())
     {
         Logger::Error("Could not create the window!");
         return;
     }
 
+    m_renderDevice = RenderDevice{ m_window };
+    if (not m_renderDevice.good())
+    {
+        Logger::Error("Could not create the render device!");
+        return;
+    }
+
+    m_swapchain = Swapchain{ m_window, m_renderDevice };
+    if (not m_swapchain.good())
+    {
+        Logger::Error("Could not create the swapchain!");
+        return;
+    }
+
+    m_renderer = Renderer{ m_renderDevice, m_swapchain };
 
 
 /*
@@ -42,6 +56,25 @@ Engine::Engine(const std::string& applicationName) noexcept
     CharacterController characterController{};
 */
 
+}
+
+Engine::~Engine()
+{
+}
+
+bool Engine::run() noexcept
+{
+    
+    while (not m_close)
+    {
+
+        m_renderer.beginFrame();
+
+
+        m_renderer.endFrame();
+    }
+
+    return true;
 }
 
 } // namespace bl

@@ -8,15 +8,18 @@ namespace bl
 class BLOODLUST_API Image
 {
 public:
-    Image();
-    Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Extent2D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
-    ~Image();   
-    Image& operator=(const Image& rhs) = delete;
+    Image() noexcept;
+    Image(RenderDevice& renderDevice, VkImageType type, VkFormat format, Extent2D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask) noexcept;
+    ~Image() noexcept;
+    
     Image& operator=(Image&& rhs) noexcept;
-    VkImage getImage() const noexcept;
-    VkImageView getImageView() const noexcept;
+
+    [[nodiscard]] bool good() const noexcept;
+    [[nodiscard]] VkImage getImage() const noexcept;
+    [[nodiscard]] VkImageView getImageView() const noexcept;
+
 private:
-    void destroy();
+    void collapse() noexcept;
 
     RenderDevice* m_pRenderDevice;
     VkImage m_image;

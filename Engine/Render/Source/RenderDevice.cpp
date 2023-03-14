@@ -7,9 +7,10 @@
 #define VMA_IMPLEMENTATION
 #include "Render/Vulkan/vk_mem_alloc.h"
 
-namespace bl {
+namespace bl 
+{
 
-RenderDevice::RenderDevice()
+RenderDevice::RenderDevice() noexcept
     : m_pWindow(nullptr)
     , m_instance(VK_NULL_HANDLE)
     , m_physicalDevice(VK_NULL_HANDLE)
@@ -22,9 +23,11 @@ RenderDevice::RenderDevice()
 {
 }
 
-RenderDevice::RenderDevice(Window& window)
-    : m_pWindow(&window)
+RenderDevice::RenderDevice(Window& window) noexcept
+    : RenderDevice()
 {
+    m_pWindow = &window;
+
     if (not createInstance() ||
         not choosePhysicalDevice() ||
         not createDevice() ||
@@ -53,6 +56,7 @@ RenderDevice& RenderDevice::operator=(RenderDevice&& rhs) noexcept
     m_device = rhs.m_device;
     m_graphicsQueue = rhs.m_graphicsQueue;
     m_presentQueue = rhs.m_presentQueue;
+    m_commandPool = rhs.m_commandPool;
     m_allocator = rhs.m_allocator;
 
     rhs.m_pWindow = nullptr;
@@ -63,6 +67,7 @@ RenderDevice& RenderDevice::operator=(RenderDevice&& rhs) noexcept
     rhs.m_device = VK_NULL_HANDLE;
     rhs.m_graphicsQueue = VK_NULL_HANDLE;
     rhs.m_presentQueue = VK_NULL_HANDLE;
+    rhs.m_commandPool = VK_NULL_HANDLE;
     rhs.m_allocator = VK_NULL_HANDLE;
 
     return *this;
@@ -140,6 +145,15 @@ VkFormat RenderDevice::findSupportedFormat(const std::vector<VkFormat>& candidat
     return VK_FORMAT_UNDEFINED;
 }
 
+bool RenderDevice::good() const noexcept
+{
+    return m_pWindow != nullptr
+        && m_instance != VK_NULL_HANDLE
+        && m_device != VK_NULL_HANDLE
+        && m_commandPool != VK_NULL_HANDLE
+        && m_allocator != VK_NULL_HANDLE;
+}
+
 bool RenderDevice::getValidationLayers(std::vector<const char*>& layers) const noexcept
 {
     static const std::vector<const char*> requiredLayers = {
@@ -187,7 +201,7 @@ bool RenderDevice::getValidationLayers(std::vector<const char*>& layers) const n
     return true;
 }
 
-bool RenderDevice::getInstanceExtensions(std::vector<const char*>& extensions) const
+bool RenderDevice::getInstanceExtensions(std::vector<const char*>& extensions) const noexcept
 {
 
     // Get our engines required extensions.
@@ -510,7 +524,7 @@ bool RenderDevice::createAllocator() noexcept
     return true;
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL RenderDevice::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+VKAPI_ATTR VkBool32 VKAPI_CALL RenderDevice::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) noexcept
 {
     if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     {

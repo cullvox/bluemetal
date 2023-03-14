@@ -37,6 +37,7 @@ public:
     /// @brief Destruct the window if it was opened.
     ~Window() noexcept;
 
+    Window& operator=(Window&& rhs) noexcept;
 
     /// @brief Opens a new window, will do nothing if window previously created.
     /// @param videoMode Position and size of the window.
