@@ -10,10 +10,15 @@ Renderer::Renderer(RenderDevice& renderDevice, Swapchain& swapchain)
 {
     spdlog::info("Creating vulkan renderer.");
     
+    if (not swapchain.good())
+    {
+        Logger::Error("Cannot construct the renderer, swapchain was not good!");
+        return;
+    }
+
     /* Create the swapchain based objects and the render pass. */
     createRenderPass();
-
-    if (swapchain.good()) recreateSwappable();
+    recreateSwappable();
 }
 
 Renderer::~Renderer()
@@ -43,19 +48,22 @@ bool Renderer::beginFrame() noexcept
     vkWaitForFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
     // Acquire the next image from the swapchain.
-    bool acquireGood = m_swapchain.acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex);
-
-    // If the swapchain was recreated we must destroy and 
-    // recreate the objects based on the swapchain images.
-    if (!acquireGood)
+    bool requiresRecreation = false;
+    if (not m_swapchain.acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex, requiresRecreation))
     {
-        m_deadFrame = true;
-        if (not recreateSwappable())
-        {
-            Logger::Error("Could not recreate the renderer swappables!\n");
-        }
-
+        Logger::Error("Could not acquire the swapchains next image!\n");
         return false;
+    }
+
+    // Attempt to recreate the swapchain and if it fails we need to 
+    if (requiresRecreation)
+    {
+        if (not m_swapchain.recreate() ||
+            not recreateSwappable())
+        {
+            Logger::Error("Could not recreate the swapchain and swappables!\n");
+            return false;
+        }
     }
 
     vkResetFences(m_renderDevice.getDevice(), 1, &m_inFlightFences[m_currentFrame]);
@@ -423,7 +431,8 @@ void Renderer::destroySwappable() noexcept
     // The device must be idle before we destroy anything and command buffers must stop.
     vkDeviceWaitIdle(m_renderDevice.getDevice());
 
-    vkFreeCommandBuffers(m_renderDevice.getDevice(), m_renderDevice.getCommandPool(), m_swapchain.getImageCount(), m_swapCommandBuffers.data());
+    if (m_swapCommandBuffers.size() > 0)
+        vkFreeCommandBuffers(m_renderDevice.getDevice(), m_renderDevice.getCommandPool(), m_swapchain.getImageCount(), m_swapCommandBuffers.data());
 
     for (uint32_t i = 0; i < m_swapFramebuffers.size(); i++)
     {
@@ -431,8 +440,7 @@ void Renderer::destroySwappable() noexcept
         vkDestroyImageView(m_renderDevice.getDevice(), m_swapImageViews[i], nullptr);
     }
 
-
-    for (uint32_t i = 0; i < DEFAULT_FRAMES_IN_FLIGHT; i++)
+    for (uint32_t i = 0; i < m_imageAvailableSemaphores.size(); i++)
     {
         vkDestroySemaphore(m_renderDevice.getDevice(), m_imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(m_renderDevice.getDevice(), m_renderFinishedSemaphores[i], nullptr);

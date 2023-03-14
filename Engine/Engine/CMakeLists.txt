@@ -1,0 +1,7 @@
+list(APPEND EngineSources
+    "Source/Engine.cpp")
+
+add_library(BloodLustEngine SHARED ${EngineSources})
+add_library(bl::Engine ALIAS BloodLustEngine)
+target_include_directories(BloodLustEngine PUBLIC "Include")
+target_link_libraries(BloodLustEngine bl::Core bl::Math bl::Window bl::Render bl::Input)

@@ -2,7 +2,7 @@ list(APPEND DarkRedSources
     "Main.cpp")
 
 add_executable(DarkRed ${DarkRedSources})
-target_link_libraries(DarkRed bl::Config bl::Render bl::Input)
+target_link_libraries(DarkRed bl::Engine)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     add_custom_command(TARGET DarkRed POST_BUILD

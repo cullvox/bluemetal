@@ -1,40 +1,71 @@
-//===========================//
-#include <algorithm>
-#include <cstring>
-#include <functional>
-#include <stdexcept>
-//===========================//
-#include <spdlog/spdlog.h>
-#include <vulkan/vulkan_core.h>
-//===========================//
+
+#include "Core/Version.hpp"
+#include "Core/Log.hpp"
+#include "Core/Precompiled.hpp"
+#include "Render/RenderDevice.hpp"
+
 #define VMA_IMPLEMENTATION
 #include "Render/Vulkan/vk_mem_alloc.h"
-//===========================//
-#include "Core/Version.hpp"
-#include "Render/RenderDevice.hpp"
-//===========================//
 
 namespace bl {
 
-RenderDevice::RenderDevice(Window& window)
-    : m_window(window)
+RenderDevice::RenderDevice()
+    : m_pWindow(nullptr)
+    , m_instance(VK_NULL_HANDLE)
+    , m_physicalDevice(VK_NULL_HANDLE)
+    , m_graphicsFamilyIndex(0), m_presentFamilyIndex(0)
+    , m_device(VK_NULL_HANDLE)
+    , m_graphicsQueue(VK_NULL_HANDLE)
+    , m_presentQueue(VK_NULL_HANDLE)
+    , m_commandPool(VK_NULL_HANDLE)
+    , m_allocator(VK_NULL_HANDLE)
 {
-    spdlog::info("Creating vulkan render device.");
-    createInstance();
-    choosePhysicalDevice();
-    createDevice();
-    createCommandPool();
-    createAllocator();
+}
+
+RenderDevice::RenderDevice(Window& window)
+    : m_pWindow(&window)
+{
+    if (not createInstance() ||
+        not choosePhysicalDevice() ||
+        not createDevice() ||
+        not createCommandPool() ||
+        not createAllocator())
+    {
+        Logger::Error("Could not create the render device!\n");
+        collapse();
+    }
 }
 
 RenderDevice::~RenderDevice()
 {
-    spdlog::info("Destroying vulkan render device.");
+    collapse();
+}
 
-    vmaDestroyAllocator(m_allocator);
-    vkDestroyCommandPool(m_device, m_commandPool, nullptr);
-    vkDestroyDevice(m_device, nullptr);
-    vkDestroyInstance(m_instance, nullptr);
+RenderDevice& RenderDevice::operator=(RenderDevice&& rhs) noexcept
+{
+    collapse();
+
+    m_pWindow = rhs.m_pWindow;
+    m_instance = rhs.m_instance;
+    m_physicalDevice = rhs.m_physicalDevice;
+    m_graphicsFamilyIndex = rhs.m_graphicsFamilyIndex;
+    m_presentFamilyIndex = rhs.m_presentFamilyIndex;
+    m_device = rhs.m_device;
+    m_graphicsQueue = rhs.m_graphicsQueue;
+    m_presentQueue = rhs.m_presentQueue;
+    m_allocator = rhs.m_allocator;
+
+    rhs.m_pWindow = nullptr;
+    rhs.m_instance = VK_NULL_HANDLE;
+    rhs.m_physicalDevice = VK_NULL_HANDLE;
+    rhs.m_graphicsFamilyIndex = 0;
+    rhs.m_presentFamilyIndex = 0;
+    rhs.m_device = VK_NULL_HANDLE;
+    rhs.m_graphicsQueue = VK_NULL_HANDLE;
+    rhs.m_presentQueue = VK_NULL_HANDLE;
+    rhs.m_allocator = VK_NULL_HANDLE;
+
+    return *this;
 }
 
 VkInstance RenderDevice::getInstance() const noexcept
@@ -87,13 +118,12 @@ bool RenderDevice::areQueuesSame() const noexcept
     return m_graphicsFamilyIndex == m_presentFamilyIndex;
 }
 
-VkFormat RenderDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+VkFormat RenderDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const noexcept
 {
     for (VkFormat format : candidates)
     {
         VkFormatProperties properties = {};
         vkGetPhysicalDeviceFormatProperties(m_physicalDevice, format, &properties);
-
 
         if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features)
         {
@@ -105,35 +135,37 @@ VkFormat RenderDevice::findSupportedFormat(const std::vector<VkFormat>& candidat
         }
     }
 
-    throw std::runtime_error("Could not find any valid format!");
+    Logger::Error("Could not find any valid format!\n");
+
+    return VK_FORMAT_UNDEFINED;
 }
 
-std::vector<const char*> RenderDevice::getValidationLayers() const
+bool RenderDevice::getValidationLayers(std::vector<const char*>& layers) const noexcept
 {
     static const std::vector<const char*> requiredLayers = {
         "VK_LAYER_KHRONOS_validation",  
     };
 
-    /* Get the count of validation layers on the system. */
+    // Get the count of validation layers on the system.
     uint32_t layerPropertiesCount = 0;
     if (vkEnumerateInstanceLayerProperties(&layerPropertiesCount, nullptr) != VK_SUCCESS)
     {
-        spdlog::log(spdlog::level::err, "Could not enumerate validation layers!");
-        return {};
+        Logger::Error("Could not enumerate validation layers!\n");
+        return false;
     }
 
-    /* Allocate an array the proper size to hold all the layer properties. */
+    // Allocate an array the proper size to hold all the layer properties.
     std::vector<VkLayerProperties> layerProperties;
     layerProperties.resize(layerPropertiesCount);
 
-    /* Fill the layer properties array. */
+    // Fill the layer properties array.
     if (vkEnumerateInstanceLayerProperties(&layerPropertiesCount, layerProperties.data()) != VK_SUCCESS)
     {
-        spdlog::log(spdlog::level::err, "Could not enumerate validation layers!");
-        return {};
+        Logger::Error("Could not enumerate validation layers!\n");
+        return false;
     }
 
-    /* Iterate through the required layers to find any that the system does not support. */
+    // Iterate through the required layers to find any that the system does not support.
     for (const char* name : requiredLayers)
     {
         const auto foundLayer = 
@@ -146,72 +178,75 @@ std::vector<const char*> RenderDevice::getValidationLayers() const
 
         if (foundLayer == layerProperties.end())
         {
-            spdlog::log(spdlog::level::err, "Could not find required validation layer: {}", name);
-            return {};
+            Logger::Error("Could not find required validation layer: {}\n", name);
+            return false;
         }
     }
 
-    return requiredLayers;
+    layers = requiredLayers;
+    return true;
 }
 
-std::vector<const char*> RenderDevice::getInstanceExtensions() const
+bool RenderDevice::getInstanceExtensions(std::vector<const char*>& extensions) const
 {
 
-    /* Get our engines required extensions. */
+    // Get our engines required extensions.
     std::vector<const char*> requiredExtensions = {
 #ifndef NDEBUG
         VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 #endif
     };
 
-    /* The surface extensions are required too. */
+    // The surface extensions are required too.
     std::vector<const char*> surfaceExtensions{}; 
-    if (not m_window.getVulkanInstanceExtensions(surfaceExtensions))
+    if (not m_pWindow->getVulkanInstanceExtensions(surfaceExtensions))
     {
-        spdlog::log(spdlog::level::err, "Could not get the vulkan instance extensions!");
-        return {};
+        Logger::Error("Could not get the vulkan instance extensions!\n");
+        return false;
     }
     
     requiredExtensions.insert(requiredExtensions.end(), surfaceExtensions.begin(), surfaceExtensions.end());
 
-    /* Get all the current vulkan instance extensions. */
+    // Get all the current vulkan instance extensions.
     uint32_t extensionPropertiesCount = 0;
     if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionPropertiesCount, nullptr) != VK_SUCCESS)
     {
-        spdlog::log(spdlog::level::err, "Could not enumerate instance extension properties!");
-        return {};
+        Logger::Error("Could not enumerate instance extension properties!\n");
+        return false;
     }
 
-    /* Allocate an array to hold the extension properties. */
+    // Allocate an array to hold the extension properties.
     std::vector<VkExtensionProperties> extensionProperties{};
     extensionProperties.resize(extensionPropertiesCount);
 
-    /* Fill the array of extension properties. */
+    // Fill the array of extension properties.
     if (vkEnumerateInstanceExtensionProperties(nullptr, &extensionPropertiesCount, extensionProperties.data()) != VK_SUCCESS)
     {
-        spdlog::log(spdlog::level::err, "Could not enumerate instance extension properties!");
-        return {};
+        Logger::Error("Could not enumerate instance extension properties!\n");
+        return false;
     }
 
-    /* Check and make sure all of our extensions are present. */
+    // Check and make sure all of our extensions are present.
     for (const char* pName : requiredExtensions)
     {
         if (std::find_if(extensionProperties.begin(), extensionProperties.end(), 
         [pName](const VkExtensionProperties& properties){
                 return std::strcmp(pName, properties.extensionName) == 0; }) == extensionProperties.end())
         {
-            spdlog::log(spdlog::level::err, "Could not find required instance extension: {}", pName);
-            return {};
+            Logger::Error("Could not find required instance extension: {}\n", pName);
+            return false;
         }
     }
 
-    /* We have all our extensions! */
-    return requiredExtensions;
+    // We have all our extensions!
+    extensions = requiredExtensions;
+    return true;
 }
 
-void RenderDevice::createInstance()
+bool RenderDevice::createInstance() noexcept
 {
-    spdlog::log(spdlog::level::info, "Creating the vulkan instance.");
+    std::vector<const char*> instanceExtensions{};
+    std::vector<const char*> validationLayers{};
 
     const VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{
         .sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,
@@ -227,8 +262,7 @@ void RenderDevice::createInstance()
             VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
             VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT,
         .pfnUserCallback = debugCallback,
-        .pUserData = nullptr,
-        
+        .pUserData = nullptr,    
     };
 
     const VkApplicationInfo applicationInfo{
@@ -241,8 +275,16 @@ void RenderDevice::createInstance()
         .apiVersion         = VK_API_VERSION_1_2,
     };
 
-    std::vector<const char*> instanceExtensions = getInstanceExtensions();
-    std::vector<const char*> validationLayers   = getValidationLayers();
+    if (not getInstanceExtensions(instanceExtensions))
+    {
+        Logger::Error("Could not retrieve the instance extensions!\n");
+        return false;
+    }
+    
+    if (not getValidationLayers(validationLayers))
+    {
+        Logger::Debug("Could not retrieve the validation layers, they will not be enabled!\n");
+    }
 
     const VkInstanceCreateInfo createInfo{
         .sType                      = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,
@@ -257,59 +299,60 @@ void RenderDevice::createInstance()
 
     if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create a vulkan instance!");
+        Logger::Error("Could not create a vulkan instance!\n");
+        return false;
     }
 }
 
-void RenderDevice::choosePhysicalDevice()
+bool RenderDevice::choosePhysicalDevice() noexcept
 {
-    /* Find the physical devices. */
-    uint32_t physicalDevicesCount;
+    uint32_t                        physicalDevicesCount;
+    std::vector<VkPhysicalDevice>   physicalDevices{};
+    VkPhysicalDeviceProperties      physicalDeviceProperties{};
+
     if (vkEnumeratePhysicalDevices(m_instance, &physicalDevicesCount, nullptr) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not enumerate physical devices!");
+        Logger::Error("Could not enumerate physical devices!\n");
+        return false;
     }
-
-    std::vector<VkPhysicalDevice> physicalDevices{};
+    
     physicalDevices.resize(physicalDevicesCount);
     
     if (vkEnumeratePhysicalDevices(m_instance, &physicalDevicesCount, physicalDevices.data()) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not enumerate physical devices!");
+        Logger::Error("Could not enumerate physical devices!\n");
+        return false;
     }
 
-    /* Determine if we are going to use */
-    //const int physicalDeviceIndex = m_pConfig->GetIntOrSetDefault("renderer.vulkan.physicalDevice", 0);
-    m_physicalDevice = physicalDevices[0]; /* TODO: Add a config of some kind for selecting physical devices. */
+    // TODO: Add a parameter hint for selecting physical devices.
+    m_physicalDevice = physicalDevices[0];
 
-    VkPhysicalDeviceProperties physicalDeviceProperties{};
     vkGetPhysicalDeviceProperties(m_physicalDevice, &physicalDeviceProperties);
-
-    spdlog::info("Using vulkan physical device: {}", physicalDeviceProperties.deviceName);
+    Logger::Debug("Using vulkan physical device: {}\n", physicalDeviceProperties.deviceName);
+    
+    return true;
 }
 
-std::vector<const char*> RenderDevice::getDeviceExtensions() const
+bool RenderDevice::getDeviceExtensions(std::vector<const char*>& extensions) const noexcept
 {
+    std::vector<const char*>            requiredExtensions{ VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+    uint32_t                            deviceExtensionsCount = 0;
+    std::vector<VkExtensionProperties>  extensionProperties{};
 
-    std::vector<const char*> requiredExtensions{
-        VK_KHR_SWAPCHAIN_EXTENSION_NAME
-    };
+    extensions.clear();
 
-    /* Find the device extensions. */
-    uint32_t deviceExtensionsCount = 0;
     if (vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &deviceExtensionsCount, nullptr) != VK_SUCCESS)
     {
-        spdlog::error("Could not enumerate vulkan device extensions!");
-        return {};
+        Logger::Error("Could not enumerate vulkan device extensions!\n");
+        return false;
     }
 
-    std::vector<VkExtensionProperties> extensionProperties{};
     extensionProperties.resize(deviceExtensionsCount);
     
     if (vkEnumerateDeviceExtensionProperties(m_physicalDevice, nullptr, &deviceExtensionsCount, extensionProperties.data()) != VK_SUCCESS)
     {
-        spdlog::log(spdlog::level::err, "Could not enumerate vulkan device extensions!");
-        return {};
+        Logger::Error("Could not enumerate vulkan device extensions!\n");
+        return false;
     }
 
     for (const char* pName : requiredExtensions)
@@ -318,47 +361,45 @@ std::vector<const char*> RenderDevice::getDeviceExtensions() const
         [pName](const VkExtensionProperties& properties){
                 return std::strcmp(pName, properties.extensionName) == 0; }) == extensionProperties.end())
         {
-            spdlog::error("Could not find required instance extension: {}", pName);
-            return {};
+            Logger::Error("Could not find required instance extension: {}\n", pName);
+            return false;
         }
     }
 
-    return requiredExtensions;
+    extensions = requiredExtensions;
+    return true;
 }
 
-void RenderDevice::createDevice()
+bool RenderDevice::createDevice() noexcept
 {
-    spdlog::log(spdlog::level::info, "Creating the vulkan device.");
+    uint32_t                                queueFamilyPropertiesCount = 0;
+    std::vector<VkQueueFamilyProperties>    queueFamilyProperties{};
+    std::vector<const char*>                deviceExtensions{};
+    std::vector<const char*>                validationLayers{};
 
-    /* Enumerate the physical device queues. */
-    uint32_t queueFamilyPropertiesCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertiesCount, nullptr);
-
-    std::vector<VkQueueFamilyProperties> queueFamilyProperties{};
     queueFamilyProperties.resize(queueFamilyPropertiesCount);
-
     vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice, &queueFamilyPropertiesCount, queueFamilyProperties.data());
 
-    /* Create a temporary surface for device creation. 
-        A CSwapchain will be created later to complete the actual surface. */
+    // Create a temporary surface for device creation.
     VkSurfaceKHR temporarySurface;
-    if (not m_window.createVulkanSurface(m_instance, temporarySurface))
+    if (not m_pWindow->createVulkanSurface(m_instance, temporarySurface))
     {
-        throw std::runtime_error("Could not create the temporary vulkan surface for device creation!");
+        Logger::Error("Could not create the temporary vulkan surface for device creation!\n");
+        return false;
     }
 
-    /* Determine a queue for a graphics rendering. */
+    // Determine the queues for graphics and present.
     uint32_t queueFamilyIndex = 0;
     VkBool32 presentSupport = false;
     for (const VkQueueFamilyProperties& properties : queueFamilyProperties)
     {
-        /* Check if queue supports graphics. */
+
         if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
             m_graphicsFamilyIndex = queueFamilyIndex; 
         }
 
-        /* See if present was properly supported. */
         bool success = vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice, queueFamilyIndex, temporarySurface, &presentSupport) == VK_SUCCESS;
         if (success && presentSupport)
         {
@@ -390,11 +431,18 @@ void RenderDevice::createDevice()
         }
     };
 
-    const std::vector<const char*> validationLayers = getValidationLayers();
-    const std::vector<const char*> deviceExtensions = getDeviceExtensions();
+    if (not getDeviceExtensions(deviceExtensions))
+    {
+        Logger::Error("Could not get the vulkan device extensions!\n");
+        return false;
+    }
+
+    if (not getValidationLayers(validationLayers))
+    {
+        Logger::Debug("Could not retrieve the validation layers, they will not be enabled!\n");
+    }
 
     const VkPhysicalDeviceFeatures features{};
-
     const VkDeviceCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
         .pNext = nullptr,
@@ -410,14 +458,17 @@ void RenderDevice::createDevice()
 
     if (vkCreateDevice(m_physicalDevice, &createInfo, nullptr, &m_device) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create a vulkan logical device!");
+        Logger::Error("Could not create a vulkan logical device!\n");
+        return false;
     }
 
     vkGetDeviceQueue(m_device, m_graphicsFamilyIndex, 0, &m_graphicsQueue);
     vkGetDeviceQueue(m_device, m_presentFamilyIndex, 0, &m_presentQueue);
+    
+    return true;
 }
 
-void RenderDevice::createCommandPool()
+bool RenderDevice::createCommandPool() noexcept
 {
     const VkCommandPoolCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
@@ -428,11 +479,14 @@ void RenderDevice::createCommandPool()
 
     if (vkCreateCommandPool(m_device, &createInfo, nullptr, &m_commandPool) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create a vulkan command pool!");
+        Logger::Error("Could not create the command pool!\n");
+        return false;
     }
+
+    return true;
 }
 
-void RenderDevice::createAllocator()
+bool RenderDevice::createAllocator() noexcept
 {
     const VmaAllocatorCreateInfo createInfo{
         .flags = 0,
@@ -449,8 +503,11 @@ void RenderDevice::createAllocator()
 
     if (vmaCreateAllocator(&createInfo, &m_allocator) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create the vulkan memory allocator!");
+        Logger::Error("Could not create the vulkan memory allocator!\n");
+        return false;
     }
+
+    return true;
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL RenderDevice::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -469,6 +526,25 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderDevice::debugCallback(VkDebugUtilsMessageSe
     }
 
     return false;
+}
+
+void RenderDevice::collapse() noexcept
+{
+    if (m_allocator) vmaDestroyAllocator(m_allocator);
+    if (m_commandPool) vkDestroyCommandPool(m_device, m_commandPool, nullptr);
+    if (m_device) vkDestroyDevice(m_device, nullptr);
+    if (m_instance) vkDestroyInstance(m_instance, nullptr);
+
+    m_pWindow = nullptr;
+    m_allocator = VK_NULL_HANDLE;
+    m_commandPool = VK_NULL_HANDLE;
+    m_presentQueue = VK_NULL_HANDLE;
+    m_graphicsQueue = VK_NULL_HANDLE;
+    m_device = VK_NULL_HANDLE;
+    m_presentFamilyIndex = 0;
+    m_graphicsFamilyIndex = 0;
+    m_physicalDevice = VK_NULL_HANDLE;
+    m_instance = VK_NULL_HANDLE;
 }
 
 } /* namespace bl */

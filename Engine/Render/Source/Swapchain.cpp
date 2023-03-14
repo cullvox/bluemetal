@@ -17,14 +17,22 @@ Swapchain::Swapchain(Window& window, RenderDevice& renderDevice) noexcept
     , m_presentMode(VK_PRESENT_MODE_FIFO_KHR)
     , m_swapchain(VK_NULL_HANDLE)
 {
-    if (!m_window.createVulkanSurface(m_renderDevice.getInstance(), m_surface))
+    if (not m_window.createVulkanSurface(m_renderDevice.getInstance(), m_surface))
     {
         Logger::Error("Could not create the vulkan surface!");
         return;
     }
     
-    if (not isSurfaceSupported())
-        vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
+    if (not isSurfaceSupported() ||
+        not recreate())
+    {
+        Logger::Error("Could not create the swapchain!\n");
+        goto failureCleanup;
+    }
+
+failureCleanup:
+    vkDestroySurfaceKHR(m_renderDevice.getInstance(), m_surface, nullptr);
+
 }
 
 Swapchain::~Swapchain() noexcept
@@ -70,27 +78,26 @@ const std::vector<VkImage>& Swapchain::getImages() const noexcept
     return m_swapImages;
 }
 
-bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex) noexcept
+bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& requiresRecreation) noexcept
 {
     if (not good())
     {
         Logger::Error("Could not acquire next, swapchain was not good.\n");
+        requiresRecreation = true;
         return false;
     }
 
+    requiresRecreation = false;
 
     VkResult result = vkAcquireNextImageKHR(m_renderDevice.getDevice(), m_swapchain, UINT64_MAX, semaphore, fence, &imageIndex);
     if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
-        if (not recreate())
-        {
-            Logger::Error("Could not recreate swapchain on acquire next image!");
-        }
-        return false;
+        requiresRecreation = true;
+        return true; // I'm not considering this an error in this context because its not fatal.
     }
     else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
     {
-        Logger::Error("Could not acquire the next swapchain image!");
+        Logger::Error("Could not acquire the next swapchain image!\n");
         return false;
     }
 
@@ -103,7 +110,7 @@ bool Swapchain::isSurfaceSupported() noexcept
     VkBool32 supported = VK_FALSE;
     if (vkGetPhysicalDeviceSurfaceSupportKHR(m_renderDevice.getPhysicalDevice(), m_renderDevice.getPresentFamilyIndex(), m_surface, &supported) != VK_SUCCESS)
     {
-        Logger::Error("Could not get vulkan physical device surface support!");
+        Logger::Error("Could not get vulkan physical device surface support!\n");
         return false;
     }
 
@@ -151,7 +158,7 @@ bool Swapchain::chooseFormat() noexcept
 
     /* As fallback use the first format... */
     m_surfaceFormat = surfaceFormats.front();
-    return false;
+    return true;
 }
 
 bool Swapchain::choosePresentMode(VkPresentModeKHR requestedPresentMode) noexcept
@@ -190,7 +197,7 @@ bool Swapchain::chooseExtent() noexcept
     VkSurfaceCapabilitiesKHR capabilities{};
     if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_renderDevice.getPhysicalDevice(), m_surface, &capabilities) != VK_SUCCESS)
     {
-        Logger::Error("Could not get the vulkan physical device surface capabilities!");
+        Logger::Error("Could not get the vulkan physical device surface capabilities!\n");
         return false;
     }
 
@@ -214,7 +221,7 @@ bool Swapchain::obtainImages() noexcept
 {
     if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, nullptr) != VK_SUCCESS)
     {
-        Logger::Error("Could not get the vulkan swapchain images count!");
+        Logger::Error("Could not get the vulkan swapchain images count!\n");
         return false;
     }
 
@@ -222,7 +229,7 @@ bool Swapchain::obtainImages() noexcept
 
     if (vkGetSwapchainImagesKHR(m_renderDevice.getDevice(), m_swapchain, &m_imageCount, m_swapImages.data()) != VK_SUCCESS)
     {
-        Logger::Error("Could not get the vulkan swapchain images!");
+        Logger::Error("Could not get the vulkan swapchain images!\n");
         return false;
     }
 
@@ -245,13 +252,12 @@ bool Swapchain::recreate() noexcept
         not chooseFormat() ||
         not chooseExtent())
     {
-        Logger::Error("Could not choose a property of swapchain creation.");
         return false;
     }
 
     if (m_extent.width == 0 || m_extent.height == 0)
     {
-        Logger::Log("Could not recreate a swapchain with an invalid extent! Waiting for a resize...");
+        Logger::Log("Could not recreate a swapchain with an invalid extent! Waiting for a resize...\n");
         return false;
     }
 
@@ -284,7 +290,7 @@ bool Swapchain::recreate() noexcept
 
     if (vkCreateSwapchainKHR(m_renderDevice.getDevice(), &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
-        Logger::Error("Couldn't create a vulkan swapchain!");
+        Logger::Error("Couldn't create a vulkan swapchain!\n");
         return false;
     }
 

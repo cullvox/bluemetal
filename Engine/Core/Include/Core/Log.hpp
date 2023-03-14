@@ -70,7 +70,7 @@ private:
         const std::string path = loc.file_name();
         const std::string filename = path.substr(path.find_last_of("/\\") + 1);
 
-        spdlog::log(spdlog::level::err, "{}:{}: ", filename, loc.line());
+        spdlog::log(spdlog::level::err, "{}:{} {}: ", filename, loc.line(), loc.function_name());
         fmt::vprint(format.str, args);
     }
 };

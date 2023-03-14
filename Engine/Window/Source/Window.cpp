@@ -9,6 +9,11 @@ namespace bl {
 
 Window::Window(DisplayMode videoMode, const std::string& title, std::optional<Display> display) noexcept
 {
+    if (SDL_Init(SDL_INIT_VIDEO) != 0)
+    {
+        Logger::Error("Could not construct window, SDL_Init(SDL_INIT_VIDEO) failed!");
+    }
+
     if (!open(videoMode, title, display))
     {
         Logger::Log("Could not properly construct a window!");

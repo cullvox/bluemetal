@@ -190,7 +190,7 @@ public:
      * \sa getImageCount
      * 
      */
-    [[nodiscard]] bool acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex) noexcept;
+    [[nodiscard]] bool acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& requiresRecreation) noexcept;
 
     /** \brief Recreates the swapchain on demand.
      * 
