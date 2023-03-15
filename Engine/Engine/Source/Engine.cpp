@@ -38,7 +38,7 @@ Engine::Engine(const std::string& applicationName) noexcept
         Logger::Error("Could not create the swapchain!");
         return;
     }
-
+     
     m_renderer = Renderer{ m_renderDevice, m_swapchain };
     if (not m_renderer.good())
     {
@@ -47,6 +47,14 @@ Engine::Engine(const std::string& applicationName) noexcept
     }
 
     m_inputSystem = InputSystem{};
+    m_inputSystem.registerAction("Exit", { Key::WindowClose });
+
+    m_inputController = std::make_shared<InputController>();
+    m_inputController->bindAction("Exit", InputEvent::Pressed, [&]() {
+        m_close = true;
+    });
+    m_inputSystem.registerController(*m_inputController);
+
 
 }
 

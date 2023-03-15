@@ -84,6 +84,7 @@ private:
     Renderer m_renderer;
     FrameCounter m_frameCounter;
     InputSystem m_inputSystem;
+    std::shared_ptr<InputController> m_inputController;
     bool m_close;
 
 };
