@@ -92,6 +92,18 @@ void Renderer::submit(const Submission& submission) noexcept
     //vkCmdBindPipeline(m_swapCommandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, submission.pipeline);
 }
 
+bool Renderer::good() const noexcept
+{
+    return (m_pRenderDevice->good() &&
+        m_depthImage.good() &&
+        m_swapCommandBuffers.size() > 0 &&
+        m_swapFramebuffers.size() > 0 &&
+        m_swapImageViews.size() > 0 &&
+        m_imageAvailableSemaphores.size() > 0 &&
+        m_renderFinishedSemaphores.size() > 0 &&
+        m_inFlightFences.size() > 0);
+}
+
 bool Renderer::beginFrame() noexcept
 {
 

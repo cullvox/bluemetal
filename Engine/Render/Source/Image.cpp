@@ -97,6 +97,12 @@ Image& Image::operator=(Image&& rhs) noexcept
     return *this;
 }
 
+bool Image::good() const noexcept
+{
+    return (m_image != VK_NULL_HANDLE &&
+        m_imageView != VK_NULL_HANDLE);
+}
+
 VkImage Image::getImage() const noexcept
 {
     return m_image;

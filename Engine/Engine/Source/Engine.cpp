@@ -40,10 +40,13 @@ Engine::Engine(const std::string& applicationName) noexcept
     }
 
     m_renderer = Renderer{ m_renderDevice, m_swapchain };
+    if (not m_renderer.good())
+    {
+        Logger::Error("Could not create the renderer!");
+        return;
+    }
 
-    FrameCounter frameCounter{};
-    InputSystem inputSystem{};
-    InputController windowInput{};
+    m_inputSystem = InputSystem{};
 
 }
 
@@ -56,11 +59,16 @@ bool Engine::run() noexcept
     
     while (not m_close)
     {
-
+        m_frameCounter.beginFrame();
+        
+        m_inputSystem.poll();
+        
         m_renderer.beginFrame();
 
+        
 
         m_renderer.endFrame();
+        m_frameCounter.endFrame();
     }
 
     return true;

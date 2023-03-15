@@ -14,6 +14,21 @@ InputSystem::~InputSystem()
 {
 }
 
+InputSystem& InputSystem::operator=(InputSystem&& rhs) noexcept
+{
+    m_usedKeys = rhs.m_usedKeys;
+    m_actionsEvents = rhs.m_actionsEvents;
+    m_axisEvents = rhs.m_axisEvents;
+    m_inputControllers = rhs.m_inputControllers;
+
+    rhs.m_usedKeys.reset();
+    rhs.m_actionsEvents.clear();
+    rhs.m_axisEvents.clear();
+    rhs.m_inputControllers.clear();
+
+    return *this;
+}
+
 void InputSystem::registerAction(const std::string& name, std::vector<Key> keys)
 {
     m_actionsEvents.emplace_back(InputAction{name, keys});

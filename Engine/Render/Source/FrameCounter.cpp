@@ -7,11 +7,11 @@
 namespace bl
 {
 
-FrameCounter::FrameCounter()
+FrameCounter::FrameCounter() noexcept
 {
 }
 
-FrameCounter::~FrameCounter()
+FrameCounter::~FrameCounter() noexcept
 {
 }
 

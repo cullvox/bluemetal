@@ -7,6 +7,9 @@
 #include "Render/RenderDevice.hpp"
 #include "Render/Swapchain.hpp"
 #include "Render/Renderer.hpp"
+#include "Render/FrameCounter.hpp"
+#include "Input/InputSystem.hpp"
+#include "Input/InputController.hpp"
 
 namespace bl
 {
@@ -79,6 +82,8 @@ private:
     RenderDevice m_renderDevice;
     Swapchain m_swapchain;
     Renderer m_renderer;
+    FrameCounter m_frameCounter;
+    InputSystem m_inputSystem;
     bool m_close;
 
 };

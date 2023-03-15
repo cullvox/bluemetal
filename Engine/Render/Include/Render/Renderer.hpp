@@ -31,6 +31,7 @@ public:
     Renderer& operator=(Renderer&& rhs) noexcept;
     Renderer& operator=(Renderer&) noexcept = delete;
 
+    bool good() const noexcept;
     bool beginFrame() noexcept;
     bool endFrame() noexcept;
 

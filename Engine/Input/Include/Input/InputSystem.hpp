@@ -27,6 +27,8 @@ class BLOODLUST_API InputSystem
 public:
     InputSystem();
     ~InputSystem();
+
+    InputSystem& operator=(InputSystem&& rhs) noexcept;
     
     void registerAction(const std::string& name, std::vector<Key> keys);
     void registerAxis(const std::string& name, std::vector<std::pair<Key, float>> axes); // (key, scale)

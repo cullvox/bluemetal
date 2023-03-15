@@ -12,8 +12,8 @@ namespace bl
 class BLOODLUST_API FrameCounter
 {
 public:
-    FrameCounter();
-    ~FrameCounter();
+    FrameCounter() noexcept;
+    ~FrameCounter() noexcept;
 
     void beginFrame();
     bool endFrame(); // returns true if this frame ended with a frame count.
