@@ -51,8 +51,8 @@ Renderer& Renderer::operator=(Renderer&& rhs) noexcept
 {
     collapse();
 
-    m_pRenderDevice = rhs.m_pRenderDevice;
-    m_pSwapchain = rhs.m_pSwapchain;
+    m_pRenderDevice = std::move(rhs.m_pRenderDevice);
+    m_pSwapchain = std::move(rhs.m_pSwapchain);
     m_depthFormat = rhs.m_depthFormat;
     m_depthImage = std::move(rhs.m_depthImage);
     m_pass = rhs.m_pass;
@@ -68,7 +68,21 @@ Renderer& Renderer::operator=(Renderer&& rhs) noexcept
     m_renderFinishedSemaphores = rhs.m_renderFinishedSemaphores;
     m_inFlightFences = rhs.m_inFlightFences;
 
-    rhs.collapse();
+    rhs.m_pRenderDevice = nullptr;
+    rhs.m_pSwapchain = nullptr;
+    rhs.m_depthFormat = VK_FORMAT_UNDEFINED;
+    rhs.m_pass = VK_NULL_HANDLE;
+    rhs.m_currentFrame = 0;
+    rhs.m_previousFrame = 0;
+    rhs.m_imageIndex = 0;
+    rhs.m_framebufferResized = false;
+    rhs.m_deadFrame = false;
+    rhs.m_swapCommandBuffers.clear();
+    rhs.m_swapImageViews.clear();
+    rhs.m_swapFramebuffers.clear();
+    rhs.m_imageAvailableSemaphores.clear();
+    rhs.m_renderFinishedSemaphores.clear();
+    rhs.m_inFlightFences.clear();
 
     return *this;
 }
@@ -471,6 +485,8 @@ bool Renderer::recreateSwappable() noexcept
 
 void Renderer::destroySwappable() noexcept
 {
+    if (!m_pRenderDevice) return;
+
     // The device must be idle before we destroy anything and command buffers must stop.
     vkDeviceWaitIdle(m_pRenderDevice->getDevice());
 

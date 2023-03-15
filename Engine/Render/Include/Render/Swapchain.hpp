@@ -100,6 +100,7 @@ public:
     * 
     */
     Swapchain& operator=(Swapchain&& rhs) noexcept;
+    Swapchain& operator=(Swapchain&) noexcept = delete;
 
     /** \brief Checks if the swapchain creation was successful.
     * 

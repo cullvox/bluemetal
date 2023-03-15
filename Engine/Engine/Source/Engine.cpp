@@ -6,6 +6,7 @@ namespace bl
 
 Engine::Engine(const std::string& applicationName) noexcept
     : m_window()
+    , m_close(false)
 {
     SDL_SetMainReady();
 
@@ -40,21 +41,9 @@ Engine::Engine(const std::string& applicationName) noexcept
 
     m_renderer = Renderer{ m_renderDevice, m_swapchain };
 
-
-/*
-    Window window{ displays[0].getDesktopMode() };
-    RenderDevice renderDevice{ window };
-    Swapchain swapchain{ window, renderDevice };
-
-    if (not swapchain.good())
-        return 1;W
-
-    bl::Renderer renderer{ renderDevice, swapchain };
-    bl::FrameCounter frameCounter{};
-    bl::InputSystem inputSystem{};
-    bl::InputController windowInput{};
-    CharacterController characterController{};
-*/
+    FrameCounter frameCounter{};
+    InputSystem inputSystem{};
+    InputController windowInput{};
 
 }
 

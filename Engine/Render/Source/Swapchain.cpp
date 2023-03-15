@@ -60,7 +60,9 @@ Swapchain& Swapchain::operator=(Swapchain&& rhs) noexcept
     m_imageCount = rhs.m_imageCount;
     m_surfaceFormat = rhs.m_surfaceFormat;
     m_presentMode = rhs.m_presentMode;
+    m_extent = rhs.m_extent;
     m_swapchain = rhs.m_swapchain;
+    m_swapImages = rhs.m_swapImages;
 
     rhs.m_pWindow = nullptr;
     rhs.m_pRenderDevice = nullptr;
@@ -68,7 +70,9 @@ Swapchain& Swapchain::operator=(Swapchain&& rhs) noexcept
     rhs.m_imageCount = 0;
     rhs.m_surfaceFormat = {};
     rhs.m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
+    rhs.m_extent = {};
     rhs.m_swapchain = VK_NULL_HANDLE;
+    rhs.m_swapImages.clear();
 
     return *this;
 }

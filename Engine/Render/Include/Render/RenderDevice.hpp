@@ -86,6 +86,7 @@ public:
     * 
     */
     RenderDevice& operator=(RenderDevice&& rhs) noexcept;
+    RenderDevice& operator=(RenderDevice&) noexcept = delete;
 
     /** \brief Gets the vulkan instance.
     * 

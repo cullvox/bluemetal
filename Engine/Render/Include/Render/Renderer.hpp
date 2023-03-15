@@ -29,6 +29,7 @@ public:
     ~Renderer();
 
     Renderer& operator=(Renderer&& rhs) noexcept;
+    Renderer& operator=(Renderer&) noexcept = delete;
 
     bool beginFrame() noexcept;
     bool endFrame() noexcept;
