@@ -4,8 +4,8 @@
 
 #include <source_location>
 
-#include <spdlog/spdlog.h>
-#include <spdlog/fmt/fmt.h>
+#include <fmt/color.h>
+#include <fmt/chrono.h>
 
 namespace bl 
 {
@@ -45,33 +45,38 @@ public:
 #endif
     }
 
-
 private:
     static void vdlog(const format_string& format, fmt::format_args args) {
         const auto& loc = format.loc;
         const std::string path = loc.file_name();
         const std::string filename = path.substr(path.find_last_of("/\\") + 1);
+        auto now = std::chrono::high_resolution_clock::now();
 
-        spdlog::log(spdlog::level::debug, "{}:{}: ", filename, loc.line());
+        fmt::print(fmt::emphasis::bold | fg(fmt::color::dark_orange), "DEBUG | {:%Y-%m-%d-%H:%M:%S} | {}:{}():{} - ", fmt::localtime(std::chrono::system_clock::now()), filename, loc.function_name(), loc.line());
         fmt::vprint(format.str, args);
+        fmt::print("\n");
     }
 
     static void vlog(const format_string& format, fmt::format_args args) {
         const auto& loc = format.loc;
         const std::string path = loc.file_name();
         const std::string filename = path.substr(path.find_last_of("/\\") + 1);
+        auto now = std::chrono::high_resolution_clock::now();
 
-        spdlog::log(spdlog::level::info, "{}:{}: ", filename, loc.line());
+        fmt::print(fg(fmt::color::antique_white), "INFO | {:%Y-%m-%d %H:%M:%S} | {}:{}():{} - ", fmt::localtime(std::chrono::system_clock::now()), filename, loc.function_name(), loc.line());
         fmt::vprint(format.str, args);
+        fmt::print("\n");
     }
 
     static void velog(const format_string& format, fmt::format_args args) {
         const auto& loc = format.loc;
         const std::string path = loc.file_name();
         const std::string filename = path.substr(path.find_last_of("/\\") + 1);
+        auto now = std::chrono::high_resolution_clock::now();
 
-        spdlog::log(spdlog::level::err, "{}:{} {}: ", filename, loc.line(), loc.function_name());
+        fmt::print(fmt::emphasis::bold | fg(fmt::color::dark_red), "ERROR | {:%Y-%m-%d-%H:%M:%S} | {}:{}():{} - ", fmt::localtime(std::chrono::system_clock::now()), filename, loc.function_name(), loc.line());
         fmt::vprint(format.str, args);
+        fmt::print("\n");
     }
 };
 

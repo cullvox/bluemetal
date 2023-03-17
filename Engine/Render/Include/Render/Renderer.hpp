@@ -25,13 +25,13 @@ public:
 
     Renderer() noexcept;
     Renderer(RenderDevice& renderDevice, Swapchain& swapchain) noexcept;
-    
     ~Renderer();
 
     Renderer& operator=(Renderer&& rhs) noexcept;
     Renderer& operator=(Renderer&) noexcept = delete;
 
     bool good() const noexcept;
+    bool recreate() noexcept; // Renderer requires resizing of some of its internals, resizes swapchain too.
     bool beginFrame() noexcept;
     bool endFrame() noexcept;
 
@@ -59,10 +59,6 @@ private:
     /// @brief Creates the syncronization tools when swapping between images on the GPU/CPU.
     /// @return True on success, false on failure.
     bool createSyncObjects() noexcept;
-
-    /// @brief Short hand for creating the command buffers, frame buffers and sync objects.
-    /// @return True on succcess, false on failure.
-    bool recreateSwappable() noexcept;
 
     /// @brief Destroys the swap objects.
     void destroySwappable() noexcept;

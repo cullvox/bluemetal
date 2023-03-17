@@ -156,7 +156,7 @@ void InputSystem::actionEvent(Key key, InputEvent event)
 {
     for (InputAction& action : m_actionsEvents)
     {
-        if (std::find(action.keys.begin(), action.keys.end(), key) == action.keys.end()) continue;
+        if (IsKeyFromKeyboard(key) && std::find(action.keys.begin(), action.keys.end(), key) == action.keys.end()) continue;
         for (InputController* pInputController : m_inputControllers)
         {
             pInputController->onActionEvent(action.name, event);

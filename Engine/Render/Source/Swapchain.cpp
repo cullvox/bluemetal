@@ -79,7 +79,8 @@ Swapchain& Swapchain::operator=(Swapchain&& rhs) noexcept
 
 bool Swapchain::good() const noexcept
 {
-    return m_surface != VK_NULL_HANDLE || m_swapchain != VK_NULL_HANDLE;
+    return m_surface != VK_NULL_HANDLE 
+        && m_swapchain != VK_NULL_HANDLE;
 }
 
 VkSwapchainKHR Swapchain::getSwapchain() const noexcept
@@ -292,6 +293,7 @@ bool Swapchain::recreate() noexcept
     if (m_extent.width == 0 || m_extent.height == 0)
     {
         Logger::Log("Could not recreate a swapchain with an invalid extent! Waiting for a resize...\n");
+        collapse();
         return false;
     }
 

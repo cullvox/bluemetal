@@ -528,15 +528,15 @@ VKAPI_ATTR VkBool32 VKAPI_CALL RenderDevice::debugCallback(VkDebugUtilsMessageSe
 {
     if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
     {
-        spdlog::error("{}", pCallbackData->pMessage);
+        Logger::Error("{}", pCallbackData->pMessage);
     }
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
     {
-        spdlog::warn("{}", pCallbackData->pMessage);
+        Logger::Debug("{}", pCallbackData->pMessage);
     }
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
     {
-        spdlog::info("{}", pCallbackData->pMessage);
+        Logger::Log("{}", pCallbackData->pMessage);
     }
 
     return false;

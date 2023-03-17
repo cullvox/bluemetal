@@ -48,11 +48,16 @@ Engine::Engine(const std::string& applicationName) noexcept
 
     m_inputSystem = InputSystem{};
     m_inputSystem.registerAction("Exit", { Key::WindowClose });
+    m_inputSystem.registerAction("Resize", { Key::WindowResize });
 
     m_inputController = std::make_shared<InputController>();
-    m_inputController->bindAction("Exit", InputEvent::Pressed, [&]() {
+    m_inputController->bindAction("Exit", InputEvent::Pressed, [&](){
         m_close = true;
     });
+    m_inputController->bindAction("Resize", InputEvent::Pressed, [&]() {
+        m_renderer.recreate();
+    });
+
     m_inputSystem.registerController(*m_inputController);
 
 

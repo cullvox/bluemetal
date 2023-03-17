@@ -1,4 +1,5 @@
 #include "Core/Log.hpp"
+#include "Core/Macros.hpp"
 #include "Render/Renderer.hpp"
 
 #include <array>
@@ -39,7 +40,7 @@ Renderer::Renderer(RenderDevice& renderDevice, Swapchain& swapchain) noexcept
 
     /* Create the swapchain based objects and the render pass. */
     createRenderPass();
-    recreateSwappable();
+    recreate();
 }
 
 Renderer::~Renderer()
@@ -118,21 +119,17 @@ bool Renderer::beginFrame() noexcept
 
     // Acquire the next image from the swapchain.
     bool requiresRecreation = false;
-    if (not m_pSwapchain->acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex, requiresRecreation))
-    {
-        Logger::Error("Could not acquire the swapchains next image!\n");
-        return false;
-    }
+    BL_CHECK(
+        m_pSwapchain->acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex, requiresRecreation),
+        "Could not acquire the swapchains next image!\n")
 
     // Attempt to recreate the swapchain and if it fails we need to 
     if (requiresRecreation)
     {
-        if (not m_pSwapchain->recreate() ||
-            not recreateSwappable())
-        {
-            Logger::Error("Could not recreate the swapchain and swappables!\n");
-            return false;
-        }
+        recreate();
+
+        m_deadFrame = true;
+        return true;
     }
 
     vkResetFences(m_pRenderDevice->getDevice(), 1, &m_inFlightFences[m_currentFrame]);
@@ -148,11 +145,9 @@ bool Renderer::beginFrame() noexcept
         .pInheritanceInfo = nullptr
     };
 
-    if (vkBeginCommandBuffer(m_swapCommandBuffers[m_currentFrame], &beginInfo) != VK_SUCCESS)
-    {
-        Logger::Error("Could not begin a command buffer after this frame!\n");
-        return false;
-    }
+    BL_CHECK(
+        vkBeginCommandBuffer(m_swapCommandBuffers[m_currentFrame], &beginInfo) == VK_SUCCESS,
+        "Could not begin a command buffer after this frame!\n")
 
     // Setup the render pass
     const std::array<VkClearValue, 2> clearValues{ {
@@ -217,11 +212,9 @@ bool Renderer::endFrame() noexcept
         .pSignalSemaphores = signalSemaphores,
     };
 
-    if (vkQueueSubmit(m_pRenderDevice->getGraphicsQueue(), 1, &submitInfo, m_inFlightFences[m_currentFrame]) != VK_SUCCESS)
-    {
-        Logger::Error("Could not submit a draw command buffer!\n");
-        return false;
-    }
+    BL_CHECK(
+        vkQueueSubmit(m_pRenderDevice->getGraphicsQueue(), 1, &submitInfo, m_inFlightFences[m_currentFrame]) == VK_SUCCESS,
+        "Could not submit a draw command buffer!\n")
 
     VkResult result = {};
 
@@ -321,11 +314,9 @@ bool Renderer::createRenderPass() noexcept
         .pDependencies = subpassDependencies.data()
     };
 
-    if (vkCreateRenderPass(m_pRenderDevice->getDevice(), &createInfo, nullptr, &m_pass) != VK_SUCCESS)
-    {
-        Logger::Error("Could not create a vulkan render pass!");
-        return false;
-    }
+    BL_CHECK(
+        vkCreateRenderPass(m_pRenderDevice->getDevice(), &createInfo, nullptr, &m_pass) == VK_SUCCESS,
+        "Could not create a vulkan render pass!\n")
 
     return true;
 }
@@ -342,11 +333,9 @@ bool Renderer::createCommandBuffers() noexcept
 
     m_swapCommandBuffers.resize(m_pSwapchain->getImageCount());
 
-    if (vkAllocateCommandBuffers(m_pRenderDevice->getDevice(), &allocateInfo, m_swapCommandBuffers.data()) != VK_SUCCESS)
-    {
-        Logger::Error("Could not allocate vulkan swapchain command buffers!\n");
-        return false;
-    }
+    BL_CHECK(
+        vkAllocateCommandBuffers(m_pRenderDevice->getDevice(), &allocateInfo, m_swapCommandBuffers.data()) == VK_SUCCESS,
+        "Could not allocate vulkan swapchain command buffers!\n")
 
     return true;
 }
@@ -396,11 +385,10 @@ bool Renderer::createFrameBuffers() noexcept
         };
 
         VkImageView imageView = {};
-        if (vkCreateImageView(m_pRenderDevice->getDevice(), &imageViewCreateInfo, nullptr, &imageView) != VK_SUCCESS)
-        {
-            Logger::Error("Could not create a vulkan image view for the renderer!\n");
-            goto failureCleanup;
-        }
+        BL_CHECK_GOTO(
+            vkCreateImageView(m_pRenderDevice->getDevice(), &imageViewCreateInfo, nullptr, &imageView) == VK_SUCCESS,
+            "Could not create a vulkan image view for the renderer!\n",
+            failureCleanup)
 
         const std::array<VkImageView, 2> attachments = {
             imageView,
@@ -420,11 +408,10 @@ bool Renderer::createFrameBuffers() noexcept
         };
 
         VkFramebuffer framebuffer = {};
-        if (vkCreateFramebuffer(m_pRenderDevice->getDevice(), &framebufferCreateInfo, nullptr, &framebuffer) != VK_SUCCESS)
-        {
-            Logger::Error("Could not create a vulkan framebuffer for the renderer!");
-            goto failureCleanup;
-        }
+        BL_CHECK_GOTO(
+            vkCreateFramebuffer(m_pRenderDevice->getDevice(), &framebufferCreateInfo, nullptr, &framebuffer) == VK_SUCCESS,
+            "Could not create a vulkan framebuffer for the renderer!\n",
+            failureCleanup)
 
         m_swapImageViews.push_back(imageView);
         m_swapFramebuffers.push_back(framebuffer);
@@ -440,7 +427,6 @@ failureCleanup:
         vkDestroyFramebuffer(m_pRenderDevice->getDevice(), fb, nullptr);
 
     return false;
-
 }
 
 bool Renderer::createSyncObjects() noexcept
@@ -463,19 +449,17 @@ bool Renderer::createSyncObjects() noexcept
 
     for (uint32_t i = 0; i < DEFAULT_FRAMES_IN_FLIGHT; i++)
     {
-        if (vkCreateSemaphore(m_pRenderDevice->getDevice(), &semaphoreCreateInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(m_pRenderDevice->getDevice(), &semaphoreCreateInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(m_pRenderDevice->getDevice(), &fenceCreateInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
-        {
-            Logger::Error("Could not create a vulkan frame semaphore!\n");
-            goto failureCleanup;
-        }
+        BL_CHECK_GOTO(
+                vkCreateSemaphore(m_pRenderDevice->getDevice(), &semaphoreCreateInfo, nullptr, &m_imageAvailableSemaphores[i]) == VK_SUCCESS &&
+                vkCreateSemaphore(m_pRenderDevice->getDevice(), &semaphoreCreateInfo, nullptr, &m_renderFinishedSemaphores[i]) == VK_SUCCESS &&
+                vkCreateFence(m_pRenderDevice->getDevice(), &fenceCreateInfo, nullptr, &m_inFlightFences[i]) == VK_SUCCESS,
+            "Could not create a vulkan frame semaphore!\n",
+            failureCleanup)
     }
 
     return true;
 
 failureCleanup:
-
     for (uint32_t i = 0; i < DEFAULT_FRAMES_IN_FLIGHT; i++)
     {
         vkDestroySemaphore(m_pRenderDevice->getDevice(), m_imageAvailableSemaphores[i], nullptr);
@@ -486,8 +470,10 @@ failureCleanup:
     return false;
 }
 
-bool Renderer::recreateSwappable() noexcept
+bool Renderer::recreate() noexcept
 {   
+    BL_CHECK_NL(m_pSwapchain->recreate())
+
     destroySwappable();
 
     return createFrameBuffers() 
