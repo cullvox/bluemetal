@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/Log.hpp"
+
 #define BL_CHECK(expr, error) \
 	if (not (expr)) \
 	{ \
@@ -17,3 +19,14 @@
 #define BL_CHECK_NL(expr) \
 	if (not (expr)) \
 		return false;
+
+#define BL_CHECK_NR(expr) \
+	if (not (expr)) \
+		return;
+
+#define BL_CHECK_SR(expr, error, ret) \
+	if (not (expr)) \
+	{ \
+		Logger::Error(error); \
+		return ret; \
+	}

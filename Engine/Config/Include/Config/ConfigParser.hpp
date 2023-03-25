@@ -5,6 +5,9 @@
 
 #include "ConfigLexer.hpp"
 
+namespace bl
+{
+
 enum class EParsedType
 {
     eInt,
@@ -42,3 +45,5 @@ private:
     std::string m_groupsStr;
     std::unordered_map<std::string, SParsedValue> m_values;
 };
+
+} // namespace bl

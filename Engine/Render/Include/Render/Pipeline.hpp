@@ -3,20 +3,44 @@
 #include "Render/RenderDevice.hpp"
 #include "Render/Shader.hpp"
 
-#include <vector>
+#include <glm/mat4x4.hpp>
 
-namespace bl {
+#include <vector>
+#include <filesystem>
+
+namespace bl 
+{
 
 struct PipelineInfo
 {
     const std::vector<Shader&>& stages;
 };
 
-class BLOODLUST_API Pipeline {
+struct FrameDescriptor
+{
+    float time; // in seconds
+    Vector2i extent; // in pixels
+};
+
+struct ObjectDescriptor
+{
+    glm::mat4 cameraView;
+    glm::mat4 cameraProjection;
+    glm::mat4 modelTransform;
+};
+
+class BLOODLUST_API Pipeline 
+{
+
 public:
-    Pipeline();
-    Pipeline(RenderDevice& renderDevice, PipelineInfo& info);
-    ~Pipeline();
+    Pipeline() noexcept;
+    Pipeline(RenderDevice& renderDevice, std::vector<std::vector<uint32_t>> shaders) noexcept;
+    ~Pipeline() noexcept;
+
+    Pipeline& operator=(Pipeline&& rhs) noexcept;
+
+    bool good() const noexcept;
+
 private:
     void createLayout();
     void createPipeline();

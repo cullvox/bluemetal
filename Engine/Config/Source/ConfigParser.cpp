@@ -1,6 +1,8 @@
+#include "Core/Log.hpp"
 #include "Config/ConfigParser.hpp"
 
-#include <spdlog/spdlog.h>
+namespace bl
+{
 
 CParser::CParser(const std::string& content) noexcept
     : m_lexer(content), m_token()
@@ -122,5 +124,7 @@ void CParser::RecomputeGroups()
 
 void CParser::PrintError(const std::string& expected)
 {
-    spdlog::log(spdlog::level::err, "({}): Invalid token, expected \"{}\", got \"{}\".\n", m_lexer.Line(), expected, m_token.Lexeme());
+    Logger::Error("({}): Invalid token, expected \"{}\", got \"{}\".\n", m_lexer.Line(), expected, m_token.Lexeme());
 }
+
+} // namespace bl

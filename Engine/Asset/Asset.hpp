@@ -1,14 +1,10 @@
 #pragma once
 
-#include <string>
+#include <Core/Precompiled.hpp>
 
-class Asset {
-public:
-    Asset(const std::string& path);
-    ~Asset();
+namespace bl
+{
 
-    virtual void unload() = 0;
-    virtual void load() = 0;
-private:
-    std::string path;
-};
+using Asset = uint32_t;
+
+}

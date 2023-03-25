@@ -1,6 +1,8 @@
 #include "Core/Log.hpp"
 #include "Engine/Engine.hpp"
 
+#include "imgui_impl_bloodlust.h"
+
 namespace bl
 {
 
@@ -47,24 +49,25 @@ Engine::Engine(const std::string& applicationName) noexcept
     }
 
     m_inputSystem = InputSystem{};
+    m_inputSystem.registerAxis("Walk", { {Key::KeyW, 1.0f}, {Key::KeyS, -1.0f} });
     m_inputSystem.registerAction("Exit", { Key::WindowClose });
     m_inputSystem.registerAction("Resize", { Key::WindowResize });
 
-    m_inputController = std::make_shared<InputController>();
-    m_inputController->bindAction("Exit", InputEvent::Pressed, [&](){
-        m_close = true;
-    });
-    m_inputController->bindAction("Resize", InputEvent::Pressed, [&]() {
-        m_renderer.recreate();
-    });
+    auto walkDelegate = m_inputSystem.getAxisDelegate("Walk");
+    *walkDelegate += [&](float scale) { Logger::Log("Walking {}!", scale); };
 
-    m_inputSystem.registerController(*m_inputController);
+    auto resizeDelegate = m_inputSystem.getActionDelegate("Resize");
+    *resizeDelegate += [&](){ m_renderer.recreate(); };
 
+    auto exitDelegate = m_inputSystem.getActionDelegate("Exit");
+    *exitDelegate += [&]() { m_close = true; };
 
+    ImGui_ImplBloodLust_Init(m_window, m_inputSystem, m_renderDevice, m_renderer);
 }
 
 Engine::~Engine()
 {
+    ImGui_ImplBloodLust_Shutdown();
 }
 
 bool Engine::run() noexcept
@@ -76,11 +79,23 @@ bool Engine::run() noexcept
         
         m_inputSystem.poll();
         
-        m_renderer.beginFrame();
+        VkCommandBuffer commandBuffer{};
 
-        
+        if (m_renderer.beginFrame(commandBuffer))
+        {
 
-        m_renderer.endFrame();
+            ImGui_ImplBloodLust_NewFrame();
+
+            ImGui::ShowDemoWindow();
+
+            ImGui::Render();
+
+
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), commandBuffer);
+
+            m_renderer.endFrame();
+        }
+
         m_frameCounter.endFrame();
     }
 

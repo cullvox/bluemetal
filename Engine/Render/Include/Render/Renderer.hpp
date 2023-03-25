@@ -32,8 +32,10 @@ public:
 
     bool good() const noexcept;
     bool recreate() noexcept; // Renderer requires resizing of some of its internals, resizes swapchain too.
-    bool beginFrame() noexcept;
+    bool beginFrame(VkCommandBuffer& commandBuffer) noexcept;
     bool endFrame() noexcept;
+
+    VkRenderPass getRenderPass() const noexcept;
 
     void submit(const Submission& submission) noexcept;
 
@@ -49,14 +51,14 @@ private:
     bool createRenderPass() noexcept;
 
     /// @brief Creates the command buffers used when rendering.
-    /// @return True on succes, false on failure.
+    /// @return True on success, false on failure.
     bool createCommandBuffers() noexcept;
 
     /// @brief Creates the frame buffers used to render the swap images to present.
     /// @return True on success, false on failure.
     bool createFrameBuffers() noexcept;
 
-    /// @brief Creates the syncronization tools when swapping between images on the GPU/CPU.
+    /// @brief Creates the synchronization tools when swapping between images on the GPU/CPU.
     /// @return True on success, false on failure.
     bool createSyncObjects() noexcept;
 

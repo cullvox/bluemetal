@@ -5,19 +5,17 @@
 namespace bl
 {
 
-Pipeline::Pipeline()
+Pipeline::Pipeline() noexcept
 {
 
 }
 
-Pipeline::Pipeline(RenderDevice& renderDevice, PipelineInfo& info)
-    : m_pRenderDevice(&renderDevice)
+Pipeline::Pipeline(RenderDevice& renderDevice, std::vector<std::vector<uint32_t>> shaders) noexcept
 {
-    createLayout();
-    createPipeline();
+
 }
 
-Pipeline::~Pipeline()
+Pipeline::~Pipeline() noexcept
 {
     vkDestroyPipeline(m_pRenderDevice->getDevice(), m_pipeline, nullptr);
     vkDestroyPipelineLayout(m_pRenderDevice->getDevice(), m_pipelineLayout, nullptr);
@@ -25,23 +23,13 @@ Pipeline::~Pipeline()
 
 void Pipeline::createLayout()
 {
-    // Reflect the spirv provided by the constructor.
-    /*
-    SpvReflectShaderModule module{};
-    spvReflectCreateShaderModule(spirvCode.size(), spirvCode.data(), &module);
-
-    spvReflectEnumerateDescriptorSets(&module, );
-
-    const VkPipelineLayoutCreateInfo layoutCreateInfo{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .setLayoutCount = 
-    };*/
+    //
 }
 
 void Pipeline::createPipeline()
 {
+
+
 }
 
 } // namespace bl

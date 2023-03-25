@@ -1,5 +1,8 @@
 #include "Config/ConfigLexer.hpp"
 
+namespace bl
+{
+
 bool CLexerUtils::IsSpace(char c) noexcept
 {
     switch (c)
@@ -275,4 +278,6 @@ CToken CLexer::Atom(ETokenKind kind) noexcept
 int CLexer::Line() const noexcept
 {
     return m_lineNumber;
+}
+
 }

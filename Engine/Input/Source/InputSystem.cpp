@@ -6,175 +6,113 @@
 namespace bl
 {
 
-InputSystem::InputSystem()
+InputSystem::InputSystem() noexcept
 {
+    m_hookDelegate += HookDelegate(*this, &InputSystem::windowEventHook);   
 }
 
-InputSystem::~InputSystem()
+InputSystem::~InputSystem() noexcept
 {
+    m_hookDelegate.remove(m_hookDelegate, HookDelegate(*this, &InputSystem::windowEventHook));
 }
 
 InputSystem& InputSystem::operator=(InputSystem&& rhs) noexcept
 {
-    m_usedKeys = rhs.m_usedKeys;
-    m_actionsEvents = rhs.m_actionsEvents;
-    m_axisEvents = rhs.m_axisEvents;
-    m_inputControllers = rhs.m_inputControllers;
+    collapse();
 
-    rhs.m_usedKeys.reset();
-    rhs.m_actionsEvents.clear();
-    rhs.m_axisEvents.clear();
-    rhs.m_inputControllers.clear();
+    m_hookDelegate = rhs.m_hookDelegate;
+    m_actions = rhs.m_actions;
+    m_axes = rhs.m_axes;
+
+    rhs.collapse();
 
     return *this;
 }
 
-void InputSystem::registerAction(const std::string& name, std::vector<Key> keys)
+bool InputSystem::registerAction(const std::string& name, const std::vector<Key>& onKeys) noexcept
 {
-    m_actionsEvents.emplace_back(InputAction{name, keys});
-
-    // Add the keys to the key event
-    for (Key key : m_actionsEvents.back().keys)
-    {
-        if (IsKeyFromKeyboard(key))
-            m_usedKeys.set(SDL_GetScancodeFromKey((SDL_KeyCode)key));
-    }
+    m_actions.insert({ std::string{name}, ActionBinding{ onKeys, {} } });
+    return true;
 }
 
-void InputSystem::registerAxis(const std::string& name, std::vector<std::pair<Key, float>> axes)
+bool InputSystem::registerAxis(const std::string& name, const std::vector<Axis>& onAxes) noexcept
 {
-    m_axisEvents.emplace_back(InputAxis{name, axes});
-
-        // Add the keys to the key event
-    for (auto pair : m_axisEvents.back().keys)
-    {
-        if (IsKeyFromKeyboard(pair.first))
-            m_usedKeys.set(SDL_GetScancodeFromKey((SDL_KeyCode)pair.first));
-    }
+    m_axes.insert({ std::string{name}, AxisBinding{ onAxes, {} } });
+    return true;
 }
 
-void InputSystem::registerController(InputController& controller)
+InputSystem::HookDelegate& InputSystem::getHookDelegate(void) noexcept
 {
-    m_inputControllers.push_back(&controller);
+    return m_hookDelegate;
 }
 
-void InputSystem::poll()
+InputSystem::ActionDelegate* InputSystem::getActionDelegate(const std::string& name) noexcept
+{
+    const auto it = m_actions.find(name);
+
+    return it == m_actions.end() ? nullptr : &it->second.delegate;
+}
+
+InputSystem::AxisDelegate* InputSystem::getAxisDelegate(const std::string& name) noexcept
+{
+    const auto it = m_axes.find(name);
+
+    return it == m_axes.end() ? nullptr : &it->second.delegate;
+}
+
+void InputSystem::processKeyboardPump() const noexcept
+{
+    int keystatesCount = 0;
+    const uint8_t* pKeystates = SDL_GetKeyboardState(&keystatesCount);
+
+    // Run delegates for actions and axes if they have keyboard keys
+    for (const auto& action : m_actions)
+        for (auto key : action.second.onKeys)
+            if (IsKeyFromKeyboard(key) && pKeystates[SDL_GetScancodeFromKey((SDL_Keycode)key)] == SDL_PRESSED)
+                action.second.delegate();
+
+    for (const auto& axis : m_axes)
+        for (auto key : axis.second.onAxes)
+            if (IsKeyFromKeyboard(key.first) && pKeystates[SDL_GetScancodeFromKey((SDL_Keycode)key.first)] == SDL_PRESSED)
+                axis.second.delegate(key.second);
+}
+
+void InputSystem::windowEventHook(const SDL_Event* pEvent) const noexcept
+{
+    if (pEvent->type != SDL_WINDOWEVENT) return;
+
+    const auto pWindowEvent = &pEvent->window;
+    const auto windowKey = GetWindowKeyFromSDL(pWindowEvent->event);
+
+    if (windowKey == Key::KeyUnknown) return;
+
+    // Run the action delegates, window keys do not support axis events.
+    for (const auto& action : m_actions)
+        for (auto key : action.second.onKeys)
+            if (key == windowKey)
+                action.second.delegate();
+
+}
+
+void InputSystem::poll() noexcept
 {
     
-    // Pump the events to get the latest states
     SDL_PumpEvents();
 
-    processKeyboard();
+    processKeyboardPump();
 
     SDL_Event event;
-    while(SDL_PollEvent(&event))
+    while (SDL_PollEvent(&event))
     {
-        switch(event.type)
-        {
-            case SDL_WINDOWEVENT:
-                processWindow(&event);   
-                break;
-            case SDL_MOUSEBUTTONDOWN:
-            case SDL_MOUSEBUTTONUP:
-                processMouseButtons(&event);
-                break;
-        }
+        m_hookDelegate(&event);
     }
 }
 
-void InputSystem::processKeyboard()
+void InputSystem::collapse() noexcept
 {
-
-    // Get the current keystate.
-    int keystateCount = 0;
-    const uint8_t* pKeystate = SDL_GetKeyboardState(&keystateCount);
-
-    if (!pKeystate)
-    {
-        Logger::Error("Could not get the SDL keystate!");
-        return;
-    }
-
-    // Iterate through the keystates and activate events/axis on down.
-    for (int keystateIndex = 0; keystateIndex < keystateCount; keystateIndex++)
-    {
-        // Skip unbound keys.
-        if (!m_usedKeys[keystateIndex]) continue;
-
-        const bl::Key key = (Key)SDL_GetKeyFromScancode((SDL_Scancode)keystateIndex);
-
-        // Activate an action event.
-        actionEvent(key, (InputEvent)pKeystate[keystateIndex]);
-
-        // Activate an axis only if the key is down.
-        if (pKeystate[keystateIndex])
-        {
-            axisEvent(key, 1.0f);
-        }
-    }
-}
-
-void InputSystem::processMouseButtons(SDL_Event* pEvent)
-{
-
-    const Key key = GetSDLMouseButtonIndex(pEvent->button.button);
-    InputEvent input;
-    switch (pEvent->button.type)
-    {
-        default:
-        case SDL_MOUSEBUTTONDOWN:
-            input = InputEvent::Pressed;
-            break;
-        case SDL_MOUSEBUTTONUP:
-            input = InputEvent::Released;
-            break;
-    }
-
-    actionEvent(key, input);
-}
-
-void InputSystem::processGamepad()
-{
-    
-}
-
-void InputSystem::processWindow(SDL_Event* pEvent)
-{
-    // Detect the window state
-    switch (pEvent->window.event)
-    {
-        case SDL_WINDOWEVENT_CLOSE: 
-            actionEvent(Key::WindowClose, InputEvent::Pressed);
-            break;
-        case SDL_WINDOWEVENT_RESIZED:
-            actionEvent(Key::WindowResize, InputEvent::Pressed);
-            break;
-    }
-}
-
-void InputSystem::actionEvent(Key key, InputEvent event)
-{
-    for (InputAction& action : m_actionsEvents)
-    {
-        if (IsKeyFromKeyboard(key) && std::find(action.keys.begin(), action.keys.end(), key) == action.keys.end()) continue;
-        for (InputController* pInputController : m_inputControllers)
-        {
-            pInputController->onActionEvent(action.name, event);
-        }
-    }
-}
-
-void InputSystem::axisEvent(Key key, float axisValue)
-{
-    for (InputAxis& axis : m_axisEvents)
-    {
-        auto keyPair = std::find_if(axis.keys.begin(), axis.keys.end(), [key](auto& pair){ return pair.first == key; });
-        if (keyPair == axis.keys.end()) continue;
-        for (InputController* pInputController : m_inputControllers)
-        {
-            pInputController->onAxisEvent(axis.name, axisValue * (*keyPair).second);
-        }
-    }
+    m_hookDelegate.clear();
+    m_actions.clear();
+    m_axes.clear();
 }
 
 } // namespace bl

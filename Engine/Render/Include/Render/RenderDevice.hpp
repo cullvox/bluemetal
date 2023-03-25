@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <vector>
+#include <functional>
 
 namespace bl
 {
@@ -256,6 +257,20 @@ public:
     */
     [[nodiscard]] VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const noexcept;
     
+    /** \brief Creates a command buffer object and immediately submits it after recording.
+    * 
+    * A command buffer is created using the command pool. Then the recorder is given
+    * the new command buffer and it records some cool commands. The commands are then
+    * submitted to the graphics queue.
+    * 
+    * \param recorder is a function which records your command, usually a lambda.
+    * 
+    * \return true if the submission succeeded.
+    * \return false if the command pool failed to allocate or a submission error occurred.
+    *
+    */
+    bool immediateSubmit(std::function<void(VkCommandBuffer)> recorder);
+
     /** \brief Determines if the device was constructed successfully.
     * 
     * This function determines if it was successfully constructed. If one of

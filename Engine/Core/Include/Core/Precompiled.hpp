@@ -1,7 +1,5 @@
 #pragma once
 
-#include <spdlog/spdlog.h>
-
 #include <string>
 #include <vector>
 #include <array>
@@ -9,6 +7,7 @@
 #include <algorithm>
 #include <stdexcept>
 #include <optional>
+#include <functional>
 
 #include <cassert>
 #include <cstdint>

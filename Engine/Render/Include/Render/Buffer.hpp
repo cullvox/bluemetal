@@ -1,11 +1,6 @@
 #pragma once
 
-//===========================//
-#include <cstddef>
-#include <cstdint>
-//===========================//
 #include "Render/RenderDevice.hpp"
-//===========================//
 
 namespace bl
 {
@@ -13,21 +8,26 @@ namespace bl
 class BLOODLUST_API Buffer
 {
 public:
-    Buffer();
-    Buffer(RenderDevice& renderDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties);
-    ~Buffer();
+    Buffer() noexcept;
+    Buffer(RenderDevice& renderDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties) noexcept;
+    ~Buffer() noexcept;
 
-    Buffer& operator=(Buffer& rhs) noexcept;
+    Buffer& operator=(Buffer&& rhs) noexcept;
 
-    void            Upload(size_t dataSize, const uint8_t* pData);
-    VmaAllocation   GetAllocation() const noexcept;
-    VkBuffer        GetBuffer() const noexcept;
-    VkDeviceSize    GetSize() const noexcept;
+    VmaAllocation getAllocation() const noexcept;
+    VkBuffer getBuffer() const noexcept;
+    VkDeviceSize getSize() const noexcept;
+    bool good() const noexcept;
+
+    bool upload(size_t size, const uint8_t* pData) noexcept;
+
 private:
+    void collapse() noexcept;
+
     RenderDevice*   m_pRenderDevice;
+    VkDeviceSize    m_size;
     VmaAllocation   m_allocation;
     VkBuffer        m_buffer;
-    VkDeviceSize    m_size;
 };
 
 } /* namespace bl */

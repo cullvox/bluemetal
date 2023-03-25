@@ -1,13 +1,22 @@
+#include "Core/Macros.hpp"
 #include "Render/Buffer.hpp"
-
-#include <stdexcept>
 
 namespace bl
 {
 
-Buffer::Buffer(RenderDevice& renderDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties)
-    : m_pRenderDevice(&renderDevice)
+Buffer::Buffer() noexcept
+    : m_pRenderDevice(nullptr)
+    , m_allocation(VK_NULL_HANDLE)
+    , m_buffer(VK_NULL_HANDLE)
+    , m_size(0)
 {
+}
+
+Buffer::Buffer(RenderDevice& renderDevice, VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties) noexcept
+    : Buffer()
+{
+    m_pRenderDevice = &renderDevice;
+    m_size = size;
 
     const uint32_t graphicsFamilyIndex = m_pRenderDevice->getGraphicsFamilyIndex();
     const VkBufferCreateInfo bufferCreateInfo{
@@ -32,10 +41,59 @@ Buffer::Buffer(RenderDevice& renderDevice, VkDeviceSize size, VkBufferUsageFlags
         .priority = 0.0f,
     };
 
-    if (vmaCreateBuffer(m_pRenderDevice->getAllocator(), &bufferCreateInfo, &allocationCreateInfo, &m_buffer, &m_allocation, nullptr) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not create a vulkan buffer!");
-    }
+    BL_CHECK_NR(
+        vmaCreateBuffer(m_pRenderDevice->getAllocator(), &bufferCreateInfo, &allocationCreateInfo, &m_buffer, &m_allocation, nullptr) != VK_SUCCESS,
+        "Could not create a vulkan buffer!")
+}
+
+Buffer& Buffer::operator=(Buffer&& rhs) noexcept
+{
+    collapse();
+
+    m_pRenderDevice = rhs.m_pRenderDevice;
+    m_size = rhs.m_size;
+    m_buffer = rhs.m_buffer;
+    m_allocation = rhs.m_allocation;
+
+    rhs.collapse();
+    return *this;
+}
+
+bool Buffer::good() const noexcept
+{
+    return not m_pRenderDevice || not m_buffer;
+}
+
+bool Buffer::upload(size_t size, const uint8_t* pData) noexcept
+{
+    return true;
+}
+
+VmaAllocation Buffer::getAllocation() const noexcept
+{
+    return m_allocation;
+}
+
+VkBuffer Buffer::getBuffer() const noexcept
+{
+    return m_buffer;
+}
+
+VkDeviceSize Buffer::getSize() const noexcept
+{
+    return m_size;
+}
+
+void Buffer::collapse() noexcept
+{
+    if (not m_pRenderDevice || not m_buffer) return;
+
+    vmaDestroyBuffer(m_pRenderDevice->getAllocator(), m_buffer, m_allocation);
+
+    m_pRenderDevice = nullptr;
+    m_size = 0;
+    m_buffer = VK_NULL_HANDLE;
+    m_allocation = VK_NULL_HANDLE;
 }
 
 } // namespace bl

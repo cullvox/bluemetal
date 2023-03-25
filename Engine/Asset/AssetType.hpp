@@ -3,9 +3,6 @@
 namespace bl
 {
 
-class Descriptor
-{
-    
-};
+using AssetType = uint32_t;
 
 } // namespace bl

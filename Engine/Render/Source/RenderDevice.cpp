@@ -145,6 +145,74 @@ VkFormat RenderDevice::findSupportedFormat(const std::vector<VkFormat>& candidat
     return VK_FORMAT_UNDEFINED;
 }
 
+bool RenderDevice::immediateSubmit(std::function<void(VkCommandBuffer)> recorder)
+{
+
+    const VkCommandBufferAllocateInfo allocateInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+        .pNext = nullptr,
+        .commandPool = m_commandPool,
+        .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+        .commandBufferCount = 1
+    };
+
+    VkCommandBuffer temporaryCommandBuffer{};
+    if (vkAllocateCommandBuffers(m_device, &allocateInfo, &temporaryCommandBuffer) != VK_SUCCESS)
+    {
+        Logger::Error("Could not allocate a temporary command buffer for immediate submit!");
+        return false;
+    }
+
+    auto freeCmdBuffers = [&]() { vkFreeCommandBuffers(m_device, m_commandPool, 1, &temporaryCommandBuffer); };
+
+    const VkCommandBufferBeginInfo beginInfo{
+        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
+        .pNext = nullptr,
+        .flags = 0,
+        .pInheritanceInfo = nullptr
+    };
+
+    if (vkBeginCommandBuffer(temporaryCommandBuffer, &beginInfo) != VK_SUCCESS)
+    {
+        Logger::Error("Could not begin a temporary command buffer for immediate submit!");
+        freeCmdBuffers();
+        return false;
+    }
+
+    recorder(temporaryCommandBuffer);
+
+    if (vkEndCommandBuffer(temporaryCommandBuffer) != VK_SUCCESS)
+    {
+        Logger::Error("Could not end a temporary command buffer for immediate submit!");
+        freeCmdBuffers();
+        return false;
+    }
+
+    const VkSubmitInfo submitInfo{
+        .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
+        .pNext = nullptr,
+        .waitSemaphoreCount = 0,
+        .pWaitSemaphores = nullptr,
+        .pWaitDstStageMask = nullptr,
+        .commandBufferCount = 1,
+        .pCommandBuffers = &temporaryCommandBuffer,
+        .signalSemaphoreCount = 0,
+        .pSignalSemaphores = nullptr
+    };
+
+    if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    {
+        Logger::Error("Could not submit a temporary command buffer for immediate submit!");
+        freeCmdBuffers();
+        return false;
+    }
+
+    vkQueueWaitIdle(m_graphicsQueue);
+
+    freeCmdBuffers();
+    return true;
+}
+
 bool RenderDevice::good() const noexcept
 {
     return m_pWindow != nullptr

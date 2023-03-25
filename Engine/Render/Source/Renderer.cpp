@@ -105,7 +105,7 @@ bool Renderer::good() const noexcept
         m_inFlightFences.size() > 0);
 }
 
-bool Renderer::beginFrame() noexcept
+bool Renderer::beginFrame(VkCommandBuffer& commandBuffer) noexcept
 {
 
     // If the swapchain wasn't recreated for some reason skip the frame.
@@ -180,6 +180,8 @@ bool Renderer::beginFrame() noexcept
 
     vkCmdBeginRenderPass(m_swapCommandBuffers[m_currentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     
+    commandBuffer = m_swapCommandBuffers[m_currentFrame];
+
     return true;
 }
 
@@ -319,6 +321,11 @@ bool Renderer::createRenderPass() noexcept
         "Could not create a vulkan render pass!\n")
 
     return true;
+}
+
+VkRenderPass Renderer::getRenderPass() const noexcept
+{
+    return m_pass;
 }
 
 bool Renderer::createCommandBuffers() noexcept

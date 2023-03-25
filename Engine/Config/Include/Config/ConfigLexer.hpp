@@ -5,6 +5,9 @@
 #include <string>
 #include <string_view>
 
+namespace bl
+{
+
 class CLexerUtils
 {
 public:
@@ -31,3 +34,5 @@ private:
     std::string::const_iterator m_it;
     int m_lineNumber;
 };
+
+} // namespace bl

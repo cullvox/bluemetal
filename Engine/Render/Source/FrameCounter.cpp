@@ -1,6 +1,5 @@
+#include "Core/Log.hpp"
 #include "Render/FrameCounter.hpp"
-
-#include <spdlog/spdlog.h>
 
 #include <algorithm>
 
@@ -78,7 +77,7 @@ float FrameCounter::getAverageFramesPerSecond(int seconds) const noexcept
     // Make sure we are getting a proper second count.
     if (seconds > m_maximumHeldFramesPerSecond || seconds < 1)
     {
-        spdlog::warn("Attempting to get an average FPS greater than the maximum at {} seconds.", seconds);
+        Logger::Error("Attempting to get an average FPS greater than the maximum at {} seconds.", seconds);
     }
 
     // Clamp as a precaution
@@ -106,7 +105,7 @@ float FrameCounter::getAverageMillisecondsPerFrame(int frames) const noexcept
     // Make sure we are getting a proper second count
     if (frames > m_maximumHeldMillisecondsPerFrame || frames < 1)
     {
-        spdlog::warn("Attempting to get an average milliseconds per frame greater than the maximum frame count at {} frames.", frames);
+        Logger::Warning("Attempting to get an average milliseconds per frame greater than the maximum frame count at {} frames.", frames);
     }
 
     frames = std::clamp(frames, 1, (int)m_millisecondsPerFrame.size());

@@ -2,6 +2,9 @@
 
 #include <string_view>
 
+namespace bl
+{
+
 enum class ETokenKind
 {
     eNumber,
@@ -43,3 +46,5 @@ private:
     int                     m_lineNumber;
     std::string_view        m_lexeme;
 };
+
+} // namespace bl

@@ -4,7 +4,7 @@ list(APPEND EngineSources
 add_library(BloodLustEngine SHARED ${EngineSources})
 add_library(bl::Engine ALIAS BloodLustEngine)
 target_include_directories(BloodLustEngine PUBLIC "Include")
-target_link_libraries(BloodLustEngine bl::Core bl::Math bl::Window bl::Render bl::Input)
+target_link_libraries(BloodLustEngine bl::Core bl::Math bl::Window bl::Render bl::Input bl::ImGui)
 
 
 install(TARGETS BloodLustEngine EXPORT 

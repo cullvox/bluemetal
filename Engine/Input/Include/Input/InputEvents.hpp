@@ -300,6 +300,8 @@ enum class InputEvent {
     Pressed = SDL_PRESSED,
 };
 
+
+
 static inline Key GetSDLMouseButtonIndex(uint8_t key)
 {
     switch (key)
@@ -311,6 +313,34 @@ static inline Key GetSDLMouseButtonIndex(uint8_t key)
         case SDL_BUTTON_X2: return Key::MouseButtonSideBack;
         default:
             return Key::KeyUnknown;
+    }
+}
+
+static inline bool IsKeyFromWindow(Key key)
+{
+    switch (key)
+    {
+    case Key::WindowResize:
+    case Key::WindowMinimize:
+    case Key::WindowMaximize:
+    case Key::WindowClose:
+    case Key::WindowMove:
+        return true;
+    default:
+        return false;
+    }
+}
+
+static inline Key GetWindowKeyFromSDL(uint8_t windowEvent)
+{
+    switch (windowEvent)
+    {
+    case SDL_WINDOWEVENT_MOVED: return Key::WindowMove;
+    case SDL_WINDOWEVENT_RESIZED: return Key::WindowResize;
+    case SDL_WINDOWEVENT_MINIMIZED: return Key::WindowMinimize;
+    case SDL_WINDOWEVENT_MAXIMIZED: return Key::WindowMaximize;
+    case SDL_WINDOWEVENT_CLOSE: return Key::WindowClose;
+    default: return Key::KeyUnknown;
     }
 }
 

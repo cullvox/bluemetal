@@ -1,39 +1,113 @@
+#include "Core/Log.hpp"
+#include "Core/Macros.hpp"
 #include "Render/Shader.hpp"
-#include "spirv_reflect.h"
 
-namespace bl {
+#include <fstream>
 
-Shader::Shader(RenderDevice& renderDevice, const std::vector<uint32_t>& code)
-    : m_pRenderDevice(&renderDevice)
+namespace bl 
 {
 
-    // Reflect the shader for its data.
-    if (spvReflectCreateShaderModule(code.size(), code.data(), &m_reflectionModule) != SPV_REFLECT_RESULT_SUCCESS)
-    {
-        throw std::runtime_error("Could not reflect a SPIR-V shader module!");
-    }
+Shader::Shader() noexcept
+    : m_pRenderDevice(nullptr)
+{
+}
 
-    // Create the shader module
+Shader::Shader(RenderDevice& renderDevice, const std::vector<std::filesystem::path> paths) noexcept
+    : Shader()
+{
+    m_pRenderDevice = &renderDevice;
+
+    BL_CHECK_NR(m_pRenderDevice->good(), "Invalid RenderDevice passed!");
+
+    
+
     const VkShaderModuleCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .codeSize = (uint32_t)code.size(),
-        .pCode = code.data()
     };
 
-    if (vkCreateShaderModule(m_pRenderDevice->getDevice(), &createInfo, nullptr, &m_shaderModule) != VK_SUCCESS)
-    {
-        spvReflectDestroyShaderModule(&m_reflectionModule);
-        throw std::runtime_error("Could not create a vulkan shader module!");
-    }
+    // Reflect the shader for its data.
+
+    // Get the reflection descriptor sets data.
+
+
+    return;
+
+failureCleanup:
+    collapse();
 }
 
-Shader::~Shader()
+Shader::~Shader() noexcept
 {
-    spvReflectDestroyShaderModule(&m_reflectionModule);
-    vkDestroyShaderModule(m_pRenderDevice->getDevice(), m_shaderModule, nullptr);
+    collapse();
 }
 
+Shader& Shader::operator=(Shader&& rhs) noexcept
+{
+    this->collapse();
+
+    m_pRenderDevice = rhs.m_pRenderDevice;
+
+    rhs.collapse();
+    return *this;
+}
+
+bool Shader::good() const noexcept
+{
+    return m_pRenderDevice != nullptr;
+}
+
+
+void Shader::collapse() noexcept
+{
+   
+}
+
+bool Shader::generateReflectShaderModules() noexcept
+{
+    
+    // Load the shader files into a buffer and parse each of them.
+    SpvReflectShaderModule shaderModule{};
+
+    for (const auto& path : m_shaderPaths)
+    {
+        std::ifstream infile{ path };
+        BL_CHECK_GOTO(
+            infile, 
+            "Could not open a shader file!", 
+            failureCleanup)
+
+        std::string contents{ std::istreambuf_iterator<char>{infile}, std::istreambuf_iterator<char>{} };
+        
+        BL_CHECK_GOTO(
+            spvReflectCreateShaderModule(
+                contents.size(),
+                reinterpret_cast<uint32_t*>(contents.data()),
+                &shaderModule) == SPV_REFLECT_RESULT_SUCCESS,
+            "Could not reflect a shader module!",
+            failureCleanup)
+
+        m_reflectShaderModules.emplace_back(shaderModule);
+    }
+
+    return true;
+
+failureCleanup:
+    m_reflectShaderModules.clear();
+    return false;
+}
+
+void Shader::generateDescriptorBindings() noexcept
+{
+
+
+
+}
+
+void Shader::generateShaderStages() noexcept
+{
+
+}
 
 } // namespace bl

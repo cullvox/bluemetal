@@ -145,27 +145,18 @@ void CConfig::ParseInto()
     Logger::Debug("Parsed config: {}\n", m_path);
 }
 
-std::vector<std::string> DetermineGroups(const std::string& key)
+void DetermineGroups(const std::string& key, std::vector<std::string>& groups)
 {
-    std::vector<std::string> groups;
-    auto startDot = key.begin();
+    size_t dot = 0, previous = 0;
 
-    for (auto it = key.begin(); it < key.end(); it++)
+    groups.clear();
+
+    do
     {
-        switch (*it)
-        {
-            case '.':
-                groups.push_back(std::string{startDot, it});
-                startDot = it;
-                break;
-            case '\0':
-                break;
-            default:
-                continue;
-        }
-    }
-
-    return groups;
+        dot = key.find('.', previous);        
+        const size_t count = dot - previous;
+        groups.push_back(key.substr(previous, count));
+    } while (dot != key.size()-1);
 }
 
 void CConfig::Save()
@@ -181,19 +172,21 @@ void CConfig::Save()
     std::sort(keys.begin(), keys.end());
 
     
-    std::vector<std::string> groups;
-
-
-    for (auto it : keys)
+    std::vector<std::string> previousGroups{};
+    for (auto key : keys)
     {
 
         /* If the groups are the same, we don't need to apply a different grouping structure. */
-        std::vector<std::string> currentGroups = DetermineGroups(it);
-        if (currentGroups != groups)
-        
+        std::vector<std::string> currentGroups{}; 
+        DetermineGroups(key, currentGroups);
+
+        if (currentGroups != previousGroups)
+        {
+
+        }
 
         /* Find the last '.' and determine if the groups are the same. */
-        spdlog::log(spdlog::level::info, "{}", it);
+        Logger::Log("{}", key);
     }
 
 }
