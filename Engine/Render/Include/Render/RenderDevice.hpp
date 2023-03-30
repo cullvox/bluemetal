@@ -286,6 +286,13 @@ public:
     */
     [[nodiscard]] bool good() const noexcept;
 
+    /** \brief Waits for any operations on the device to be finished before continuing.
+    * 
+    * This function is useful for destroying objects when the renderer is running and you can stop it.
+    * 
+    */
+    void waitForDevice() const noexcept;
+
 private:
 
     /** \brief Gets the vaidation layers.

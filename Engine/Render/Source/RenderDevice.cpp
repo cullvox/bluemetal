@@ -222,6 +222,11 @@ bool RenderDevice::good() const noexcept
         && m_allocator != VK_NULL_HANDLE;
 }
 
+void RenderDevice::waitForDevice() const noexcept
+{
+    vkDeviceWaitIdle(m_device);
+}
+
 bool RenderDevice::getValidationLayers(std::vector<const char*>& layers) const noexcept
 {
     static const std::vector<const char*> requiredLayers = {

@@ -9,6 +9,7 @@ namespace bl
 Engine::Engine(const std::string& applicationName) noexcept
     : m_window()
     , m_close(false)
+    , m_inputSystem()
 {
     SDL_SetMainReady();
 
@@ -48,7 +49,6 @@ Engine::Engine(const std::string& applicationName) noexcept
         return;
     }
 
-    m_inputSystem = InputSystem{};
     m_inputSystem.registerAxis("Walk", { {Key::KeyW, 1.0f}, {Key::KeyS, -1.0f} });
     m_inputSystem.registerAction("Exit", { Key::WindowClose });
     m_inputSystem.registerAction("Resize", { Key::WindowResize });

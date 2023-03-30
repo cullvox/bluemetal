@@ -70,22 +70,22 @@ private:
     // TODO: Create a swap renderer class of some kind for the swapped obejects per frame.
     // This will probably have to include synchronized objects.
     
-    RenderDevice* m_pRenderDevice;
-    Swapchain* m_pSwapchain;
-    VkFormat m_depthFormat;
-    Image m_depthImage;
-    VkRenderPass m_pass;
-    uint32_t m_currentFrame;
-    uint32_t m_previousFrame;
-    uint32_t m_imageIndex;
-    bool m_framebufferResized;
-    bool m_deadFrame;
-    std::vector<VkCommandBuffer> m_swapCommandBuffers;
-    std::vector<VkImageView> m_swapImageViews;
-    std::vector<VkFramebuffer> m_swapFramebuffers;
-    std::vector<VkSemaphore> m_imageAvailableSemaphores;
-    std::vector<VkSemaphore> m_renderFinishedSemaphores;
-    std::vector<VkFence> m_inFlightFences;
+    RenderDevice* _pRenderDevice;
+    Swapchain* _pSwapchain;
+    VkFormat _depthFormat;
+    Image _depthImage;
+    VkRenderPass _pass;
+    uint32_t _currentFrame;
+    uint32_t _previousFrame;
+    uint32_t _imageIndex;
+    bool _framebufferResized;
+    bool _deadFrame;
+    std::vector<VkCommandBuffer> _swapCommandBuffers;
+    std::vector<VkImageView> _swapImageViews;
+    std::vector<VkFramebuffer> _swapFramebuffers;
+    std::vector<VkSemaphore> _imageAvailableSemaphores;
+    std::vector<VkSemaphore> _renderFinishedSemaphores;
+    std::vector<VkFence> _inFlightFences;
     
 };
 

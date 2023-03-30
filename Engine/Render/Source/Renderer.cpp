@@ -8,31 +8,31 @@ namespace bl
 {
 
 Renderer::Renderer() noexcept
-    : m_pRenderDevice(nullptr)
-    , m_pSwapchain(nullptr)
-    , m_pass(VK_NULL_HANDLE)
-    , m_currentFrame(0)
-    , m_previousFrame(0)
-    , m_imageIndex(0)
-    , m_framebufferResized(false)
-    , m_deadFrame(false)
-    , m_swapCommandBuffers({})
-    , m_swapImageViews({})
-    , m_swapFramebuffers({})
-    , m_imageAvailableSemaphores({})
-    , m_renderFinishedSemaphores({})
-    , m_inFlightFences({})
+    : _pRenderDevice(nullptr)
+    , _pSwapchain(nullptr)
+    , _pass(VK_NULL_HANDLE)
+    , _currentFrame(0)
+    , _previousFrame(0)
+    , _imageIndex(0)
+    , _framebufferResized(false)
+    , _deadFrame(false)
+    , _swapCommandBuffers({})
+    , _swapImageViews({})
+    , _swapFramebuffers({})
+    , _imageAvailableSemaphores({})
+    , _renderFinishedSemaphores({})
+    , _inFlightFences({})
 {
 }
 
 Renderer::Renderer(RenderDevice& renderDevice, Swapchain& swapchain) noexcept
     : Renderer()
 {
-    m_pRenderDevice = &renderDevice;
-    m_pSwapchain = &swapchain;
+    _pRenderDevice = &renderDevice;
+    _pSwapchain = &swapchain;
 
-    if (not m_pRenderDevice->good() ||
-        not m_pSwapchain->good())
+    if (not _pRenderDevice->good() ||
+        not _pSwapchain->good())
     {
         Logger::Error("Cannot construct the renderer parameter was invalid!");
         return;
@@ -52,75 +52,75 @@ Renderer& Renderer::operator=(Renderer&& rhs) noexcept
 {
     collapse();
 
-    m_pRenderDevice = std::move(rhs.m_pRenderDevice);
-    m_pSwapchain = std::move(rhs.m_pSwapchain);
-    m_depthFormat = rhs.m_depthFormat;
-    m_depthImage = std::move(rhs.m_depthImage);
-    m_pass = rhs.m_pass;
-    m_currentFrame = rhs.m_currentFrame;
-    m_previousFrame = rhs.m_previousFrame;
-    m_imageIndex = rhs.m_imageIndex;
-    m_framebufferResized = rhs.m_framebufferResized;
-    m_deadFrame = rhs.m_deadFrame;
-    m_swapCommandBuffers = rhs.m_swapCommandBuffers;
-    m_swapImageViews = rhs.m_swapImageViews;
-    m_swapFramebuffers = rhs.m_swapFramebuffers;
-    m_imageAvailableSemaphores = rhs.m_imageAvailableSemaphores;
-    m_renderFinishedSemaphores = rhs.m_renderFinishedSemaphores;
-    m_inFlightFences = rhs.m_inFlightFences;
+    _pRenderDevice = std::move(rhs._pRenderDevice);
+    _pSwapchain = std::move(rhs._pSwapchain);
+    _depthFormat = rhs._depthFormat;
+    _depthImage = std::move(rhs._depthImage);
+    _pass = rhs._pass;
+    _currentFrame = rhs._currentFrame;
+    _previousFrame = rhs._previousFrame;
+    _imageIndex = rhs._imageIndex;
+    _framebufferResized = rhs._framebufferResized;
+    _deadFrame = rhs._deadFrame;
+    _swapCommandBuffers = rhs._swapCommandBuffers;
+    _swapImageViews = rhs._swapImageViews;
+    _swapFramebuffers = rhs._swapFramebuffers;
+    _imageAvailableSemaphores = rhs._imageAvailableSemaphores;
+    _renderFinishedSemaphores = rhs._renderFinishedSemaphores;
+    _inFlightFences = rhs._inFlightFences;
 
-    rhs.m_pRenderDevice = nullptr;
-    rhs.m_pSwapchain = nullptr;
-    rhs.m_depthFormat = VK_FORMAT_UNDEFINED;
-    rhs.m_pass = VK_NULL_HANDLE;
-    rhs.m_currentFrame = 0;
-    rhs.m_previousFrame = 0;
-    rhs.m_imageIndex = 0;
-    rhs.m_framebufferResized = false;
-    rhs.m_deadFrame = false;
-    rhs.m_swapCommandBuffers.clear();
-    rhs.m_swapImageViews.clear();
-    rhs.m_swapFramebuffers.clear();
-    rhs.m_imageAvailableSemaphores.clear();
-    rhs.m_renderFinishedSemaphores.clear();
-    rhs.m_inFlightFences.clear();
+    rhs._pRenderDevice = nullptr;
+    rhs._pSwapchain = nullptr;
+    rhs._depthFormat = VK_FORMAT_UNDEFINED;
+    rhs._pass = VK_NULL_HANDLE;
+    rhs._currentFrame = 0;
+    rhs._previousFrame = 0;
+    rhs._imageIndex = 0;
+    rhs._framebufferResized = false;
+    rhs._deadFrame = false;
+    rhs._swapCommandBuffers.clear();
+    rhs._swapImageViews.clear();
+    rhs._swapFramebuffers.clear();
+    rhs._imageAvailableSemaphores.clear();
+    rhs._renderFinishedSemaphores.clear();
+    rhs._inFlightFences.clear();
 
     return *this;
 }
 
 void Renderer::submit(const Submission& submission) noexcept
 {
-    //vkCmdBindPipeline(m_swapCommandBuffers[m_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, submission.pipeline);
+    //vkCmdBindPipeline(_swapCommandBuffers[_currentFrame], VK_PIPELINE_BIND_POINT_GRAPHICS, submission.pipeline);
 }
 
 bool Renderer::good() const noexcept
 {
-    return (m_pRenderDevice->good() &&
-        m_depthImage.good() &&
-        m_swapCommandBuffers.size() > 0 &&
-        m_swapFramebuffers.size() > 0 &&
-        m_swapImageViews.size() > 0 &&
-        m_imageAvailableSemaphores.size() > 0 &&
-        m_renderFinishedSemaphores.size() > 0 &&
-        m_inFlightFences.size() > 0);
+    return (_pRenderDevice->good() &&
+        _depthImage.good() &&
+        _swapCommandBuffers.size() > 0 &&
+        _swapFramebuffers.size() > 0 &&
+        _swapImageViews.size() > 0 &&
+        _imageAvailableSemaphores.size() > 0 &&
+        _renderFinishedSemaphores.size() > 0 &&
+        _inFlightFences.size() > 0);
 }
 
 bool Renderer::beginFrame(VkCommandBuffer& commandBuffer) noexcept
 {
 
     // If the swapchain wasn't recreated for some reason skip the frame.
-    if (!m_pSwapchain->good())
+    if (!_pSwapchain->good())
     {
-        m_deadFrame = true;
+        _deadFrame = true;
         return true;
     }
 
-    vkWaitForFences(m_pRenderDevice->getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(_pRenderDevice->getDevice(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
     // Acquire the next image from the swapchain.
     bool requiresRecreation = false;
     BL_CHECK(
-        m_pSwapchain->acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, m_imageIndex, requiresRecreation),
+        _pSwapchain->acquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, _imageIndex, requiresRecreation),
         "Could not acquire the swapchains next image!\n")
 
     // Attempt to recreate the swapchain and if it fails we need to 
@@ -128,14 +128,14 @@ bool Renderer::beginFrame(VkCommandBuffer& commandBuffer) noexcept
     {
         recreate();
 
-        m_deadFrame = true;
-        return true;
+        _deadFrame = true;
+        return false;
     }
 
-    vkResetFences(m_pRenderDevice->getDevice(), 1, &m_inFlightFences[m_currentFrame]);
+    vkResetFences(_pRenderDevice->getDevice(), 1, &_inFlightFences[_currentFrame]);
 
     // Reset the prevous frames command buffer.
-    vkResetCommandBuffer(m_swapCommandBuffers[m_currentFrame], 0);
+    vkResetCommandBuffer(_swapCommandBuffers[_currentFrame], 0);
 
     // Begin the command buffer for this frame, submissions are open.
     const VkCommandBufferBeginInfo beginInfo{
@@ -146,7 +146,7 @@ bool Renderer::beginFrame(VkCommandBuffer& commandBuffer) noexcept
     };
 
     BL_CHECK(
-        vkBeginCommandBuffer(m_swapCommandBuffers[m_currentFrame], &beginInfo) == VK_SUCCESS,
+        vkBeginCommandBuffer(_swapCommandBuffers[_currentFrame], &beginInfo) == VK_SUCCESS,
         "Could not begin a command buffer after this frame!\n")
 
     // Setup the render pass
@@ -164,12 +164,12 @@ bool Renderer::beginFrame(VkCommandBuffer& commandBuffer) noexcept
         }
     } };
 
-    const Extent2D extent = m_pSwapchain->getExtent();
+    const Extent2D extent = _pSwapchain->getExtent();
     const VkRenderPassBeginInfo renderPassBeginInfo{
         .sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO,
         .pNext = nullptr,
-        .renderPass = m_pass,
-        .framebuffer = m_swapFramebuffers[m_imageIndex],
+        .renderPass = _pass,
+        .framebuffer = _swapFramebuffers[_imageIndex],
         .renderArea = { 
             {0, 0}, // offset
             {(uint32_t)extent.width, (uint32_t)extent.height}, //extent
@@ -178,9 +178,9 @@ bool Renderer::beginFrame(VkCommandBuffer& commandBuffer) noexcept
         .pClearValues = clearValues.data(),
     };
 
-    vkCmdBeginRenderPass(m_swapCommandBuffers[m_currentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(_swapCommandBuffers[_currentFrame], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
     
-    commandBuffer = m_swapCommandBuffers[m_currentFrame];
+    commandBuffer = _swapCommandBuffers[_currentFrame];
 
     return true;
 }
@@ -188,20 +188,20 @@ bool Renderer::beginFrame(VkCommandBuffer& commandBuffer) noexcept
 bool Renderer::endFrame() noexcept
 {
     // If this frame is considered dead don't do anything and goto next frame.
-    if (m_deadFrame)
+    if (_deadFrame)
     {
-        m_deadFrame = false;
+        _deadFrame = false;
         return true;
     }
 
     // End the previous command buffer.
-    vkCmdEndRenderPass(m_swapCommandBuffers[m_currentFrame]);
-    vkEndCommandBuffer(m_swapCommandBuffers[m_currentFrame]);
+    vkCmdEndRenderPass(_swapCommandBuffers[_currentFrame]);
+    vkEndCommandBuffer(_swapCommandBuffers[_currentFrame]);
 
     // Submit the command buffer for rendering.
-    const VkSemaphore waitSemaphores[] = {m_imageAvailableSemaphores[m_currentFrame]};
+    const VkSemaphore waitSemaphores[] = {_imageAvailableSemaphores[_currentFrame]};
     const VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-    const VkSemaphore signalSemaphores[] = {m_renderFinishedSemaphores[m_currentFrame]};
+    const VkSemaphore signalSemaphores[] = {_renderFinishedSemaphores[_currentFrame]};
     const VkSubmitInfo submitInfo{
         .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
         .pNext = nullptr,
@@ -209,19 +209,19 @@ bool Renderer::endFrame() noexcept
         .pWaitSemaphores = waitSemaphores,
         .pWaitDstStageMask = waitStages,
         .commandBufferCount = 1,
-        .pCommandBuffers = &m_swapCommandBuffers[m_currentFrame],
+        .pCommandBuffers = &_swapCommandBuffers[_currentFrame],
         .signalSemaphoreCount = 1,
         .pSignalSemaphores = signalSemaphores,
     };
 
     BL_CHECK(
-        vkQueueSubmit(m_pRenderDevice->getGraphicsQueue(), 1, &submitInfo, m_inFlightFences[m_currentFrame]) == VK_SUCCESS,
+        vkQueueSubmit(_pRenderDevice->getGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]) == VK_SUCCESS,
         "Could not submit a draw command buffer!\n")
 
     VkResult result = {};
 
     // Present the rendered image.
-    const VkSwapchainKHR swapChains[] = {m_pSwapchain->getSwapchain()};
+    const VkSwapchainKHR swapChains[] = {_pSwapchain->getSwapchain()};
     const VkPresentInfoKHR presentInfo{
         .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
         .pNext = nullptr,
@@ -229,13 +229,13 @@ bool Renderer::endFrame() noexcept
         .pWaitSemaphores = signalSemaphores,
         .swapchainCount = 1,
         .pSwapchains = swapChains,
-        .pImageIndices = &m_imageIndex,
+        .pImageIndices = &_imageIndex,
         .pResults = nullptr,
     };
 
-    result = vkQueuePresentKHR(m_pRenderDevice->getPresentQueue(), &presentInfo);
+    result = vkQueuePresentKHR(_pRenderDevice->getPresentQueue(), &presentInfo);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || m_framebufferResized)
+    if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || _framebufferResized)
     {
         // Recreate the swapchain next frame.
     }
@@ -246,21 +246,21 @@ bool Renderer::endFrame() noexcept
     }
 
     // Move the frame number to the next in sequence.
-    m_currentFrame = (m_currentFrame + 1) % DEFAULT_FRAMES_IN_FLIGHT;
+    _currentFrame = (_currentFrame + 1) % DEFAULT_FRAMES_IN_FLIGHT;
 
     return true;
 }
 
 bool Renderer::createRenderPass() noexcept
 {
-    m_depthFormat = m_pRenderDevice->findSupportedFormat(
+    _depthFormat = _pRenderDevice->findSupportedFormat(
         {VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
         VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
     const std::array<VkAttachmentDescription, 2> attachmentDescriptions = {{
         { // Color Attachment
             0, // flags
-            m_pSwapchain->getFormat(), // format
+            _pSwapchain->getFormat(), // format
             VK_SAMPLE_COUNT_1_BIT, // samples
             VK_ATTACHMENT_LOAD_OP_CLEAR, // loadOp
             VK_ATTACHMENT_STORE_OP_STORE, // storeOp
@@ -271,7 +271,7 @@ bool Renderer::createRenderPass() noexcept
         },
         { // Depth Attachment
             0, // flags
-            m_depthFormat, // format
+            _depthFormat, // format
             VK_SAMPLE_COUNT_1_BIT, // samples
             VK_ATTACHMENT_LOAD_OP_CLEAR, // loadOp
             VK_ATTACHMENT_STORE_OP_DONT_CARE, // storeOp
@@ -317,7 +317,7 @@ bool Renderer::createRenderPass() noexcept
     };
 
     BL_CHECK(
-        vkCreateRenderPass(m_pRenderDevice->getDevice(), &createInfo, nullptr, &m_pass) == VK_SUCCESS,
+        vkCreateRenderPass(_pRenderDevice->getDevice(), &createInfo, nullptr, &_pass) == VK_SUCCESS,
         "Could not create a vulkan render pass!\n")
 
     return true;
@@ -325,7 +325,7 @@ bool Renderer::createRenderPass() noexcept
 
 VkRenderPass Renderer::getRenderPass() const noexcept
 {
-    return m_pass;
+    return _pass;
 }
 
 bool Renderer::createCommandBuffers() noexcept
@@ -333,15 +333,15 @@ bool Renderer::createCommandBuffers() noexcept
     const VkCommandBufferAllocateInfo allocateInfo{
         .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
         .pNext = nullptr,
-        .commandPool = m_pRenderDevice->getCommandPool(),
+        .commandPool = _pRenderDevice->getCommandPool(),
         .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-        .commandBufferCount = m_pSwapchain->getImageCount(),
+        .commandBufferCount = _pSwapchain->getImageCount(),
     };
 
-    m_swapCommandBuffers.resize(m_pSwapchain->getImageCount());
+    _swapCommandBuffers.resize(_pSwapchain->getImageCount());
 
     BL_CHECK(
-        vkAllocateCommandBuffers(m_pRenderDevice->getDevice(), &allocateInfo, m_swapCommandBuffers.data()) == VK_SUCCESS,
+        vkAllocateCommandBuffers(_pRenderDevice->getDevice(), &allocateInfo, _swapCommandBuffers.data()) == VK_SUCCESS,
         "Could not allocate vulkan swapchain command buffers!\n")
 
     return true;
@@ -349,23 +349,23 @@ bool Renderer::createCommandBuffers() noexcept
 
 bool Renderer::createFrameBuffers() noexcept
 {
-    Extent2D extent = m_pSwapchain->getExtent();
+    Extent2D extent = _pSwapchain->getExtent();
 
     // Create the depth image
-    m_depthImage = Image{
-        *m_pRenderDevice, 
+    _depthImage = Image{
+        *_pRenderDevice, 
         VK_IMAGE_TYPE_2D, 
-        m_depthFormat, 
+        _depthFormat, 
         extent, 
         1, 
         VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
         VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT};
 
     /* The previous objects must be destroyed before this point. */
-    m_swapImageViews.clear();
-    m_swapFramebuffers.clear();
+    _swapImageViews.clear();
+    _swapFramebuffers.clear();
 
-    auto& images = m_pSwapchain->getImages();
+    auto& images = _pSwapchain->getImages();
 
     for (VkImage image : images)
     {
@@ -375,7 +375,7 @@ bool Renderer::createFrameBuffers() noexcept
             .flags = 0,
             .image = image,
             .viewType = VK_IMAGE_VIEW_TYPE_2D,
-            .format = m_pSwapchain->getFormat(),
+            .format = _pSwapchain->getFormat(),
             .components = {
                 .r = VK_COMPONENT_SWIZZLE_IDENTITY,
                 .g = VK_COMPONENT_SWIZZLE_IDENTITY,
@@ -393,20 +393,20 @@ bool Renderer::createFrameBuffers() noexcept
 
         VkImageView imageView = {};
         BL_CHECK_GOTO(
-            vkCreateImageView(m_pRenderDevice->getDevice(), &imageViewCreateInfo, nullptr, &imageView) == VK_SUCCESS,
+            vkCreateImageView(_pRenderDevice->getDevice(), &imageViewCreateInfo, nullptr, &imageView) == VK_SUCCESS,
             "Could not create a vulkan image view for the renderer!\n",
             failureCleanup)
 
         const std::array<VkImageView, 2> attachments = {
             imageView,
-            m_depthImage.getImageView()
+            _depthImage.getImageView()
         };
 
         const VkFramebufferCreateInfo framebufferCreateInfo{
             .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
-            .renderPass = m_pass,
+            .renderPass = _pass,
             .attachmentCount = (uint32_t)attachments.size(),
             .pAttachments = attachments.data(),
             .width = (uint32_t)extent.width,
@@ -416,22 +416,22 @@ bool Renderer::createFrameBuffers() noexcept
 
         VkFramebuffer framebuffer = {};
         BL_CHECK_GOTO(
-            vkCreateFramebuffer(m_pRenderDevice->getDevice(), &framebufferCreateInfo, nullptr, &framebuffer) == VK_SUCCESS,
+            vkCreateFramebuffer(_pRenderDevice->getDevice(), &framebufferCreateInfo, nullptr, &framebuffer) == VK_SUCCESS,
             "Could not create a vulkan framebuffer for the renderer!\n",
             failureCleanup)
 
-        m_swapImageViews.push_back(imageView);
-        m_swapFramebuffers.push_back(framebuffer);
+        _swapImageViews.push_back(imageView);
+        _swapFramebuffers.push_back(framebuffer);
     }
 
     return true;
 
 failureCleanup:
-    for (VkImageView view : m_swapImageViews)
-        vkDestroyImageView(m_pRenderDevice->getDevice(), view, nullptr);
+    for (VkImageView view : _swapImageViews)
+        vkDestroyImageView(_pRenderDevice->getDevice(), view, nullptr);
     
-    for (VkFramebuffer fb : m_swapFramebuffers)
-        vkDestroyFramebuffer(m_pRenderDevice->getDevice(), fb, nullptr);
+    for (VkFramebuffer fb : _swapFramebuffers)
+        vkDestroyFramebuffer(_pRenderDevice->getDevice(), fb, nullptr);
 
     return false;
 }
@@ -450,16 +450,16 @@ bool Renderer::createSyncObjects() noexcept
         .flags = VK_FENCE_CREATE_SIGNALED_BIT
     };
 
-    m_imageAvailableSemaphores.resize(DEFAULT_FRAMES_IN_FLIGHT);
-    m_renderFinishedSemaphores.resize(DEFAULT_FRAMES_IN_FLIGHT);
-    m_inFlightFences.resize(DEFAULT_FRAMES_IN_FLIGHT);
+    _imageAvailableSemaphores.resize(DEFAULT_FRAMES_IN_FLIGHT);
+    _renderFinishedSemaphores.resize(DEFAULT_FRAMES_IN_FLIGHT);
+    _inFlightFences.resize(DEFAULT_FRAMES_IN_FLIGHT);
 
     for (uint32_t i = 0; i < DEFAULT_FRAMES_IN_FLIGHT; i++)
     {
         BL_CHECK_GOTO(
-                vkCreateSemaphore(m_pRenderDevice->getDevice(), &semaphoreCreateInfo, nullptr, &m_imageAvailableSemaphores[i]) == VK_SUCCESS &&
-                vkCreateSemaphore(m_pRenderDevice->getDevice(), &semaphoreCreateInfo, nullptr, &m_renderFinishedSemaphores[i]) == VK_SUCCESS &&
-                vkCreateFence(m_pRenderDevice->getDevice(), &fenceCreateInfo, nullptr, &m_inFlightFences[i]) == VK_SUCCESS,
+                vkCreateSemaphore(_pRenderDevice->getDevice(), &semaphoreCreateInfo, nullptr, &_imageAvailableSemaphores[i]) == VK_SUCCESS &&
+                vkCreateSemaphore(_pRenderDevice->getDevice(), &semaphoreCreateInfo, nullptr, &_renderFinishedSemaphores[i]) == VK_SUCCESS &&
+                vkCreateFence(_pRenderDevice->getDevice(), &fenceCreateInfo, nullptr, &_inFlightFences[i]) == VK_SUCCESS,
             "Could not create a vulkan frame semaphore!\n",
             failureCleanup)
     }
@@ -469,9 +469,9 @@ bool Renderer::createSyncObjects() noexcept
 failureCleanup:
     for (uint32_t i = 0; i < DEFAULT_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroySemaphore(m_pRenderDevice->getDevice(), m_imageAvailableSemaphores[i], nullptr);
-        vkDestroySemaphore(m_pRenderDevice->getDevice(), m_renderFinishedSemaphores[i], nullptr);
-        vkDestroyFence(m_pRenderDevice->getDevice(), m_inFlightFences[i], nullptr);
+        vkDestroySemaphore(_pRenderDevice->getDevice(), _imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(_pRenderDevice->getDevice(), _renderFinishedSemaphores[i], nullptr);
+        vkDestroyFence(_pRenderDevice->getDevice(), _inFlightFences[i], nullptr);
     }
 
     return false;
@@ -479,7 +479,7 @@ failureCleanup:
 
 bool Renderer::recreate() noexcept
 {   
-    BL_CHECK_NL(m_pSwapchain->recreate())
+    BL_CHECK_NL(_pSwapchain->recreate())
 
     destroySwappable();
 
@@ -490,25 +490,25 @@ bool Renderer::recreate() noexcept
 
 void Renderer::destroySwappable() noexcept
 {
-    if (!m_pRenderDevice) return;
+    if (!_pRenderDevice) return;
 
     // The device must be idle before we destroy anything and command buffers must stop.
-    vkDeviceWaitIdle(m_pRenderDevice->getDevice());
+    vkDeviceWaitIdle(_pRenderDevice->getDevice());
 
-    if (m_swapCommandBuffers.size() > 0)
-        vkFreeCommandBuffers(m_pRenderDevice->getDevice(), m_pRenderDevice->getCommandPool(), m_pSwapchain->getImageCount(), m_swapCommandBuffers.data());
+    if (_swapCommandBuffers.size() > 0)
+        vkFreeCommandBuffers(_pRenderDevice->getDevice(), _pRenderDevice->getCommandPool(), _pSwapchain->getImageCount(), _swapCommandBuffers.data());
 
-    for (uint32_t i = 0; i < m_swapFramebuffers.size(); i++)
+    for (uint32_t i = 0; i < _swapFramebuffers.size(); i++)
     {
-        vkDestroyFramebuffer(m_pRenderDevice->getDevice(), m_swapFramebuffers[i], nullptr);
-        vkDestroyImageView(m_pRenderDevice->getDevice(), m_swapImageViews[i], nullptr);
+        vkDestroyFramebuffer(_pRenderDevice->getDevice(), _swapFramebuffers[i], nullptr);
+        vkDestroyImageView(_pRenderDevice->getDevice(), _swapImageViews[i], nullptr);
     }
 
-    for (uint32_t i = 0; i < m_imageAvailableSemaphores.size(); i++)
+    for (uint32_t i = 0; i < _imageAvailableSemaphores.size(); i++)
     {
-        vkDestroySemaphore(m_pRenderDevice->getDevice(), m_imageAvailableSemaphores[i], nullptr);
-        vkDestroySemaphore(m_pRenderDevice->getDevice(), m_renderFinishedSemaphores[i], nullptr);
-        vkDestroyFence(m_pRenderDevice->getDevice(), m_inFlightFences[i], nullptr);
+        vkDestroySemaphore(_pRenderDevice->getDevice(), _imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(_pRenderDevice->getDevice(), _renderFinishedSemaphores[i], nullptr);
+        vkDestroyFence(_pRenderDevice->getDevice(), _inFlightFences[i], nullptr);
     }
 }
 
@@ -516,24 +516,24 @@ void Renderer::collapse() noexcept
 {
     destroySwappable();
 
-    if (m_pass) 
-        vkDestroyRenderPass(m_pRenderDevice->getDevice(), m_pass, nullptr);
+    if (_pass) 
+        vkDestroyRenderPass(_pRenderDevice->getDevice(), _pass, nullptr);
 
-    m_pRenderDevice = nullptr;
-    m_pSwapchain = nullptr;
-    m_depthFormat = VK_FORMAT_UNDEFINED;
-    m_pass = VK_NULL_HANDLE;
-    m_currentFrame = 0;
-    m_previousFrame = 0;
-    m_imageIndex = 0;
-    m_framebufferResized = false;
-    m_deadFrame = false;
-    m_swapCommandBuffers.clear();
-    m_swapImageViews.clear();
-    m_swapFramebuffers.clear();
-    m_imageAvailableSemaphores.clear();
-    m_renderFinishedSemaphores.clear();
-    m_inFlightFences.clear();
+    _pRenderDevice = nullptr;
+    _pSwapchain = nullptr;
+    _depthFormat = VK_FORMAT_UNDEFINED;
+    _pass = VK_NULL_HANDLE;
+    _currentFrame = 0;
+    _previousFrame = 0;
+    _imageIndex = 0;
+    _framebufferResized = false;
+    _deadFrame = false;
+    _swapCommandBuffers.clear();
+    _swapImageViews.clear();
+    _swapFramebuffers.clear();
+    _imageAvailableSemaphores.clear();
+    _renderFinishedSemaphores.clear();
+    _inFlightFences.clear();
 }
 
 } // namespace bl

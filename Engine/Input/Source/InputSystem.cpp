@@ -9,8 +9,6 @@ namespace bl
 InputSystem::InputSystem() noexcept
 {
     _windowCbHandle = addHookCallback<InputSystem>(this, &InputSystem::windowEventHook);
-
-    _hookCallbacks(nullptr);
 }
 
 InputSystem::~InputSystem() noexcept
@@ -22,6 +20,9 @@ InputSystem::~InputSystem() noexcept
 InputSystem& InputSystem::operator=(InputSystem&& rhs) noexcept
 {
     collapse();
+
+    // Specialty: we must remove the callbacks because they point to this, and that is getting deleted in the other object so we need to recreate them here.
+    rhs._hookCallbacks.remove(rhs._windowCbHandle);
 
     _windowCbHandle = std::move(rhs._windowCbHandle);
     _hookCallbacks = std::move(rhs._hookCallbacks);

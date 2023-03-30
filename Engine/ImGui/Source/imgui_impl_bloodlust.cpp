@@ -76,6 +76,7 @@ bool ImGui_ImplBloodLust_Init(bl::Window& window, bl::InputSystem& inputSystem, 
 
 void ImGui_ImplBloodLust_Shutdown()
 {
+	vkDeviceWaitIdle(device);
 	vkDestroyDescriptorPool(device, imguiPool, nullptr);
 	ImGui_ImplVulkan_Shutdown();
 }
