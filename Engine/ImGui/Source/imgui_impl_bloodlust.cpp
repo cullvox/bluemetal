@@ -66,11 +66,12 @@ bool ImGui_ImplBloodLust_Init(bl::Window& window, bl::InputSystem& inputSystem, 
 
 	// Clear the font texture data from host memory
 	ImGui_ImplVulkan_DestroyFontUploadObjects();
-	
-	inputSystem.getHookDelegate() += 
-		([&](const SDL_Event* pEvent) {
-			ImGui_ImplSDL2_ProcessEvent(pEvent);
-		});
+
+
+	inputSystem.addHookCallback([&](const SDL_Event* pEvent) {
+				ImGui_ImplSDL2_ProcessEvent(pEvent);
+			});
+
 }
 
 void ImGui_ImplBloodLust_Shutdown()

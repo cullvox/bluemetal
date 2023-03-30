@@ -1,6 +1,5 @@
 list(APPEND InputSources
-    "Source/InputSystem.cpp"
-    "Source/InputController.cpp")
+    "Source/InputSystem.cpp")
 
 add_library(BloodLustInput SHARED ${InputSources})
 add_library(bl::Input ALIAS BloodLustInput)

@@ -2,7 +2,7 @@
 
 #include "Core/Export.h"
 #include "Core/Precompiled.hpp"
-#include "Core/Delegate.hpp"
+#include "Core/CallbackList.hpp"
 #include "Input/InputEvents.hpp"
 
 #include <SDL2/SDL.h>
@@ -17,24 +17,51 @@ namespace bl
 */
 class BLOODLUST_API InputSystem
 {
+    using _HookCallbackList = CallbackList<void(const SDL_Event*)>;
+    using _ActionCallbackList = CallbackList<void()>;
+    using _AxisCallbackList = CallbackList<void(float)>;
+    using _HookHandle = _HookCallbackList::Handle;
+    using _ActionHandle = _ActionCallbackList::Handle;
+    using _AxisHandle = _AxisCallbackList::Handle;
+    using _KeyWithScale = std::pair<Key, float>;
+
+    struct _ActionBinding
+    {
+        std::vector<Key> triggerKeys;
+        _ActionCallbackList callbacks;
+    };
+
+    struct _AxisBinding
+    {
+        std::vector<_KeyWithScale> triggerAxes;
+        _AxisCallbackList callbacks;
+    };
+
+    _HookHandle _windowCbHandle;
+    _HookCallbackList _hookCallbacks;
+    std::unordered_map<std::string, _ActionBinding> _actions;
+    std::unordered_map<std::string, _AxisBinding> _axes;
 
 public:
+
+    /** \brief An axis key with a directionality scale. */
+    using KeyWithScale = _KeyWithScale;
  
-    /** \brief Delegate of the action function. */
-    using ActionDelegate = Delegate<void(void)>;
+    /** \brief Hook event callback, unfiltered SDL events from the poll. */
+    using HookCallback = _HookCallbackList::Callback;
 
-    Delegate()
+    /** \brief A callback function type for action events. */
+    using ActionCallback = _ActionCallbackList::Callback;
 
-    /** \brief Delegate of the axis function. */
-    using AxisDelegate = Delegate<void(float)>;
+    /** \brief A callback function type for axes events. */ 
+    using AxisCallback = _AxisCallbackList::Callback;
 
-    /** @brief Hook delegate get all SDL Events directly from the poll. */
-    using HookDelegate = Delegate<void(const SDL_Event*)>;
+    using HookHandle = _HookHandle;
+    using ActionHandle = _ActionHandle;
+    using AxisHandle = _AxisHandle;
 
-    /** @brief An axis is just a key with a directionality scale between 1 to 0. */
-    using Axis = std::pair<Key, float>; // (key, scale)
 
-    /** @brief Default constructor
+    /** \brief Default constructor
     * 
     * Creates an empty input system ready to poll input events.
     * 
@@ -43,7 +70,7 @@ public:
     */
     InputSystem() noexcept;
     
-    /** @brief Default destructor
+    /** \brief Default destructor
     * 
     * Collapses the input system.
     * 
@@ -51,6 +78,7 @@ public:
     * 
     */
     ~InputSystem() noexcept;
+
 
     /** \brief Move Operator
     *
@@ -104,8 +132,8 @@ public:
     * \sa delegateAxis()
     * 
     */
-    bool registerAxis(const std::string& name, const std::vector<Axis>& onAxes) noexcept;
-    
+    bool registerAxis(const std::string& name, const std::vector<KeyWithScale>& onKeys) noexcept;
+
     /** \brief Retrieves the hook delegate to add SDL2 hooked events
     *
     * Some parts of the engine require almost all of SDL2s specific events so this hook was
@@ -122,7 +150,16 @@ public:
     * \sa getAxisDelegate()
     * 
     */
-    HookDelegate& getHookDelegate(void) noexcept;
+    auto addHookCallback(const HookCallback& callback) noexcept -> HookHandle;
+
+    template<typename TObject>
+    auto addHookCallback(TObject* pObject, void (TObject::* pCallback)(const SDL_Event*)) -> HookHandle
+    {
+        return addHookCallback(HookCallback(std::bind_front(pCallback, pObject)));
+    }
+
+    auto removeHookCallback(HookHandle handle) noexcept -> void;
+
 
     /** \brief Gets a delegate so users can add callbacks to the action.
     *
@@ -138,8 +175,16 @@ public:
     * \return The delegate created with the binding for the user to add callbacks to.
     * 
     */
-    ActionDelegate* getActionDelegate(const std::string& name) noexcept;
+    auto addActionCallback(const std::string& name, const ActionCallback& callback) noexcept -> std::optional<ActionHandle>;
     
+    template<typename TObject>
+    ActionHandle addActionCallback(const std::string& name, TObject* pObject, void (TObject::* pCallback)())
+    {
+        return addActionCallback(name, ActionCallback(std::bind_front(pCallback, pObject)));
+    }
+
+    auto removeActionCallback(ActionHandle handle) noexcept -> void;
+
     /** \brief Delegates an axis function to a specific binding.
     * 
     * Provides a delegate that callbacks can be added to when this specific axis is triggered.
@@ -155,7 +200,15 @@ public:
     * \sa registerAxis()
     * 
     */
-    AxisDelegate* getAxisDelegate(const std::string& name) noexcept;
+    auto addAxisCallback(const std::string& name, const AxisCallback& callback) noexcept -> std::optional<AxisHandle>;
+
+    template<typename TObject>
+    auto addAxisCallback(const std::string& name, TObject* pObject, void (TObject::* pCallback)(float)) -> AxisHandle
+    {
+        return addAxisCallback(name, AxisCallback(std::bind_front(pCallback, pObject)));
+    }
+
+    auto removeAxisCallback(AxisHandle handle) noexcept -> void;
 
     /** \brief Polls the event queue for all events and runs callbacks.
     *
@@ -182,23 +235,9 @@ private:
     void processKeyboardPump() const noexcept;
 
     /** \brief An event hook for window specific events and running their callbacks. */
-    void windowEventHook(const SDL_Event*) const noexcept;
+    void windowEventHook(const SDL_Event*);
     
-    struct ActionBinding
-    {
-        std::vector<Key> onKeys;
-        ActionDelegate delegate;
-    };
 
-    struct AxisBinding
-    {
-        std::vector<Axis> onAxes;
-        AxisDelegate delegate;
-    };
-
-    HookDelegate m_hookDelegate;
-    std::unordered_map<std::string, ActionBinding> m_actions;
-    std::unordered_map<std::string, AxisBinding> m_axes;
 };
 
 } // namespace bl

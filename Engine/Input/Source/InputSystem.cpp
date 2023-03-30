@@ -8,21 +8,25 @@ namespace bl
 
 InputSystem::InputSystem() noexcept
 {
-    m_hookDelegate += HookDelegate(*this, &InputSystem::windowEventHook);   
+    _windowCbHandle = addHookCallback<InputSystem>(this, &InputSystem::windowEventHook);
+
+    _hookCallbacks(nullptr);
 }
 
 InputSystem::~InputSystem() noexcept
 {
-    m_hookDelegate.remove(m_hookDelegate, HookDelegate(*this, &InputSystem::windowEventHook));
+    if (_hookCallbacks.size() > 0)
+        removeHookCallback(_windowCbHandle);
 }
 
 InputSystem& InputSystem::operator=(InputSystem&& rhs) noexcept
 {
     collapse();
 
-    m_hookDelegate = rhs.m_hookDelegate;
-    m_actions = rhs.m_actions;
-    m_axes = rhs.m_axes;
+    _windowCbHandle = std::move(rhs._windowCbHandle);
+    _hookCallbacks = std::move(rhs._hookCallbacks);
+    _actions = std::move(rhs._actions);
+    _axes = std::move(rhs._axes);
 
     rhs.collapse();
 
@@ -31,33 +35,38 @@ InputSystem& InputSystem::operator=(InputSystem&& rhs) noexcept
 
 bool InputSystem::registerAction(const std::string& name, const std::vector<Key>& onKeys) noexcept
 {
-    m_actions.insert({ std::string{name}, ActionBinding{ onKeys, {} } });
+    _actions.insert({ name, _ActionBinding{ onKeys, {} } });
     return true;
 }
 
-bool InputSystem::registerAxis(const std::string& name, const std::vector<Axis>& onAxes) noexcept
+bool InputSystem::registerAxis(const std::string& name, const std::vector<KeyWithScale>& onAxes) noexcept
 {
-    m_axes.insert({ std::string{name}, AxisBinding{ onAxes, {} } });
+    _axes.insert({ name, _AxisBinding{ onAxes, {} } });
     return true;
 }
 
-InputSystem::HookDelegate& InputSystem::getHookDelegate(void) noexcept
+auto InputSystem::addHookCallback(const InputSystem::HookCallback& callback) noexcept -> InputSystem::HookHandle
 {
-    return m_hookDelegate;
+    return _hookCallbacks.append(callback);
 }
 
-InputSystem::ActionDelegate* InputSystem::getActionDelegate(const std::string& name) noexcept
+auto InputSystem::removeHookCallback(InputSystem::HookHandle handle) noexcept -> void
 {
-    const auto it = m_actions.find(name);
-
-    return it == m_actions.end() ? nullptr : &it->second.delegate;
+    _hookCallbacks.remove(handle);
 }
 
-InputSystem::AxisDelegate* InputSystem::getAxisDelegate(const std::string& name) noexcept
+auto InputSystem::addActionCallback(const std::string& name, const InputSystem::ActionCallback& callback) noexcept -> std::optional<InputSystem::ActionHandle>
 {
-    const auto it = m_axes.find(name);
+    const auto it = _actions.find(name);
 
-    return it == m_axes.end() ? nullptr : &it->second.delegate;
+    return it == _actions.end() ? std::nullopt : std::make_optional(it->second.callbacks.append(callback));
+}
+
+auto InputSystem::addAxisCallback(const std::string& name, const InputSystem::AxisCallback& callback) noexcept -> std::optional<InputSystem::AxisHandle>
+{
+    const auto it = _axes.find(name);
+
+    return it == _axes.end() ? std::nullopt : std::make_optional(it->second.callbacks.append(callback));
 }
 
 void InputSystem::processKeyboardPump() const noexcept
@@ -66,19 +75,20 @@ void InputSystem::processKeyboardPump() const noexcept
     const uint8_t* pKeystates = SDL_GetKeyboardState(&keystatesCount);
 
     // Run delegates for actions and axes if they have keyboard keys
-    for (const auto& action : m_actions)
-        for (auto key : action.second.onKeys)
+    for (const auto& action : _actions)
+        for (auto key : action.second.triggerKeys)
             if (IsKeyFromKeyboard(key) && pKeystates[SDL_GetScancodeFromKey((SDL_Keycode)key)] == SDL_PRESSED)
-                action.second.delegate();
+                action.second.callbacks();
 
-    for (const auto& axis : m_axes)
-        for (auto key : axis.second.onAxes)
+    for (const auto& axis : _axes)
+        for (auto key : axis.second.triggerAxes)
             if (IsKeyFromKeyboard(key.first) && pKeystates[SDL_GetScancodeFromKey((SDL_Keycode)key.first)] == SDL_PRESSED)
-                axis.second.delegate(key.second);
+                axis.second.callbacks(key.second);
 }
 
-void InputSystem::windowEventHook(const SDL_Event* pEvent) const noexcept
+void InputSystem::windowEventHook(const SDL_Event* pEvent)
 {
+    if (not pEvent) return;
     if (pEvent->type != SDL_WINDOWEVENT) return;
 
     const auto pWindowEvent = &pEvent->window;
@@ -87,10 +97,10 @@ void InputSystem::windowEventHook(const SDL_Event* pEvent) const noexcept
     if (windowKey == Key::KeyUnknown) return;
 
     // Run the action delegates, window keys do not support axis events.
-    for (const auto& action : m_actions)
-        for (auto key : action.second.onKeys)
+    for (const auto& action : _actions)
+        for (auto key : action.second.triggerKeys)
             if (key == windowKey)
-                action.second.delegate();
+                action.second.callbacks();
 
 }
 
@@ -104,15 +114,15 @@ void InputSystem::poll() noexcept
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        m_hookDelegate(&event);
+        _hookCallbacks(&event);
     }
 }
 
 void InputSystem::collapse() noexcept
 {
-    m_hookDelegate.clear();
-    m_actions.clear();
-    m_axes.clear();
+    _hookCallbacks.clear();
+    _actions.clear();
+    _axes.clear();
 }
 
 } // namespace bl

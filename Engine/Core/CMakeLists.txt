@@ -1,6 +1,5 @@
 list(APPEND CoreSources
-    "Source/Debug.cpp"
-    "Source/Delegate.cpp")
+    "Source/Debug.cpp")
 
 add_library(BloodLustCore SHARED ${CoreSources})
 add_library(bl::Core ALIAS BloodLustCore)
@@ -34,7 +33,7 @@ target_compile_features(BloodLustCore PUBLIC cxx_std_20)
 # Find the required libraries
 find_package(fmt CONFIG REQUIRED)
 
-target_link_libraries(BloodLustCore PUBLIC fmt::fmt Delegate)
+target_link_libraries(BloodLustCore PUBLIC fmt::fmt)
 
 # Disable optimizations when debugging on GNU compilers.
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

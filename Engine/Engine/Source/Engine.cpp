@@ -53,14 +53,9 @@ Engine::Engine(const std::string& applicationName) noexcept
     m_inputSystem.registerAction("Exit", { Key::WindowClose });
     m_inputSystem.registerAction("Resize", { Key::WindowResize });
 
-    auto walkDelegate = m_inputSystem.getAxisDelegate("Walk");
-    *walkDelegate += [&](float scale) { Logger::Log("Walking {}!", scale); };
+    auto resizeDelegate = m_inputSystem.addActionCallback("Resize", [&]() { m_renderer.recreate(); });
 
-    auto resizeDelegate = m_inputSystem.getActionDelegate("Resize");
-    *resizeDelegate += [&](){ m_renderer.recreate(); };
-
-    auto exitDelegate = m_inputSystem.getActionDelegate("Exit");
-    *exitDelegate += [&]() { m_close = true; };
+    auto exitHandle = m_inputSystem.addActionCallback("Exit", [&]() { m_close = true; });
 
     ImGui_ImplBloodLust_Init(m_window, m_inputSystem, m_renderDevice, m_renderer);
 }

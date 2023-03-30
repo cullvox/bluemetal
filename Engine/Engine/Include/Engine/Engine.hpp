@@ -9,7 +9,6 @@
 #include "Render/Renderer.hpp"
 #include "Render/FrameCounter.hpp"
 #include "Input/InputSystem.hpp"
-#include "Input/InputController.hpp"
 
 namespace bl
 {
@@ -84,7 +83,6 @@ private:
     Renderer m_renderer;
     FrameCounter m_frameCounter;
     InputSystem m_inputSystem;
-    std::shared_ptr<InputController> m_inputController;
     bool m_close;
 
 };
