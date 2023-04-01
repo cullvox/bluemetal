@@ -19,13 +19,11 @@ function(bl_add_library lib_name lib_short_name lib_sources)
         BASE_NAME "BLOODLUST_${lib_short_name_upper}"
         EXPORT_MACRO_NAME "BLOODLUST_${lib_short_name_upper}_API"
         DEPRECATED_MACRO_NAME "BLOODLUST_DEPRECATED"
-        EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/Include/Generated/Export_${lib_short_name}.h")
+        EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/Include/${lib_short_name}/Export.h")
 
     if(NOT BUILD_SHARED_LIBS)
       target_compile_definitions(${lib_name} PRIVATE "BLOODLUST_BUILD_STATIC")
     endif()
-
-    target_include_directories(${lib_name} PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/Include")
 
     # Add debug definitions
     if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")

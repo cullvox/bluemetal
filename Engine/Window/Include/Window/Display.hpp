@@ -3,7 +3,7 @@
 #include "Core/Precompiled.hpp"
 #include "Math/Vector2.hpp"
 #include "Window/VideoMode.hpp"
-#include "Generated/Export_Window.h"
+#include "Window/Export.h"
 
 namespace bl 
 {

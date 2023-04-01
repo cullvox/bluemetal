@@ -1,12 +1,11 @@
 #pragma once
 
-
 #include "Core/Precompiled.hpp"
 #include "Core/Version.hpp"
 #include "Math/Vector2.hpp"
 #include "Window/VideoMode.hpp"
 #include "Window/Display.hpp"
-#include "Generated/Export_Window.h"
+#include "Window/Export.h"
 
 #include <SDL2/SDL.h>
 

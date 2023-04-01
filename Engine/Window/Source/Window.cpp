@@ -1,4 +1,3 @@
-#include "Core/Precompiled.hpp"
 #include "Core/Log.hpp"
 #include "Window/Window.hpp"
 #include "Window/Display.hpp"

@@ -8,7 +8,7 @@
 #include "Render/Renderer.hpp"
 #include "Render/FrameCounter.hpp"
 #include "Input/InputSystem.hpp"
-#include "Generated/Export.h"
+#include "Generated/Export_Engine.h"
 
 namespace bl
 {

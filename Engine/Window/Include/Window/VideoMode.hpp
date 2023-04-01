@@ -5,7 +5,8 @@
 namespace bl {
 
 /// @brief Video modes for creating windows.
-struct DisplayMode {
+struct DisplayMode 
+{
 public:
 
     /// @brief Default constructor
@@ -17,7 +18,7 @@ public:
     /// @param refreshRate Refresh rate in hz of the monitor.
     DisplayMode(Extent2D extent, uint8_t bitsPerPixel, uint16_t refreshRate)
         : extent(extent), bitsPerPixel(bitsPerPixel), refreshRate(refreshRate)
-    { }
+    {}
 
     /// @brief Default destructor
     ~DisplayMode() = default;

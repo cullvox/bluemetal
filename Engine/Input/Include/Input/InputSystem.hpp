@@ -3,12 +3,20 @@
 #include "Core/Precompiled.hpp"
 #include "Core/CallbackList.hpp"
 #include "Input/InputEvents.hpp"
-#include "Generated/Export_Input.h"
+#include "Input/Export.h"
 
 #include <SDL2/SDL.h>
 
 namespace bl
 {
+
+enum class BindingType
+{
+    Int,
+    Float,
+    Vector2,
+    Vector3
+};
 
 /** \brief An input system manages all input for the engine.
 * 
@@ -23,6 +31,8 @@ class BLOODLUST_INPUT_API InputSystem
     using _HookHandle = _HookCallbackList::Handle;
     using _ActionHandle = _ActionCallbackList::Handle;
     using _AxisHandle = _AxisCallbackList::Handle;
+
+
     using _KeyWithScale = std::pair<Key, float>;
 
     struct _ActionBinding
