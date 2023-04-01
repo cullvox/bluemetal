@@ -18,11 +18,3 @@
 #else
 	#error Unknown Operating System, BloodLust cannot properly build on it yet.
 #endif
-
-#ifdef BLOODLUST_SYSTEM_WINDOWS
-	#define BLOODLUST_API_EXPORT __declspec(dllexport)
-	#define BLOODLUST_API_IMPORT __declspec(dllimport)
-#else
-	#define BLOODLUST_API_EXPORT __attribute__((__visibility__("default")))
-	#define BLOODLUST_API_IMPORT __attribute__((__visibility__("default")))
-#endif

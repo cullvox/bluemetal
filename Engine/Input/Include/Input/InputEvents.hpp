@@ -12,11 +12,11 @@ enum class Key
 {
 
 // Window Events
-    WindowResize,
-    WindowMinimize,
-    WindowMaximize,
-    WindowClose,
-    WindowMove,
+    WindowResize = 0x0001000,
+    WindowMinimize = 0x0001001,
+    WindowMaximize = 0x0001002,
+    WindowClose = 0x0001003,
+    WindowMove = 0x0001004,
 
 // Keyboard Events
     KeyUnknown = SDLK_UNKNOWN,

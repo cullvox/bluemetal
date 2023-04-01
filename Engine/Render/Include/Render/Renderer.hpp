@@ -19,7 +19,7 @@ struct Submission
 };
 
 /// @brief Sets up sync, render textures, command buffers, and render passes for submissions.
-class BLOODLUST_API Renderer
+class BLOODLUST_RENDER_API Renderer
 {
 public:
 

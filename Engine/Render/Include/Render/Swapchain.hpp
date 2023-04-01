@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/Export.h"
 #include "Math/Vector2.hpp"
 #include "Window/Window.hpp"
 #include "Render/RenderDevice.hpp"
@@ -26,7 +25,7 @@ namespace bl
 * \sa RenderDevice
 *
 */
-class BLOODLUST_API Swapchain 
+class BLOODLUST_RENDER_API Swapchain 
 {
 public:
 

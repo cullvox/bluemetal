@@ -1,8 +1,9 @@
 #pragma once
 
-#include "Core/Export.h"
+
 #include "Window/Window.hpp"
 #include "Render/Vulkan/vk_mem_alloc.h"
+#include "Generated/Export_Render.h"
 
 #include <vulkan/vulkan.h>
 
@@ -27,7 +28,7 @@ namespace bl
 * \sa Swapchain
 * 
 */
-class BLOODLUST_API RenderDevice
+class BLOODLUST_RENDER_API RenderDevice
 {
 public:
 

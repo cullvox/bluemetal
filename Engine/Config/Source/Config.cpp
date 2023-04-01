@@ -3,33 +3,11 @@
 #include "Config/Configurable.hpp"
 #include "Config/ConfigParser.hpp"
 
-#include <cctype>
-#include <cassert>
-#include <cstdlib>
-#include <cstring>
-#include <string>
-#include <fstream>
-#include <algorithm>
-#include <filesystem>
-#include <map>
 
 namespace bl
 {
 
-IConfigurable::IConfigurable(CConfig *const pConfig)
-    : m_pConfig(pConfig)
-{
-    assert(m_pConfig);
-    m_pConfig->SubscribeEvents(this);
-}
-
-IConfigurable::~IConfigurable()
-{
-    if (m_pConfig) m_pConfig->UnsubscribeEvents(this);
-}
-
-
-CConfig::CConfig(const std::string& configPath)
+Config::Config(const std::string& configPath)
     : m_path(configPath)
 {
     EnsureDirectoriesExist();
@@ -37,11 +15,11 @@ CConfig::CConfig(const std::string& configPath)
     ParseInto();
 }
 
-CConfig::~CConfig()
+Config::~Config()
 {
 }
 
-void CConfig::Reset()
+void Config::Reset()
 {
     const std::string DEFAULT_CONFIG_PATH = "config/config.nwdl";
     const std::string DEFAULT_CONFIG =
@@ -59,19 +37,19 @@ void CConfig::Reset()
     config << DEFAULT_CONFIG;
 }
 
-bool CConfig::HasValue(const std::string& name) const noexcept
+bool Config::HasValue(const std::string& name) const noexcept
 {
     return m_values.contains(name);
 }
 
-int CConfig::GetIntValue(const std::string& name) const
+int Config::GetIntValue(const std::string& name) const
 {
     assert(HasValue(name));
     assert(m_values.at(name).type == EParsedType::eInt);
     return m_values.at(name).i;
 }
 
-const std::string_view CConfig::GetStringValue(const std::string& name) const
+const std::string_view Config::GetStringValue(const std::string& name) const
 {
     assert(HasValue(name));
     assert(m_values.at(name).type == EParsedType::eString);
@@ -79,7 +57,7 @@ const std::string_view CConfig::GetStringValue(const std::string& name) const
     return m_values.at(name).s;
 }
 
-int CConfig::GetIntOrSetDefault(const std::string& key, int defaultValue)
+int Config::GetIntOrSetDefault(const std::string& key, int defaultValue)
 {
     if (HasValue(key))
     {
@@ -94,17 +72,7 @@ int CConfig::GetIntOrSetDefault(const std::string& key, int defaultValue)
     }
 }
 
-void CConfig::SubscribeEvents(const IConfigurable* pConfigurable)
-{
-    m_subscribers.push_back(pConfigurable);
-}
-
-void CConfig::UnsubscribeEvents(const IConfigurable* pConfigurable)
-{
-    m_subscribers.erase(std::find(m_subscribers.begin(), m_subscribers.end(), pConfigurable));
-}
-
-void CConfig::EnsureDirectoriesExist()
+void Config::EnsureDirectoriesExist()
 {
     /* Ensure directories exist. */
     if (!std::filesystem::exists("config"))
@@ -114,7 +82,7 @@ void CConfig::EnsureDirectoriesExist()
     }
 }
 
-void CConfig::ResetIfConfigDoesNotExist()
+void Config::ResetIfConfigDoesNotExist()
 {
     if (!std::filesystem::exists("Config/Config.nwdl"))
     {
@@ -122,7 +90,7 @@ void CConfig::ResetIfConfigDoesNotExist()
     }
 }
 
-void CConfig::ParseInto()
+void Config::ParseInto()
 {
     Logger::Debug("Opening config: {}\n", m_path);
 
@@ -159,7 +127,7 @@ void DetermineGroups(const std::string& key, std::vector<std::string>& groups)
     } while (dot != key.size()-1);
 }
 
-void CConfig::Save()
+void Config::Save()
 {
     
     /* Sort the keys so the values will properly be placed in groups. */

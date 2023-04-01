@@ -1,23 +1,20 @@
 #pragma once
 
-#include "Core/Export.h"
+#include "Core/Precompiled.hpp"
 #include "Config/ConfigParser.hpp"
-
-#include <stdexcept>
-#include <memory>
-#include <string>
-#include <string_view>
-#include <vector>
+#include "Generated/Export_Config.h"
 
 namespace bl
 {
 
-class IConfigurable;
-class BLOODLUST_API CConfig
+class BLOODLUST_CONFIG_API Config
 {
+
 public:
-    CConfig(const std::string& configPath = "Config/Config.nwdl");
-    ~CConfig();
+    
+    Config(const std::string& path = "Save/Config.nwdl");
+    
+    ~Config();
 
     bool HasValue(const std::string&) const noexcept;
     void RequireStringValue(const std::string&, const std::string&);
@@ -32,8 +29,6 @@ public:
     void Reset();
     void Save();
 
-    void SubscribeEvents(IConfigurable const*);
-    void UnsubscribeEvents(IConfigurable const*);
 private:
     void EnsureDirectoriesExist();
     void ResetIfConfigDoesNotExist();
@@ -50,7 +45,6 @@ private:
     SValueNode*                                     m_pConfigTree;
     std::string                                     m_path;
     std::unordered_map<std::string, SParsedValue>   m_values;
-    std::vector<const IConfigurable*>               m_subscribers;
 };
 
 } // namespace bl

@@ -1,38 +1,44 @@
 #pragma once
 
-#include "Core/Export.h"
+
 #include "Core/Precompiled.hpp"
 #include "Core/Version.hpp"
 #include "Math/Vector2.hpp"
 #include "Window/VideoMode.hpp"
 #include "Window/Display.hpp"
+#include "Generated/Export_Window.h"
 
 #include <SDL2/SDL.h>
 
 #include <vulkan/vulkan.h>
 
-#include <string>
 
 namespace bl
 {
 
-class BLOODLUST_API Window
+class BLOODLUST_WINDOW_API Window
 {
+
+    SDL_Window* _pWindow;
+
 public:
 
-    /// @brief Default constructor.
-    ///
-    /// In order to open a window when using this constructor you must call
-    /// open().
-    /// 
-    /// \sa open
+    /** \brief Default constructor.
+    *
+    * Constructs an empty window that isn't \ref good() until \ref open() is called.
+    * 
+    * \since BloodLust 1.0.0
+    * 
+    * \sa open
+    *
+    */
     Window() noexcept = default;
 
     /// @brief Construct a proper window.
     /// @param videoMode Position and size of the window.
     /// @param title What the title bar displays as the name of the window.
     /// @param fullscreen If the window is in a fullscreen mode.
-    Window(DisplayMode videoMode, const std::string& title = "Window", std::optional<Display> display = std::nullopt) noexcept;
+    Window(const DisplayMode& videoMode, const std::string_view& title = "Window", std::optional<Display> display = std::nullopt) noexcept;
 
     /// @brief Destruct the window if it was opened.
     ~Window() noexcept;
@@ -44,7 +50,7 @@ public:
     /// @param title What the title bar displays as the name of the window.
     /// @param fullscreen If the window is in a fullscreen mode.
     /// @return True on success, false on failure.
-    [[nodiscard]] bool open(DisplayMode videoMode, const std::string& title = "Window", std::optional<Display> display = std::nullopt) noexcept;
+    [[nodiscard]] bool open(const DisplayMode& videoMode, const std::string_view& title = "Window", std::optional<Display> display = std::nullopt) noexcept;
     
     /// @brief Checks if the window construction was a success. 
     /// @return True on good window creation, false on bad window creation.
@@ -71,8 +77,6 @@ public:
     /// @return True on success, false on failure.
     [[nodiscard]] bool getVulkanInstanceExtensions(std::vector<const char*>& extensions) const noexcept;
     
-private:
-    SDL_Window* m_pWindow;    
 };
 
-}; /* namespace bl */
+} /* namespace bl */

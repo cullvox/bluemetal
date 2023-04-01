@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ConfigToken.hpp"
+#include "Generated/Export_Config.h"
 
 #include <string>
 #include <string_view>
@@ -8,7 +9,7 @@
 namespace bl
 {
 
-class CLexerUtils
+class BLOODLUST_CONFIG_API CLexerUtils
 {
 public:
     static bool IsSpace(char c) noexcept;
@@ -16,7 +17,7 @@ public:
     static bool IsIdentifierChar(char c) noexcept;
 };
 
-class CLexer {
+class BLOODLUST_CONFIG_API CLexer {
 public:
     CLexer(const std::string& content) noexcept;
 

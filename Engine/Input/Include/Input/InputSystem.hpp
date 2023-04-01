@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Core/Export.h"
 #include "Core/Precompiled.hpp"
 #include "Core/CallbackList.hpp"
 #include "Input/InputEvents.hpp"
+#include "Generated/Export_Input.h"
 
 #include <SDL2/SDL.h>
 
@@ -15,7 +15,7 @@ namespace bl
 * 
 * 
 */
-class BLOODLUST_API InputSystem
+class BLOODLUST_INPUT_API InputSystem
 {
     using _HookCallbackList = CallbackList<void(const SDL_Event*)>;
     using _ActionCallbackList = CallbackList<void()>;

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Core/Export.h"
-
 #include <list>
 #include <chrono>
+
+#include "Generated/Export_Render.h"
 
 namespace bl
 {
 
 // A Simple class which calculates frame rates and other useful numbers.
-class BLOODLUST_API FrameCounter
+class BLOODLUST_RENDER_API FrameCounter
 {
 public:
     FrameCounter() noexcept;

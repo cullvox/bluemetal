@@ -5,7 +5,7 @@
 namespace bl 
 {
 
-class BLOODLUST_API Image
+class BLOODLUST_RENDER_API Image
 {
 public:
     Image() noexcept;

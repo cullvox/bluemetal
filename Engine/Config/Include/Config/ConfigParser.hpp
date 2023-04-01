@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 #include "ConfigLexer.hpp"
+#include "Generated/Export_Config.h"
 
 namespace bl
 {
@@ -21,7 +22,7 @@ struct SParsedValue
     std::string_view s;
 };
 
-class CParser
+class BLOODLUST_CONFIG_API CParser
 {
 public:
     struct SParserResult

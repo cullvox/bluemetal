@@ -1,16 +1,16 @@
 #pragma once
 
-#include "Core/Export.h"
-
 #include <source_location>
 
 #include <fmt/color.h>
 #include <fmt/chrono.h>
 
+#include "Generated/Export_Core.h"
+
 namespace bl 
 {
 
-class BLOODLUST_API Logger
+class BLOODLUST_CORE_API Logger
 {
 public:
 

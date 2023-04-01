@@ -3,11 +3,12 @@
 #include "Core/Precompiled.hpp"
 #include "Math/Vector2.hpp"
 #include "Window/VideoMode.hpp"
+#include "Generated/Export_Window.h"
 
 namespace bl 
 {
 
-class BLOODLUST_API Display 
+class BLOODLUST_WINDOW_API Display 
 {
 public:
 
@@ -33,7 +34,7 @@ public:
     /// @return The video modes.
     [[nodiscard]] const std::vector<DisplayMode>& getVideoModes() const noexcept;
 
-    /// @brief Gets video mode for the main display, no fullscreen.
+    /// @brief Gets video mode for the main display, no Fullscreen.
     /// @return The video mode.
     [[nodiscard]] DisplayMode getDesktopMode() const noexcept;
 

@@ -4,51 +4,79 @@
 #include <functional>
 #include <list>
 
+
 template<typename TReturn, typename...TArgs>
 class CallbackList;
 
-/** \brief Custom doubly linked list containing std::function's with a specific signature. */
+/** \brief Custom doubly linked list containing std::function's with a specific signature. 
+*
+* A list of function callbacks used later and called all together at once or individually.
+* When a new callback is added a handle to the function is returned allowing removal.
+* This requirement/feature was made because std::function objects themselves cannot be compared.
+* 
+* \since BloodLust 1.0.0
+* 
+*/
 template<typename TReturn, typename...TArgs>
 class CallbackList<TReturn(TArgs...)>
 {
-
 	using _Callback = std::function<TReturn(TArgs...)>;
+	using _Handle = std::list<_Callback>::iterator;
 
-	struct _Data
-	{
-		_Callback cb;
-	};
-
-	using _Handle = std::list<_Data>::iterator;
-
-	std::list<_Data> _callbacks;
+	std::list<_Callback> _callbacks;
 
 public:
-	
+
+	/** \brief A callback function type. */
 	using Callback = _Callback;
+
+	/** \brief A handle is defined as an iterator of the list giving a value to remove. */
 	using Handle = _Handle;
 
-	CallbackList() = default;
-	~CallbackList() = default;
-
+	/** \brief Runs all the callbacks with the following arguments.
+	*
+	* All callbacks are executed with the same argument. All return
+	* values are discarded because it didn't make sense to only return
+	* the last callback value like a delegate would.
+	* 
+	* \param args The templated arguements of the callback themselves.
+	* 
+	* \since BloodLust 1.0.0
+	* 
+	*/
 	void operator()(TArgs...args) const
 	{
-		for (const auto& d : _callbacks)
-			d.cb(std::forward<TArgs>(args)...);
-	}
-	
-	TReturn operator()(Handle h, TArgs... args) const
-	{
-		return (*h).cb(args);
+		for (const auto& cb : _callbacks)
+			cb(std::forward<TArgs>(args)...);
 	}
 
-	Handle append(const Callback& func) noexcept
+	/** \brief Run a specific callback. 
+	* 
+	* Using the callbacks handle and given arguments, this interpretation
+	* of the operator() also returns properly from the callback.
+	* 
+	* \param handle The iterator handle of the callback.
+	* \param args Arguments to forward to the callback.
+	* 
+	* \since BloodLust 1.0.0
+	* 
+	*/
+	TReturn operator()(Handle handle, TArgs... args) const
 	{
-		const _Data d{ func };
-		_callbacks.emplace_back(d);
-		auto end = _callbacks.end();
-		--end;
-		return end;
+		return (*handle)(std::forward<TArgs>(args)...);
+	}
+
+	/** \brief Adds a new callback to the list.
+	*
+	* Appends a new callback to the end of the list. Returns a handle iterator
+	* to the latest callback added so that it can be removed later.
+	* 
+	* 
+	*/
+	Handle append(const Callback& cb) noexcept
+	{
+		_callbacks.emplace_back(cb);
+		return --(_callbacks.end());
 	}
 
 	/** \brief Removes a callback from the list, must be a valid handle. */

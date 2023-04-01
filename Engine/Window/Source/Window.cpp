@@ -39,7 +39,7 @@ bool Window::open(DisplayMode videoMode, const std::string& title, std::optional
 {
 
     // Build the flags for the window.
-    uint32_t flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE;
+    uint32_t flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     
     if (display.has_value())
         flags |= SDL_WINDOW_FULLSCREEN;

@@ -1,13 +1,20 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include <algorithm>
 #include <array>
 #include <bitset>
-#include <algorithm>
-#include <stdexcept>
-#include <optional>
-#include <functional>
-
 #include <cassert>
+#include <cctype>
 #include <cstdint>
+#include <cstdlib>
+#include <cstring>
+#include <filesystem>
+#include <fstream>
+#include <functional>
+#include <map>
+#include <memory>
+#include <optional>
+#include <stdexcept>
+#include <string_view>
+#include <string>
+#include <vector>

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Core/Export.h"
-
 #include <cstdint>
+
+#include "Generated/Export_Math.h"
 
 namespace bl
 {
 
-class BLOODLUST_API Vector2i
+class BLOODLUST_MATH_API Vector2i
 {
 public:
     Vector2i() noexcept;
@@ -28,7 +28,7 @@ public:
     int32_t y;
 };
 
-class BLOODLUST_API Vector2f
+class BLOODLUST_MATH_API Vector2f
 {
 public:
     Vector2f() noexcept;

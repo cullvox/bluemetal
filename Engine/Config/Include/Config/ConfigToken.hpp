@@ -2,6 +2,8 @@
 
 #include <string_view>
 
+#include "Generated/Export_Config.h"
+
 namespace bl
 {
 
@@ -20,7 +22,7 @@ enum class ETokenKind
     eUnexpected,
 };
 
-class CToken
+class BLOODLUST_CONFIG_API CToken
 {
 public:
     CToken() noexcept = default;
