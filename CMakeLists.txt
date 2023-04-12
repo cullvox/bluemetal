@@ -4,8 +4,7 @@ project(BloodLust)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/Modules")
 
-OPTION(BLOODLUST_DEBUGGING ON "Enables debugging commands in engine.")
+option(BLOODLUST_DEBUGGING ON "Enables debugging commands in engine.")
 
 add_subdirectory("ThirdParty")
-add_subdirectory("Engine")
-add_subdirectory("Game")
+add_subdirectory("Source")
