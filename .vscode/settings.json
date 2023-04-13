@@ -100,21 +100,5 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp"
-    },
-    "cmake.configureArgs": [
-        "-DVCPKG_APPLOCAL_DEPS=ON",
-        "-DX_VCPKG_APPLOCAL_DEPS_INSTALL=ON",
-        "-DVCPKG_MANIFEST_MODE=ON",
-        "-DVCPKG_TARGET_TRIPLET=x64-windows"
-    ],
-    "vcpkg.general.enable": true,
-    "vcpkg.target.hostTriplet": "x64-windows",
-    "vcpkg.target.defaultTriplet": "x64-windows",
-    "vcpkg.target.useStaticLib": false,
-    "cmake.configureSettings": {
-        "CMAKE_TOOLCHAIN_FILE": "C:/Users/cullv/OneDrive/Documents/vcpkg/scripts/buildsystems/vcpkg.cmake"
-    },
-    "vcpkg.target.installDependencies": true,
-    "vcpkg.target.preferSystemLibs": false,
-    "vcpkg.target.useManifest": true
+    }
 }

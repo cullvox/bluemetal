@@ -7,8 +7,7 @@
 class BLOODLUST_RENDER_API blImage
 {
 public:
-    blImage() noexcept;
-    blImage(const blRenderDevice* renderDevice, VkImageType type, 
+    blImage(std::shared_ptr<blRenderDevice> renderDevice, VkImageType type, 
         VkFormat format, blExtent2D extent, uint32_t mipLevels,
         VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
     ~blImage() noexcept;
@@ -20,11 +19,17 @@ public:
     VkImageView getImageView() const noexcept;
 
 private:
-    const blRenderDevice*   _pRenderDevice;
+    void build(const blRenderDevice* renderDevice, VkImageType type, 
+        VkFormat format, blExtent2D extent, uint32_t mipLevels,
+        VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
+    void collapse() noexcept;
+
+    std::shared_ptr<blRenderDevice> _renderDevice;
     blExtent2D              _extent;
+
+    VkImageType             _type;
     VkFormat                _format;
     VkImageUsageFlags       _usage;
-
     VkImage                 _image;
     VmaAllocation           _allocation;
     VkImageView             _imageView;

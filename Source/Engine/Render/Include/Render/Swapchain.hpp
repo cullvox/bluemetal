@@ -11,7 +11,7 @@ public:
     static const VkColorSpaceKHR DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     static const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
-    blSwapchain(const std::shared_ptr<blWindow> window, 
+    blSwapchain(std::shared_ptr<blWindow> window, 
         const std::shared_ptr<blRenderDevice> renderDevice);
     ~blSwapchain() noexcept;
 

@@ -1,11 +1,14 @@
 #include "Core/Log.hpp"
 #include "Render/Image.hpp"
 
-blImage::blImage(RenderDevice& renderDevice, VkImageType type, VkFormat format, Extent2D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask) noexcept
+blImage::blImage(std::shared_ptr<blRenderDevice> renderDevice, VkImageType type, VkFormat format, blExtent2D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask)
+    : _renderDevice(renderDevice)
+    , _extent(extent)
+    , _type(type)
+    , _format(format)
+    , _usage(usage)
 {
-    m_pRenderDevice = &renderDevice;
-
-    const uint32_t graphicsFamilyIndex = m_pRenderDevice->getGraphicsFamilyIndex();
+    const uint32_t graphicsFamilyIndex = _renderDevice->getGraphicsFamilyIndex();
     const VkImageCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
         .pNext = nullptr,
@@ -35,80 +38,82 @@ blImage::blImage(RenderDevice& renderDevice, VkImageType type, VkFormat format, 
         .priority = 1.0f
     };
 
-    if (vmaCreateImage(m_pRenderDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_image, &m_allocation, nullptr) != VK_SUCCESS)
+    if (vmaCreateImage(_renderDevice->getAllocator(), &createInfo, &allocationCreateInfo, &_image, &_allocation, nullptr) != VK_SUCCESS)
     {
-        Logger::Error("Could not create an image!\n");
-        collapse();
-        return;
+        throw std::runtime_error("Could not create a vulkan image!");
     }
 
+
+    const VkComponentMapping componentMapping{
+        .r = VK_COMPONENT_SWIZZLE_IDENTITY, 
+        .g = VK_COMPONENT_SWIZZLE_IDENTITY, 
+        .b = VK_COMPONENT_SWIZZLE_IDENTITY, 
+        .a = VK_COMPONENT_SWIZZLE_IDENTITY
+    };
+    const VkImageSubresourceRange subresourceRange{
+        .aspectMask = aspectMask, 
+        .baseMipLevel = 0, 
+        .levelCount = mipLevels, 
+        .baseArrayLayer = 0, 
+        .layerCount = 1 
+    };
     const VkImageViewCreateInfo viewCreateInfo{
         .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
-        .image = m_image,
-        .viewType = (VkImageViewType)type,
-        .format = format,
-        .components = {.r = VK_COMPONENT_SWIZZLE_IDENTITY, .g = VK_COMPONENT_SWIZZLE_IDENTITY, .b = VK_COMPONENT_SWIZZLE_IDENTITY, .a = VK_COMPONENT_SWIZZLE_IDENTITY},
-        .subresourceRange = {.aspectMask = aspectMask, .baseMipLevel = 0, .levelCount = mipLevels, .baseArrayLayer = 0, .layerCount = 1} 
+        .image = _image,
+        .viewType = (VkImageViewType)_type,
+        .format = _format,
+        .components = componentMapping,
+        .subresourceRange = subresourceRange,
     };
 
-    if (vkCreateImageView(m_pRenderDevice->getDevice(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
+    if (vkCreateImageView(_renderDevice->getDevice(), &viewCreateInfo, nullptr, &_imageView) != VK_SUCCESS)
     {
-        Logger::Error("Could not create a vulkan image's view!\n");
-        collapse();
-        return;
+        throw std::runtime_error("Could not create a vulkan image's view!");
     }
 }
 
-Image::~Image()
+blImage::~blImage()
 {
     collapse();
 }
 
-Image& Image::operator=(Image&& rhs) noexcept
+blExtent2D blImage::getExtent() const noexcept
 {
-    // In order to assign another image we must actually destroy the first one.
-    collapse();
-
-    m_pRenderDevice = std::move(rhs.m_pRenderDevice);
-    m_image = std::move(rhs.m_image);
-    m_allocation = std::move(rhs.m_allocation);
-    m_imageView = std::move(rhs.m_imageView);
-
-    rhs.m_pRenderDevice = nullptr;
-    rhs.m_image = VK_NULL_HANDLE;
-    rhs.m_allocation = VK_NULL_HANDLE;
-    rhs.m_imageView = VK_NULL_HANDLE;
-
-    rhs.collapse();
-
-    return *this;
+    return _extent;
 }
 
-bool Image::good() const noexcept
+VkFormat blImage::getFormat() const noexcept
 {
-    return (m_image != VK_NULL_HANDLE &&
-        m_imageView != VK_NULL_HANDLE);
+    return _format;
 }
 
-VkImage Image::getImage() const noexcept
+VkImageUsageFlags blImage::getUsage() const noexcept
 {
-    return m_image;
+    return _usage;
 }
 
-VkImageView Image::getImageView() const noexcept
+VkImageView blImage::getImageView() const noexcept
 {
-    return m_imageView;
+    return _imageView;
 }
 
-void Image::collapse() noexcept
+VkImage blImage::getImage() const noexcept
 {
-    if (m_imageView)vkDestroyImageView(m_pRenderDevice->getDevice(), m_imageView, nullptr);
-    if (m_image) vmaDestroyImage(m_pRenderDevice->getAllocator(), m_image, m_allocation);
+    return _image;
+}
+
+void blImage::collapse() noexcept
+{
+    if (_imageView) vkDestroyImageView(_renderDevice->getDevice(), _imageView, nullptr);
+    if (_image) vmaDestroyImage(_renderDevice->getAllocator(), _image, _allocation);
     
-    m_imageView = VK_NULL_HANDLE;
-    m_image = VK_NULL_HANDLE;
+    _renderDevice = nullptr;
+    _extent = {0, 0};
+    _type = VK_IMAGE_TYPE_1D;
+    _format = VK_FORMAT_UNDEFINED;
+    _usage = 0;
+    _imageView = VK_NULL_HANDLE;
+    _image = VK_NULL_HANDLE;
 }
-
-} // namespace bl

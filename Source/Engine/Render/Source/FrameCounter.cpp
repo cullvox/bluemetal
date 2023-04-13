@@ -63,8 +63,7 @@ float blFrameCounter::getAverageFramesPerSecond(int seconds) const noexcept
     // Make sure we are getting a proper second count.
     if (seconds > _maximumHeldFramesPerSecond || seconds < 1)
     {
-        Logger::Error("Attempting to get an average FPS greater than the "
-            "maximum at {} seconds.", seconds);
+        BL_LOG(blLogType::eError, "Attempting to get an average FPS greater than the maximum at {} seconds.", seconds);
     }
 
     // Get the average fps
@@ -93,8 +92,7 @@ float blFrameCounter::getAverageMillisecondsPerFrame(int frames) const noexcept
     // Make sure we are getting a proper second count
     if (frames > _maximumHeldMillisecondsPerFrame || frames < 1)
     {
-        Logger::Warning("Attempting to get an average milliseconds per frame "
-        "greater than the maximum frame count at {} frames.", frames);
+        BL_LOG(blLogType::eError, "Attempting to get an average milliseconds per frame greater than the maximum frame count at {} frames.", frames);
     }
 
     frames = std::clamp(frames, 1, (int)_millisecondsPerFrame.size());

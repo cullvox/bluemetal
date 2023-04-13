@@ -122,5 +122,5 @@ void CParser::RecomputeGroups()
 
 void CParser::PrintError(const std::string& expected)
 {
-    Logger::Error("({}): Invalid token, expected \"{}\", got \"{}\".\n", m_lexer.Line(), expected, m_token.Lexeme());
+    BL_LOG(blLogType::eError, "({}): Invalid token, expected \"{}\", got \"{}\".\n", m_lexer.Line(), expected, m_token.Lexeme());
 }

@@ -5,8 +5,11 @@
 class BLOODLUST_RENDER_API blBuffer
 {
 public:
-    blBuffer(const blRenderDevice* renderDevice, VkDeviceSize size, 
-        VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties);
+    blBuffer(const std::shared_ptr<blRenderDevice> renderDevice, 
+        VkDeviceSize size, VkBufferUsageFlags usage, 
+        VkMemoryPropertyFlags memoryProperties);
+    blBuffer(blBuffer&& other) noexcept;
+    blBuffer(blBuffer& other);
     ~blBuffer() noexcept;
 
     blBuffer& operator=(blBuffer&& rhs) noexcept;
@@ -18,7 +21,9 @@ public:
     void upload(size_t size, const uint8_t* pData);
 
 private:
-    const blRenderDevice* _pRenderDevice;
+    void collapse() noexcept;
+
+    std::shared_ptr<blRenderDevice> _renderDevice;
 
     VkDeviceSize    _size;
     VmaAllocation   _allocation;

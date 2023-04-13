@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 #include <variant>
+#include <span>
 
 #include <fmt/color.h>
 #include <fmt/chrono.h>

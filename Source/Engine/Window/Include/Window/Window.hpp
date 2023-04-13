@@ -15,7 +15,7 @@ class BLOODLUST_WINDOW_API blWindow
 {
 public:
     blWindow(const blDisplayMode& videoMode, 
-        const std::string_view& title = "Window", 
+        const std::string& title = "Window", 
         std::optional<blDisplay> display = std::nullopt);
     ~blWindow() noexcept;
 
@@ -27,5 +27,7 @@ public:
 
 private:
     SDL_Window* _pWindow;
+
+    VkInstance _instance;
     VkSurfaceKHR _surface;
 };

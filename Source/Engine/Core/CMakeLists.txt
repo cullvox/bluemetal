@@ -3,7 +3,7 @@ include(BloodLustLibrary)
 list(APPEND CoreSources
     "Source/Debug.cpp")
 
-bl_add_library(BloodLustCore Core ${CoreSources})
+bl_add_library(BloodLustCore Core "${CoreSources}")
 
 # Find the required libraries
 find_package(fmt CONFIG REQUIRED)

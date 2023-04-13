@@ -13,7 +13,7 @@ list(APPEND RenderSources
 
     "Source/BasicRenderer/BasicPresentRenderPass.cpp")
 
-bl_add_library(BloodLustRender Render ${RenderSources})
+bl_add_library(BloodLustRender Render "${RenderSources}")
 target_link_libraries(BloodLustRender bl::Core bl::Math BloodLustWindow)
 target_precompile_headers(BloodLustRender PUBLIC "Include/Render/Precompiled.hpp")
 

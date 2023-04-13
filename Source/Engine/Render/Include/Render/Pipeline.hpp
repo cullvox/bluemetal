@@ -9,7 +9,8 @@ class BLOODLUST_RENDER_API blPipeline
 
 public:
     blPipeline(const std::shared_ptr<blRenderDevice> renderDevice,
-        std::vector<blShader*> shaders, bool destroyShaders = false);
+        const std::vector<std::shared_ptr<blShader>>& shaders, 
+        bool destroyShaders = false);
     ~blPipeline() noexcept;
 
 private:

@@ -18,11 +18,12 @@ class BLOODLUST_RENDER_API blRenderer
 {
 public:
     blRenderer(const std::shared_ptr<blRenderDevice> renderDevice, 
-        const std::vector<std::shared_ptr<blRenderPass>>& passes) noexcept;
+        const std::vector<std::shared_ptr<blRenderPass>>& passes);
     ~blRenderer();
 
     void resize(blExtent2D extent);
     void submit(const Submission& submission) noexcept;
+    void renderFrame();
 
 private:
     static const inline uint32_t DEFAULT_FRAMES_IN_FLIGHT = 2;

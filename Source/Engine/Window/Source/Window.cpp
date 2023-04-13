@@ -6,7 +6,7 @@
 #include <SDL2/SDL_vulkan.h>
 
 
-blWindow::blWindow(DisplayMode videoMode, const std::string& title, std::optional<Display> display) noexcept
+blWindow::blWindow(const blDisplayMode& videoMode, const std::string& title, std::optional<blDisplay> display)
 {
     if (SDL_Init(SDL_INIT_VIDEO) != 0)
     {
@@ -21,8 +21,8 @@ blWindow::blWindow(DisplayMode videoMode, const std::string& title, std::optiona
         flags |= SDL_WINDOW_FULLSCREEN;
 
     // Compute the positional values of the window.
-    const int x = display.has_value() ? display->getRect().offset.x : SDL_WINDOWPOS_CENTERED;
-    const int y = display.has_value() ? display->getRect().offset.y : SDL_WINDOWPOS_CENTERED;
+    const int x = display.has_value() ? display->getRect().offset.width : SDL_WINDOWPOS_CENTERED;
+    const int y = display.has_value() ? display->getRect().offset.height : SDL_WINDOWPOS_CENTERED;
     const int width = videoMode.extent.width;
     const int height = videoMode.extent.height;
 
@@ -39,11 +39,8 @@ blWindow::blWindow(DisplayMode videoMode, const std::string& title, std::optiona
 
 blWindow::~blWindow()
 {
-    if (_surface)
-        vkDestroySurfaceKHR()
-    
-    if (_pWindow) 
-        SDL_DestroyWindow(_pWindow);
+    if (_surface) vkDestroySurfaceKHR(_instance, _surface, nullptr);
+    if (_pWindow)  SDL_DestroyWindow(_pWindow);
 }
 
 blExtent2D blWindow::getExtent() const noexcept
@@ -65,6 +62,7 @@ VkSurfaceKHR blWindow::createVulkanSurface(VkInstance instance)
         throw std::runtime_error("Could not create a Vulkan surface from an SDL window!");
     }
 
+    _instance = instance;
     return _surface;
 }
 

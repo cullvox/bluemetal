@@ -2,29 +2,22 @@
 
 #include <spirv_reflect.h>
 
-blPipeline::blPipeline(RenderDevice& renderDevice, 
-    const std::vector<blShader*>& shaders, bool deleteShaders) noexcept
+blPipeline::blPipeline(std::shared_ptr<blRenderDevice> renderDevice, 
+    const std::vector<std::shared_ptr<blShader>>& shaders, bool deleteShaders)
+    : _renderDevice(renderDevice)
 {
-
-    const VkPipelineLayoutCreateInfo layoutCreateInfo{
-        
-    }
-
 }
 
-Pipeline::~Pipeline() noexcept
+blPipeline::~blPipeline() noexcept
 {
-    vkDestroyPipeline(m_pRenderDevice->getDevice(), m_pipeline, nullptr);
-    vkDestroyPipelineLayout(m_pRenderDevice->getDevice(), m_pipelineLayout, nullptr);
+    vkDestroyPipeline(_renderDevice->getDevice(), _pipeline, nullptr);
+    vkDestroyPipelineLayout(_renderDevice->getDevice(), _pipelineLayout, nullptr);
 }
 
-void Pipeline::createLayout()
+void blPipeline::createLayout()
 {
-    
 }
 
-void Pipeline::createPipeline()
+void blPipeline::createPipeline()
 {
-
-
 }

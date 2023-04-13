@@ -4,10 +4,8 @@ list(APPEND WindowSources
     "Source/Display.cpp"
     "Source/Window.cpp")
 
-bl_add_library(BloodLustWindow Window ${WindowSources})
+bl_add_library(BloodLustWindow Window "${WindowSources}")
 target_link_libraries(BloodLustWindow bl::Core bl::Math)
-
-target_compile_definitions(BloodLustWindow PRIVATE "BloodLustWindow_EXPORTS")
 
 # Find required libraries
 find_package(Vulkan REQUIRED)

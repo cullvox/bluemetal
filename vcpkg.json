@@ -1,5 +1,5 @@
 {
-  "name": "blengine",
+  "name": "bloodlust",
   "version-string": "0.1.0",
   "dependencies": [
     "pkgconf",

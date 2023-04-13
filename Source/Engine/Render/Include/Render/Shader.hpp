@@ -7,8 +7,8 @@
 class blShader
 {
 public:
-    blShader(const blRenderDevice* renderDevice,
-        const std::vector<uint32_t>& spirvBytes);
+    blShader(const std::shared_ptr<blRenderDevice> renderDevice, 
+        std::span<uint32_t> bytes);
     ~blShader() noexcept;
 
     std::vector<VkDescriptorSetLayoutBinding>& getDescriptorBindings() const noexcept;
@@ -19,9 +19,10 @@ private:
     void generateDescriptorBindings() noexcept;
     void generateShaderStages() noexcept;
 
-    const blRenderDevice* _pRenderDevice;
-    std::vector<std::filesystem::path> m_shaderPaths;
-    std::vector<SpvReflectShaderModule> m_reflectShaderModules;
-    std::vector<VkDescriptorSetLayoutBinding> m_descriptorBindings;
-    std::vector<VkPipelineShaderStageCreateInfo> m_shaderStages;
+    const std::shared_ptr<blRenderDevice> _renderDevice;
+
+    VkShaderModule _shaderModule;
+
+    std::vector<SpvReflectShaderModule> _reflectShaderModules;
+    std::vector<VkDescriptorSetLayoutBinding> _descriptorBindings;
 };
