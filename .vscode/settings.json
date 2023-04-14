@@ -100,5 +100,8 @@
         "xtr1common": "cpp",
         "xtree": "cpp",
         "xutility": "cpp"
-    }
+    },
+    "vcpkg.general.enable": false,
+    "cmake.configureArgs": [],
+    "cmake.configureSettings": {}
 }

@@ -20,6 +20,8 @@ public:
     blExtent2D getExtent() const noexcept;
     uint32_t getImageCount() const noexcept;
     const std::vector<VkImage>& getImages() const noexcept;
+    const std::vector<VkImageView>& getImageViews() const noexcept;
+    const std::vector<VkFramebuffer>& getFramebuffers() const noexcept;
     VkSwapchainKHR getSwapchain() const noexcept;
     void acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex,
         bool& recreated);
@@ -41,4 +43,6 @@ private:
     VkExtent2D              _extent;
     VkSwapchainKHR          _swapchain;
     std::vector<VkImage>    _swapImages;
+    std::vector<VkImageView> _swapImageViews;
+    std::vector<VkFramebuffer> _swapFramebuffers;
 };
