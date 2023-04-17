@@ -1,4 +1,4 @@
-#include "ImGui.hpp"
+#include "ImGui/ImGui.hpp"
 
 #include "Core/Log.hpp"
 #include "Core/Macros.hpp"
@@ -9,19 +9,17 @@
 namespace bl
 {
 
-	Window* ImmediateModeGUI::_pWindow;
-	InputSystem* ImmediateModeGUI::_pInputSystem;
-	RenderDevice* ImmediateModeGUI::_pRenderDevice;
-	Renderer* ImmediateModeGUI::_pRenderer;
-	VkDescriptorPool ImmediateModeGUI::_descriptorPool;
+	std::shared_ptr<blWindow> blImGui::_window;
+	std::shared_ptr<blInputSystem> blImGui::_inputSystem;
+	std::shared_ptr<blRenderDevice> blImGui::_renderDevice;
+	VkDescriptorPool blImGui::_descriptorPool;
 
-	bool ImmediateModeGUI::init(Window& window, InputSystem& inputSystem, RenderDevice& renderDevice, Renderer& renderer) noexcept
+	bool blImGui::init(blWindow& window, blInputSystem& inputSystem, blRenderDevice& renderDevice) noexcept
 	{
-		_pWindow = &window;
-		_pInputSystem = &inputSystem;
-		_pRenderDevice = &renderDevice;
-		_pRenderer = &renderer;
-		
+		_window = &window;
+		_inputSystem = &inputSystem;
+		_renderDevice = &renderDevice;
+
 		const VkDescriptorPoolSize poolSizes[] =
 		{
 			{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
@@ -45,15 +43,14 @@ namespace bl
 			.pPoolSizes = poolSizes,
 		};
 
-		if (vkCreateDescriptorPool(_pRenderDevice->getDevice(), &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS)
+		if (vkCreateDescriptorPool(_renderDevice->getDevice(), &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS)
 		{
-			Logger::Error("Could not create the ImGui descriptor pool!");
-			return false;
+			throw std::runtime_error("Could not create the ImGui descriptor pool!");
 		}
 
-		::ImGui::CreateContext();
+		ImGui::CreateContext();
 
-		BL_CHECK(ImGui_ImplSDL2_InitForVulkan(window.getHandle()), "Could not init ImGui Impl SDL2!")
+		ImGui_ImplSDL2_InitForVulkan(window.getHandle());
 
 		// Initialize ImGui for Vulkan, pass created objects.
 		ImGui_ImplVulkan_InitInfo initInfo{
@@ -84,16 +81,15 @@ namespace bl
 		return true;
 	}
 
-	void ImmediateModeGUI::shutdown() noexcept
+	void blImGui::shutdown() noexcept
 	{
-		vkDeviceWaitIdle(_pRenderDevice->getDevice());
-		
-		vkDestroyDescriptorPool(_pRenderDevice->getDevice(), _descriptorPool, nullptr);
+		vkDeviceWaitIdle(_renderDevice->getDevice());
+		vkDestroyDescriptorPool(_renderDevice->getDevice(), _descriptorPool, nullptr);
 
 		ImGui_ImplVulkan_Shutdown();
 	}
 
-	void ImmediateModeGUI::beginFrame() noexcept
+	void blImGui::beginFrame() noexcept
 	{
 		ImGui_ImplVulkan_NewFrame();
 		ImGui_ImplSDL2_NewFrame();
@@ -101,7 +97,7 @@ namespace bl
 		ImGui::NewFrame();
 	}
 
-	void ImmediateModeGUI::endFrame(VkCommandBuffer cmd) noexcept
+	void blImGui::endFrame(VkCommandBuffer cmd) noexcept
 	{
 		ImGui::Render();
 

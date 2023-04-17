@@ -5,7 +5,7 @@
 class BLOODLUST_RENDER_API blBuffer
 {
 public:
-    blBuffer(const std::shared_ptr<blRenderDevice> renderDevice, 
+    blBuffer(std::shared_ptr<const blRenderDevice> renderDevice, 
         VkDeviceSize size, VkBufferUsageFlags usage, 
         VkMemoryPropertyFlags memoryProperties);
     blBuffer(blBuffer&& other) noexcept;
@@ -23,7 +23,7 @@ public:
 private:
     void collapse() noexcept;
 
-    std::shared_ptr<blRenderDevice> _renderDevice;
+    std::shared_ptr<const blRenderDevice> _renderDevice;
 
     VkDeviceSize    _size;
     VmaAllocation   _allocation;

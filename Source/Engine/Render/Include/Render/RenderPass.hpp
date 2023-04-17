@@ -5,24 +5,22 @@
 
 using blRenderPassFunction = std::function<void(VkCommandBuffer)>;
 
-struct blRenderPassAttachmentInfo
-{
-	VkFormat format;
-};
-
 class BLOODLUST_RENDER_API blRenderPass
 {
 public:
-	blRenderPass(const blRenderDevice* renderDevice, 
-		const blRenderPassAttachmentInfo& info, 
-		const blRenderPassFunction& func);
-	~blRenderPass();
+    blRenderPass(std::shared_ptr<const blRenderDevice> renderDevice,
+        const blRenderPassFunction& func);
+    virtual ~blRenderPass();
 
-	virtual void resize(blExtent2D extent);
-	virtual void record(VkCommandBuffer cmd);
-	
-private:
-	const blRenderDevice* _renderDevice;
-	blRenderPassFunction _func;
-	VkRenderPass _pass;
+    VkRenderPass getPass() const noexcept;
+
+    virtual void resize(blExtent2D extent);
+    virtual void record(VkCommandBuffer cmd, uint32_t index);
+    
+protected:
+    std::shared_ptr<const blRenderDevice> _renderDevice;
+    const blRenderPassFunction _func;
+    blExtent2D _extent;
+
+    VkRenderPass _pass;
 };

@@ -51,6 +51,9 @@ public:
         fmt::print(style, "{} | {} | {:%Y-%m-%d-%H:%M:%S} | {}():{} - ", type_name, libraryName, fmt::localtime(std::chrono::system_clock::now()), function, line);
         fmt::vprint(fmt::format(style, "{}", format), args);
         fmt::print("\n");
+
+        if (type == blLogType::eFatal)
+            abort();
     }
 };
 

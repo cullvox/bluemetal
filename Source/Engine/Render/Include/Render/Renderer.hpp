@@ -17,8 +17,8 @@ struct Submission
 class BLOODLUST_RENDER_API blRenderer
 {
 public:
-    blRenderer(const std::shared_ptr<blRenderDevice> renderDevice,
-        const std::shared_ptr<blSwapchain> swapchain,
+    blRenderer(std::shared_ptr<const blRenderDevice> renderDevice,
+        std::shared_ptr<const blSwapchain> swapchain,
         const std::vector<std::shared_ptr<blRenderPass>>& passes);
     ~blRenderer();
 
@@ -32,8 +32,8 @@ private:
 
     static const inline uint32_t DEFAULT_FRAMES_IN_FLIGHT = 2;
     
-    const std::shared_ptr<blRenderDevice> _renderDevice;
-    const std::shared_ptr<blSwapchain> _swapchain;
+    std::shared_ptr<const blRenderDevice> _renderDevice;
+    std::shared_ptr<const blSwapchain> _swapchain;
     const std::vector<std::shared_ptr<blRenderPass>> _passes;
 
     uint32_t _currentFrame;

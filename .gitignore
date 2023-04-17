@@ -1,8 +1,7 @@
-/.cache
 /build
 /compile_commands.json
-/.vs
 /out
 /Doxygen/Build
 /Doxygen/html
 /doxygen/latex
+.vs

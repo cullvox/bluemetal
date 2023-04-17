@@ -3,7 +3,7 @@
 #include "Render/Swapchain.hpp"
 
 blSwapchain::blSwapchain(std::shared_ptr<blWindow> window, 
-    const std::shared_ptr<blRenderDevice> renderDevice)
+    std::shared_ptr<const blRenderDevice> renderDevice)
     : _window(window)
     , _renderDevice(renderDevice)
 {
@@ -40,6 +40,11 @@ blExtent2D blSwapchain::getExtent() const noexcept
 uint32_t blSwapchain::getImageCount() const noexcept
 {
     return _imageCount;
+}
+
+const std::vector<VkImageView>& blSwapchain::getImageViews() const noexcept
+{
+    return _swapImageViews;
 }
 
 const std::vector<VkImage>& blSwapchain::getImages() const noexcept
@@ -194,12 +199,63 @@ void blSwapchain::obtainImages()
     }
 }
 
+
+void blSwapchain::createImageViews()
+{
+    _swapImageViews.resize(_imageCount);
+
+    for (int i = 0; i < _imageCount; i++)
+    {
+        const VkComponentMapping componentMapping{
+            .r = VK_COMPONENT_SWIZZLE_IDENTITY,
+            .g = VK_COMPONENT_SWIZZLE_IDENTITY,
+            .b = VK_COMPONENT_SWIZZLE_IDENTITY,
+            .a = VK_COMPONENT_SWIZZLE_IDENTITY
+        };
+        const VkImageSubresourceRange subresourceRange{
+            .aspectMask = VK_IMAGE_ASPECT_COLOR_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1
+        };
+        const VkImageViewCreateInfo imageViewInfo{
+            .sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .image = _swapImages[i],
+            .viewType = VK_IMAGE_VIEW_TYPE_2D,
+            .format = _surfaceFormat.format,
+            .components = componentMapping,
+            .subresourceRange = subresourceRange
+        };
+
+        if (vkCreateImageView(
+                _renderDevice->getDevice(), 
+                &imageViewInfo, 
+                nullptr, 
+                &_swapImageViews[i])
+            != VK_SUCCESS)
+        {
+            throw std::runtime_error("Could not create a swapchain image view!");
+        }
+    }
+}
+
+void blSwapchain::destroyImageViews()
+{
+    for (int i = 0; i < _imageCount; i++)
+    {
+        vkDestroyImageView(_renderDevice->getDevice(), _swapImageViews[i], nullptr);
+    }
+}
+
 void blSwapchain::recreate() 
 {
     vkDeviceWaitIdle(_renderDevice->getDevice());
-
     vkDestroySwapchainKHR(_renderDevice->getDevice(), _swapchain, nullptr);
     
+    destroyImageViews();
     chooseImageCount();
     chooseFormat();
     chooseExtent();
@@ -243,4 +299,6 @@ void blSwapchain::recreate()
     }
 
     obtainImages();
+    createImageViews();
 }
+

@@ -66,6 +66,11 @@ VkSurfaceKHR blWindow::createVulkanSurface(VkInstance instance)
     return _surface;
 }
 
+VkSurfaceKHR blWindow::getVulkanSurface() const noexcept
+{
+    return _surface;
+}
+
 std::vector<const char*> blWindow::getVulkanInstanceExtensions() const
 {
     std::vector<const char*> extensions;

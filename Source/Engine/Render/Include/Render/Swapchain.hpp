@@ -12,7 +12,7 @@ public:
     static const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
     blSwapchain(std::shared_ptr<blWindow> window, 
-        const std::shared_ptr<blRenderDevice> renderDevice);
+        std::shared_ptr<const blRenderDevice> renderDevice);
     ~blSwapchain() noexcept;
 
     void recreate();
@@ -33,9 +33,11 @@ private:
     void choosePresentMode(VkPresentModeKHR requestedPresentMode = DEFAULT_PRESENT_MODE);
     void chooseExtent();
     void obtainImages();
+    void createImageViews();
+    void destroyImageViews();
     
     std::shared_ptr<blWindow>               _window;
-    const std::shared_ptr<blRenderDevice>   _renderDevice;
+    std::shared_ptr<const blRenderDevice>   _renderDevice;
 
     uint32_t                _imageCount;
     VkSurfaceFormatKHR      _surfaceFormat;
@@ -44,5 +46,4 @@ private:
     VkSwapchainKHR          _swapchain;
     std::vector<VkImage>    _swapImages;
     std::vector<VkImageView> _swapImageViews;
-    std::vector<VkFramebuffer> _swapFramebuffers;
 };

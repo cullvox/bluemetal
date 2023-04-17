@@ -1,7 +1,7 @@
 #include "Core/Macros.hpp"
 #include "Render/Buffer.hpp"
 
-blBuffer::blBuffer(const std::shared_ptr<blRenderDevice> renderDevice, 
+blBuffer::blBuffer(std::shared_ptr<const blRenderDevice> renderDevice, 
         VkDeviceSize size, VkBufferUsageFlags usage, 
         VkMemoryPropertyFlags memoryProperties)
     : _renderDevice(renderDevice)

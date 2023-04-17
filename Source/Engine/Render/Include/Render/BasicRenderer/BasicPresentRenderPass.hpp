@@ -2,30 +2,27 @@
 
 #include "Core/Precompiled.hpp"
 #include "Render/RenderPass.hpp"
+#include "Render/Swapchain.hpp"
 
 class blBasicPresentRenderPass : public blRenderPass
 {
 public:
 	blBasicPresentRenderPass(
-		const std::shared_ptr<blRenderDevice> renderDevice,
-		const std::shared_ptr<blSwapchain> swapchain);
+		std::shared_ptr<const blRenderDevice> renderDevice,
+		std::shared_ptr<const blSwapchain> swapchain,
+		const blRenderPassFunction& func);
 	~blBasicPresentRenderPass();
 
 
-	void record(VkCommandBuffer cmd) override;
+	virtual void record(VkCommandBuffer cmd, uint32_t index) override;
+	virtual void resize(blExtent2D extent) override;
 
 private:
-	void createSync();
-	void createImageViews();
 	void createFramebuffers();
-	
-	const std::shared_ptr<blRenderDevice> _renderDevice;
-	const std::shared_ptr<blSwapchain> _swapchain;
+	void destroyFramebuffers();
 
-	uint32_t _currentFrame;
-	std::vector<VkImageView> _swapImageViews;
+	std::shared_ptr<const blRenderDevice> _renderDevice;
+	std::shared_ptr<const blSwapchain> _swapchain;
+	
 	std::vector<VkFramebuffer> _swapFramebuffers;
-	std::vector<VkSemaphore> _imageAvailableSemaphores;
-	std::vector<VkSemaphore> _renderFinishedSemaphores;
-	std::vector<VkFence> _inFlightFences;
 };

@@ -103,5 +103,6 @@
     },
     "vcpkg.general.enable": false,
     "cmake.configureArgs": [],
-    "cmake.configureSettings": {}
+    "cmake.configureSettings": {},
+    "cmake.configureArgs": []
 }
