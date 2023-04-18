@@ -23,7 +23,7 @@ public:
     bool areQueuesSame() const noexcept;
     vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, 
         vk::ImageTiling tiling, vk::FormatFeatureFlags features) const;
-    void immediateSubmit(std::function<void(vk::CommandBuffer)> recorder);
+    void immediateSubmit(const std::function<void(vk::CommandBuffer)>& recorder);
     void waitForDevice() const noexcept;
 
 private:
@@ -45,11 +45,12 @@ private:
 
     std::shared_ptr<blWindow> _window;
 
-    vk::Instance        _instance;
-    vk::PhysicalDevice  _physicalDevice;
-    uint32_t            _graphicsFamilyIndex, _presentFamilyIndex;
-    vk::Device          _device;
-    vk::Queue           _graphicsQueue, _presentQueue;
-    vk::CommandPool     _commandPool;
-    VmaAllocator        _allocator;
+    vk::UniqueInstance      _instance;
+    vk::PhysicalDevice      _physicalDevice;
+    uint32_t                _graphicsFamilyIndex, _presentFamilyIndex;
+    vk::UniqueDevice        _device;
+    vk::Queue               _graphicsQueue, _presentQueue;
+    vk::UniqueCommandPool   _commandPool;
+
+    VmaAllocator            _allocator;
 };

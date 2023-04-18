@@ -15,8 +15,7 @@ public:
         uint32_t subpass = 0);
     ~blPipeline() noexcept;
 
-    const std::vector<VkDescriptorSetLayout>& getDescriptorSetLayouts() const noexcept;
-    const std::vector<blPipelineDescriptor>& getDescriptorData() const noexcept;
+    const std::vector<vk::DescriptorSetLayout>& getDescriptorSetLayouts() const noexcept;
 
 private:
     void createDescriptorSetLayouts(

@@ -9,7 +9,7 @@
 
 #include <SDL2/SDL.h>
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
 
 class BLOODLUST_WINDOW_API blWindow
 {
@@ -19,8 +19,8 @@ public:
         std::optional<blDisplay> display = std::nullopt);
     ~blWindow() noexcept;
 
-    VkSurfaceKHR createVulkanSurface(VkInstance instance);
-    VkSurfaceKHR getVulkanSurface() const noexcept;
+    vk::SurfaceKHR createVulkanSurface(vk::Instance instance);
+    vk::SurfaceKHR getVulkanSurface() const noexcept;
     blExtent2D getExtent() const noexcept;
     SDL_Window* getHandle() const noexcept;
     std::vector<const char*> getVulkanInstanceExtensions() const;
@@ -29,5 +29,5 @@ private:
     SDL_Window* _pWindow;
 
     VkInstance _instance;
-    VkSurfaceKHR _surface;
+    vk::SurfaceKHR _surface;
 };

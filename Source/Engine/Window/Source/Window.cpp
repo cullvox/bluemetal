@@ -55,18 +55,21 @@ SDL_Window* blWindow::getHandle() const noexcept
     return _pWindow;
 }
 
-VkSurfaceKHR blWindow::createVulkanSurface(VkInstance instance)
+vk::SurfaceKHR blWindow::createVulkanSurface(vk::Instance instance)
 {
-    if (SDL_Vulkan_CreateSurface(_pWindow, instance, &_surface) != SDL_TRUE)
+    VkSurfaceKHR temp{};
+    if (SDL_Vulkan_CreateSurface(_pWindow, (VkInstance)instance, &temp) != SDL_TRUE)
     {
-        throw std::runtime_error("Could not create a Vulkan surface from an SDL window!");
+        BL_LOG(blLogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
     }
 
+    _surface = (vk::SurfaceKHR)temp;
     _instance = instance;
+    
     return _surface;
 }
 
-VkSurfaceKHR blWindow::getVulkanSurface() const noexcept
+vk::SurfaceKHR blWindow::getVulkanSurface() const noexcept
 {
     return _surface;
 }

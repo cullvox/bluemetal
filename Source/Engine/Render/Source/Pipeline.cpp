@@ -60,7 +60,7 @@ void blPipeline::createDescriptorSetLayouts(
 
 void blPipeline::createLayout()
 {
-    const VkPipelineLayoutCreateInfo layoutInfo{
+    const vk::PipelineLayoutCreateInfo layoutInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
@@ -87,21 +87,21 @@ void blPipeline::createPipeline(
     uint32_t subpass)
 {
 
-    std::vector<VkPipelineShaderStageCreateInfo> stages(shaders.size());
-    VkPipelineVertexInputStateCreateInfo vertexState;
+    std::vector<vk::PipelineShaderStageCreateInfo> stages(shaders.size());
+
+    vk::PipelineVertexInputStateCreateInfo vertexState{};
 
     for (int i = 0; i < shaders.size(); i++)
     {
         const auto shader = shaders[i];
 
-        const VkPipelineShaderStageCreateInfo stageInfo{
-            .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = 0,
-            .stage = shader->getStage(),
-            .module = shader->getModule(),
-            .pName = "main", // All shaders must use 'main' for entry 
-            .pSpecializationInfo = nullptr
+        const vk::PipelineShaderStageCreateInfo stageInfo
+        {
+            {},                     // flags
+            shader->getStage(),     // stage
+            shader->getModule(),    // module
+            "main",                 // pName
+            nullptr                 // pSpecializationInfo
         };
         
         stages[i] = stageInfo;
@@ -113,22 +113,24 @@ void blPipeline::createPipeline(
         }
     }
 
-    const VkPipelineInputAssemblyStateCreateInfo inputAssembly{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,
-        .primitiveRestartEnable = VK_TRUE
+    const vk::PipelineInputAssemblyStateCreateInfo inputAssembly
+    {
+        {},                                     // flags
+        vk::PrimitiveTopology::eTriangleList,   // topology
+        VK_TRUE                                 // primitiveRestartEnable
     };
 
-    const VkPipelineTessellationStateCreateInfo tessellationState{
+    const vk::PipelineTessellationStateCreateInfo tessellationState
+    {
         .sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
         .patchControlPoints = 0
     };
 
-    const std::array<vk::Viewport, 1> viewports{
+    const std::array viewports
+    {
+        vk::Viewport
         {
             0.0f, 0.0f, 
             0.0f, 0.0f,
@@ -136,13 +138,16 @@ void blPipeline::createPipeline(
         }
     };
 
-    const std::array<vk::Scissor, 1> scissors{
+    const std::array scissors
+    {
+        vk::Scissor
         {
             
         }
     }
 
-    const vk::PipelineViewportStateCreateInfo viewportState{
+    const vk::PipelineViewportStateCreateInfo viewportState
+    {
         {},
         {},
         {}    
@@ -153,7 +158,7 @@ void blPipeline::createPipeline(
         .pScissors = nullptr
     };
 
-    const VkPipelineRasterizationStateCreateInfo rasterizationState{
+    const vk::PipelineRasterizationStateCreateInfo rasterizationState{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
@@ -206,7 +211,7 @@ void blPipeline::createPipeline(
         vk::DynamicState::eScissor,
     };
 
-    const VkPipelineDynamicStateCreateInfo dynamicStateInfo{
+    const vk::PipelineDynamicStateCreateInfo dynamicStateInfo{
         .sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
