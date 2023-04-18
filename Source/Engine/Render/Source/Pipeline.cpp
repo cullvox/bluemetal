@@ -60,25 +60,24 @@ void blPipeline::createDescriptorSetLayouts(
 
 void blPipeline::createLayout()
 {
+    // Transform the vk::UniqueDescriptorSetLayout objects to normal vk::DescriptorSetLayout objects 
+    std::vector<vk::DescriptorSetLayout> setLayouts{};
+    std::transform(
+        _setLayouts.begin(), _setLayouts.end(),
+        setLayouts.begin(),
+        [](vk::UniqueDescriptorSetLayout unique){
+            return unique.get();
+        });
+
     const vk::PipelineLayoutCreateInfo layoutInfo{
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .setLayoutCount = 0,
-        .pSetLayouts = nullptr,
-        .pushConstantRangeCount = 0,
-        .pPushConstantRanges = nullptr,
+        {},
+        setLayouts,
+        {},
+        {}
     };
 
-    if (vkCreatePipelineLayout(
-            _renderDevice->getDevice(), 
-            &layoutInfo, 
-            nullptr, 
-            &_pipelineLayout)
-        != VK_SUCCESS)
-    {
-        BL_LOG(blLogType::eFatal, "Could not create a pipeline layout!");
-    }
+    _pipelineLayout = _renderDevice->getDevice()
+        .createPipelineLayoutUnique(layoutInfo);
 }
 
 void blPipeline::createPipeline(
@@ -86,32 +85,45 @@ void blPipeline::createPipeline(
     const std::vector<std::shared_ptr<const blShader>>& shaders,
     uint32_t subpass)
 {
-
     std::vector<vk::PipelineShaderStageCreateInfo> stages(shaders.size());
+    
+    std::transform(
+        shaders.begin(), shaders.end(),
+        stages.begin(),
+        [](std::shared_ptr<const blShader> shader)
+        {
+            return const vk::PipelineShaderStageCreateInfo
+            {
+                {},                     // flags
+                shader->getStage(),     // stage
+                shader->getModule(),    // module
+                "main",                 // pName
+                nullptr                 // pSpecializationInfo
+            };
+        });
+
+    auto vertexShader = 
+        *std::find_if( // <- This dereference may be dangerous
+            shaders.begin(), shaders.end(), 
+            [](auto shader)
+            { 
+                return shader->getStage() == vk::ShaderStageFlagBits::eVertex; 
+            });
 
     vk::PipelineVertexInputStateCreateInfo vertexState{};
-
-    for (int i = 0; i < shaders.size(); i++)
+    for (auto s : shaders)
     {
-        const auto shader = shaders[i];
-
-        const vk::PipelineShaderStageCreateInfo stageInfo
+        if (s->getStage() == VK_SHADER_STAGE_VERTEX_BIT)
         {
-            {},                     // flags
-            shader->getStage(),     // stage
-            shader->getModule(),    // module
-            "main",                 // pName
-            nullptr                 // pSpecializationInfo
-        };
-        
-        stages[i] = stageInfo;
+            vertexState = s->getVertexState();
+        }
     
         // If this shader is a vertex shader determine the vertex state
-        if (shader->getStage() == VK_SHADER_STAGE_VERTEX_BIT)
-        {
-            vertexState = shader->getVertexState();
-        }
     }
+
+    
+
+    std::
 
     const vk::PipelineInputAssemblyStateCreateInfo inputAssembly
     {
@@ -122,10 +134,8 @@ void blPipeline::createPipeline(
 
     const vk::PipelineTessellationStateCreateInfo tessellationState
     {
-        .sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .patchControlPoints = 0
+        {}, // flags 
+        0   // patchControlPoints
     };
 
     const std::array viewports
@@ -144,7 +154,7 @@ void blPipeline::createPipeline(
         {
             
         }
-    }
+    };
 
     const vk::PipelineViewportStateCreateInfo viewportState
     {
@@ -186,15 +196,15 @@ void blPipeline::createPipeline(
 
     const vk::PipelineDepthStencilStateCreateInfo depthStencilState{}; // TODO 
 
-    const std::array<vk::PipelineColorBlendAttachmentState, 1> attachments = {
-        {
-            VK_TRUE,                                // blendEnable
-            vk::BlendFactor::eSrcAlpha,             // srcColorBlendFactor        
-            vk::BlendFactor::eOneMinusSrcAlpha,     // dstColorBlendFactor                
-            vk::BlendOp::eAdd,                      // colorBlendOp
-            vk::BlendFactor::eOne,                  // srcAlphaBlendFactor    
-            vk::BlendFactor::eZero,                 // dstAlphaBlendFactor    
-            vk::BlendOp::eAdd,                      // alphaBlendOp
+    const std::array attachments = {
+        vk::PipelineColorBlendAttachmentState{
+            VK_TRUE,                            // blendEnable
+            vk::BlendFactor::eSrcAlpha,         // srcColorBlendFactor        
+            vk::BlendFactor::eOneMinusSrcAlpha, // dstColorBlendFactor                
+            vk::BlendOp::eAdd,                  // colorBlendOp
+            vk::BlendFactor::eOne,              // srcAlphaBlendFactor    
+            vk::BlendFactor::eZero,             // dstAlphaBlendFactor    
+            vk::BlendOp::eAdd,                  // alphaBlendOp
         }
     };
 

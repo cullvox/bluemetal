@@ -8,7 +8,7 @@ blShader::blShader(std::shared_ptr<const blRenderDevice> renderDevice,
     std::span<uint32_t> code)
     : _renderDevice(renderDevice)
 {
-    const VkShaderModuleCreateInfo createInfo{
+    const vk::ShaderModuleCreateInfo createInfo{
         .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
         .pNext = nullptr,
         .flags = 0,
@@ -36,7 +36,7 @@ blShader::blShader(std::shared_ptr<const blRenderDevice> renderDevice,
         throw std::runtime_error("Could not create a vulkan reflection shader module!");
     }
 
-    _stage = (VkShaderStageFlagBits)reflectModule.shader_stage;
+    _stage = (vk::ShaderStageFlagBits)reflectModule.shader_stage;
 
     findVertexState(reflectModule);
 
@@ -48,17 +48,17 @@ blShader::~blShader() noexcept
     vkDestroyShaderModule(_renderDevice->getDevice(), _module, nullptr);
 } 
 
-VkShaderStageFlagBits blShader::getStage() const noexcept
+vk::ShaderStageFlagBits blShader::getStage() const noexcept
 {
     return _stage;
 }
 
-VkShaderModule blShader::getModule() const noexcept
+vk::ShaderModule blShader::getModule() const noexcept
 {
     return _module;
 }
 
-const VkPipelineVertexInputStateCreateInfo& blShader::getVertexState() const
+const vk::PipelineVertexInputStateCreateInfo& blShader::getVertexState() const
 {
     if (_stage != VK_SHADER_STAGE_VERTEX_BIT)
         throw std::runtime_error("Tried to get vertex state of a non vertex shader!");
@@ -74,13 +74,13 @@ const std::vector<blShaderDescriptorReflection>& blShader::getDescriptorReflecti
 void blShader::findVertexState(const SpvReflectShaderModule& reflModule)
 {
 
-    if (_stage != VK_SHADER_STAGE_VERTEX_BIT)
+    if (_stage != vk::ShaderStageFlagBits::eVertex)
         return;
 
     // These settings are all assumed until pointed otherwise needed to change.
     _vertexBinding.binding = 0;
     _vertexBinding.stride = 0; // Computed later
-    _vertexBinding.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    _vertexBinding.inputRate = vk::VertexInputRate::eVertex;
 
     for (uint32_t i = 0; i < reflModule.input_variable_count; i++)
     {
@@ -92,11 +92,11 @@ void blShader::findVertexState(const SpvReflectShaderModule& reflModule)
             continue;
         } 
 
-        const VkVertexInputAttributeDescription attributeDescription{
-            .location = reflVar.location,
-            .binding = _vertexBinding.binding,
-            .format = (VkFormat)reflVar.format,
-            .offset = 0, // Computed later
+        const vk::VertexInputAttributeDescription attributeDescription{
+            reflVar.location,               // location
+            _vertexBinding.binding,         // binding
+            (vk::Format)reflVar.format,     // format
+            0,                              // offset (Computed later)
         };
 
         _vertexAttributes.emplace_back(attributeDescription);
@@ -106,8 +106,8 @@ void blShader::findVertexState(const SpvReflectShaderModule& reflModule)
     std::sort(
         _vertexAttributes.begin(),
         _vertexAttributes.end(),
-        [](const VkVertexInputAttributeDescription& a,
-           const VkVertexInputAttributeDescription& b){
+        [](const vk::VertexInputAttributeDescription& a,
+           const vk::VertexInputAttributeDescription& b){
             return a.location < b.location;
         });
 
@@ -120,20 +120,16 @@ void blShader::findVertexState(const SpvReflectShaderModule& reflModule)
         _vertexBinding.stride += formatSize;
     }
 
-    _vertexState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    _vertexState.pNext = nullptr;
-    _vertexState.flags = 0;
-    _vertexState.vertexBindingDescriptionCount = 1;
-    _vertexState.pVertexBindingDescriptions = &_vertexBinding;
-    _vertexState.vertexAttributeDescriptionCount = (uint32_t)_vertexAttributes.size();
-    _vertexState.pVertexAttributeDescriptions = _vertexAttributes.data(); 
-
+    _vertexState
+        .setVertexBindingDescriptions({_vertexBinding})
+        .setVertexAttributeDescriptions(_vertexAttributes); 
 }
 
 void blShader::findDescriptorReflections(const SpvReflectShaderModule& reflModule)
 {
-
     _descriptorReflections.resize(reflModule.descriptor_set_count);
+
+    std::transform
 
     for (size_t i = 0; i < _descriptorReflections.size(); i++)
     {
@@ -144,12 +140,12 @@ void blShader::findDescriptorReflections(const SpvReflectShaderModule& reflModul
         {
             const SpvReflectDescriptorBinding& reflBinding = *(reflSet.bindings[j]);
             
-            VkDescriptorSetLayoutBinding layoutBinding{
-                .binding = reflBinding.binding,
-                .descriptorType = (VkDescriptorType)reflBinding.descriptor_type,
-                .descriptorCount = 1,
-                .stageFlags = (VkShaderStageFlags)_stage,
-                .pImmutableSamplers = nullptr,
+            vk::DescriptorSetLayoutBinding layoutBinding{
+                reflBinding.binding,                                // binding
+                (vk::DescriptorType)reflBinding.descriptor_type,    // descriptorType
+                1,                                                  // descriptorCount
+                (vk::ShaderStageFlags)_stage,                       // stageFlags
+                nullptr,                                            // pImmutableSamplers
             };
 
             for (uint32_t k = 0; k < reflBinding.array.dims_count; k++)

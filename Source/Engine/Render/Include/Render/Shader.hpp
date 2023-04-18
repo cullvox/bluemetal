@@ -19,9 +19,9 @@ public:
         std::span<uint32_t> bytes);
     ~blShader() noexcept;
 
-    VkShaderStageFlagBits getStage() const noexcept;
-    VkShaderModule getModule() const noexcept;
-    const VkPipelineVertexInputStateCreateInfo& getVertexState() const; // Will throw if shader is not a vertex shader 
+    vk::ShaderStageFlagBits getStage() const noexcept;
+    vk::ShaderModule getModule() const noexcept;
+    const vk::PipelineVertexInputStateCreateInfo& getVertexState() const; // Will throw if shader is not a vertex shader 
     const std::vector<blShaderDescriptorReflection>& getDescriptorReflections() const noexcept;
 
 private:
@@ -30,11 +30,12 @@ private:
 
     std::shared_ptr<const blRenderDevice> _renderDevice;
 
-    VkShaderModule _module;
-    VkShaderStageFlagBits _stage;
-    VkVertexInputBindingDescription _vertexBinding;
-    std::vector<VkVertexInputAttributeDescription> _vertexAttributes;
-    VkPipelineVertexInputStateCreateInfo _vertexState;
+    vk::ShaderModule _module;
+    vk::ShaderStageFlagBits _stage;
+    vk::VertexInputBindingDescription _vertexBinding;
+    std::vector<vk::VertexInputAttributeDescription> _vertexAttributes;
+    vk::PipelineVertexInputStateCreateInfo _vertexState;
+    
     std::vector<blShaderDescriptorReflection> _descriptorReflections;
 
 };
