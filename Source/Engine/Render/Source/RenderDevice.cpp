@@ -96,7 +96,7 @@ vk::Format blRenderDevice::findSupportedFormat(const std::vector<vk::Format>& ca
 }
 
 void blRenderDevice::immediateSubmit(
-    const std::function<void(vk::CommandBuffer)>& recorder)
+    const std::function<void(vk::CommandBuffer)>& recorder) const
 {
     const vk::CommandBufferAllocateInfo allocateInfo{
         getCommandPool(),
@@ -311,7 +311,7 @@ void blRenderDevice::createDevice()
     }
 
     const float queuePriorities[] = { 1.0f, 1.0f };
-    std::vector<vk::DeviceQueueCreateInfo> queueCreateInfos{
+    std::vector queueCreateInfos{
         vk::DeviceQueueCreateInfo{
             {},                     // flags
             _graphicsFamilyIndex,   // queueFamilyIndex

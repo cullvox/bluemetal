@@ -137,5 +137,4 @@ struct blVulkanFormat
             default: throw std::runtime_error("Unimplemented vulkan format!");
         }
     } 
-
-}
+};

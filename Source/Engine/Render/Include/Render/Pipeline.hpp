@@ -9,12 +9,15 @@ class BLOODLUST_RENDER_API blPipeline
 {
 
 public:
-    blPipeline(std::shared_ptr<const blRenderDevice> renderDevice,
+    blPipeline(
+        std::shared_ptr<const blRenderDevice> renderDevice,
         std::vector<std::shared_ptr<const blShader>>& shaders,
         std::shared_ptr<const blRenderPass> renderPass,
         uint32_t subpass = 0);
     ~blPipeline() noexcept;
 
+    vk::PipelineLayout getPipelineLayout() const noexcept;
+    vk::Pipeline getPipeline() const noexcept;
     const std::vector<vk::DescriptorSetLayout>& getDescriptorSetLayouts() const noexcept;
 
 private:

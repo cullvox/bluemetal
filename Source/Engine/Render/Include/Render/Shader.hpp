@@ -16,7 +16,7 @@ class BLOODLUST_RENDER_API blShader
 {
 public:
     blShader(std::shared_ptr<const blRenderDevice> renderDevice, 
-        std::span<uint32_t> bytes);
+        std::span<const uint32_t> bytes);
     ~blShader() noexcept;
 
     vk::ShaderStageFlagBits getStage() const noexcept;
@@ -30,7 +30,7 @@ private:
 
     std::shared_ptr<const blRenderDevice> _renderDevice;
 
-    vk::ShaderModule _module;
+    vk::UniqueShaderModule _module;
     vk::ShaderStageFlagBits _stage;
     vk::VertexInputBindingDescription _vertexBinding;
     std::vector<vk::VertexInputAttributeDescription> _vertexAttributes;

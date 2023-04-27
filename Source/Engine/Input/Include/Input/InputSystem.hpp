@@ -1,10 +1,12 @@
 #pragma once
 
 #include "Core/Precompiled.hpp"
+#include "Core/CallbackList.hpp"
 #include "Math/Vector2.hpp"
 #include "Math/Vector3.hpp"
 #include "Input/InputEvents.hpp"
 #include "Input/Export.h"
+
 
 #include <SDL2/SDL.h>
 
@@ -17,17 +19,17 @@ struct blGenericInputEventFilter
         BL_INPUT_SYSTEM_MAX_FILTER_EVENTS>  events;
 };
 
-class blInputObserver
-{
-public:
-    virtual void onEvent(blEventTypeFlagBits type, blGenericEvent event,  
-        blEventValueType valueType,  blEventValue value) = 0;
-};
+using blInputHookCallbackFunction = blCallbackList<void(const SDL_Event*)>::Callback;
+using blInputHookCallback = blCallbackList<void(const SDL_Event*)>::Handle;
 
 class BLOODLUST_INPUT_API blInputSystem
 {
 public:
+    
     static std::shared_ptr<blInputSystem> getInstance() noexcept;
+
+    blInputSystem();
+    ~blInputSystem();
 
     // Updates the input values for the next get functions.
     void poll() noexcept;
@@ -36,21 +38,14 @@ public:
     blButton getMouseButton(blMouseButtonEvent button) const noexcept;
     blVector2f getMouse(blMouseEvent mouse) const noexcept;
 
-
-    // Attaches an observer to get a direct channel to input values.
-    void attach(const blInputObserver* pObserver, 
-        const blGenericInputEventFilter& filter);
-    void remove(const blInputObserver* pObserver);
+    blInputHookCallback addHook(const blInputHookCallbackFunction& function);
+    void removeHook(blInputHookCallback handle);
 
 private:
-    static std::shared_ptr<blInputSystem> _instance;
-
-    blInputSystem();
-    ~blInputSystem();
-
     void processKeyboard() const noexcept;
     void processGamepad() const noexcept;
 
-    std::vector<blInputObserver*> _observers;
+    blCallbackList<void(const SDL_Event*)> _hookCallbacks;
     
+    friend class std::shared_ptr<blInputSystem>;
 };

@@ -1,6 +1,6 @@
 #include "Core/Log.hpp"
 #include "Engine/Engine.hpp"
-#include "Render/BasicRenderer/BasicPresentRenderPass.hpp"
+#include "Render/Renderer/PresentRenderPass.hpp"
 #include "ImGui/ImGui.hpp"
 
 void applyFont()
@@ -94,16 +94,16 @@ blEngine::blEngine(const std::string& applicationName)
     _renderDevice = std::make_shared<blRenderDevice>(_window);
     _swapchain = std::make_shared<blSwapchain>(_window, _renderDevice);
 
-    _presentPass = std::make_shared<blBasicPresentRenderPass>(_renderDevice, _swapchain);
+    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, [](VkCommandBuffer cmd){});
 
     std::vector<std::shared_ptr<blRenderPass>> passes
     {
         _presentPass
     };
 
-    _renderer = std::make_shared<blRenderer>(_renderDevice, passes);
+    _renderer = std::make_shared<blRenderer>(_renderDevice, _swapchain, passes);
 
-    blImGui::init(_window, _renderDevice);
+    blImGui::init(_window, _renderDevice, _presentPass);
 
     applyImStyle();
     
@@ -120,22 +120,9 @@ bool blEngine::run()
     while (not _close)
     {
         _frameCounter.beginFrame();
-        
         _inputSystem->poll();
         
-        VkCommandBuffer commandBuffer{};
-
-        //if (_renderer.beginFrame(commandBuffer))
-        //{
-        //    blImGui::beginFrame();
-        //
-        //    ImGui::ShowDemoWindow();
-        //
-        //
-        //    blImGui::endFrame(commandBuffer);
-        //    //_renderer.endFrame();
-        //}
-
+        _renderer->render();
         _frameCounter.endFrame();
     }
 

@@ -3,7 +3,7 @@
 #include "Core/Precompiled.hpp"
 
 template<typename TReturn, typename...TArgs>
-class CallbackList;
+class blCallbackList;
 
 /** \brief Custom doubly linked list containing std::function's with a specific signature. 
 *
@@ -15,7 +15,7 @@ class CallbackList;
 * 
 */
 template<typename TReturn, typename...TArgs>
-class CallbackList<TReturn(TArgs...)>
+class blCallbackList<TReturn(TArgs...)>
 {
 	using _Callback = std::function<TReturn(TArgs...)>;
 	using _Handle = std::list<_Callback>::iterator;
@@ -30,8 +30,8 @@ public:
 	/** \brief A handle is defined as an iterator of the list giving a value to remove. */
 	using Handle = _Handle;
 
-	CallbackList() = default;
-	~CallbackList() = default;
+	blCallbackList() = default;
+	~blCallbackList() = default;
 
 	/** \brief Runs all the callbacks with the following arguments.
 	*
@@ -73,10 +73,14 @@ public:
 	* 
 	* 
 	*/
-	Handle append(const Callback& cb) noexcept
+	Handle add(const Callback& cb) noexcept
 	{
-		_callbacks.emplace_back(cb);
-		return --(_callbacks.end());
+		_callbacks.push_back(cb);
+
+		auto it = _callbacks.end();
+		it--;
+
+		return it;
 	}
 
 	/** \brief Removes a callback from the list, must be a valid handle. */

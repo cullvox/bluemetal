@@ -4,14 +4,14 @@
 #include "Render/RenderPass.hpp"
 #include "Render/Swapchain.hpp"
 
-class blBasicPresentRenderPass : public blRenderPass
+class BLOODLUST_RENDER_API blPresentRenderPass : public blRenderPass
 {
 public:
-	blBasicPresentRenderPass(
+	blPresentRenderPass(
 		std::shared_ptr<const blRenderDevice> renderDevice,
 		std::shared_ptr<const blSwapchain> swapchain,
 		const blRenderPassFunction& func);
-	~blBasicPresentRenderPass();
+	~blPresentRenderPass();
 
 
 	virtual void record(VkCommandBuffer cmd, uint32_t index) override;
@@ -21,8 +21,6 @@ private:
 	void createFramebuffers();
 	void destroyFramebuffers();
 
-	std::shared_ptr<const blRenderDevice> _renderDevice;
+	std::vector<vk::UniqueFramebuffer> _swapFramebuffers;
 	std::shared_ptr<const blSwapchain> _swapchain;
-	
-	std::vector<VkFramebuffer> _swapFramebuffers;
 };

@@ -12,7 +12,7 @@ list(APPEND RenderSources
     "Source/Renderer.cpp"
     "Source/FrameCounter.cpp"
 
-    "Source/BasicRenderer/BasicPresentRenderPass.cpp")
+    "Source/Renderer/PresentRenderPass.cpp")
 
 bl_add_library(BloodLustRender Render "${RenderSources}")
 target_link_libraries(BloodLustRender bl::Core bl::Math BloodLustWindow)

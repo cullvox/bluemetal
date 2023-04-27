@@ -14,20 +14,27 @@ blRenderer::blRenderer(std::shared_ptr<const blRenderDevice> renderDevice,
 
 }
 
+blRenderer::~blRenderer()
+{
+
+}
+
 void blRenderer::buildSyncObjects()
 {
 
-    const VkCommandBufferAllocateInfo allocationInfo{
-        .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+    const vk::CommandBufferAllocateInfo allocationInfo
+    {
+        _renderDevice->getCommandPool(),    // commandPool 
+        vk::CommandBufferLevel::ePrimary,   // level
+        _swapchain->getImageCount()         // commandBufferCount
     };
 
-    if (vkAllocateCommandBuffers(
-            _renderDevice->getDevice(), 
-            &allocationInfo, 
-            _swapCommandBuffers.data())
-        != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not allocate renderer command buffers!");
-    }
+    _swapCommandBuffers = _renderDevice->getDevice()
+        .allocateCommandBuffers(allocationInfo);
 
+}
+
+void blRenderer::render()
+{
+    
 }

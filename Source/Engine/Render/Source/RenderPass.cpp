@@ -1,6 +1,7 @@
 #include "Render/RenderPass.hpp"
 
-blRenderPass::blRenderPass(std::shared_ptr<const blRenderDevice> renderDevice,
+blRenderPass::blRenderPass(
+    std::shared_ptr<const blRenderDevice> renderDevice,
     const blRenderPassFunction& func)
     : _renderDevice(renderDevice)
     , _func(func)
@@ -18,4 +19,9 @@ void blRenderPass::resize(blExtent2D extent)
 
 void blRenderPass::record(VkCommandBuffer cmd, uint32_t index)
 {
+}
+
+vk::RenderPass blRenderPass::getRenderPass() const noexcept
+{
+    return _pass.get();
 }

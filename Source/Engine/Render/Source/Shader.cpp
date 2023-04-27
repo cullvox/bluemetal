@@ -5,27 +5,21 @@
 
 
 blShader::blShader(std::shared_ptr<const blRenderDevice> renderDevice,
-    std::span<uint32_t> code)
+    std::span<const uint32_t> code)
     : _renderDevice(renderDevice)
 {
-    const vk::ShaderModuleCreateInfo createInfo{
-        .sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,
-        .pNext = nullptr,
-        .flags = 0,
-        .codeSize = code.size_bytes(),
-        .pCode = code.data()
+    
+    const vk::ShaderModuleCreateInfo createInfo
+    {
+        {},     // flags
+        code    // code
     };
 
-    if (vkCreateShaderModule(
-            _renderDevice->getDevice(), 
-            &createInfo, 
-            nullptr, 
-            &_module) 
-        != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not create a vulkan shader module!");
-    }
+    _module = _renderDevice->getDevice()
+        .createShaderModuleUnique(createInfo);
 
+
+    // Reflection on shader code using spirv-reflect
     SpvReflectShaderModule reflectModule{};
     if (spvReflectCreateShaderModule(
             code.size_bytes(), 
@@ -45,7 +39,6 @@ blShader::blShader(std::shared_ptr<const blRenderDevice> renderDevice,
 
 blShader::~blShader() noexcept
 {
-    vkDestroyShaderModule(_renderDevice->getDevice(), _module, nullptr);
 } 
 
 vk::ShaderStageFlagBits blShader::getStage() const noexcept
@@ -55,12 +48,12 @@ vk::ShaderStageFlagBits blShader::getStage() const noexcept
 
 vk::ShaderModule blShader::getModule() const noexcept
 {
-    return _module;
+    return _module.get();
 }
 
 const vk::PipelineVertexInputStateCreateInfo& blShader::getVertexState() const
 {
-    if (_stage != VK_SHADER_STAGE_VERTEX_BIT)
+    if (_stage != vk::ShaderStageFlagBits::eVertex)
         throw std::runtime_error("Tried to get vertex state of a non vertex shader!");
 
     return _vertexState;
@@ -128,8 +121,6 @@ void blShader::findVertexState(const SpvReflectShaderModule& reflModule)
 void blShader::findDescriptorReflections(const SpvReflectShaderModule& reflModule)
 {
     _descriptorReflections.resize(reflModule.descriptor_set_count);
-
-    std::transform
 
     for (size_t i = 0; i < _descriptorReflections.size(); i++)
     {

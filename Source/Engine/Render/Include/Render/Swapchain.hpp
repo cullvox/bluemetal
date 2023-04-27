@@ -7,30 +7,33 @@
 class BLOODLUST_RENDER_API blSwapchain
 {
 public:
-    static const VkFormat DEFAULT_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
-    static const VkColorSpaceKHR DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-    static const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
+    static const vk::Format DEFAULT_FORMAT = vk::Format::eR8G8B8A8Srgb;
+    static const vk::ColorSpaceKHR DEFAULT_COLOR_SPACE = vk::ColorSpaceKHR::eSrgbNonlinear;
+    static const vk::PresentModeKHR DEFAULT_PRESENT_MODE = vk::PresentModeKHR::eMailbox;
 
-    blSwapchain(std::shared_ptr<blWindow> window, 
+    blSwapchain(
+        std::shared_ptr<blWindow> window, 
         std::shared_ptr<const blRenderDevice> renderDevice);
     ~blSwapchain() noexcept;
 
     void recreate();
-    VkFormat getFormat() const noexcept;
+    vk::Format getFormat() const noexcept;
     blExtent2D getExtent() const noexcept;
     uint32_t getImageCount() const noexcept;
-    const std::vector<VkImage>& getImages() const noexcept;
-    const std::vector<VkImageView>& getImageViews() const noexcept;
-    const std::vector<VkFramebuffer>& getFramebuffers() const noexcept;
-    VkSwapchainKHR getSwapchain() const noexcept;
-    void acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex,
-        bool& recreated);
+    const std::vector<vk::Image>& getImages() const noexcept;
+    std::vector<vk::ImageView> getImageViews() const noexcept;
+    const std::vector<vk::Framebuffer>& getFramebuffers() const noexcept;
+    vk::SwapchainKHR getSwapchain() const noexcept;
+    void acquireNext(
+        vk::Semaphore semaphore, 
+        vk::Fence fence, 
+        uint32_t& imageIndex, bool& recreated);
 
 private:  
     void ensureSurfaceSupported();
     void chooseImageCount();
     void chooseFormat();
-    void choosePresentMode(VkPresentModeKHR requestedPresentMode = DEFAULT_PRESENT_MODE);
+    void choosePresentMode(vk::PresentModeKHR requestedPresentMode = DEFAULT_PRESENT_MODE);
     void chooseExtent();
     void obtainImages();
     void createImageViews();
@@ -39,11 +42,11 @@ private:
     std::shared_ptr<blWindow>               _window;
     std::shared_ptr<const blRenderDevice>   _renderDevice;
 
-    uint32_t                _imageCount;
-    VkSurfaceFormatKHR      _surfaceFormat;
-    VkPresentModeKHR        _presentMode;
-    VkExtent2D              _extent;
-    VkSwapchainKHR          _swapchain;
-    std::vector<VkImage>    _swapImages;
-    std::vector<VkImageView> _swapImageViews;
+    uint32_t                            _imageCount;
+    vk::SurfaceFormatKHR                _surfaceFormat;
+    vk::PresentModeKHR                  _presentMode;
+    vk::Extent2D                        _extent;
+    vk::UniqueSwapchainKHR              _swapchain;
+    std::vector<vk::Image>              _swapImages;
+    std::vector<vk::UniqueImageView>    _swapImageViews;
 };

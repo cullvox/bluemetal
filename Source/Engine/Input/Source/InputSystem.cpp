@@ -2,7 +2,6 @@
 #include "Input/InputSystem.hpp"
 #include "Input/InputConversions.hpp"
 
-
 blInputSystem::blInputSystem()
 {
 }
@@ -11,9 +10,14 @@ blInputSystem::~blInputSystem() noexcept
 {
 }
 
+std::shared_ptr<blInputSystem> blInputSystem::getInstance() noexcept
+{
+    static std::shared_ptr<blInputSystem> instance = std::make_shared<blInputSystem>();
+    return instance;
+}
+
 void blInputSystem::processKeyboard() const noexcept
 {
-    
 }
 
 void blInputSystem::poll() noexcept
@@ -25,6 +29,7 @@ void blInputSystem::poll() noexcept
     SDL_Event event;
     while (SDL_PollEvent(&event))
     {
+        _hookCallbacks(&event);
         //for (blInputObserver* observer : _observers)
             // observer->onEvent(&event);
     }
@@ -37,4 +42,14 @@ blButton blInputSystem::getKey(blKey key) const noexcept
 
     //pKeystates
     return blButton::eReleased;
+}
+
+blInputHookCallback blInputSystem::addHook(const blInputHookCallbackFunction& function)
+{
+    return _hookCallbacks.add(function);
+}
+
+void blInputSystem::removeHook(blInputHookCallback callback)
+{
+    _hookCallbacks.remove(callback);
 }

@@ -23,7 +23,7 @@ public:
     bool areQueuesSame() const noexcept;
     vk::Format findSupportedFormat(const std::vector<vk::Format>& candidates, 
         vk::ImageTiling tiling, vk::FormatFeatureFlags features) const;
-    void immediateSubmit(const std::function<void(vk::CommandBuffer)>& recorder);
+    void immediateSubmit(const std::function<void(vk::CommandBuffer)>& recorder) const;
     void waitForDevice() const noexcept;
 
 private:
