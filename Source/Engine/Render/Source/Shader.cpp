@@ -33,6 +33,7 @@ blShader::blShader(std::shared_ptr<const blRenderDevice> renderDevice,
     _stage = (vk::ShaderStageFlagBits)reflectModule.shader_stage;
 
     findVertexState(reflectModule);
+    findDescriptorReflections(reflectModule);
 
     spvReflectDestroyShaderModule(&reflectModule);
 }

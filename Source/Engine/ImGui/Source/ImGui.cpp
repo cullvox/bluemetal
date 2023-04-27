@@ -49,9 +49,8 @@ void blImGui::init(
 
 	_descriptorPool = _renderDevice->getDevice().createDescriptorPool(poolInfo);
 
-	ImGuiContext* context = ImGui::CreateContext();
-	ImGui::SetCurrentContext(context);
-
+	ImGui::CreateContext();
+	
 	ImGui_ImplSDL2_InitForVulkan(window->getHandle());
 
 	// Initialize ImGui for Vulkan, pass created objects.
