@@ -1,8 +1,6 @@
 include(BloodLustLibrary)
 
 list(APPEND ImGuiSources
-    "Source/imgui_impl_sdl2.cpp"
-    "Source/imgui_impl_vulkan.cpp"
     "Source/ImGui.cpp")
 
 bl_add_library(BloodLustImGui ImGui "${ImGuiSources}")

@@ -27,5 +27,4 @@ public:
 	static void shutdown() noexcept;
 	static void beginFrame() noexcept;
 	static void endFrame(VkCommandBuffer cmd) noexcept;
-
 };

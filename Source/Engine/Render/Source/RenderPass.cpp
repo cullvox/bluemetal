@@ -17,8 +17,16 @@ void blRenderPass::resize(blExtent2D extent)
     _extent = extent;
 }
 
-void blRenderPass::record(VkCommandBuffer cmd, uint32_t index)
+void blRenderPass::record(vk::CommandBuffer cmd, vk::Framebuffer framebuffer, vk::Rect2D renderArea)
 {
+    const vk::RenderPassBeginInfo beginInfo
+    {
+        getRenderPass(),
+        framebuffer,
+        renderArea,
+        
+    }
+
 }
 
 vk::RenderPass blRenderPass::getRenderPass() const noexcept

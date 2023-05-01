@@ -69,7 +69,7 @@ void blImGui::init(
 		VK_SAMPLE_COUNT_1_BIT,
 	};
 
-	if (not ImGui_ImplVulkan_Init(&initInfo, (VkRenderPass)_renderPass->getRenderPass()))
+	if (not ImGui_ImplVulkan_Init(&initInfo, _renderPass->getRenderPass()))
 	{
 		throw std::runtime_error("Could not initialize ImGui Vulkan!");
 	}

@@ -36,5 +36,8 @@ void blRenderer::buildSyncObjects()
 
 void blRenderer::render()
 {
-    
+    for (auto pass : _passes)
+    {
+        pass->record();
+    }
 }
