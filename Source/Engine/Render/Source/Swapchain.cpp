@@ -22,7 +22,7 @@ blSwapchain::~blSwapchain() noexcept
 {
 }
 
-vk::SwapchainKHR blSwapchain::getSwapchain() const noexcept
+vk::SwapchainKHR blSwapchain::getSwapchain() noexcept
 {
     return _swapchain.get();
 }
@@ -35,6 +35,11 @@ vk::Format blSwapchain::getFormat() const noexcept
 blExtent2D blSwapchain::getExtent() const noexcept
 {
     return blExtent2D{_extent.width, _extent.height};
+}
+
+vk::Extent2D blSwapchain::getExtentVk() const noexcept
+{
+    return _extent;
 }
 
 uint32_t blSwapchain::getImageCount() const noexcept
@@ -66,17 +71,18 @@ void blSwapchain::acquireNext(vk::Semaphore semaphore, vk::Fence fence, uint32_t
     imageIndex = 0;
     recreated = false;
 
-    auto resultValue = _renderDevice->getDevice()
-        .acquireNextImageKHR(getSwapchain(), std::numeric_limits<uint64_t>::max(), semaphore, fence);
-
-    if (resultValue.result == vk::Result::eErrorOutOfDateKHR)
+    try
+    {
+        imageIndex = _renderDevice->getDevice()
+            .acquireNextImageKHR(getSwapchain(), std::numeric_limits<uint64_t>::max(), semaphore, fence)
+            .value;
+    }
+    catch (const vk::OutOfDateKHRError& e)
     {
         recreate();
         recreated = true;
     }
-    else if (
-        resultValue.result != vk::Result::eSuccess && 
-        resultValue.result != vk::Result::eSuboptimalKHR)
+    catch (...)
     {
         BL_LOG(blLogType::eFatal, "Could not acquire the next swapchain image!")
     }
@@ -222,7 +228,7 @@ void blSwapchain::recreate()
 {
 
     _renderDevice->waitForDevice();
-    _renderDevice->getDevice().destroySwapchainKHR(_swapchain.get());
+    _renderDevice->getDevice().destroySwapchainKHR(_swapchain.release());
 
     _swapImageViews.clear();
 

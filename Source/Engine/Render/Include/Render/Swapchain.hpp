@@ -19,11 +19,12 @@ public:
     void recreate();
     vk::Format getFormat() const noexcept;
     blExtent2D getExtent() const noexcept;
+    vk::Extent2D getExtentVk() const noexcept;
     uint32_t getImageCount() const noexcept;
     const std::vector<vk::Image>& getImages() const noexcept;
     std::vector<vk::ImageView> getImageViews() const noexcept;
     const std::vector<vk::Framebuffer>& getFramebuffers() const noexcept;
-    vk::SwapchainKHR getSwapchain() const noexcept;
+    vk::SwapchainKHR getSwapchain() noexcept;
     void acquireNext(
         vk::Semaphore semaphore, 
         vk::Fence fence, 

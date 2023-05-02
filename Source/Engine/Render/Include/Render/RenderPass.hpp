@@ -11,7 +11,8 @@ public:
     blRenderPass() = default;
     virtual ~blRenderPass() = default; 
 
-    virtual vk::RenderPass getRenderPass() const noexcept;
-    virtual void resize(blExtent2D extent);
-    virtual void record(VkCommandBuffer cmd, uint32_t index);
+    virtual vk::RenderPass getRenderPass() const noexcept = 0;
+    virtual void resize(vk::Extent2D extent) = 0;
+    virtual void record(vk::CommandBuffer cmd, vk::Rect2D renderArea, 
+                    uint32_t index) = 0;
 };

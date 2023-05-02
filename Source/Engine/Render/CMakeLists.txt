@@ -8,7 +8,6 @@ list(APPEND RenderSources
     "Source/Shader.cpp"
     "Source/Pipeline.cpp"
     "Source/Swapchain.cpp"
-    "Source/RenderPass.cpp"
     "Source/Renderer.cpp"
     "Source/FrameCounter.cpp"
 

@@ -4,8 +4,9 @@ blPresentRenderPass::blPresentRenderPass(
 		std::shared_ptr<const blRenderDevice> renderDevice,
         std::shared_ptr<const blSwapchain> swapchain,
 		const blRenderPassFunction& func)
-    : blRenderPass(renderDevice, func)
+    : _renderDevice(renderDevice)
     , _swapchain(swapchain)
+    , _func(func)
 {
 
     const std::array attachments 
@@ -63,6 +64,36 @@ blPresentRenderPass::~blPresentRenderPass()
     destroyFramebuffers();
 }
 
+vk::RenderPass blPresentRenderPass::getRenderPass() const noexcept
+{
+    return _pass.get();
+}
+
+void blPresentRenderPass::resize(vk::Extent2D extent)
+{
+    destroyFramebuffers();
+    createFramebuffers();
+}
+
+void blPresentRenderPass::record(vk::CommandBuffer cmd, vk::Rect2D renderArea, uint32_t index)
+{
+    std::array<vk::ClearValue, 2> clearValues;
+    clearValues[0].color = vk::ClearColorValue{ 0.33f, 0.34f, 0.34f, 1.0f };
+    clearValues[1].depthStencil = vk::ClearDepthStencilValue{ 1.0f, 0 };
+
+    const vk::RenderPassBeginInfo beginInfo
+    {
+        getRenderPass(),                // renderPass
+        _swapFramebuffers[index].get(), // framebuffer
+        renderArea,                     // renderArea
+        clearValues,                    // clearValues
+    };
+
+    cmd.beginRenderPass(beginInfo, vk::SubpassContents::eInline);
+        _func(cmd);
+    cmd.endRenderPass();
+}
+
 void blPresentRenderPass::createFramebuffers()
 {
     const std::vector<vk::ImageView> attachments = _swapchain->getImageViews();
@@ -91,15 +122,4 @@ void blPresentRenderPass::createFramebuffers()
 void blPresentRenderPass::destroyFramebuffers()
 {
     _swapFramebuffers.clear();
-}
-
-void blPresentRenderPass::resize(blExtent2D extent)
-{
-    destroyFramebuffers();
-    createFramebuffers();
-}
-
-void blPresentRenderPass::record(VkCommandBuffer cmd, uint32_t index)
-{
-
 }
