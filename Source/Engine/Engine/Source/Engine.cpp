@@ -94,7 +94,13 @@ blEngine::blEngine(const std::string& applicationName)
     _renderDevice = std::make_shared<blRenderDevice>(_window);
     _swapchain = std::make_shared<blSwapchain>(_window, _renderDevice);
 
-    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, [](VkCommandBuffer cmd){});
+    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, [](VkCommandBuffer cmd){
+        blImGui::beginFrame();
+
+        ImGui::ShowDemoWindow();
+        
+        blImGui::endFrame(cmd);
+    });
 
     std::vector<std::shared_ptr<blRenderPass>> passes
     {
@@ -123,7 +129,10 @@ bool blEngine::run()
         _inputSystem->poll();
         
         _renderer->render();
-        _frameCounter.endFrame();
+        if (_frameCounter.endFrame())
+        {
+            BL_LOG(blLogType::eInfo, "Frames per second: {}", _frameCounter.getFramesPerSecond());
+        }
     }
 
     return true;

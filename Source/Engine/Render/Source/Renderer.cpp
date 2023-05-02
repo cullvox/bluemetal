@@ -10,9 +10,7 @@ blRenderer::blRenderer(std::shared_ptr<const blRenderDevice> renderDevice,
     , _passes(passes)
     , _currentFrame(0)
 {
-
     createSyncObjects();
-
 }
 
 blRenderer::~blRenderer()
@@ -23,6 +21,7 @@ blRenderer::~blRenderer()
 void blRenderer::createSyncObjects()
 {
 
+    // Allocate the per frame - swapping command buffers. 
     const vk::CommandBufferAllocateInfo allocationInfo
     {
         _renderDevice->getCommandPool(),    // commandPool 
@@ -34,14 +33,12 @@ void blRenderer::createSyncObjects()
         .allocateCommandBuffers(allocationInfo);
 
 
+    // Create the semaphores and fences
     _imageAvailableSemaphores.resize(_swapchain->getImageCount());
     _renderFinishedSemaphores.resize(_swapchain->getImageCount());
     _inFlightFences.resize(_swapchain->getImageCount());
 
-    const vk::SemaphoreCreateInfo semaphoreInfo
-    {
-    };
-
+    const vk::SemaphoreCreateInfo semaphoreInfo{};
     const vk::FenceCreateInfo fenceInfo
     {
         vk::FenceCreateFlagBits::eSignaled
@@ -49,12 +46,12 @@ void blRenderer::createSyncObjects()
 
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        std::ignore = _renderDevice->getDevice()
-            .createSemaphore(&semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]);
-        std::ignore = _renderDevice->getDevice()
-            .createSemaphore(&semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]);
-        std::ignore = _renderDevice->getDevice()
-            .createFence(&fenceInfo, nullptr, &_inFlightFences[i]);
+        _imageAvailableSemaphores[i] = _renderDevice->getDevice()
+            .createSemaphore(semaphoreInfo);
+        _renderFinishedSemaphores[i] = _renderDevice->getDevice()
+            .createSemaphore(semaphoreInfo);
+        _inFlightFences[i] = _renderDevice->getDevice()
+            .createFence(fenceInfo);
     }
 }
 
@@ -93,7 +90,8 @@ void blRenderer::render()
     uint32_t imageIndex = 0;
     bool recreated = false;
     
-    _swapchain->acquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, imageIndex, recreated);
+    _swapchain->acquireNext(_imageAvailableSemaphores[_currentFrame], 
+                                VK_NULL_HANDLE, imageIndex, recreated);
 
     if (recreated)
     {
@@ -104,11 +102,8 @@ void blRenderer::render()
         .resetFences({_inFlightFences[_currentFrame]});
     
     // Record each render pass
+    vk::CommandBufferBeginInfo beginInfo{};
     _swapCommandBuffers[_currentFrame].reset();
-    const vk::CommandBufferBeginInfo beginInfo
-    {
-    };
-    
     _swapCommandBuffers[_currentFrame].begin(beginInfo);
 
     const vk::Rect2D renderArea
