@@ -1,16 +1,9 @@
 #include "Config/ConfigToken.hpp"
 
-CToken::CToken(ETokenKind kind, const std::string_view lexeme, int lineNumber) noexcept
-    : m_kind(kind), m_lexeme(lexeme), m_lineNumber(lineNumber)
+blToken::blToken(blTokenKind kind, const std::string_view lexeme, int lineNumber, int characterNumber) noexcept
+    : _kind(kind)
+    , _lexeme(lexeme)
+    , _lineNumber(lineNumber)
+    , _characterNumber(characterNumber)
 {
-}
-
-ETokenKind CToken::Kind() const noexcept
-{
-    return m_kind;
-}
-
-std::string_view CToken::Lexeme() const noexcept
-{
-    return m_lexeme;
 }

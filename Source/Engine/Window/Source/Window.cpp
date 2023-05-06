@@ -39,8 +39,7 @@ blWindow::blWindow(const blDisplayMode& videoMode, const std::string& title, std
 
 blWindow::~blWindow()
 {
-    if (_surface) vkDestroySurfaceKHR(_instance, _surface, nullptr);
-    if (_pWindow)  SDL_DestroyWindow(_pWindow);
+    if (_pWindow) SDL_DestroyWindow(_pWindow);
 }
 
 blExtent2D blWindow::getExtent() const noexcept
@@ -55,23 +54,16 @@ SDL_Window* blWindow::getHandle() const noexcept
     return _pWindow;
 }
 
-vk::SurfaceKHR blWindow::createVulkanSurface(vk::Instance instance)
+vk::SurfaceKHR blWindow::createSurface(std::shared_ptr<const blWindow> window,
+                                            vk::Instance instance)
 {
-    VkSurfaceKHR temp{};
-    if (SDL_Vulkan_CreateSurface(_pWindow, (VkInstance)instance, &temp) != SDL_TRUE)
+    VkSurfaceKHR tempSurface = VK_NULL_HANDLE;
+    if (SDL_Vulkan_CreateSurface(window->getHandle(), instance, &tempSurface) != SDL_TRUE)
     {
         BL_LOG(blLogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
     }
 
-    _surface = (vk::SurfaceKHR)temp;
-    _instance = instance;
-    
-    return _surface;
-}
-
-vk::SurfaceKHR blWindow::getVulkanSurface() const noexcept
-{
-    return _surface;
+    return (vk::SurfaceKHR)tempSurface;
 }
 
 std::vector<const char*> blWindow::getVulkanInstanceExtensions() const

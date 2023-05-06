@@ -2,9 +2,12 @@
 
 #include <Core/Precompiled.hpp>
 
-namespace bl
+class blAsset
 {
+public:
+    blAsset() = default;
+    virtual ~blAsset() = default;
 
-using Asset = uint32_t;
-
-}
+    virtual void load() = 0;
+    virtual void unload() = 0;
+};

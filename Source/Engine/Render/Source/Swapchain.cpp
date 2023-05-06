@@ -3,16 +3,9 @@
 #include "Render/Swapchain.hpp"
 
 blSwapchain::blSwapchain(
-    std::shared_ptr<blWindow> window, 
     std::shared_ptr<const blRenderDevice> renderDevice)
-    : _window(window)
-    , _renderDevice(renderDevice)
+    : _renderDevice(renderDevice)
 {
-
-    // If the surface was not created yet, just do it automatically.
-    if (!_window->getVulkanSurface())
-        _window->createVulkanSurface(_renderDevice->getInstance());
-    
     ensureSurfaceSupported();
 
     recreate();
@@ -68,7 +61,6 @@ const std::vector<vk::Image>& blSwapchain::getImages() const noexcept
 
 void blSwapchain::acquireNext(vk::Semaphore semaphore, vk::Fence fence, uint32_t& imageIndex, bool& recreated)
 {
-    imageIndex = 0;
     recreated = false;
 
     try
@@ -93,7 +85,7 @@ void blSwapchain::ensureSurfaceSupported()
     VkBool32 supported = _renderDevice->getPhysicalDevice()
         .getSurfaceSupportKHR(
             _renderDevice->getPresentFamilyIndex(),
-            _window->getVulkanSurface());
+            _renderDevice->getSurface());
 
     if (!supported)
     {
@@ -104,7 +96,7 @@ void blSwapchain::ensureSurfaceSupported()
 void blSwapchain::chooseImageCount()
 {
     vk::SurfaceCapabilitiesKHR capabilities = _renderDevice->getPhysicalDevice()
-        .getSurfaceCapabilitiesKHR(_window->getVulkanSurface());
+        .getSurfaceCapabilitiesKHR(_renderDevice->getSurface());
 
     // Try to get three maximum amount images.
     _imageCount = 
@@ -119,7 +111,7 @@ void blSwapchain::chooseFormat()
 
     std::vector<vk::SurfaceFormatKHR> surfaceFormats = 
         _renderDevice->getPhysicalDevice()
-            .getSurfaceFormatsKHR(_window->getVulkanSurface());
+            .getSurfaceFormatsKHR(_renderDevice->getSurface());
 
     // Find the surface format/colorspace to be used.
     auto foundMode = std::find_if(
@@ -144,7 +136,7 @@ void blSwapchain::choosePresentMode(vk::PresentModeKHR requestedPresentMode)
 {
     // Obtain the present modes from the physical device.
     std::vector<vk::PresentModeKHR> presentModes = _renderDevice->getPhysicalDevice()
-        .getSurfacePresentModesKHR(_window->getVulkanSurface());
+        .getSurfacePresentModesKHR(_renderDevice->getSurface());
 
     _presentMode = vk::PresentModeKHR::eFifo; // If our mode wasn't found just use FIFO, default that's always available.
 
@@ -160,7 +152,7 @@ void blSwapchain::choosePresentMode(vk::PresentModeKHR requestedPresentMode)
 void blSwapchain::chooseExtent()
 {
     vk::SurfaceCapabilitiesKHR capabilities = _renderDevice->getPhysicalDevice()
-        .getSurfaceCapabilitiesKHR(_window->getVulkanSurface());
+        .getSurfaceCapabilitiesKHR(_renderDevice->getSurface());
 
 
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
@@ -169,7 +161,7 @@ void blSwapchain::chooseExtent()
     }
     else
     {
-        const blExtent2D extent = _window->getExtent();
+        const blExtent2D extent = _renderDevice->getWindow()->getExtent();
         _extent = VkExtent2D{
             std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
             std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
@@ -254,7 +246,7 @@ void blSwapchain::recreate()
     const vk::SwapchainCreateInfoKHR createInfo
     {
         {},                                         // flags 
-        _window->getVulkanSurface(),                // surface
+        _renderDevice->getSurface(),                // surface
         _imageCount,                                // minImageCount
         _surfaceFormat.format,                      // imageFormat
         _surfaceFormat.colorSpace,                  // imageColorSpace

@@ -2,125 +2,132 @@
 #include "Config/ConfigParser.hpp"
 
 
-CParser::CParser(const std::string& content) noexcept
-    : m_lexer(content), m_token()
+blParser::blParser(const std::string& content) noexcept
+    : _lexer(content)
+    , _token()
 {
 }
 
-const std::unordered_map<std::string, SParsedValue>& CParser::Parse()
+const std::unordered_map<std::string, blParsedValue>& blParser::parse()
 {
-    Next();
-    while (m_tokenKind != ETokenKind::eEnd)
-    {
-        std::string_view identifier{};
-        std::string_view value{};
+    next();
 
-        /* The first token must be an identifier. */
-        if (not m_token.Is(ETokenKind::eIdentifier)) 
+    std::string_view identifier{};
+    std::string_view value{};
+
+    while (_tokenKind != blTokenKind::eEnd)
+    {
+
+        // The first token must be an identifier.
+        if (not _token.is(blTokenKind::eIdentifier)) 
         {
-            PrintError("Identifier");
-            return m_values;
+            printError("value name");
+            return _values;
         }
-        identifier = m_token.Lexeme();
+
+        identifier = _token.getLexeme();
 
         /* Must be an equals. */
-        Next();
-        if (not m_token.Is(ETokenKind::eEqual))
+        next();
+        if (not _token.is(blTokenKind::eEqual))
         {
-            PrintError("=");
-            return m_values;
+            printError("=");
+            return _values;
         }
         
-        /* Must be a left-bracket or a number or a string */
-        Next();
-        switch (m_tokenKind)
+        // Must be a left curly, number or a string
+        next();
+
+        switch (_tokenKind)
         {
-            case ETokenKind::eLeftCurly:
+            case blTokenKind::eLeftCurly:
             {
-                m_groups.push_back(identifier);
-                RecomputeGroups();
-                Next();
+                // Instead of generating a new value create a new group
+                _groups.push_back(identifier);
+                recomputeGroups();
+                next();
                 continue;
             }
-            case ETokenKind::eNumber:
+
+            case blTokenKind::eNumber:
             {
-                m_values.insert({
-                    m_groupsStr + std::string{identifier}, 
-                    SParsedValue{ 
-                        .type = EParsedType::eInt, 
-                        .i = strtol(m_token.Lexeme().data(), nullptr, 10)
+                _values.insert({
+                    _groupsStr + std::string{identifier}, 
+                    blParsedValue{  
+                        strtol(_token.getLexeme().data(), nullptr, 10)
                     }
                 });
-                Next();
+                next();
                 break;
             }
-            case ETokenKind::eString:
+
+            case blTokenKind::eString:
             {
-                m_values.insert({
-                    m_groupsStr + std::string{identifier}, 
-                    SParsedValue{ 
-                        .type = EParsedType::eString, 
-                        .s = m_token.Lexeme()
-                    }
+                _values.insert({
+                    _groupsStr + std::string{identifier}, 
+                    blParsedValue{_token.getLexeme()}
                 });
-                Next();
+                next();
                 break;
             }
+
             default:
             {
-                PrintError("}, Number, or String");
-                return m_values;
+                printError("{, Number, or String");
+                return _values;
             }
         }
 
-        /* Check if the group ended after this value. */
-        if (m_tokenKind == ETokenKind::eRightCurly)
+        // Check if the group ended after this value.
+        if (_tokenKind == blTokenKind::eRightCurly)
         {
-            do {
-                if (m_groups.size() > 0)
+
+            // Remove consecutive group endings after the last value
+            do 
+            {
+                if (_groups.size() > 0)
                 {
-                    m_groups.pop_back();
-                    RecomputeGroups();
-                    Next();
+                    _groups.pop_back();
+                    recomputeGroups();
+                    next();
                 }
                 else
                 {
-                    PrintError("}");
-                    return m_values;
+                    printError("}");
+                    return _values;
                 }
                 
-            }
-            while (m_tokenKind == ETokenKind::eRightCurly);
+            } while (_tokenKind == blTokenKind::eRightCurly);
             continue;
         }
 
         /* A comma is expected if the group did not end. */
-        else if (m_tokenKind != ETokenKind::eComma)
+        else if (_tokenKind != blTokenKind::eComma)
         {
-            PrintError(",");
-            return m_values;
+            printError(",");
+            return _values;
         }
         
-        Next();
+        next();
     }
 
-    return m_values;
+    return _values;
 }
 
-void CParser::Next()
+void blParser::next()
 {
-    m_token = m_lexer.Next();
-    m_tokenKind = m_token.Kind();
+    _token = _lexer.next();
+    _tokenKind = _token.getKind();
 }
 
-void CParser::RecomputeGroups()
+void blParser::recomputeGroups()
 {
-    m_groupsStr.clear();
-    for (const std::string_view& view : m_groups)
-        m_groupsStr += std::string{view} + ".";
+    _groupsStr.clear();
+    for (const std::string_view& view : _groups)
+        _groupsStr += std::string{view} + ".";
 }
 
-void CParser::PrintError(const std::string& expected)
+void blParser::printError(const std::string& expected)
 {
-    BL_LOG(blLogType::eError, "({}): Invalid token, expected \"{}\", got \"{}\".\n", m_lexer.Line(), expected, m_token.Lexeme());
+    BL_LOG(blLogType::eError, "Config parsing errore: ({},{}): Invalid token, expected \"{}\", got \"{}\".\n", _lexer.getLineNumber(), _lexer.getCharacterNumber(), expected, _token.getLexeme());
 }

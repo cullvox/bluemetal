@@ -9,10 +9,10 @@
 #  ifndef BLOODLUST_INPUT_API
 #    ifdef BloodLustInput_EXPORTS
         /* We are building this library */
-#      define BLOODLUST_INPUT_API __declspec(dllexport)
+#      define BLOODLUST_INPUT_API 
 #    else
         /* We are using this library */
-#      define BLOODLUST_INPUT_API __declspec(dllimport)
+#      define BLOODLUST_INPUT_API 
 #    endif
 #  endif
 

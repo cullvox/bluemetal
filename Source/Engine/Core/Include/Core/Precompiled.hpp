@@ -23,6 +23,7 @@
 #include <variant>
 #include <span>
 #include <iterator>
+#include <numeric>
 
 #include <fmt/color.h>
 #include <fmt/chrono.h>

@@ -6,7 +6,7 @@
 #include <string>
 #include <string_view>
 
-class BLOODLUST_CONFIG_API CLexerUtils
+class BLOODLUST_CONFIG_API blLexerUtils
 {
 public:
     static bool IsSpace(char c) noexcept;
@@ -14,21 +14,23 @@ public:
     static bool IsIdentifierChar(char c) noexcept;
 };
 
-class BLOODLUST_CONFIG_API CLexer {
+class BLOODLUST_CONFIG_API blLexer {
 public:
-    CLexer(const std::string& content) noexcept;
+    blLexer(const std::string& content) noexcept;
 
-    CToken Next() noexcept;
-    int Line() const noexcept;
+    blToken next() noexcept;
+    int getLineNumber() const noexcept;
+    int getCharacterNumber() const noexcept;
 private:
-    CToken Identifier() noexcept;
-    CToken String() noexcept;
-    CToken Number() noexcept;
-    CToken Atom(ETokenKind kind) noexcept;
-    inline char Peek() const noexcept { return *m_it; }
-    inline char Get() noexcept { return *m_it++; }
+    blToken createIdentifier() noexcept;
+    blToken createString() noexcept;
+    blToken createNumber() noexcept;
+    blToken createAtom(blTokenKind kind) noexcept;
+    inline char peek() const noexcept { return *_it; }
+    inline char get() noexcept { return *_it++; }
 
-    const std::string& m_content;
-    std::string::const_iterator m_it;
-    int m_lineNumber;
+    const std::string& _content;
+    std::string::const_iterator _it;
+    int _lineNumber;
+    int _characterNumber;
 };

@@ -32,6 +32,17 @@ void blInputSystem::poll() noexcept
         _hookCallbacks(&event);
         //for (blInputObserver* observer : _observers)
             // observer->onEvent(&event);
+
+        switch (event.type)
+        {
+            case SDL_WINDOWEVENT:
+                switch (event.window.event)
+                {
+                    case SDL_WINDOWEVENT_CLOSE:
+                        _shouldClose = true;
+                }
+            break;
+        }
     }
 }
 
@@ -42,6 +53,11 @@ blButton blInputSystem::getKey(blKey key) const noexcept
 
     //pKeystates
     return blButton::eReleased;
+}
+
+bool blInputSystem::shouldClose() const noexcept
+{
+    return _shouldClose;
 }
 
 blInputHookCallback blInputSystem::addHook(const blInputHookCallbackFunction& function)

@@ -1,7 +1,6 @@
 include(BloodLustLibrary)
 
 list(APPEND RenderSources
-    "Source/RenderDevice.cpp"  
     "Source/RenderDevice.cpp"
     "Source/Buffer.cpp"
     "Source/Image.cpp"

@@ -11,9 +11,7 @@ public:
     static const vk::ColorSpaceKHR DEFAULT_COLOR_SPACE = vk::ColorSpaceKHR::eSrgbNonlinear;
     static const vk::PresentModeKHR DEFAULT_PRESENT_MODE = vk::PresentModeKHR::eMailbox;
 
-    blSwapchain(
-        std::shared_ptr<blWindow> window, 
-        std::shared_ptr<const blRenderDevice> renderDevice);
+    blSwapchain(std::shared_ptr<const blRenderDevice> renderDevice);
     ~blSwapchain() noexcept;
 
     void recreate();
@@ -25,10 +23,8 @@ public:
     std::vector<vk::ImageView> getImageViews() const noexcept;
     const std::vector<vk::Framebuffer>& getFramebuffers() const noexcept;
     vk::SwapchainKHR getSwapchain() noexcept;
-    void acquireNext(
-        vk::Semaphore semaphore, 
-        vk::Fence fence, 
-        uint32_t& imageIndex, bool& recreated);
+    void acquireNext(vk::Semaphore semaphore, vk::Fence fence, 
+                        uint32_t& imageIndex, bool& recreated);
 
 private:  
     void ensureSurfaceSupported();
@@ -40,7 +36,6 @@ private:
     void createImageViews();
     void destroyImageViews();
     
-    std::shared_ptr<blWindow>               _window;
     std::shared_ptr<const blRenderDevice>   _renderDevice;
 
     uint32_t                            _imageCount;

@@ -54,6 +54,7 @@ bool blFrameCounter::endFrame() noexcept
 
 int blFrameCounter::getFramesPerSecond() const noexcept
 {
+    if (_framesPerSecond.size() < 1) return 0;
     return _framesPerSecond.back();
 }
 
@@ -67,11 +68,17 @@ float blFrameCounter::getAverageFramesPerSecond(int seconds) const noexcept
     }
 
     // Get the average fps
-    seconds = std::clamp(seconds, 1, (int)_framesPerSecond.size());
+    seconds = std::clamp(seconds, 0, (int)_framesPerSecond.size());
 
     float averageFPS = 0;
-    for (int fps : _framesPerSecond)
-        averageFPS += fps;
+
+    std::for_each_n(
+        _framesPerSecond.rbegin(), seconds, 
+        [&](int fps)
+        {
+            averageFPS += fps;
+        });
+
     averageFPS /= seconds;
 
     return averageFPS;
@@ -79,6 +86,7 @@ float blFrameCounter::getAverageFramesPerSecond(int seconds) const noexcept
 
 float blFrameCounter::getMillisecondsPerFrame() const noexcept
 {
+    if (_millisecondsPerFrame.size() < 1) return 0.0f;
     const auto msPerFrame = _millisecondsPerFrame.back();
 
     // Overly convoluted way to convert from milli to float seconds.
@@ -95,15 +103,19 @@ float blFrameCounter::getAverageMillisecondsPerFrame(int frames) const noexcept
         BL_LOG(blLogType::eError, "Attempting to get an average milliseconds per frame greater than the maximum frame count at {} frames.", frames);
     }
 
-    frames = std::clamp(frames, 1, (int)_millisecondsPerFrame.size());
+    frames = std::clamp(frames, 0, (int)_millisecondsPerFrame.size());
 
     // Add all the frames together and divide them by the seconds for an average.
     float averageMPF = 0;
-    for (auto ms : _millisecondsPerFrame)
-    {
-        averageMPF += std::chrono::duration_cast<
-            std::chrono::duration<float, std::milli>>(ms).count();
-    }
+
+    std::for_each_n(
+        _millisecondsPerFrame.rbegin(), frames, 
+        [&](std::chrono::milliseconds ms)
+        {
+            averageMPF += std::chrono::duration_cast<
+                std::chrono::duration<float, std::milli>>(ms).count();
+        });
+
     averageMPF /= frames;
     return averageMPF;
 }

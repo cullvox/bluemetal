@@ -5,10 +5,8 @@
 
 void applyFont()
 {
-    ImFontConfig cfg;
-    cfg.OversampleH = 5;
-    ImFont* pFont = ImGui::GetIO().Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto-Regular.ttf", 13.0f);
-    ImGui::PushFont(pFont);
+
+    
 }
 
 void applyImStyle()
@@ -92,10 +90,19 @@ blEngine::blEngine(const std::string& applicationName)
     _window = std::make_shared<blWindow>(displays[0].getDesktopMode());
     _inputSystem = blInputSystem::getInstance();
     _renderDevice = std::make_shared<blRenderDevice>(_window);
-    _swapchain = std::make_shared<blSwapchain>(_window, _renderDevice);
+    _swapchain = std::make_shared<blSwapchain>(_renderDevice);
 
-    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, [](VkCommandBuffer cmd){
+    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, [&](VkCommandBuffer cmd){
         blImGui::beginFrame();
+    
+        ImGui::Begin("Debug Info");
+        ImGui::Text("Graphics Device: %s", _renderDevice->getDeviceName());
+        ImGui::Text("Graphics Vendor: %s", _renderDevice->getVendorName());
+        ImGui::Text("F/S: %d", _frameCounter.getFramesPerSecond());
+        ImGui::Text("MS/F: %.0f", _frameCounter.getMillisecondsPerFrame());
+        ImGui::Text("Average F/S (Over 10 Seconds): %.1f", _frameCounter.getAverageFramesPerSecond(10));
+        ImGui::Text("Average MS/F (Over 144 Frames): %.1f", _frameCounter.getAverageMillisecondsPerFrame(144));
+        ImGui::End();
 
         ImGui::ShowDemoWindow();
         
@@ -111,6 +118,7 @@ blEngine::blEngine(const std::string& applicationName)
 
     blImGui::init(_window, _renderDevice, _presentPass);
 
+    
     applyImStyle();
     
 }
@@ -123,16 +131,13 @@ blEngine::~blEngine()
 bool blEngine::run()
 {
     
-    while (not _close)
+    while (not _inputSystem->shouldClose())
     {
         _frameCounter.beginFrame();
         _inputSystem->poll();
         
         _renderer->render();
-        if (_frameCounter.endFrame())
-        {
-            BL_LOG(blLogType::eInfo, "Frames per second: {}", _frameCounter.getFramesPerSecond());
-        }
+        _frameCounter.endFrame();
     }
 
     return true;

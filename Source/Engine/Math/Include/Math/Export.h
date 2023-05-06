@@ -9,10 +9,10 @@
 #  ifndef BLOODLUST_MATH_API
 #    ifdef BloodLustMath_EXPORTS
         /* We are building this library */
-#      define BLOODLUST_MATH_API __declspec(dllexport)
+#      define BLOODLUST_MATH_API 
 #    else
         /* We are using this library */
-#      define BLOODLUST_MATH_API __declspec(dllimport)
+#      define BLOODLUST_MATH_API 
 #    endif
 #  endif
 

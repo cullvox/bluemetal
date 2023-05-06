@@ -75,6 +75,14 @@ void blImGui::init(
 	}
 
 	// Upload the Vulkan ImGui font textures.
+	ImFontConfig cfg;
+    cfg.OversampleH = 3;
+
+	auto io = ImGui::GetIO(); 
+
+    ImFont* pFont = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto-Regular.ttf", 18.0f);
+	io.FontDefault = pFont;
+
 	_renderDevice->immediateSubmit([&](VkCommandBuffer cmd) {
 			ImGui_ImplVulkan_CreateFontsTexture(cmd);
 		});

@@ -1,6 +1,6 @@
 #include "Config/ConfigLexer.hpp"
 
-bool CLexerUtils::IsSpace(char c) noexcept
+bool blLexerUtils::IsSpace(char c) noexcept
 {
     switch (c)
     {
@@ -14,7 +14,7 @@ bool CLexerUtils::IsSpace(char c) noexcept
     }
 }
 
-bool CLexerUtils::IsDigit(char c) noexcept
+bool blLexerUtils::IsDigit(char c) noexcept
 {
     switch (c)
     {
@@ -34,7 +34,7 @@ bool CLexerUtils::IsDigit(char c) noexcept
     }
 }
 
-bool CLexerUtils::IsIdentifierChar(char c) noexcept
+bool blLexerUtils::IsIdentifierChar(char c) noexcept
 {
     switch (c)
     {
@@ -107,41 +107,50 @@ bool CLexerUtils::IsIdentifierChar(char c) noexcept
     }
 }
 
-
-
-
-
 //==============================================================================
-// CLexer
+// blLexer
 //==============================================================================
 
-CLexer::CLexer(const std::string& content) noexcept
-    : m_content(content)
+blLexer::blLexer(const std::string& content) noexcept
+    : _content(content)
+    , _it(content.begin())
+    , _lineNumber(0)
+    , _characterNumber(0)
 {
-    m_it = content.begin();
 }
 
-CToken CLexer::Next() noexcept
+blToken blLexer::next() noexcept
 {
 
-    /* Removes whitespaces and comments, but keeps track of line counts. */
+    // Removes whitespaces and comments, but keeps track of line/character numbers.
     while (true)
     {
-        if (Peek() == '#')
+        // Remove any comments until endl or eof 
+        if (peek() == '#')
         {
-            /* Keep going until end line or eof. */
-            while(Peek() != '\n' || Peek() == '\0')
-            {   
-                Get();
+            while(peek() != '\n' || peek() == '\0')
+            {
+                get();
             }
-            m_lineNumber++;
-            Get();
+            _lineNumber++;
+            get();
         }
-        else if (CLexerUtils::IsSpace(Peek()))
+
+        // Remove any spaces
+        else if (blLexerUtils::IsSpace(peek()))
         {
-            if (Peek() == '\n') m_lineNumber++;
-            Get();
+            _characterNumber++;
+
+            if (peek() == '\n')
+            {
+                _characterNumber = 0; 
+                _lineNumber++;
+            }
+
+            get();
         }
+
+        // Stop on reached anything else
         else
         {
             /* Encountered a token that is not a comment or space. */
@@ -149,12 +158,15 @@ CToken CLexer::Next() noexcept
         }
     }
 
-    switch (Peek())
+    switch (peek())
     {
         case '\0':
-            return CToken(ETokenKind::eEnd, std::string_view(m_it, m_it+1), 0);
+            return blToken(
+                blTokenKind::eEnd, 
+                std::string_view(_it, _it+1), 
+                getLineNumber(), getCharacterNumber());
         default:
-            return Atom(ETokenKind::eUnexpected);
+            return createAtom(blTokenKind::eUnexpected);
         case 'a':
         case 'b':
         case 'c':
@@ -207,7 +219,7 @@ CToken CLexer::Next() noexcept
         case 'X':
         case 'Y':
         case 'Z':
-            return Identifier();
+            return createIdentifier();
         case '0':
         case '1':
         case '2':
@@ -218,61 +230,82 @@ CToken CLexer::Next() noexcept
         case '7':
         case '8':
         case '9':
-            return Number();
+            return createNumber();
         case '{':
-            return Atom(ETokenKind::eLeftCurly);
+            return createAtom(blTokenKind::eLeftCurly);
         case '}':
-            return Atom(ETokenKind::eRightCurly);
+            return createAtom(blTokenKind::eRightCurly);
         case '=':
-            return Atom(ETokenKind::eEqual);
+            return createAtom(blTokenKind::eEqual);
         case '"':
-            return String();
+            return createString();
         case ',':
-            return Atom(ETokenKind::eComma);
+            return createAtom(blTokenKind::eComma);
     }
+
+    _characterNumber++;
 }
 
-CToken CLexer::Identifier() noexcept
+int blLexer::getLineNumber() const noexcept
 {
-    std::string::const_iterator start = m_it;
-    Get();
-    while (CLexerUtils::IsIdentifierChar(Peek())) Get();
-    return CToken(ETokenKind::eIdentifier, std::string_view{start, m_it}, m_lineNumber);
+    return _lineNumber;
 }
 
-CToken CLexer::String() noexcept
+int blLexer::getCharacterNumber() const noexcept
 {
-    std::string::const_iterator start = m_it;
-    Get();
-    while (Peek() != '\"' && Peek() != '\0') Get();
-    Get();
-
-    return CToken{
-        (*(m_it-1) != '\"') ? ETokenKind::eUnexpected : ETokenKind::eString, /* Checks if the end was actually a double quote, if it wasn't change the string to unknown. */ 
-        std::string_view{start+1, m_it-1}, /* Contents of string. */
-        m_lineNumber};
+    return _characterNumber;
 }
 
-CToken CLexer::Number() noexcept
+blToken blLexer::createIdentifier() noexcept
 {
-    std::string::const_iterator start = m_it;
-    Get();
-    while (CLexerUtils::IsDigit(Peek())) Get();
-    return CToken{
-        ETokenKind::eNumber,
-        std::string_view{start, m_it},
-        m_lineNumber};
+    std::string::const_iterator start = _it;
+    
+    // Read until the end of the identifier
+    get();
+    while (blLexerUtils::IsIdentifierChar(peek())) get();
+
+    return blToken(
+        blTokenKind::eIdentifier, 
+        std::string_view{start, _it}, 
+        getLineNumber(), getCharacterNumber());
 }
 
-CToken CLexer::Atom(ETokenKind kind) noexcept
+blToken blLexer::createString() noexcept
 {
-    return CToken{
+    std::string::const_iterator start = _it;
+
+    // Read until the second quote
+    get();
+    while (peek() != '\"' && peek() != '\0') get();
+    get();
+
+    // Checks if the end was actually a double quote, if it wasn't change the string to unknown. 
+    bool valid = (*(_it-1) != '\"');
+
+    return blToken{
+        valid ? blTokenKind::eUnexpected : blTokenKind::eString,
+        std::string_view{start+1, _it-1}, // Contents of string without the "quotes"
+        getLineNumber(), getCharacterNumber()};
+}
+
+blToken blLexer::createNumber() noexcept
+{
+    std::string::const_iterator start = _it;
+
+    // Read until the last digit
+    get();
+    while (blLexerUtils::IsDigit(peek())) get();
+    
+    return blToken{
+        blTokenKind::eNumber,
+        std::string_view{start, _it},
+        getLineNumber(), getCharacterNumber()};
+}
+
+blToken blLexer::createAtom(blTokenKind kind) noexcept
+{
+    return blToken{
         kind, 
-        std::string_view{m_it++, m_it},
-        m_lineNumber};
-}
-
-int CLexer::Line() const noexcept
-{
-    return m_lineNumber;
+        std::string_view{_it++, _it},
+        getLineNumber(), getCharacterNumber()};
 }

@@ -11,7 +11,9 @@ public:
     blRenderDevice(std::shared_ptr<blWindow> window);
     ~blRenderDevice() noexcept;
 
+    std::shared_ptr<blWindow> getWindow() const noexcept;
     vk::Instance getInstance() const noexcept;
+    vk::SurfaceKHR getSurface() const noexcept;
     vk::PhysicalDevice getPhysicalDevice() const noexcept;
     uint32_t getGraphicsFamilyIndex() const noexcept;
     uint32_t getPresentFamilyIndex() const noexcept;
@@ -25,11 +27,10 @@ public:
         vk::ImageTiling tiling, vk::FormatFeatureFlags features) const;
     void immediateSubmit(const std::function<void(vk::CommandBuffer)>& recorder) const;
     void waitForDevice() const noexcept;
+    const char* getVendorName() const noexcept;
+    const char* getDeviceName() const noexcept; 
 
 private:
-    blRenderDevice& operator=(const blRenderDevice& copy) = delete;
-    blRenderDevice& operator=(blRenderDevice&& move) = delete;
-
     std::vector<const char*> getValidationLayers() const;
     std::vector<const char*> getInstanceExtensions() const;
     std::vector<const char*> getDeviceExtensions() const;
@@ -46,6 +47,7 @@ private:
     std::shared_ptr<blWindow> _window;
 
     vk::UniqueInstance      _instance;
+    vk::UniqueSurfaceKHR    _surface;
     vk::PhysicalDevice      _physicalDevice;
     uint32_t                _graphicsFamilyIndex, _presentFamilyIndex;
     vk::UniqueDevice        _device;

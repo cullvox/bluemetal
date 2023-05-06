@@ -37,6 +37,7 @@ public:
     blButton getKey(blKey key) const noexcept;
     blButton getMouseButton(blMouseButtonEvent button) const noexcept;
     blVector2f getMouse(blMouseEvent mouse) const noexcept;
+    bool shouldClose() const noexcept;
 
     blInputHookCallback addHook(const blInputHookCallbackFunction& function);
     void removeHook(blInputHookCallback handle);
@@ -45,7 +46,8 @@ private:
     void processKeyboard() const noexcept;
     void processGamepad() const noexcept;
 
+    bool _shouldClose = false;
     blCallbackList<void(const SDL_Event*)> _hookCallbacks;
-    
+
     friend class std::shared_ptr<blInputSystem>;
 };

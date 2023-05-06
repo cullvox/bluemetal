@@ -6,40 +6,29 @@
 #include "ConfigLexer.hpp"
 #include "Config/Export.h"
 
-enum class EParsedType
+enum class blParsedType
 {
     eInt,
     eString,
 };
 
-struct SParsedValue
-{
-    EParsedType type;
-    long int i;
-    std::string_view s;
-};
+using blParsedValue = std::variant<int, std::string_view>;
 
-class BLOODLUST_CONFIG_API CParser
+class BLOODLUST_CONFIG_API blParser
 {
 public:
-    struct SParserResult
-    {
-        bool success;
-        std::string error;
-    };
+    blParser(const std::string& content) noexcept;
 
-    CParser(const std::string& content) noexcept;
-
-    const std::unordered_map<std::string, SParsedValue>& Parse(); // throws on parser error
+    const std::unordered_map<std::string, blParsedValue>& parse();
 private:
-    void Next();
-    void RecomputeGroups();
-    void PrintError(const std::string& expected);
+    void next();
+    void recomputeGroups();
+    void printError(const std::string& expected);
 
-    CLexer m_lexer;
-    CToken m_token;
-    ETokenKind m_tokenKind;
-    std::vector<std::string_view> m_groups;
-    std::string m_groupsStr;
-    std::unordered_map<std::string, SParsedValue> m_values;
+    blLexer _lexer;
+    blToken _token;
+    blTokenKind _tokenKind;
+    std::vector<std::string_view> _groups;
+    std::string _groupsStr;
+    std::unordered_map<std::string, blParsedValue> _values;
 };

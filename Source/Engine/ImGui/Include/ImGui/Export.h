@@ -9,10 +9,10 @@
 #  ifndef BLOODLUST_IMGUI_API
 #    ifdef BloodLustImGui_EXPORTS
         /* We are building this library */
-#      define BLOODLUST_IMGUI_API __declspec(dllexport)
+#      define BLOODLUST_IMGUI_API 
 #    else
         /* We are using this library */
-#      define BLOODLUST_IMGUI_API __declspec(dllimport)
+#      define BLOODLUST_IMGUI_API 
 #    endif
 #  endif
 

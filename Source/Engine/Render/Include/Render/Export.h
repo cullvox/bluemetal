@@ -9,10 +9,10 @@
 #  ifndef BLOODLUST_RENDER_API
 #    ifdef BloodLustRender_EXPORTS
         /* We are building this library */
-#      define BLOODLUST_RENDER_API __declspec(dllexport)
+#      define BLOODLUST_RENDER_API 
 #    else
         /* We are using this library */
-#      define BLOODLUST_RENDER_API __declspec(dllimport)
+#      define BLOODLUST_RENDER_API 
 #    endif
 #  endif
 

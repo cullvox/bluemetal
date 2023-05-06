@@ -24,9 +24,20 @@ blRenderDevice::~blRenderDevice()
     vmaDestroyAllocator(_allocator);
 }
 
+
+std::shared_ptr<blWindow> blRenderDevice::getWindow() const noexcept
+{
+    return _window;
+}
+
 vk::Instance blRenderDevice::getInstance() const noexcept
 {
     return _instance.get();
+}
+
+vk::SurfaceKHR blRenderDevice::getSurface() const noexcept
+{
+    return _surface.get();
 }
 
 vk::PhysicalDevice blRenderDevice::getPhysicalDevice() const noexcept
@@ -126,6 +137,27 @@ void blRenderDevice::immediateSubmit(
 void blRenderDevice::waitForDevice() const noexcept
 {
     getDevice().waitIdle();
+}
+
+const char* blRenderDevice::getVendorName() const noexcept
+{
+    uint32_t vendor = _physicalDevice.getProperties().vendorID;
+
+    switch (vendor)
+    {
+        case 0x1002: return "AMD";
+        case 0x1010: return "ImgTec";
+        case 0x10DE: return "NVIDIA";
+        case 0x13B5: return "ARM";
+        case 0x5143: return "Qualcomm";
+        case 0x8086: return "INTEL";
+        default: return "Undefined Vendor (Please Report!)";
+    }
+}
+
+const char* blRenderDevice::getDeviceName() const noexcept
+{
+    return _physicalDevice.getProperties().deviceName.data();
 }
 
 std::vector<const char*> blRenderDevice::getValidationLayers() const
@@ -239,6 +271,10 @@ void blRenderDevice::createInstance()
     _instance =  vk::createInstanceUnique(createInfo);
 
     BL_LOG(blLogType::eInfo, "Vulkan instance created")
+
+    // Create the window surface
+    _surface = vk::UniqueSurfaceKHR(blWindow::createSurface(_window, getInstance()), getInstance());
+    
 }
 
 void blRenderDevice::choosePhysicalDevice()
@@ -288,8 +324,6 @@ void blRenderDevice::createDevice()
 
     std::vector<vk::QueueFamilyProperties> queueFamilyProperties = _physicalDevice.getQueueFamilyProperties();
 
-    vk::SurfaceKHR temporarySurface = _window->createVulkanSurface(getInstance()); // Window owns this surface instead of this function.
-
     // Determine the queues for graphics and present.
     uint32_t queueFamilyIndex = 0;
     vk::Bool32 presentSupport = false;
@@ -301,7 +335,7 @@ void blRenderDevice::createDevice()
             _graphicsFamilyIndex = queueFamilyIndex; 
         }
 
-        bool success = vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, queueFamilyIndex, temporarySurface, &presentSupport) == VK_SUCCESS;
+        bool success = vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, queueFamilyIndex, getSurface(), &presentSupport) == VK_SUCCESS;
         if (success && presentSupport)
         {
             _presentFamilyIndex = queueFamilyIndex;

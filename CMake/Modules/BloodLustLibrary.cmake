@@ -3,8 +3,13 @@ function(bl_add_library lib_name lib_short_name lib_sources)
 
 	
     # Add the actual CMake library. 
+    set(lib_type "STATIC")
 
-    add_library(${lib_name} SHARED ${lib_sources})
+    if (MAGINVOX_DEVELOPMENT)
+        set(lib_type "SHARED")
+    endif()
+
+    add_library(${lib_name} ${lib_type} ${lib_sources})
     add_library(bl::${lib_short_name} ALIAS ${lib_name})
     target_include_directories(${lib_name} PUBLIC "Include")
 

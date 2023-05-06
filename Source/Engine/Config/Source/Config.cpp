@@ -1,120 +1,58 @@
 #include "Core/Log.hpp"
 #include "Config/Config.hpp"
-#include "Config/Configurable.hpp"
 #include "Config/ConfigParser.hpp"
 
 
-namespace bl
+blConfig::blConfig(
+        const std::string& defaultConfig, 
+        const std::filesystem::path& configPath)
+    : _path(configPath)
 {
-
-Config::Config(const std::string& configPath)
-    : m_path(configPath)
-{
-    EnsureDirectoriesExist();
-    ResetIfConfigDoesNotExist();
-    ParseInto();
+    ensurePathExists();
+    parseInto();
 }
 
-Config::~Config()
+blConfig::~blConfig()
 {
 }
 
-void Config::Reset()
+void blConfig::reset()
 {
-    const std::string DEFAULT_CONFIG_PATH = "config/config.nwdl";
-    const std::string DEFAULT_CONFIG =
-        "# Default configuration\n \
-        window = { \n \
-            width = 1920; \n \
-            height = 1080; \n \
-    }\n \
-        renderer = { \n \
-            antialias = 1; \n \
-    }\n \
-        ";
-
-    std::ofstream config(DEFAULT_CONFIG_PATH, std::ios::out);
-    config << DEFAULT_CONFIG;
+    std::ofstream config(_path, std::ios::out);
+    config << _defaultConfig;
 }
 
-bool Config::HasValue(const std::string& name) const noexcept
+bool blConfig::hasValue(
+    const std::string& name) const noexcept
 {
-    return m_values.contains(name);
+    return _values.contains(name);
 }
 
-int Config::GetIntValue(const std::string& name) const
+void blConfig::parseInto()
 {
-    assert(HasValue(name));
-    assert(m_values.at(name).type == EParsedType::eInt);
-    return m_values.at(name).i;
-}
-
-const std::string_view Config::GetStringValue(const std::string& name) const
-{
-    assert(HasValue(name));
-    assert(m_values.at(name).type == EParsedType::eString);
-    
-    return m_values.at(name).s;
-}
-
-int Config::GetIntOrSetDefault(const std::string& key, int defaultValue)
-{
-    if (HasValue(key))
-    {
-        assert(m_values.at(key).type == EParsedType::eInt);
-        
-        return m_values[key].i;
-    }
-    else
-    {
-        m_values[key].i = defaultValue;
-        return defaultValue;
-    }
-}
-
-void Config::EnsureDirectoriesExist()
-{
-    /* Ensure directories exist. */
-    if (!std::filesystem::exists("config"))
-    {
-        std::filesystem::create_directory("config");
-        Reset();
-    }
-}
-
-void Config::ResetIfConfigDoesNotExist()
-{
-    if (!std::filesystem::exists("Config/Config.nwdl"))
-    {
-        Reset();
-    }
-}
-
-void Config::ParseInto()
-{
-    BL_LOG(blLogType::eInfo, "Opening config: {}\n", m_path);
+    BL_LOG(blLogType::eInfo, "Opening config: {}", _path.string());
 
     /* Open the config file. */
-    std::ifstream configFile(m_path, std::ios::in);
+    std::ifstream configFile(_path, std::ios::in);
     if (configFile.bad()) throw std::runtime_error("Could not open config file.");
 
     /* Read in the whole config. */
     std::string content((std::istreambuf_iterator<char>(configFile)),
                         (std::istreambuf_iterator<char>()));
 
-    CParser parser{content};
-    m_values = parser.Parse();
+    blParser parser{content};
+    _values = parser.parse();
 
-    for (auto pair : m_values)
+    for (auto pair : _values)
     {
         BL_LOG(blLogType::eDebug, "Value [{}, {}, {}] \n", pair.first,
-            (int)(pair.second.type), 
-            (pair.second.type == EParsedType::eInt) ? 
-                std::to_string(pair.second.i) : 
-                std::string{pair.second.s});
+            pair.second.index(), 
+            pair.second.index() == 0 ? 
+                std::to_string(std::get<int>(pair.second)) : 
+                std::string{std::get<std::string_view>(pair.second)});
     }
 
-    BL_LOG(blLogType::eInfo, "Parsed config: {}\n", m_path);
+    BL_LOG(blLogType::eInfo, "Parsed config: {}\n", _path.string());
 }
 
 void DetermineGroups(const std::string& key, std::vector<std::string>& groups)
@@ -131,14 +69,14 @@ void DetermineGroups(const std::string& key, std::vector<std::string>& groups)
     } while (dot != key.size()-1);
 }
 
-void Config::Save()
+void blConfig::save()
 {
     
     /* Sort the keys so the values will properly be placed in groups. */
     std::vector<std::string> keys;
 
-    keys.reserve (m_values.size());
-    for (auto& it : m_values) {
+    keys.reserve (_values.size());
+    for (auto& it : _values) {
         keys.push_back(it.first);
     }
     std::sort(keys.begin(), keys.end());
@@ -163,4 +101,16 @@ void Config::Save()
 
 }
 
-} // namespace bl
+void blConfig::ensurePathExists()
+{
+    /* Ensure directories exist. */
+    if (not std::filesystem::exists(_path.parent_path()))
+    {
+        if (not std::filesystem::create_directory(_path.parent_path()))
+        {
+            throw std::runtime_error("Could not create a config path!");
+        }
+
+        reset();
+    }
+}

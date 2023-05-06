@@ -4,7 +4,7 @@
 
 #include "Config/Export.h"
 
-enum class ETokenKind
+enum class blTokenKind
 {
     eNumber,
     eIdentifier,
@@ -19,29 +19,46 @@ enum class ETokenKind
     eUnexpected,
 };
 
-class BLOODLUST_CONFIG_API CToken
+class BLOODLUST_CONFIG_API blToken
 {
 public:
-    CToken() noexcept = default;
-    CToken(ETokenKind kind, const std::string_view lexeme, int lineNumber) noexcept;
+    blToken() noexcept = default;
+    blToken(blTokenKind kind, const std::string_view lexeme, int lineNumber, int lineCharacter) noexcept;
 
-    ETokenKind          Kind() const noexcept;
-    std::string_view    Lexeme() const noexcept;
-    int                 LineNumber() const noexcept;
-    int                 LineCharacter() const noexcept;
-    inline bool         Is(ETokenKind kind) const noexcept
+    blTokenKind getKind() const noexcept
     {
-        return m_kind == kind;
+        return _kind;
     }
+
+    std::string_view getLexeme() const noexcept
+    {
+        return _lexeme;
+    }
+
+    int getLineNumber() const noexcept
+    {
+        return _lineNumber;
+    }
+
+    int getCharacterNumber() const noexcept
+    {
+        return _characterNumber;
+    }
+
+    inline bool is(blTokenKind kind) const noexcept
+    {
+        return _kind == kind;
+    }
+
     template <typename... Ts>
-    inline bool         IsOneOf(ETokenKind k1, ETokenKind k2, Ts... ks) const noexcept 
+    inline bool isOneOf(blTokenKind k1, blTokenKind k2, Ts... ks) const noexcept 
     {
-        return Is(k1) || IsOneOf(k2, ks...);
+        return is(k1) || isOneOf(k2, ks...);
     }
-
 
 private:
-    ETokenKind              m_kind;
-    int                     m_lineNumber;
-    std::string_view        m_lexeme;
+    std::string_view        _lexeme;
+    blTokenKind             _kind;
+    int                     _lineNumber;
+    int                     _characterNumber;
 };

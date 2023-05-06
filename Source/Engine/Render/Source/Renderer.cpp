@@ -83,7 +83,14 @@ void blRenderer::resize(vk::Extent2D extent)
 
 void blRenderer::render()
 {
-    auto fenceResult = _renderDevice->getDevice()
+
+    // If the swapchain is invalid we cannot render anything
+    if (!_swapchain->getSwapchain())
+    {
+        return;
+    }
+
+    std::ignore = _renderDevice->getDevice()
         .waitForFences( {_inFlightFences[_currentFrame]}, VK_TRUE, UINT64_MAX);
 
     // Get the specific command buffer and image frame to use.

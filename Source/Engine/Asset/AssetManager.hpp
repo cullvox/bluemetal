@@ -2,21 +2,14 @@
 
 #include "Asset/Asset.hpp"
 
-class AssetManager {
-
+class blAssetManager 
+{
 public:
-    AssetManager();
-    ~AssetManager();
+    blAssetManager();
+    ~blAssetManager();
 
     void add();
 
 private:
-    
-    struct AssetImpl
-    {
-        std::filesystem::path path;
-        std::vector<uint8_t> data;
-    };
-
     std::unordered_map<std::string, std::shared_ptr<Asset>> m_assets;
 };

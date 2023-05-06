@@ -1,0 +1,1 @@
+for %%f in (*.frag *.vert) do glslc %%f -o %%f.spv

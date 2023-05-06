@@ -19,15 +19,13 @@ public:
         std::optional<blDisplay> display = std::nullopt);
     ~blWindow() noexcept;
 
-    vk::SurfaceKHR createVulkanSurface(vk::Instance instance);
-    vk::SurfaceKHR getVulkanSurface() const noexcept;
     blExtent2D getExtent() const noexcept;
     SDL_Window* getHandle() const noexcept;
     std::vector<const char*> getVulkanInstanceExtensions() const;
 
+    static vk::SurfaceKHR createSurface(std::shared_ptr<const blWindow> window,
+                                            vk::Instance instance);
+
 private:
     SDL_Window* _pWindow;
-
-    VkInstance _instance;
-    vk::SurfaceKHR _surface;
 };

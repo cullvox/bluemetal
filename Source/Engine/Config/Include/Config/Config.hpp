@@ -4,47 +4,65 @@
 #include "Config/ConfigParser.hpp"
 #include "Config/Export.h"
 
-namespace bl
+class BLOODLUST_CONFIG_API blConfig
 {
-
-class BLOODLUST_CONFIG_API Config
-{
-
 public:
     
-    Config(const std::string& path = "Save/Config.nwdl");
-    
-    ~Config();
+    blConfig(const std::string& defaultConfig, const std::filesystem::path& path);
+    ~blConfig();
 
-    bool HasValue(const std::string&) const noexcept;
-    void RequireStringValue(const std::string&, const std::string&);
-    void RequireIntValue(const std::string&, int);
-    int  GetIntValue(const std::string&) const;
-    const std::string_view GetStringValue(const std::string&) const;
-    void SetIntValue(const std::string&, int);
-    void SetStringValue(const std::string&, const std::string&);
+    bool hasValue(const std::string&) const noexcept;
+    template<typename T> T& get(const std::string& key);
+    template<typename T> T get(const std::string& key) const;
+    template<typename T> T& operator[](const std::string& key);
+    template<typename T> T operator[](const std::string& key) const;
 
-    int GetIntOrSetDefault(const std::string&, int);
-
-    void Reset();
-    void Save();
+    void reset();
+    void save();
 
 private:
-    void EnsureDirectoriesExist();
-    void ResetIfConfigDoesNotExist();
-    void ParseInto();
-    void NotifySubscribers();
 
-    struct SValueNode
+    void ensurePathExists();
+    void resetIfPathDoesNotExist();
+    void parseInto();
+
+    struct blValueNode
     {
-        std::vector<SValueNode*> children;
+        std::vector<std::shared_ptr<blValueNode>> children;
         bool isValue;
         std::string name;
     };
 
-    SValueNode*                                     m_pConfigTree;
-    std::string                                     m_path;
-    std::unordered_map<std::string, SParsedValue>   m_values;
+    std::string                                     _defaultConfig;
+    std::unique_ptr<blValueNode>                    _pConfigTree;
+    std::filesystem::path                           _path;
+    std::unordered_map<std::string, blParsedValue>  _values;
 };
 
-} // namespace bl
+////////////////////////////////////////////////////////////////////////////////
+#include "Core/TemplateUtils.hpp"
+
+template<typename T>
+T& blConfig::get(const std::string& key)
+{
+    static_assert(bl::is_any<T, int, std::string>::value);
+    return std::get<T>(_values[key]);
+}
+
+template<typename T>
+T& blConfig::operator[](const std::string& key)
+{
+    return get(key);
+}
+
+template<typename T>
+T blConfig::get(const std::string& key) const
+{
+    return std::forward(get(key));
+}
+
+template<typename T>
+T blConfig::operator[](const std::string& key) const
+{
+    return std::forward(get(key));
+}
