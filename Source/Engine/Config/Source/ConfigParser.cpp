@@ -5,16 +5,28 @@
 blParser::blParser(const std::string& content) noexcept
     : _lexer(content)
     , _token()
+    , _tree()
 {
+    parse();
 }
 
-const std::unordered_map<std::string, blParsedValue>& blParser::parse()
+std::unordered_map<std::string, blParsedValue> blParser::getValues()
 {
+    std::unordered_map<std::string, blParsedValue> values;
+    _tree.recurseBuildValues(values);
+    return values;
+}
+
+void blParser::parse()
+{
+    // Get the first token from the lexer
     next();
 
+    blParserTree& current = _tree;
     std::string_view identifier{};
     std::string_view value{};
 
+    // Parse through the file until the file has been completely lexed and parsed
     while (_tokenKind != blTokenKind::eEnd)
     {
 
@@ -22,51 +34,50 @@ const std::unordered_map<std::string, blParsedValue>& blParser::parse()
         if (not _token.is(blTokenKind::eIdentifier)) 
         {
             printError("value name");
-            return _values;
+            return;
         }
 
         identifier = _token.getLexeme();
 
-        /* Must be an equals. */
         next();
+
+        // After an identifier must come an equals
         if (not _token.is(blTokenKind::eEqual))
         {
             printError("=");
-            return _values;
+            return;
         }
         
-        // Must be a left curly, number or a string
         next();
 
+
+        // Must be a left curly, number or a string
         switch (_tokenKind)
         {
             case blTokenKind::eLeftCurly:
             {
-                // Instead of generating a new value create a new group
-                _groups.push_back(identifier);
-                recomputeGroups();
+
+                // Consecutive identifiers will be inside of this group
+                current = current.addChild(identifier);
+                
                 next();
                 continue;
             }
 
             case blTokenKind::eNumber:
             {
-                _values.insert({
-                    _groupsStr + std::string{identifier}, 
-                    blParsedValue{  
-                        strtol(_token.getLexeme().data(), nullptr, 10)
-                    }
-                });
+                const blParsedValue value = strtol(_token.getLexeme().data(), nullptr, 10);
+                current.addChild(identifier, value);
+
                 next();
                 break;
             }
 
             case blTokenKind::eString:
             {
-                _values.insert({
-                    _groupsStr + std::string{identifier}, 
-                    blParsedValue{_token.getLexeme()}
-                });
+                const blParsedValue value = _token.getLexeme();
+                current.addChild(identifier, value);
+
                 next();
                 break;
             }
@@ -74,7 +85,7 @@ const std::unordered_map<std::string, blParsedValue>& blParser::parse()
             default:
             {
                 printError("{, Number, or String");
-                return _values;
+                return;
             }
         }
 
@@ -85,46 +96,37 @@ const std::unordered_map<std::string, blParsedValue>& blParser::parse()
             // Remove consecutive group endings after the last value
             do 
             {
-                if (_groups.size() > 0)
+                if (current.getParent())
                 {
-                    _groups.pop_back();
-                    recomputeGroups();
+                    current = *current.getParent();
                     next();
                 }
                 else
                 {
-                    printError("}");
-                    return _values;
+                    printError("identifier");
+                    return;
                 }
                 
             } while (_tokenKind == blTokenKind::eRightCurly);
+
             continue;
         }
 
-        /* A comma is expected if the group did not end. */
+        // A comma is expected if the group did not end.
         else if (_tokenKind != blTokenKind::eComma)
         {
             printError(",");
-            return _values;
+            return;
         }
         
         next();
     }
-
-    return _values;
 }
 
 void blParser::next()
 {
     _token = _lexer.next();
     _tokenKind = _token.getKind();
-}
-
-void blParser::recomputeGroups()
-{
-    _groupsStr.clear();
-    for (const std::string_view& view : _groups)
-        _groupsStr += std::string{view} + ".";
 }
 
 void blParser::printError(const std::string& expected)

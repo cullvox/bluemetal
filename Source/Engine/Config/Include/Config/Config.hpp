@@ -2,6 +2,7 @@
 
 #include "Core/Precompiled.hpp"
 #include "Config/ConfigParser.hpp"
+#include "Config/ConfigParserTree.hpp"
 #include "Config/Export.h"
 
 class BLOODLUST_CONFIG_API blConfig
@@ -25,16 +26,9 @@ private:
     void ensurePathExists();
     void resetIfPathDoesNotExist();
     void parseInto();
-
-    struct blValueNode
-    {
-        std::vector<std::shared_ptr<blValueNode>> children;
-        bool isValue;
-        std::string name;
-    };
+    void groupValues();
 
     std::string                                     _defaultConfig;
-    std::unique_ptr<blValueNode>                    _pConfigTree;
     std::filesystem::path                           _path;
     std::unordered_map<std::string, blParsedValue>  _values;
 };
