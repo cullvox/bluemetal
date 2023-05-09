@@ -17,7 +17,7 @@ public:
     template<typename T> T get(const std::string& key) const;
     template<typename T> T& operator[](const std::string& key);
     template<typename T> T operator[](const std::string& key) const;
-
+    
     void reset();
     void save();
 

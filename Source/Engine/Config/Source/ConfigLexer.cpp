@@ -122,6 +122,11 @@ blLexer::blLexer(const std::string& content) noexcept
 blToken blLexer::next() noexcept
 {
 
+    if (_it == _content.end())
+    {
+        return blToken(blTokenKind::eEnd, std::string_view(), _lineNumber, _characterNumber);
+    }
+
     // Removes whitespaces and comments, but keeps track of line/character numbers.
     while (true)
     {
@@ -163,7 +168,7 @@ blToken blLexer::next() noexcept
         case '\0':
             return blToken(
                 blTokenKind::eEnd, 
-                std::string_view(_it, _it+1), 
+                std::string_view(_content), 
                 getLineNumber(), getCharacterNumber());
         default:
             return createAtom(blTokenKind::eUnexpected);
@@ -308,4 +313,13 @@ blToken blLexer::createAtom(blTokenKind kind) noexcept
         kind, 
         std::string_view{_it++, _it},
         getLineNumber(), getCharacterNumber()};
+}
+
+
+char blLexer::peek() const noexcept
+{
+    if (_it == _content.end())
+        return '\0';
+    else
+        return *_it; 
 }

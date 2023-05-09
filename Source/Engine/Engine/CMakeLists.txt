@@ -5,4 +5,4 @@ list(APPEND EngineSources
 
 bl_add_library(BloodLustEngine Engine "${EngineSources}")
 
-target_link_libraries(BloodLustEngine bl::Core bl::Math bl::Window bl::Render bl::Input bl::ImGui)
+target_link_libraries(BloodLustEngine bl::Core bl::Config bl::Math bl::Window bl::Render bl::Input bl::ImGui)

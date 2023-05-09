@@ -13,7 +13,13 @@ blParser::blParser(const std::string& content) noexcept
 std::unordered_map<std::string, blParsedValue> blParser::getValues()
 {
     std::unordered_map<std::string, blParsedValue> values;
-    _tree.recurseBuildValues(values);
+
+    _tree.foreach([&](blParserTree& tree){
+        
+        if (tree.isLeaf())
+            values[tree.getLongName()] = tree.getValue();
+    });
+    
     return values;
 }
 
@@ -22,7 +28,7 @@ void blParser::parse()
     // Get the first token from the lexer
     next();
 
-    blParserTree& current = _tree;
+    blParserTree* current = &_tree;
     std::string_view identifier{};
     std::string_view value{};
 
@@ -58,7 +64,7 @@ void blParser::parse()
             {
 
                 // Consecutive identifiers will be inside of this group
-                current = current.addChild(identifier);
+                current = current->addChild(identifier);
                 
                 next();
                 continue;
@@ -67,7 +73,7 @@ void blParser::parse()
             case blTokenKind::eNumber:
             {
                 const blParsedValue value = strtol(_token.getLexeme().data(), nullptr, 10);
-                current.addChild(identifier, value);
+                current->addChild(identifier, value);
 
                 next();
                 break;
@@ -76,7 +82,7 @@ void blParser::parse()
             case blTokenKind::eString:
             {
                 const blParsedValue value = _token.getLexeme();
-                current.addChild(identifier, value);
+                current->addChild(identifier, value);
 
                 next();
                 break;
@@ -89,16 +95,29 @@ void blParser::parse()
             }
         }
 
-        // Check if the group ended after this value.
+        // Check if the next value is a comma, if it isn't we expect a right curly
+        if (_tokenKind == blTokenKind::eComma)
+        {
+            next();
+
+            if (_tokenKind == blTokenKind::eRightCurly)
+            {
+                goto parseCurlyEnds;
+            }
+
+            continue;
+        }
+
+        parseCurlyEnds:
+        
         if (_tokenKind == blTokenKind::eRightCurly)
         {
-
             // Remove consecutive group endings after the last value
             do 
             {
-                if (current.getParent())
+                if (current->getParent())
                 {
-                    current = *current.getParent();
+                    current = current->getParent();
                     next();
                 }
                 else
@@ -111,15 +130,10 @@ void blParser::parse()
 
             continue;
         }
-
-        // A comma is expected if the group did not end.
-        else if (_tokenKind != blTokenKind::eComma)
+        else
         {
-            printError(",");
-            return;
+            printError("}");
         }
-        
-        next();
     }
 }
 

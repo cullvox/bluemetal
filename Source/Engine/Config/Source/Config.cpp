@@ -43,20 +43,64 @@ void blConfig::parseInto()
     blParser parser{content};
     _values = parser.getValues();
 
-    for (auto pair : _values)
-    {
-        BL_LOG(blLogType::eDebug, "Value [{}, {}, {}] \n", pair.first,
-            pair.second.index(), 
-            pair.second.index() == 0 ? 
-                std::to_string(std::get<int>(pair.second)) : 
-                std::string{std::get<std::string_view>(pair.second)});
-    }
-
     BL_LOG(blLogType::eInfo, "Parsed config: {}\n", _path.string());
 }
 
 void blConfig::save()
 {
+
+    std::ofstream file(_path, std::ios::out);
+
+    int tabs = 0;
+
+    tree.foreach([&](blParserTree& tree){
+        
+        if (prevParent != tree.getParent())
+        {
+            tabs--;
+
+            for (int i = 0; i < tabs; i++)
+            {
+                file << "\t";
+            }
+
+            file << "}" << std::endl;
+            prevParent = tree.getParent();
+        }
+
+        // Tabinate the next name
+        for (int i = 0; i < tabs; i++)
+        {
+            file << "\t";
+        }
+        
+
+        file << tree.getName() << " = ";
+
+        // If this value is a branch
+        if (not tree.isLeaf())
+        {
+            file << "{" << std::endl;
+            prevParent = &tree;
+            tabs++;
+        }
+        else
+        {
+
+            // Determine which type of value we need to output
+            switch (tree.getValue().index())
+            {
+                case 0: // integer
+                    file << std::to_string(std::get<int>(tree.getValue())) << "," << std::endl; 
+                    break;
+                case 1: // string
+                    file << "\"" << std::get<std::string_view>(tree.getValue()) << "\"," << std::endl;  
+                    break;
+            }
+        }
+
+
+    });
 
 }
 

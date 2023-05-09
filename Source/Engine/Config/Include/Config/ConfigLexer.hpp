@@ -26,7 +26,7 @@ private:
     blToken createString() noexcept;
     blToken createNumber() noexcept;
     blToken createAtom(blTokenKind kind) noexcept;
-    inline char peek() const noexcept { return *_it; }
+    char peek() const noexcept;
     inline char get() noexcept { return *_it++; }
 
     const std::string& _content;
