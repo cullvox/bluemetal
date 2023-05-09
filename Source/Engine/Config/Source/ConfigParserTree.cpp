@@ -1,42 +1,59 @@
 #include "Config/ConfigParserTree.hpp"
 
-blParserTree::blParserTree(blParserTree& parent, const std::string_view& name)
-    : _parent(&parent)
-    , _name(std::string(name))
-    , _value(std::nullopt)
+blParserTree::blParserTree(const blParserTree& other)
+    : _parent(nullptr)
+    , _children()
+    , _name(other._name)
+    , _value()
+{
+    // Make a deep copy of the other tree
+    other.foreach([&](const blParserTree& node){
+        if (node.isLeaf())
+            insert(node.getLongName(), node.getValue());
+    });
+}
+
+blParserTree::blParserTree(blParserTree&& other)
+    : _parent(std::move(other._parent))
+    , _children(std::move(other._children))
+    , _name(std::move(other._name))
+    , _value(std::move(other._value))
 {
 }
 
-blParserTree::blParserTree(blParserTree& parent, const std::string_view& name, const blParsedValue& value)
-    : _parent(&parent)
-    , _name(std::string(name))
-    , _value(value)
+blParserTree& blParserTree::operator=(const blParserTree& rhs)
 {
+    // Make a deep copy of the other tree
+    rhs.foreach([&](const blParserTree& node){
+        if (node.isLeaf())
+            insert(node.getLongName(), node.getValue());
+    });
+    return *this;
 }
 
-blParserTree::blParserTree(const std::unordered_map<std::string, blParsedValue>& map)
-    : _parent()
-    , _name()
-    , _value(std::nullopt)
+blParserTree& blParserTree::operator=(blParserTree&& rhs)
 {
-
-    for (const auto& pair : map)
-    {
-        insert(pair.first, pair.second);
-    }
+    _parent = std::move(rhs._parent);
+    _children = std::move(rhs._children);
+    _name = std::move(rhs._name);
+    _value = std::move(rhs._value);
+    return *this;
 }
 
-std::shared_ptr<blParserTree> blParserTree::addBranch(const std::string& name)
+blParserTree& blParserTree::addBranch(const std::string& name)
 {
-    auto node = std::make_shared<blParserTree>(this, name);
-    _children[name] = node;
+    auto& node = _children[name]; 
+    node._parent = this;
+    node._name = name;
     return node;
 }
 
-std::shared_ptr<blParserTree> blParserTree::addLeaf(const std::string& name, const blParsedValue& value)
+blParserTree& blParserTree::addLeaf(const std::string& name, blParsedValue value)
 {
-    auto node = std::make_shared<blParserTree>(this, name, value);
-    _children[name] = node;
+    auto& node = _children[name];
+    node._parent = this;
+    node._name = name;
+    node._value = value;
     return node;
 }
 
@@ -45,7 +62,7 @@ blParserTree* blParserTree::getParent() const noexcept
     return _parent;
 }
 
-std::string& blParserTree::getName() const noexcept
+const std::string& blParserTree::getName() const noexcept
 {
     return _name;
 }
@@ -64,7 +81,7 @@ std::string blParserTree::getLongName() const noexcept
     return longName;
 }
 
-std::map<std::string, std::shared_ptr<blParserTree>>& blParserTree::getChildren()
+const std::map<std::string, blParserTree>& blParserTree::getChildren() const noexcept
 {
     return _children;
 }
@@ -79,20 +96,34 @@ bool blParserTree::isBranch() const noexcept
     return !_value.has_value();
 }
 
-blParsedValue& blParserTree::getValue()
+const blParsedValue& blParserTree::getValue() const noexcept
 {
     return _value.value();
 }
 
+blParsedValue& blParserTree::getValue() noexcept
+{
+    return _value.value();
+}
 
-std::shared_ptr<blParserTree> blParserTree::find(const std::string& longName) noexcept
+void blParserTree::setName(const std::string& name) noexcept
+{
+    _name = name;
+}
+
+void blParserTree::setValue(blParsedValue value) noexcept
+{
+    _value = value;
+}
+
+blParserTree* blParserTree::find(const std::string& longName) noexcept
 {
     std::string_view name = longName;
 
     return recursiveFind(name);
 }
 
-std::shared_ptr<blParserTree> blParserTree::recursiveFind(std::string_view& longName)
+blParserTree* blParserTree::recursiveFind(std::string_view& longName) noexcept
 {
 
     // Find the name before the next '.'
@@ -105,44 +136,76 @@ std::shared_ptr<blParserTree> blParserTree::recursiveFind(std::string_view& long
         key = std::string(longName);
     }
 
+    bool isLast = (dotpos == std::string::npos); 
+
     // The path ends here, so return nullptr
-    if (not _children.contains(key)) return nullptr;
+    if (_children.contains(key) && isLast)
+    {
+        return &_children.at(key);
+    } 
+    else if (_children.contains(key))
+    {
+        // Find the next key in this child
+        auto next = std::string_view(longName.begin() + dotpos + 1, longName.end());
 
-    // Find the next key in this child
-    auto next = std::string_view(longName.begin() + dotpos + 1, longName.end());
-
-    return _children[key]->recursiveFind(next);
+        return _children[key].recursiveFind(next);
+    } 
+    else
+    {
+        return nullptr;
+    }
 }
 
-std::shared_ptr<blParserTree> blParserTree::insert(const std::string& longName, const blParsedValue& value) noexcept
+blParserTree& blParserTree::insert(const std::string& longName, blParsedValue value) noexcept
 {
     std::string_view view = longName;
 
     return recursiveInsert(view, value);
 }
 
-void blParserTree::foreach(const std::function<void(blParserTree&)>& func)
+void blParserTree::foreach(const std::function<void(blParserTree&)>& func) noexcept
 {
     recursiveForeach(func);
 }
 
-void blParserTree::recursiveForeach(const std::function<void(blParserTree&)>& func)
+void blParserTree::foreach(const std::function<void(const blParserTree&)>& func) const noexcept
+{
+    recursiveForeach(func);
+}
+
+void blParserTree::recursiveForeach(const std::function<void(blParserTree&)>& func) noexcept
 {    
     // Iterate through each child
-    for (auto child : _children)
+    for (auto& child : _children)
     {
 
         // Run the foreach function on the node 
-        auto node = child.second;
+        auto& node = child.second;
         func(node);
         
         // If the node is a branch we must recurse down to it
-        if (node->isBranch())
-            node->recursiveForeach(func);
+        if (node.isBranch())
+            node.recursiveForeach(func);
     }
 }
 
-std::shared_ptr<blParserTree> blParserTree::recursiveInsert(std::string_view& longName, const blParsedValue& value)
+void blParserTree::recursiveForeach(const std::function<void(const blParserTree&)>& func) const noexcept
+{    
+    // Iterate through each child
+    for (auto& child : _children)
+    {
+
+        // Run the foreach function on the node 
+        auto& node = child.second;
+        func(node);
+        
+        // If the node is a branch we must recurse down to it
+        if (node.isBranch())
+            node.recursiveForeach(func);
+    }
+}
+
+blParserTree& blParserTree::recursiveInsert(std::string_view& longName, const blParsedValue& value) noexcept
 {
     // Find the name before the next '.'
     auto dotpos = longName.find_first_of('.', 0);
@@ -162,27 +225,26 @@ std::shared_ptr<blParserTree> blParserTree::recursiveInsert(std::string_view& lo
         longName = std::string_view(longName.begin() + dotpos + 1, longName.end());
     }
 
-    // Add a branch if required
-    if (!isLast && !_children.contains(key))
-        return addBranch(key)->recursiveInsert(longName, value);
-
-    // Add a leaf if required
-    if (isLast && !_children.contains(key))
-
-
-    if (isLast)
+    // Set the value
+    if (isLast && _children.contains(key))
     {
-        if (_children.contains(key))
-            return _children[key]->_value = value;
-        else 
-            return addLeaf(key, value);
-    } 
-    else if (_children.contains(key))
-    {
-        return _children[key]->recursiveInsert(longName, value);
+        auto& node = _children[key];
+        node._value = value;
+        return node;
     }
-    else 
+    // Use the branch to insert
+    else if (!isLast && _children.contains(key))
     {
-        return addBranch(key)->recursiveInsert(longName, value);
+        return _children[key].recursiveInsert(longName, value);
+    }
+    // Add a branch
+    else if (!isLast && !_children.contains(key))
+    {
+        return addBranch(key).recursiveInsert(longName, value);
+    }
+    // Add a leaf 
+    else
+    {
+        return addLeaf(key, value);
     }
 }

@@ -6,7 +6,9 @@
 blConfig::blConfig(
         const std::string& defaultConfig, 
         const std::filesystem::path& configPath)
-    : _path(configPath)
+    : _defaultConfig(defaultConfig)
+    , _path(configPath)
+    , _tree()
 {
     ensurePathExists();
     parseInto();
@@ -22,10 +24,9 @@ void blConfig::reset()
     config << _defaultConfig;
 }
 
-bool blConfig::hasValue(
-    const std::string& name) const noexcept
+bool blConfig::hasValue(const std::string& name) noexcept
 {
-    return _values.contains(name);
+    return _tree.find(name) != nullptr;
 }
 
 void blConfig::parseInto()
@@ -41,7 +42,7 @@ void blConfig::parseInto()
                         (std::istreambuf_iterator<char>()));
 
     blParser parser{content};
-    _values = parser.getValues();
+    _tree = parser.getTree();
 
     BL_LOG(blLogType::eInfo, "Parsed config: {}\n", _path.string());
 }
@@ -51,55 +52,61 @@ void blConfig::save()
 
     std::ofstream file(_path, std::ios::out);
 
-    int tabs = 0;
+    int depth = 0;
 
-    tree.foreach([&](blParserTree& tree){
-        
-        if (prevParent != tree.getParent())
+    _tree.foreach([&](blParserTree& node){
+
+        // Don't precess leafs, only process them from branches
+        if (node.isLeaf())
+            return;        
+
+        // Tabinate the next name
+        for (int i = 0; i < depth; i++)
         {
-            tabs--;
+            file << "\t";
+        }
 
-            for (int i = 0; i < tabs; i++)
+        file << node.getName() << " = {" << std::endl;
+
+        depth++;
+
+        for (auto& pair : node.getChildren())
+        {
+            auto& child = pair.second;
+
+            // Skip branches, let the foreach find them
+            if (child.isBranch())
+                continue;
+
+            // Tabinate the next name
+            for (int i = 0; i < depth; i++)
             {
                 file << "\t";
             }
 
-            file << "}" << std::endl;
-            prevParent = tree.getParent();
-        }
-
-        // Tabinate the next name
-        for (int i = 0; i < tabs; i++)
-        {
-            file << "\t";
-        }
-        
-
-        file << tree.getName() << " = ";
-
-        // If this value is a branch
-        if (not tree.isLeaf())
-        {
-            file << "{" << std::endl;
-            prevParent = &tree;
-            tabs++;
-        }
-        else
-        {
+            file << child.getName() << " = ";
 
             // Determine which type of value we need to output
-            switch (tree.getValue().index())
+            switch (child.getValue().index())
             {
                 case 0: // integer
-                    file << std::to_string(std::get<int>(tree.getValue())) << "," << std::endl; 
+                    file << std::to_string(std::get<int>(child.getValue())) << "," << std::endl; 
                     break;
                 case 1: // string
-                    file << "\"" << std::get<std::string_view>(tree.getValue()) << "\"," << std::endl;  
+                    file << "\"" << std::get<std::string>(child.getValue()) << "\"," << std::endl;  
                     break;
             }
         }
 
+        depth--;
 
+        // Tabinate the next name
+        for (int i = 0; i < depth; i++)
+        {
+            file << "\t";
+        }
+
+        file << "}" << std::endl;
     });
 
 }

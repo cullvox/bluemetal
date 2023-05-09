@@ -20,7 +20,6 @@ public:
     blParser(const std::string& content) noexcept;
     ~blParser() = default;
 
-    std::unordered_map<std::string, blParsedValue> getValues();
     const blParserTree& getTree();
 private:
     void printError(const std::string& expected);

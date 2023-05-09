@@ -12,11 +12,11 @@ public:
     blConfig(const std::string& defaultConfig, const std::filesystem::path& path);
     ~blConfig();
 
-    bool hasValue(const std::string&) const noexcept;
+    bool hasValue(const std::string&) noexcept;
     template<typename T> T& get(const std::string& key);
-    template<typename T> T get(const std::string& key) const;
+    template<typename T> const T& get(const std::string& key) const;
     template<typename T> T& operator[](const std::string& key);
-    template<typename T> T operator[](const std::string& key) const;
+    template<typename T> const T& operator[](const std::string& key) const;
     
     void reset();
     void save();
@@ -28,9 +28,9 @@ private:
     void parseInto();
     void groupValues();
 
-    std::string                                     _defaultConfig;
-    std::filesystem::path                           _path;
-    std::unordered_map<std::string, blParsedValue>  _values;
+    std::string             _defaultConfig;
+    std::filesystem::path   _path;
+    blParserTree            _tree;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,13 @@ template<typename T>
 T& blConfig::get(const std::string& key)
 {
     static_assert(bl::is_any<T, int, std::string>::value);
-    return std::get<T>(_values[key]);
+
+    auto node = _tree.find(key);
+
+    if (node == nullptr)
+        node = &_tree.insert(key, {});
+
+    return std::get<T>(node->getValue());
 }
 
 template<typename T>
@@ -50,13 +56,13 @@ T& blConfig::operator[](const std::string& key)
 }
 
 template<typename T>
-T blConfig::get(const std::string& key) const
+const T& blConfig::get(const std::string& key) const
 {
     return std::forward(get(key));
 }
 
 template<typename T>
-T blConfig::operator[](const std::string& key) const
+const T& blConfig::operator[](const std::string& key) const
 {
     return std::forward(get(key));
 }

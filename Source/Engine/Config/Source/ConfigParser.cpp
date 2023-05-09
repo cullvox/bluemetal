@@ -10,17 +10,9 @@ blParser::blParser(const std::string& content) noexcept
     parse();
 }
 
-std::unordered_map<std::string, blParsedValue> blParser::getValues()
+const blParserTree& blParser::getTree()
 {
-    std::unordered_map<std::string, blParsedValue> values;
-
-    _tree.foreach([&](blParserTree& tree){
-        
-        if (tree.isLeaf())
-            values[tree.getLongName()] = tree.getValue();
-    });
-    
-    return values;
+    return _tree;
 }
 
 void blParser::parse()
@@ -64,7 +56,7 @@ void blParser::parse()
             {
 
                 // Consecutive identifiers will be inside of this group
-                current = current->addChild(identifier);
+                current = &(current->addBranch(std::string(identifier)));
                 
                 next();
                 continue;
@@ -72,8 +64,7 @@ void blParser::parse()
 
             case blTokenKind::eNumber:
             {
-                const blParsedValue value = strtol(_token.getLexeme().data(), nullptr, 10);
-                current->addChild(identifier, value);
+                current->addLeaf(std::string(identifier), strtol(_token.getLexeme().data(), nullptr, 10));
 
                 next();
                 break;
@@ -81,8 +72,7 @@ void blParser::parse()
 
             case blTokenKind::eString:
             {
-                const blParsedValue value = _token.getLexeme();
-                current->addChild(identifier, value);
+                current->addLeaf(std::string(identifier), std::string(_token.getLexeme()));
 
                 next();
                 break;

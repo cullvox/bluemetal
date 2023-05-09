@@ -37,8 +37,8 @@ bool blFrameCounter::endFrame() noexcept
     }
 
     // Compute the milliseconds per frame.
-    auto ms = std::chrono::duration_cast<
-                std::chrono::milliseconds>(_endOfFrame - _startOfFrame);
+    auto ns = std::chrono::duration_cast<
+                std::chrono::nanoseconds>(_endOfFrame - _startOfFrame);
 
     // Pop the front if the maximum will be held
     if (_millisecondsPerFrame.size() == _maximumHeldMillisecondsPerFrame)
@@ -47,7 +47,7 @@ bool blFrameCounter::endFrame() noexcept
     }
 
     // Add the ms to the frames
-    _millisecondsPerFrame.push_back(ms);
+    _millisecondsPerFrame.push_back(ns);
 
     return endedSecond;
 }
@@ -89,9 +89,9 @@ float blFrameCounter::getMillisecondsPerFrame() const noexcept
     if (_millisecondsPerFrame.size() < 1) return 0.0f;
     const auto msPerFrame = _millisecondsPerFrame.back();
 
-    // Overly convoluted way to convert from milli to float seconds.
+    // Overly convoluted way to convert from nano to float milliseconds.
     return std::chrono::duration_cast<
-        std::chrono::duration<float, std::milli>>(msPerFrame).count();
+        std::chrono::duration<float, std::nano>>(msPerFrame).count() / 1000000.0f;
 }
 
 float blFrameCounter::getAverageMillisecondsPerFrame(int frames) const noexcept
@@ -110,10 +110,10 @@ float blFrameCounter::getAverageMillisecondsPerFrame(int frames) const noexcept
 
     std::for_each_n(
         _millisecondsPerFrame.rbegin(), frames, 
-        [&](std::chrono::milliseconds ms)
+        [&](std::chrono::nanoseconds ms)
         {
             averageMPF += std::chrono::duration_cast<
-                std::chrono::duration<float, std::milli>>(ms).count();
+                std::chrono::duration<float, std::nano>>(ms).count() / 1000000.0f;
         });
 
     averageMPF /= frames;

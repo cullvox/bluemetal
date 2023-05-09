@@ -110,9 +110,15 @@ blEngine::blEngine(const std::string& applicationName)
         ImGui::Text("Graphics Device: %s", _renderDevice->getDeviceName());
         ImGui::Text("Graphics Vendor: %s", _renderDevice->getVendorName());
         ImGui::Text("F/S: %d", _frameCounter.getFramesPerSecond());
-        ImGui::Text("MS/F: %.0f", _frameCounter.getMillisecondsPerFrame());
+        ImGui::Text("MS/F: %.2f", _frameCounter.getMillisecondsPerFrame());
         ImGui::Text("Average F/S (Over 10 Seconds): %.1f", _frameCounter.getAverageFramesPerSecond(10));
-        ImGui::Text("Average MS/F (Over 144 Frames): %.1f", _frameCounter.getAverageMillisecondsPerFrame(144));
+        ImGui::Text("Average MS/F (Over 144 Frames): %.2f", _frameCounter.getAverageMillisecondsPerFrame(144));
+        ImGui::End();
+
+        ImGui::Begin("Settings");
+        static int presentModeSelected;
+        ImGui::RadioButton("FIFO (VSync)", &presentModeSelected, 0);
+        ImGui::RadioButton("Mailbox (Preferred)", &presentModeSelected, 1);
         ImGui::End();
 
         ImGui::ShowDemoWindow();

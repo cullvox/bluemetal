@@ -23,5 +23,5 @@ private:
     int                                  _maximumHeldFramesPerSecond = 120;
     int                                  _maximumHeldMillisecondsPerFrame = 144;
     std::list<int>                       _framesPerSecond;
-    std::list<std::chrono::milliseconds> _millisecondsPerFrame;
+    std::list<std::chrono::nanoseconds>  _millisecondsPerFrame;
 };
