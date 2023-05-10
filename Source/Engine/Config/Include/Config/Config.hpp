@@ -8,21 +8,19 @@
 class BLOODLUST_CONFIG_API blConfig
 {
 public:
-    
     blConfig(const std::string& defaultConfig, const std::filesystem::path& path);
     ~blConfig();
+
+    void reset();
+    void save();
 
     bool hasValue(const std::string&) noexcept;
     template<typename T> T& get(const std::string& key);
     template<typename T> const T& get(const std::string& key) const;
     template<typename T> T& operator[](const std::string& key);
     template<typename T> const T& operator[](const std::string& key) const;
-    
-    void reset();
-    void save();
 
 private:
-
     void ensurePathExists();
     void resetIfPathDoesNotExist();
     void parseInto();

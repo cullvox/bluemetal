@@ -24,7 +24,6 @@ blRenderDevice::~blRenderDevice()
     vmaDestroyAllocator(_allocator);
 }
 
-
 std::shared_ptr<blWindow> blRenderDevice::getWindow() const noexcept
 {
     return _window;
@@ -231,8 +230,15 @@ std::vector<const char*> blRenderDevice::getInstanceExtensions() const
 void blRenderDevice::createInstance()
 {
     std::vector<const char*> instanceExtensions = getInstanceExtensions();
-    std::vector<const char*> validationLayers = getValidationLayers();
+    std::vector<const char*> validationLayers = 
+#ifdef BLOODLUST_DEVELOPMENT
+    getValidationLayers();
+#else
+    {};
+#endif
 
+
+#ifdef BLOODLUST_DEVELOPMENT
     const vk::DebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{
         {},
         vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
@@ -245,6 +251,7 @@ void blRenderDevice::createInstance()
         debugCallback,
         nullptr    
     };
+#endif
 
     const vk::ApplicationInfo applicationInfo{
         applicationName.data(),         // pApplicationName
@@ -265,7 +272,9 @@ void blRenderDevice::createInstance()
         &applicationInfo,           // pApplicationInfo
         validationLayers,           // pEnabledLayerNames
         instanceExtensions,         // pEnabledExtensionNames
+#ifdef BLOODLUST_DEVELOPMENT
         &debugMessengerCreateInfo,   // pNext
+#endif
     };
 
     _instance =  vk::createInstanceUnique(createInfo);

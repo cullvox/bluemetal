@@ -5,7 +5,7 @@ function(bl_add_library lib_name lib_short_name lib_sources)
     # Add the actual CMake library. 
     set(lib_type "STATIC")
 
-    if (MAGINVOX_DEVELOPMENT)
+    if (BLUEMETAL_DEVELOPMENT)
         set(lib_type "SHARED")
     endif()
 
@@ -21,20 +21,20 @@ function(bl_add_library lib_name lib_short_name lib_sources)
     include(GenerateExportHeader)
     generate_export_header(
         ${lib_name}
-        BASE_NAME "BLOODLUST_${lib_short_name_upper}"
-        EXPORT_MACRO_NAME "BLOODLUST_${lib_short_name_upper}_API"
-        DEPRECATED_MACRO_NAME "BLOODLUST_DEPRECATED"
+        BASE_NAME "BLUEMETAL_${lib_short_name_upper}"
+        EXPORT_MACRO_NAME "BLUEMETAL_${lib_short_name_upper}_API"
+        DEPRECATED_MACRO_NAME "BLUEMETAL_DEPRECATED"
         EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/Include/${lib_short_name}/Export.h")
 
     # Add debug definitions
     if (CMAKE_BUILD_TYPE STREQUAL "DEBUG")
-        target_compile_definitions(${lib_name} PRIVATE "BLOODLUST_DEBUG")
+        target_compile_definitions(${lib_name} PRIVATE "BLUEMETAL_DEBUG")
     endif()
 
     target_compile_definitions(
         ${lib_name} 
             PRIVATE 
-                "BLOODLUST_LIBRARY_NAME=\"${lib_short_name_upper}\""
+                "BLUEMETAL_LIBRARY_NAME=\"${lib_short_name_upper}\""
                 "${lib_name}_EXPORTS"
     )
 
