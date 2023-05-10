@@ -21,13 +21,6 @@ on:
     - cron: '34 8 * * 5'
 
 jobs:
-  vulkan:
-    name: Prepare Vulkan SDK
-    uses: humbletim/setup-vulkan-sdk@v1.2.0
-    with:
-      vulkan-query-version: 1.3.204.0
-      vulkan-components: Vulkan-Headers, Vulkan-Loader
-      vulkan-use-cache: true
 
   libraries:
     name: Install requrired libraries
