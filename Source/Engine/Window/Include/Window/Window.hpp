@@ -11,7 +11,7 @@
 
 #include <vulkan/vulkan.hpp>
 
-class BLOODLUST_WINDOW_API blWindow
+class BLUEMETAL_WINDOW_API blWindow
 {
 public:
     blWindow(const blDisplayMode& videoMode, 

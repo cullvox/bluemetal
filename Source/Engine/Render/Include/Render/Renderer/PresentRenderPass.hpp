@@ -4,7 +4,7 @@
 #include "Render/RenderPass.hpp"
 #include "Render/Swapchain.hpp"
 
-class BLOODLUST_RENDER_API blPresentRenderPass : public blRenderPass
+class BLUEMETAL_RENDER_API blPresentRenderPass : public blRenderPass
 {
 public:
 	blPresentRenderPass(

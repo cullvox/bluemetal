@@ -22,7 +22,7 @@ struct blGenericInputEventFilter
 using blInputHookCallbackFunction = blCallbackList<void(const SDL_Event*)>::Callback;
 using blInputHookCallback = blCallbackList<void(const SDL_Event*)>::Handle;
 
-class BLOODLUST_INPUT_API blInputSystem
+class BLUEMETAL_INPUT_API blInputSystem
 {
 public:
     

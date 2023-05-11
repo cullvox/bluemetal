@@ -2,7 +2,7 @@
 
 #include "Render/RenderDevice.hpp"
 
-class BLOODLUST_RENDER_API blBuffer
+class BLUEMETAL_RENDER_API blBuffer
 {
 public:
     blBuffer(std::shared_ptr<const blRenderDevice> renderDevice, 

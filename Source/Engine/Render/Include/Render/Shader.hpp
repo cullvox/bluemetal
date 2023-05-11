@@ -12,7 +12,7 @@ struct blShaderDescriptorReflection
     VkDescriptorSetLayoutCreateInfo info;
 };
 
-class BLOODLUST_RENDER_API blShader
+class BLUEMETAL_RENDER_API blShader
 {
 public:
     blShader(std::shared_ptr<const blRenderDevice> renderDevice, 

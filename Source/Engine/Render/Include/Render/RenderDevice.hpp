@@ -5,7 +5,7 @@
 #include "Render/Precompiled.hpp"
 #include "Render/Export.h"
 
-class BLOODLUST_RENDER_API blRenderDevice
+class BLUEMETAL_RENDER_API blRenderDevice
 {
 public:
     blRenderDevice(std::shared_ptr<blWindow> window);

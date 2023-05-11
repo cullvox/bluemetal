@@ -3,7 +3,7 @@
 #include "Core/Precompiled.hpp"
 #include "Math/Export.h"
 
-struct BLOODLUST_MATH_API blVector2i
+struct BLUEMETAL_MATH_API blVector2i
 {
     blVector2i(int32_t x, int32_t z) noexcept;
     blVector2i(int32_t xy) noexcept;
@@ -22,7 +22,7 @@ struct BLOODLUST_MATH_API blVector2i
     int32_t y;
 };
 
-struct BLOODLUST_MATH_API blVector2f
+struct BLUEMETAL_MATH_API blVector2f
 {
     blVector2f(float x, float z) noexcept;
     blVector2f(float xy) noexcept;
@@ -40,7 +40,7 @@ struct BLOODLUST_MATH_API blVector2f
     float y;
 };
 
-struct BLOODLUST_MATH_API blExtent2D
+struct BLUEMETAL_MATH_API blExtent2D
 {
     blExtent2D() = default;
     blExtent2D(uint32_t width, uint32_t height)
@@ -55,7 +55,7 @@ struct BLOODLUST_MATH_API blExtent2D
     uint32_t height;
 };
 
-struct BLOODLUST_MATH_API blRect2D
+struct BLUEMETAL_MATH_API blRect2D
 {
     blRect2D() = default;
     blRect2D(blExtent2D offset, blExtent2D extent)

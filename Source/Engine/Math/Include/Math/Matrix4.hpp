@@ -2,7 +2,7 @@
 
 #include "Math/Export.h"
 
-struct BLOODLUST_MATH_API blMatrix4
+struct BLUEMETAL_MATH_API blMatrix4
 {
 
     float m[16];

@@ -11,7 +11,7 @@
 #include "Engine/Export.h"
 
 
-class BLOODLUST_ENGINE_API blEngine
+class BLUEMETAL_ENGINE_API blEngine
 {
 public:
     blEngine(const std::string& applicationName);

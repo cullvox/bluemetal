@@ -4,7 +4,7 @@
 #include "Render/Buffer.hpp"
 #include "Render/Export.h"
 
-class BLOODLUST_RENDER_API blImage
+class BLUEMETAL_RENDER_API blImage
 {
 public:
     blImage(std::shared_ptr<blRenderDevice> renderDevice, VkImageType type, 

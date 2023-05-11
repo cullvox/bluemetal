@@ -1,6 +1,6 @@
-#include "Config/ConfigLexer.hpp"
+#include "NoodleLexer.hpp"
 
-bool blLexerUtils::IsSpace(char c) noexcept
+bool blNoodleLexerUtils::isSpace(char c) noexcept
 {
     switch (c)
     {
@@ -14,7 +14,7 @@ bool blLexerUtils::IsSpace(char c) noexcept
     }
 }
 
-bool blLexerUtils::IsDigit(char c) noexcept
+bool blNoodleLexerUtils::isDigit(char c) noexcept
 {
     switch (c)
     {
@@ -28,13 +28,14 @@ bool blLexerUtils::IsDigit(char c) noexcept
         case '7':
         case '8':
         case '9':
+        case '.':
             return true;
         default:
             return false;
     }
 }
 
-bool blLexerUtils::IsIdentifierChar(char c) noexcept
+bool blNoodleLexerUtils::isIdentifierChar(char c) noexcept
 {
     switch (c)
     {
@@ -108,23 +109,23 @@ bool blLexerUtils::IsIdentifierChar(char c) noexcept
 }
 
 //==============================================================================
-// blLexer
+// blNoodleLexer
 //==============================================================================
 
-blLexer::blLexer(const std::string& content) noexcept
+blNoodleLexer::blNoodleLexer(const std::string& content) noexcept
     : _content(content)
     , _it(content.begin())
-    , _lineNumber(0)
-    , _characterNumber(0)
+    , _linePos(0)
+    , _characterPos(0)
 {
 }
 
-blToken blLexer::next() noexcept
+blNoodleToken blNoodleLexer::next() noexcept
 {
 
     if (_it == _content.end())
     {
-        return blToken(blTokenKind::eEnd, std::string_view(), _lineNumber, _characterNumber);
+        return blNoodleToken(blNoodleTokenKind::eEnd, std::string_view(), linePos(), characterPos());
     }
 
     // Removes whitespaces and comments, but keeps track of line/character numbers.
@@ -137,28 +138,19 @@ blToken blLexer::next() noexcept
             {
                 get();
             }
-            _lineNumber++;
             get();
         }
 
         // Remove any spaces
-        else if (blLexerUtils::IsSpace(peek()))
+        else if (blNoodleLexerUtils::isSpace(peek()))
         {
-            _characterNumber++;
-
-            if (peek() == '\n')
-            {
-                _characterNumber = 0; 
-                _lineNumber++;
-            }
-
             get();
         }
 
         // Stop on reached anything else
         else
         {
-            /* Encountered a token that is not a comment or space. */
+            // Encountered a token that is not a comment or space.
             break;
         }
     }
@@ -166,12 +158,7 @@ blToken blLexer::next() noexcept
     switch (peek())
     {
         case '\0':
-            return blToken(
-                blTokenKind::eEnd, 
-                std::string_view(_content), 
-                getLineNumber(), getCharacterNumber());
-        default:
-            return createAtom(blTokenKind::eUnexpected);
+            return blNoodleToken(blNoodleTokenKind::eEnd, std::string_view(_content), linePos(), characterPos());
         case 'a':
         case 'b':
         case 'c':
@@ -237,45 +224,49 @@ blToken blLexer::next() noexcept
         case '9':
             return createNumber();
         case '{':
-            return createAtom(blTokenKind::eLeftCurly);
+            return createAtom(blNoodleTokenKind::eLeftCurly);
         case '}':
-            return createAtom(blTokenKind::eRightCurly);
+            return createAtom(blNoodleTokenKind::eRightCurly);
         case '=':
-            return createAtom(blTokenKind::eEqual);
+            return createAtom(blNoodleTokenKind::eEqual);
         case '"':
             return createString();
         case ',':
-            return createAtom(blTokenKind::eComma);
+            return createAtom(blNoodleTokenKind::eComma);
+        default:
+            return createAtom(blNoodleTokenKind::eUnexpected);
     }
-
-    _characterNumber++;
 }
 
-int blLexer::getLineNumber() const noexcept
+int blNoodleLexer::linePos() const noexcept
 {
-    return _lineNumber;
+    return _linePos;
 }
 
-int blLexer::getCharacterNumber() const noexcept
+int blNoodleLexer::characterPos() const noexcept
 {
-    return _characterNumber;
+    return _characterPos;
 }
 
-blToken blLexer::createIdentifier() noexcept
+blNoodleToken blNoodleLexer::createIdentifier() noexcept
 {
     std::string::const_iterator start = _it;
     
     // Read until the end of the identifier
     get();
-    while (blLexerUtils::IsIdentifierChar(peek())) get();
+    while (blNoodleLexerUtils::isIdentifierChar(peek())) get();
 
-    return blToken(
-        blTokenKind::eIdentifier, 
-        std::string_view{start, _it}, 
-        getLineNumber(), getCharacterNumber());
+    
+    std::string_view view{start, _it};
+    blNoodleTokenKind kind = blNoodleTokenKind::eIdentifier;
+
+    if (view == "true" || view == "false")
+        kind = blNoodleTokenKind::eBoolean;
+
+    return blNoodleToken(kind, view, linePos(), characterPos());
 }
 
-blToken blLexer::createString() noexcept
+blNoodleToken blNoodleLexer::createString() noexcept
 {
     std::string::const_iterator start = _it;
 
@@ -285,41 +276,65 @@ blToken blLexer::createString() noexcept
     get();
 
     // Checks if the end was actually a double quote, if it wasn't change the string to unknown. 
-    bool valid = (*(_it-1) != '\"');
+    bool valid = (*(_it-1) == '\"');
 
-    return blToken{
-        valid ? blTokenKind::eUnexpected : blTokenKind::eString,
+    return blNoodleToken(
+        valid ? blNoodleTokenKind::eString : blNoodleTokenKind::eUnexpected,
         std::string_view{start+1, _it-1}, // Contents of string without the "quotes"
-        getLineNumber(), getCharacterNumber()};
+        linePos(), characterPos());
 }
 
-blToken blLexer::createNumber() noexcept
+blNoodleToken blNoodleLexer::createNumber() noexcept
 {
     std::string::const_iterator start = _it;
 
     // Read until the last digit
     get();
-    while (blLexerUtils::IsDigit(peek())) get();
+    while (blNoodleLexerUtils::isDigit(peek())) get();
+
+    // Detect what type the number is
+    // This is almost certainly a hack to get this to work
+    // I do not like thi &(*start), &(*_it) trick
+    char* longEnd;
+    char* floatEnd;
+
+    std::strtol(&(*start), &longEnd, 10);
+    std::strtof(&(*start), &floatEnd);
+
+    // If the end pointers don't match the current iterator, somethings wrong with the noodle
+    blNoodleTokenKind kind = blNoodleTokenKind::eUnexpected;
+
+    if (&(*_it) == longEnd)
+        kind = blNoodleTokenKind::eInteger;
+    else if (&(*_it) == floatEnd)
+        kind = blNoodleTokenKind::eFloat;
     
-    return blToken{
-        blTokenKind::eNumber,
-        std::string_view{start, _it},
-        getLineNumber(), getCharacterNumber()};
+    return blNoodleToken(kind, std::string_view{start, _it}, linePos(), characterPos());
 }
 
-blToken blLexer::createAtom(blTokenKind kind) noexcept
+blNoodleToken blNoodleLexer::createAtom(blNoodleTokenKind kind) noexcept
 {
-    return blToken{
-        kind, 
-        std::string_view{_it++, _it},
-        getLineNumber(), getCharacterNumber()};
+    return blNoodleToken(kind, std::string_view{_it++, _it}, linePos(), characterPos());
 }
 
-
-char blLexer::peek() const noexcept
+char blNoodleLexer::peek() const noexcept
 {
     if (_it == _content.end())
         return '\0';
     else
-        return *_it; 
+        return *_it;
+}
+
+char blNoodleLexer::get() noexcept
+{
+    char current = *_it++;
+
+    _characterPos++;
+    if (current == '\n')
+    {
+        _linePos++;
+        _characterPos = 0;
+    }
+
+    return current;
 }

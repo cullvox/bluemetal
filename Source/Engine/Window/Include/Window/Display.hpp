@@ -5,7 +5,7 @@
 #include "Window/VideoMode.hpp"
 #include "Window/Export.h"
 
-class BLOODLUST_WINDOW_API blDisplay 
+class BLUEMETAL_WINDOW_API blDisplay 
 {
 public:
     static std::vector<blDisplay> getDisplays() noexcept;

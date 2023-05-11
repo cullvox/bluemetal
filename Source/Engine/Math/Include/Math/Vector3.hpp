@@ -2,7 +2,7 @@
 
 #include "Math/Export.h"
 
-class BLOODLUST_MATH_API blVector3i
+class BLUEMETAL_MATH_API blVector3i
 {
 public:
     blVector3i() noexcept;
@@ -24,7 +24,7 @@ public:
     int z;
 };
 
-class BLOODLUST_MATH_API blVector3f
+class BLUEMETAL_MATH_API blVector3f
 {
 public:
     blVector3f() noexcept;
@@ -45,7 +45,7 @@ public:
     float z;
 };
 
-class BLOODLUST_MATH_API blExtent3D
+class BLUEMETAL_MATH_API blExtent3D
 {
 public:
     blExtent3D() = default;

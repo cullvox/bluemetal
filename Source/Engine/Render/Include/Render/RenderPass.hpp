@@ -5,7 +5,7 @@
 
 using blRenderPassFunction = std::function<void(VkCommandBuffer)>;
 
-class BLOODLUST_RENDER_API blRenderPass
+class BLUEMETAL_RENDER_API blRenderPass
 {
 public:
     blRenderPass() = default;

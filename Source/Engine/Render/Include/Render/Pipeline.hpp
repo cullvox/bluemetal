@@ -5,7 +5,7 @@
 #include "Render/Shader.hpp"
 #include "Render/RenderPass.hpp"
 
-class BLOODLUST_RENDER_API blPipeline
+class BLUEMETAL_RENDER_API blPipeline
 {
 
 public:

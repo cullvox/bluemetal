@@ -2,7 +2,7 @@
 #include "Engine/Engine.hpp"
 #include "Render/Renderer/PresentRenderPass.hpp"
 #include "ImGui/ImGui.hpp"
-#include "Config/Config.hpp"
+#include "Config/Noodle.hpp"
 
 void applyFont()
 {
@@ -97,11 +97,10 @@ blEngine::blEngine(const std::string& applicationName)
         #include "defaultConfig.nwdl"
     ;
 
-    blConfig config(defaultConfig, "Save/Config/config.nwdl");
-    int& value = config.get<int>("window.width");
+    blNoodle config = blNoodle::parse(defaultConfig);
+    int& value = config["window"]["width"].get<int>();
     value = 1000;
 
-    config.save();
 
     _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, [&](VkCommandBuffer cmd){
         blImGui::beginFrame();

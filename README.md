@@ -14,7 +14,7 @@ experimental features.
 
 
 
-* Use of Newer C++ 17/20 Features
+* Use of Newer C++17/20 Features
 * Vulkan Renderer
 * Custom Configuration Language, NWDL
 * Dear ImGui

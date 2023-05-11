@@ -12,7 +12,7 @@ enum class blLogType
     eDebug,
 };
 
-class BLOODLUST_CORE_API blLogger
+class BLUEMETAL_CORE_API blLogger
 {
 public:
 
@@ -30,7 +30,7 @@ public:
         static const auto info_style = fg(fmt::color::antique_white);
         static const auto fatal_style = fmt::emphasis::bold | fg(fmt::color::white) | bg(fmt::color::crimson);
         
-#ifndef BLOODLUST_DEBUG
+#ifndef BLUEMETAL_DEBUG
         if (type == blLogType::eDebug)
             return;
 #endif
@@ -58,4 +58,4 @@ public:
 };
 
 #define BL_LOG(type, format, ...) \
-    blLogger::blLogImpl(type, BLOODLUST_LIBRARY_NAME, __LINE__, __func__, format, __VA_ARGS__);
+    blLogger::blLogImpl(type, BLUEMETAL_LIBRARY_NAME, __LINE__, __func__, format, __VA_ARGS__);

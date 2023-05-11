@@ -231,14 +231,14 @@ void blRenderDevice::createInstance()
 {
     std::vector<const char*> instanceExtensions = getInstanceExtensions();
     std::vector<const char*> validationLayers = 
-#ifdef BLOODLUST_DEVELOPMENT
+#ifdef BLUEMETAL_DEVELOPMENT
     getValidationLayers();
 #else
     {};
 #endif
 
 
-#ifdef BLOODLUST_DEVELOPMENT
+#ifdef BLUEMETAL_DEVELOPMENT
     const vk::DebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{
         {},
         vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
@@ -272,7 +272,7 @@ void blRenderDevice::createInstance()
         &applicationInfo,           // pApplicationInfo
         validationLayers,           // pEnabledLayerNames
         instanceExtensions,         // pEnabledExtensionNames
-#ifdef BLOODLUST_DEVELOPMENT
+#ifdef BLUEMETAL_DEVELOPMENT
         &debugMessengerCreateInfo,   // pNext
 #endif
     };

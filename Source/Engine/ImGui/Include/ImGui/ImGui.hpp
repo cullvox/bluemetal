@@ -8,7 +8,7 @@
 #include "Render/RenderPass.hpp"
 #include "ImGui/Export.h"
 
-class BLOODLUST_IMGUI_API blImGui
+class BLUEMETAL_IMGUI_API blImGui
 {
 	static std::shared_ptr<const blWindow> _window;
 	static std::shared_ptr<blInputSystem> _inputSystem;

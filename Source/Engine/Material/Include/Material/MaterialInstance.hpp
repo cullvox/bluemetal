@@ -3,7 +3,7 @@
 #include "Material/Export.h"
 #include "Material/Material.hpp"
 
-class BLOODLUST_MATERIAL_API blMaterialInstance
+class BLUEMETAL_MATERIAL_API blMaterialInstance
 {
 public:
     blMaterialInstance(std::shared_ptr<blMaterial> material);

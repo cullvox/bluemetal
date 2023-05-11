@@ -4,7 +4,7 @@
 #include "Window/Window.hpp"
 #include "Render/RenderDevice.hpp"
 
-class BLOODLUST_RENDER_API blSwapchain
+class BLUEMETAL_RENDER_API blSwapchain
 {
 public:
     static const vk::Format DEFAULT_FORMAT = vk::Format::eR8G8B8A8Srgb;

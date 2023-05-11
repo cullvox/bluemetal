@@ -14,7 +14,7 @@ struct Submission
     int instanceCount;
 };
 
-class BLOODLUST_RENDER_API blRenderer
+class BLUEMETAL_RENDER_API blRenderer
 {
     static const inline uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 public:

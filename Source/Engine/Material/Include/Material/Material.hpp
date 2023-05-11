@@ -9,7 +9,7 @@ enum class blMaterialType
     eOpaque
 };
 
-class BLOODLUST_MATERIAL_API blMaterial
+class BLUEMETAL_MATERIAL_API blMaterial
 {
 public:
     blMaterial(

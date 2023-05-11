@@ -3,7 +3,7 @@
 #include "Core/Precompiled.hpp"
 #include "Render/Export.h"
 
-class BLOODLUST_RENDER_API blFrameCounter
+class BLUEMETAL_RENDER_API blFrameCounter
 {
 public:
     void beginFrame() noexcept;
