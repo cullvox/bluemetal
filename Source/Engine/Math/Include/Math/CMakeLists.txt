@@ -1,4 +1,4 @@
-include(BloodLustLibrary)
+include(bluemetallib)
 
 list(APPEND InputSources
     "Source/InputSystem.cpp")

@@ -223,6 +223,10 @@ blNoodleToken blNoodleLexer::next() noexcept
         case '8':
         case '9':
             return createNumber();
+        case '[':
+            return createAtom(blNoodleTokenKind::eLeftBracket);
+        case ']':
+            return createAtom(blNoodleTokenKind::eRightBracket);
         case '{':
             return createAtom(blNoodleTokenKind::eLeftCurly);
         case '}':
@@ -257,7 +261,7 @@ blNoodleToken blNoodleLexer::createIdentifier() noexcept
     while (blNoodleLexerUtils::isIdentifierChar(peek())) get();
 
     
-    std::string_view view{start, _it};
+    std::string_view view(start, _it);
     blNoodleTokenKind kind = blNoodleTokenKind::eIdentifier;
 
     if (view == "true" || view == "false")

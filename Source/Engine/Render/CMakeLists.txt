@@ -1,4 +1,4 @@
-include(BloodLustLibrary)
+include(bluemetallib)
 
 list(APPEND RenderSources
     "Source/RenderDevice.cpp"

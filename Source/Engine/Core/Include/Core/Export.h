@@ -7,7 +7,7 @@
 #  define BLUEMETAL_CORE_NO_EXPORT
 #else
 #  ifndef BLUEMETAL_CORE_API
-#    ifdef BloodLustCore_EXPORTS
+#    ifdef BLCore_EXPORTS
         /* We are building this library */
 #      define BLUEMETAL_CORE_API 
 #    else

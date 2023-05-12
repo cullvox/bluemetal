@@ -1,12 +1,9 @@
 #pragma once
 
 #include "NoodleToken.hpp"
-#include "Config/Export.h"
+#include "Noodle/Export.h"
 
-#include <string>
-#include <string_view>
-
-class BLUEMETAL_CONFIG_API blNoodleLexerUtils
+class BLUEMETAL_NOODLE_API blNoodleLexerUtils
 {
 public:
     static bool isSpace(char c) noexcept;
@@ -14,7 +11,7 @@ public:
     static bool isIdentifierChar(char c) noexcept;
 };
 
-class BLUEMETAL_CONFIG_API blNoodleLexer {
+class BLUEMETAL_NOODLE_API blNoodleLexer {
 public:
     blNoodleLexer(const std::string& content) noexcept;
 

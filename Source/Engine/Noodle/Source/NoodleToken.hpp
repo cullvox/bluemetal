@@ -1,8 +1,7 @@
 #pragma once
 
-#include <string_view>
-
-#include "Config/Export.h"
+#include "Noodle/Precompiled.hpp"
+#include "Noodle/Export.h"
 
 enum class blNoodleTokenKind
 {
@@ -14,6 +13,8 @@ enum class blNoodleTokenKind
     eString,
     eLeftCurly,
     eRightCurly,
+    eLeftBracket,
+    eRightBracket,
     eEqual,
     eComma,
     eEnd,
@@ -21,7 +22,7 @@ enum class blNoodleTokenKind
     eNewLine,
 };
 
-class BLUEMETAL_CONFIG_API blNoodleToken
+class BLUEMETAL_NOODLE_API blNoodleToken
 {
 public:
     blNoodleToken() = default;
@@ -34,8 +35,10 @@ public:
     bool is(blNoodleTokenKind kind) const noexcept { return _kind == kind; }
 
     template <typename... Ts>
-    bool isAny(blNoodleTokenKind k1, blNoodleTokenKind k2, Ts... ks) const noexcept { return is(k1) || isOneOf(k2, ks...); }
-
+    inline bool isOneOf(Ts... ks) const noexcept 
+    {
+        return (is(ks) || ...);
+    }
 private:
     std::string_view        _lexeme;
     blNoodleTokenKind       _kind;

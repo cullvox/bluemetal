@@ -1,6 +1,10 @@
 #pragma once
 
-#include <stdexcept>
+#include "Noodle/Precompiled.hpp"
+
+// These would normally be based on blException, but that is in a different 
+// module. This modules is supposed to be separated from the others
+
 
 class blNoodleException : public std::exception
 {

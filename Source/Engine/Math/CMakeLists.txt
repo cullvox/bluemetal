@@ -1,4 +1,4 @@
-include(BloodLustLibrary)
+include(bluemetallib)
 
 list(APPEND MathSources
     "Source/Vector2.cpp"

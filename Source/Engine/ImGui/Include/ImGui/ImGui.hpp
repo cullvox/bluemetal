@@ -18,6 +18,8 @@ class BLUEMETAL_IMGUI_API blImGui
 	static vk::DescriptorPool _descriptorPool;
 	static blInputHookCallback _hookCallback;
 
+	static void applyStyle();
+
 public:
 	static void init(
 		std::shared_ptr<const blWindow> window, 

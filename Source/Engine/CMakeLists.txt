@@ -1,5 +1,5 @@
 add_subdirectory("Core")
-add_subdirectory("Config")
+add_subdirectory("Noodle")
 add_subdirectory("Math")
 add_subdirectory("Window")
 add_subdirectory("Input")
