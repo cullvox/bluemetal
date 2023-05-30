@@ -1,7 +1,14 @@
+
+.vs
+.cache
+
+/CMakeSettings.json
+/CppProperties.json
+
+
 /build
 /compile_commands.json
 /out
 /Doxygen/Build
 /Doxygen/html
 /doxygen/latex
-.vs

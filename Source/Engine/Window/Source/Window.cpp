@@ -60,7 +60,7 @@ vk::SurfaceKHR blWindow::createSurface(std::shared_ptr<const blWindow> window,
     VkSurfaceKHR tempSurface = VK_NULL_HANDLE;
     if (SDL_Vulkan_CreateSurface(window->getHandle(), instance, &tempSurface) != SDL_TRUE)
     {
-        BL_LOG(blLogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
+        BL_LOG(blLogType::eFatal,  "Could not create a Vulkan surface from an SDL window!");
     }
 
     return (vk::SurfaceKHR)tempSurface;

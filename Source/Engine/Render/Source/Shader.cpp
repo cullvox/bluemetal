@@ -114,8 +114,10 @@ void blShader::findVertexState(const SpvReflectShaderModule& reflModule)
         _vertexBinding.stride += formatSize;
     }
 
+    const std::array vertexBindings = { _vertexBinding };
+
     _vertexState
-        .setVertexBindingDescriptions({_vertexBinding})
+        .setVertexBindingDescriptions(vertexBindings)
         .setVertexAttributeDescriptions(_vertexAttributes); 
 }
 

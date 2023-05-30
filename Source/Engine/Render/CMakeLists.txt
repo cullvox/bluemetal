@@ -12,11 +12,13 @@ list(APPEND RenderSources
 
     "Source/Renderer/PresentRenderPass.cpp")
 
-bl_add_library(BloodLustRender Render "${RenderSources}")
-target_link_libraries(BloodLustRender bl::Core bl::Math BloodLustWindow)
-target_precompile_headers(BloodLustRender PUBLIC "Include/Render/Precompiled.hpp")
+bl_add_library(BLRender Render "${RenderSources}")
+target_link_libraries(BLRender bl::Core bl::Math bl::Window)
+target_precompile_headers(BLRender PUBLIC "Include/Render/Precompiled.hpp")
 
 find_package(Vulkan REQUIRED)
 
-target_include_directories(BloodLustRender PUBLIC ${Vulkan_INCLUDE_DIRS})
-target_link_libraries(BloodLustRender spirv-reflect-static ${Vulkan_LIBRARIES})
+message("Vulkan Dir: ${Vulkan_INCLUDE_DIRS}")
+
+target_include_directories(BLRender PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_link_libraries(BLRender spirv-reflect-static ${Vulkan_LIBRARIES})

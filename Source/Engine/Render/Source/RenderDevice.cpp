@@ -231,14 +231,14 @@ void blRenderDevice::createInstance()
 {
     std::vector<const char*> instanceExtensions = getInstanceExtensions();
     std::vector<const char*> validationLayers = 
-#ifdef BLUEMETAL_DEVELOPMENT
+#ifdef BLUEMETAL_DEBUG
     getValidationLayers();
 #else
     {};
 #endif
 
 
-#ifdef BLUEMETAL_DEVELOPMENT
+#ifdef BLUEMETAL_DEBUG
     const vk::DebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{
         {},
         vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
@@ -329,7 +329,12 @@ void blRenderDevice::createDevice()
     uint32_t                                queueFamilyPropertiesCount = 0;
     
     const std::vector<const char*>          deviceExtensions = getDeviceExtensions();
-    const std::vector<const char*>          validationLayers = getValidationLayers();
+    const std::vector<const char*>          validationLayers =
+#ifdef BLUEMETAL_DEBUG
+    getValidationLayers();
+#else
+    {};
+#endif
 
     std::vector<vk::QueueFamilyProperties> queueFamilyProperties = _physicalDevice.getQueueFamilyProperties();
 

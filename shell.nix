@@ -4,9 +4,7 @@ stdenv.mkDerivation {
   name = "env";
   nativeBuildInputs = [ pkg-config ];
 
-
   buildInputs = [
-
     # Build requirements
     cmake
     gcc
@@ -33,11 +31,10 @@ stdenv.mkDerivation {
     libffi
 
     # Miscellanious libraries
-    #fmt_8 # spdlog has issues with newer versions of fmt
-    spdlog_1
+    fmt_8
     SDL2
     glm
-
   ];
+
   VULKAN_SDK = "${vulkan-validation-layers}/share/vulkan/explicit_layer.d";
 }

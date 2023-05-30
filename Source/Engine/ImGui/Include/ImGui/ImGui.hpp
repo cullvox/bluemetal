@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ImGui.h"
+#include "imgui.h"
 
 #include "Window/Window.hpp"
 #include "Input/InputSystem.hpp"

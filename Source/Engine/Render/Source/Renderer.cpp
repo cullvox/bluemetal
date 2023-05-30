@@ -131,13 +131,14 @@ void blRenderer::render()
     const std::array waitSemaphores = { _imageAvailableSemaphores[_currentFrame] };
     const std::array<vk::PipelineStageFlags, 1> waitStages = { vk::PipelineStageFlagBits::eColorAttachmentOutput };
     const std::array signalSemaphores = { _renderFinishedSemaphores[_currentFrame] };
+    const std::array commandBuffers = { _swapCommandBuffers[_currentFrame] };
 
     const vk::SubmitInfo submitInfo
     {
-        waitSemaphores,                          // waitSemaphores
-        waitStages,                             // waitDstStageMask
-        { _swapCommandBuffers[_currentFrame] }, // commandBuffers
-        signalSemaphores                        // signalSemaphores
+        waitSemaphores,     // waitSemaphores
+        waitStages,         // waitDstStageMask
+        commandBuffers,     // commandBuffers
+        signalSemaphores    // signalSemaphores
     };
 
     _renderDevice->getGraphicsQueue()
@@ -145,11 +146,12 @@ void blRenderer::render()
 
     // Present the rendered frame
     const std::array swapchains = { _swapchain->getSwapchain() };
+    const std::array imageIndices = { imageIndex };
     const vk::PresentInfoKHR presentInfo
     {
         signalSemaphores,
         swapchains,
-        { imageIndex },
+        imageIndices,
         {}
     };
 

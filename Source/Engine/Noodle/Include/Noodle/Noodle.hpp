@@ -111,4 +111,5 @@ template<typename T>
 blNoodle& blNoodle::operator=(const std::vector<T>& value) noexcept
 {
     
+    return *this;
 }

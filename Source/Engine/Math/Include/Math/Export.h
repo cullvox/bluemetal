@@ -7,7 +7,7 @@
 #  define BLUEMETAL_MATH_NO_EXPORT
 #else
 #  ifndef BLUEMETAL_MATH_API
-#    ifdef BloodLustMath_EXPORTS
+#    ifdef BLMath_EXPORTS
         /* We are building this library */
 #      define BLUEMETAL_MATH_API 
 #    else
@@ -22,7 +22,7 @@
 #endif
 
 #ifndef BLUEMETAL_DEPRECATED
-#  define BLUEMETAL_DEPRECATED __declspec(deprecated)
+#  define BLUEMETAL_DEPRECATED __attribute__ ((__deprecated__))
 #endif
 
 #ifndef BLUEMETAL_DEPRECATED_EXPORT

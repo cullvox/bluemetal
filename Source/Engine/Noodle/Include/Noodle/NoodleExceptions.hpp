@@ -10,7 +10,8 @@ class blNoodleException : public std::exception
 {
 public:
     blNoodleException(const std::string& what)
-        : std::exception() {}
+        : std::exception()
+        , _what(what) {}
     virtual const char* what() const noexcept { return _what.c_str(); }
 private:
     std::string _what;

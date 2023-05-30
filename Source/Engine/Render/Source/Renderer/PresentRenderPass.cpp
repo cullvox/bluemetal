@@ -31,6 +31,8 @@ blPresentRenderPass::blPresentRenderPass(
         vk::ImageLayout::eColorAttachmentOptimal    // layout 
     };
 
+    const std::array colorAttachments = { presentAttachmentReference };
+
     const std::array subpasses
     {
         vk::SubpassDescription
@@ -38,7 +40,7 @@ blPresentRenderPass::blPresentRenderPass(
             {},                                 // flags
             vk::PipelineBindPoint::eGraphics,   // pipelineBindPoint
             {},                                 // inputAttachments
-            { presentAttachmentReference },     // colorAttachments
+            colorAttachments,                   // colorAttachments
             {},                                 // resolveAttachments
             nullptr,                            // pDepthStencilAttachment
             {},                                 // preserveAttachments
@@ -78,7 +80,8 @@ void blPresentRenderPass::resize(vk::Extent2D extent)
 void blPresentRenderPass::record(vk::CommandBuffer cmd, vk::Rect2D renderArea, uint32_t index)
 {
     std::array<vk::ClearValue, 2> clearValues;
-    clearValues[0].color = vk::ClearColorValue{ 0.33f, 0.34f, 0.34f, 1.0f };
+    const std::array clearColor = { 0.33f, 0.34f, 0.34f, 1.0f };
+    clearValues[0].color = vk::ClearColorValue{clearColor};
     clearValues[1].depthStencil = vk::ClearDepthStencilValue{ 1.0f, 0 };
 
     const vk::RenderPassBeginInfo beginInfo
@@ -104,11 +107,12 @@ void blPresentRenderPass::createFramebuffers()
         std::back_inserter(_swapFramebuffers),
         [&](vk::ImageView imageView)
         {
+            const std::array imageViews = { imageView }; 
             const vk::FramebufferCreateInfo framebufferCreateInfo
             {
                 {},
                 getRenderPass(),
-                { imageView },
+                imageViews,
                 extent.width,
                 extent.height,
                 1

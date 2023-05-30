@@ -6,6 +6,7 @@
 #include <cassert>
 #include <cctype>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>

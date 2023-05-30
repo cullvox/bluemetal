@@ -7,7 +7,7 @@
 #  define BLUEMETAL_IMGUI_NO_EXPORT
 #else
 #  ifndef BLUEMETAL_IMGUI_API
-#    ifdef BloodLustImGui_EXPORTS
+#    ifdef BLImGui_EXPORTS
         /* We are building this library */
 #      define BLUEMETAL_IMGUI_API 
 #    else
@@ -22,7 +22,7 @@
 #endif
 
 #ifndef BLUEMETAL_DEPRECATED
-#  define BLUEMETAL_DEPRECATED __declspec(deprecated)
+#  define BLUEMETAL_DEPRECATED __attribute__ ((__deprecated__))
 #endif
 
 #ifndef BLUEMETAL_DEPRECATED_EXPORT

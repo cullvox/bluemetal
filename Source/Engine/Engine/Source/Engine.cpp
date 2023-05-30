@@ -35,7 +35,7 @@ blEngine::blEngine(const std::string& applicationName)
 
     config.dumpToFile("Save/Config/config.noodle");
 
-    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, [&](VkCommandBuffer cmd){
+    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, [&](vk::CommandBuffer cmd){
         blImGui::beginFrame();
     
         ImGui::Begin("Debug Info");
