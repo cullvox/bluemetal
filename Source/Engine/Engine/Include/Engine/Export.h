@@ -9,15 +9,15 @@
 #  ifndef BLUEMETAL_ENGINE_API
 #    ifdef BLEngine_EXPORTS
         /* We are building this library */
-#      define BLUEMETAL_ENGINE_API 
+#      define BLUEMETAL_ENGINE_API __attribute__((visibility("default")))
 #    else
         /* We are using this library */
-#      define BLUEMETAL_ENGINE_API 
+#      define BLUEMETAL_ENGINE_API __attribute__((visibility("default")))
 #    endif
 #  endif
 
 #  ifndef BLUEMETAL_ENGINE_NO_EXPORT
-#    define BLUEMETAL_ENGINE_NO_EXPORT 
+#    define BLUEMETAL_ENGINE_NO_EXPORT __attribute__((visibility("hidden")))
 #  endif
 #endif
 

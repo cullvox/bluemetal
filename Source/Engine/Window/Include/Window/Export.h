@@ -9,15 +9,15 @@
 #  ifndef BLUEMETAL_WINDOW_API
 #    ifdef BLWindow_EXPORTS
         /* We are building this library */
-#      define BLUEMETAL_WINDOW_API 
+#      define BLUEMETAL_WINDOW_API __attribute__((visibility("default")))
 #    else
         /* We are using this library */
-#      define BLUEMETAL_WINDOW_API 
+#      define BLUEMETAL_WINDOW_API __attribute__((visibility("default")))
 #    endif
 #  endif
 
 #  ifndef BLUEMETAL_WINDOW_NO_EXPORT
-#    define BLUEMETAL_WINDOW_NO_EXPORT 
+#    define BLUEMETAL_WINDOW_NO_EXPORT __attribute__((visibility("hidden")))
 #  endif
 #endif
 

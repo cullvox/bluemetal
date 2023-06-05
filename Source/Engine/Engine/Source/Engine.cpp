@@ -3,6 +3,22 @@
 #include "Render/Renderer/PresentRenderPass.hpp"
 #include "ImGui/ImGui.hpp"
 #include "Noodle/Noodle.hpp"
+#include "imgui.h"
+#include <vulkan/vulkan_enums.hpp>
+
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+// In your own code you may want to display an actual icon if you are using a merged icon fonts (see docs/FONTS.md)
+static void HelpMarker(const char* desc)
+{
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort) && ImGui::BeginTooltip())
+    {
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
 
 blEngine::blEngine(const std::string& applicationName)
     : _window()
@@ -47,10 +63,38 @@ blEngine::blEngine(const std::string& applicationName)
         ImGui::Text("Average MS/F (Over 144 Frames): %.2f", _frameCounter.getAverageMillisecondsPerFrame(144));
         ImGui::End();
 
-        ImGui::Begin("Settings");
+        ImGui::Begin("Configuration");
         static int presentModeSelected;
-        ImGui::RadioButton("FIFO (VSync)", &presentModeSelected, 0);
-        ImGui::RadioButton("Mailbox (Preferred)", &presentModeSelected, 1);
+
+        ImGui::SeparatorText("Swapchain Options");
+        
+        if (ImGui::RadioButton("FIFO", &presentModeSelected, 0))
+        {
+            _swapchain->recreate(vk::PresentModeKHR::eFifo);
+        }
+        ImGui::SameLine();
+        HelpMarker("Normal VSync, use Mailbox if your system supports it.");
+        
+        ImGui::BeginDisabled(!_swapchain->isMailboxSupported());
+        if (ImGui::RadioButton("Mailbox", &presentModeSelected, 1))
+        {       
+            _swapchain->recreate(vk::PresentModeKHR::eMailbox);
+        }
+        ImGui::EndDisabled();
+
+        ImGui::SameLine();
+        HelpMarker( (!_swapchain->isMailboxSupported()) ? "Mailbox is not supported on this system." : "Performs fast like Immediate but with no tearing, like FIFO.");
+
+        ImGui::BeginDisabled(!_swapchain->isImmediateSupported());        
+        if (ImGui::RadioButton("Immediate", &presentModeSelected, 2))
+        {            
+            _swapchain->recreate(vk::PresentModeKHR::eImmediate);
+        }
+        ImGui::EndDisabled();
+        
+        ImGui::SameLine();
+        HelpMarker( (!_swapchain->isImmediateSupported()) ?  "Immediate is not supported on this system." : "Renders as fast as possible to screen, may cause screen tearing.");
+
         ImGui::End();
 
         ImGui::ShowDemoWindow();

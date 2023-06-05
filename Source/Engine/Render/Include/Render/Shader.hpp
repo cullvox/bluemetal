@@ -15,8 +15,7 @@ struct blShaderDescriptorReflection
 class BLUEMETAL_RENDER_API blShader
 {
 public:
-    blShader(std::shared_ptr<const blRenderDevice> renderDevice, 
-        std::span<const uint32_t> bytes);
+    blShader(std::shared_ptr<const blRenderDevice> renderDevice, std::span<const uint32_t> bytes);
     ~blShader() noexcept;
 
     vk::ShaderStageFlagBits getStage() const noexcept;
@@ -30,12 +29,12 @@ private:
 
     std::shared_ptr<const blRenderDevice> _renderDevice;
 
-    vk::UniqueShaderModule _module;
-    vk::ShaderStageFlagBits _stage;
-    vk::VertexInputBindingDescription _vertexBinding;
-    std::vector<vk::VertexInputAttributeDescription> _vertexAttributes;
-    vk::PipelineVertexInputStateCreateInfo _vertexState;
+    vk::UniqueShaderModule                              _module;
+    vk::ShaderStageFlagBits                             _stage;
+    vk::VertexInputBindingDescription                   _vertexBinding;
+    std::vector<vk::VertexInputAttributeDescription>    _vertexAttributes;
+    vk::PipelineVertexInputStateCreateInfo              _vertexState;
     
-    std::vector<blShaderDescriptorReflection> _descriptorReflections;
+    std::vector<blShaderDescriptorReflection>           _descriptorReflections;
 
 };

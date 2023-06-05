@@ -9,15 +9,15 @@
 #  ifndef BLUEMETAL_RENDER_API
 #    ifdef BLRender_EXPORTS
         /* We are building this library */
-#      define BLUEMETAL_RENDER_API 
+#      define BLUEMETAL_RENDER_API __attribute__((visibility("default")))
 #    else
         /* We are using this library */
-#      define BLUEMETAL_RENDER_API 
+#      define BLUEMETAL_RENDER_API __attribute__((visibility("default")))
 #    endif
 #  endif
 
 #  ifndef BLUEMETAL_RENDER_NO_EXPORT
-#    define BLUEMETAL_RENDER_NO_EXPORT 
+#    define BLUEMETAL_RENDER_NO_EXPORT __attribute__((visibility("hidden")))
 #  endif
 #endif
 

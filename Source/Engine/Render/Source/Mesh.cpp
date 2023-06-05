@@ -10,6 +10,6 @@ blMesh::blMesh(
 
     size_t vertexBufferSize = sizeof(blVertex) * vertices.count();
 
-    blBuffer vertexBuffer(renderDevice, vertexBufferSize, VK_BUFFER_FLAG_BITS)
+    blBuffer vertexBuffer(renderDevice, vertexBufferSize, VK_BUFFER_)
 
 }

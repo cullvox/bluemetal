@@ -3,6 +3,7 @@
 #include "Math/Vector2.hpp"
 #include "Window/Window.hpp"
 #include "Render/RenderDevice.hpp"
+#include <vulkan/vulkan.hpp>
 
 class BLUEMETAL_RENDER_API blSwapchain
 {
@@ -14,7 +15,8 @@ public:
     blSwapchain(std::shared_ptr<const blRenderDevice> renderDevice);
     ~blSwapchain() noexcept;
 
-    void recreate();
+    std::vector<vk::PresentModeKHR> getPresentModes();
+    void recreate(vk::PresentModeKHR presentMode = DEFAULT_PRESENT_MODE);
     vk::Format getFormat() const noexcept;
     blExtent2D getExtent() const noexcept;
     vk::Extent2D getExtentVk() const noexcept;
@@ -23,8 +25,9 @@ public:
     std::vector<vk::ImageView> getImageViews() const noexcept;
     const std::vector<vk::Framebuffer>& getFramebuffers() const noexcept;
     vk::SwapchainKHR getSwapchain() noexcept;
-    void acquireNext(vk::Semaphore semaphore, vk::Fence fence, 
-                        uint32_t& imageIndex, bool& recreated);
+    void acquireNext(vk::Semaphore semaphore, vk::Fence fence, uint32_t& imageIndex, bool& recreated);
+    bool isMailboxSupported() const noexcept { return _isMailboxSupported; }
+    bool isImmediateSupported() const noexcept { return _isImmediateSupported; }
 
 private:  
     void ensureSurfaceSupported();
@@ -42,7 +45,10 @@ private:
     vk::SurfaceFormatKHR                _surfaceFormat;
     vk::PresentModeKHR                  _presentMode;
     vk::Extent2D                        _extent;
-    vk::UniqueSwapchainKHR              _swapchain;
+    vk::UniqueSwapchainKHR              _swapChain;
     std::vector<vk::Image>              _swapImages;
     std::vector<vk::UniqueImageView>    _swapImageViews;
+
+    bool _isMailboxSupported;
+    bool _isImmediateSupported;
 };

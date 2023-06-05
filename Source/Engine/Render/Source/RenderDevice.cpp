@@ -3,6 +3,7 @@
 #include "Core/Log.hpp"
 #include "Core/Precompiled.hpp"
 #include "Render/RenderDevice.hpp"
+#include <vulkan/vulkan.hpp>
 
 #define VMA_IMPLEMENTATION
 #include "Render/Vulkan/vk_mem_alloc.h"
@@ -196,13 +197,10 @@ std::vector<const char*> blRenderDevice::getInstanceExtensions() const
 #endif
     };
 
-    // The surface extensions are required too.
+    // Add the surface extensions to the required extensions
     std::vector<const char*> surfaceExtensions = _window->getVulkanInstanceExtensions();
-    
-    requiredExtensions.insert(
-        requiredExtensions.end(), 
-        surfaceExtensions.begin(), 
-        surfaceExtensions.end());
+
+    requiredExtensions.insert(requiredExtensions.end(), surfaceExtensions.begin(), surfaceExtensions.end());
 
     // Get all the current vulkan instance extensions.
     std::vector<vk::ExtensionProperties> extensionProperties = vk::enumerateInstanceExtensionProperties();
@@ -210,13 +208,11 @@ std::vector<const char*> blRenderDevice::getInstanceExtensions() const
     // Check and make sure all of our extensions are present.
     for (const char* pName : requiredExtensions)
     {
-        if (std::find_if(
-                extensionProperties.begin(), 
-                extensionProperties.end(), 
-                    [pName](const vk::ExtensionProperties& properties)
-                    {
-                        return std::strcmp(pName, properties.extensionName) == 0;
-                    }
+        if (std::find_if(extensionProperties.begin(), extensionProperties.end(), 
+                [pName](const vk::ExtensionProperties& properties)
+                {
+                    return std::strcmp(pName, properties.extensionName) == 0;
+                }
             ) == extensionProperties.end())
         {
             BL_LOG(blLogType::eFatal, "Could not find required instance extension: {}", pName);
@@ -340,7 +336,6 @@ void blRenderDevice::createDevice()
 
     // Determine the queues for graphics and present.
     uint32_t queueFamilyIndex = 0;
-    vk::Bool32 presentSupport = false;
     for (const vk::QueueFamilyProperties& properties : queueFamilyProperties)
     {
 
@@ -349,8 +344,7 @@ void blRenderDevice::createDevice()
             _graphicsFamilyIndex = queueFamilyIndex; 
         }
 
-        bool success = vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice, queueFamilyIndex, getSurface(), &presentSupport) == VK_SUCCESS;
-        if (success && presentSupport)
+        if (_physicalDevice.getSurfaceSupportKHR(queueFamilyIndex, getSurface()))
         {
             _presentFamilyIndex = queueFamilyIndex;
         }
@@ -374,6 +368,8 @@ void blRenderDevice::createDevice()
         }
     };
 
+    // Only use the unique queue indices, this is a basic way to do that
+    // In the event that we use compute, this needs to be upgraded
     queueCreateInfos.resize(areQueuesSame() ? 1 : 2);
 
     const vk::PhysicalDeviceFeatures features{};
