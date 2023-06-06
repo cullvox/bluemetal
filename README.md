@@ -28,7 +28,8 @@ git clone https://github.com/cullvox/bluemetal.git
 
 2. Install the necessary dependencies:
    - SDL2: Follow the installation instructions specific to your operating system from the official SDL website.
-   - VMA: Refer to the VMA documentation for installation instructions.
+   - Vulkan SDK: LunarG has this for Windows, MacOS, Ubuntu, and more, some distros require specific instructions.
+   - On NixOS, these packages are included in the shell.nix file.
 
 3. Build the engine:
    - Navigate to the cloned repository's root directory.
