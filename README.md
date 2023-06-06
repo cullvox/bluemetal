@@ -37,8 +37,7 @@ git clone https://github.com/cullvox/bluemetal.git
 4. Start developing your game using Bluemetal Game Engine!
 
 ## Contributing
-
-Contributions to BlueMetal Game Engine are welcome! If you find any issues or have suggestions for improvements, please open an issue in the [Issue Tracker](https://github.com/cullvox/bluemetal/issues).
+Contributions to BlueMetal Game Engine are welcome! If you find any issues or have suggestions for improvements, please open an issue in the [Issue Tracker](https://github.com/cadenmiller/bluemetal/issues).
 
 If you wish to contribute code, fork the repository, make your changes, and submit a pull request. Ensure that your code follows the project's coding conventions and includes appropriate tests and documentation.
 
