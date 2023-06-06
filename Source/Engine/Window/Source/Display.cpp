@@ -2,7 +2,7 @@
 #include "Window/VideoMode.hpp"
 #include "Window/Display.hpp"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 uint32_t blDisplay::getIndex() const noexcept
 {
