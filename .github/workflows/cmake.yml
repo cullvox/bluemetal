@@ -20,9 +20,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-
-    - name: Install libraries
+    
+    - name: Install Libraries
+      # Vulkan and {fmt} are up to date for this project on Ubuntu
       run: sudo apt-get install libvulkan-dev libfmt-dev
+    
+    
+    - name: Download Recurse
+      # Download the other libraries that need to be up to date
+      run: git submodule update --init --recursive
 
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
