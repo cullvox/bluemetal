@@ -3,7 +3,7 @@
 #include "Core/Macros.hpp"
 #include "Core/CallbackList.hpp"
 
-#include "SDL2/SDL_events.h"
+#include "SDL_events.h"
 
 using blGenericEvent = uint32_t;
 
