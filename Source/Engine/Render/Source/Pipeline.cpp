@@ -79,11 +79,10 @@ void blPipeline::createLayout()
             return unique.get();
         });
 
-    const vk::PipelineLayoutCreateInfo layoutInfo{
+    const vk::PipelineLayoutCreateInfo layoutInfo
+    {
         {},
-        setLayouts,
-        {},
-        {}
+        setLayouts
     };
 
     _pipelineLayout = _renderDevice->getDevice()
