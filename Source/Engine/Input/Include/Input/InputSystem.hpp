@@ -8,7 +8,7 @@
 #include "Input/Export.h"
 
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #define BL_INPUT_SYSTEM_MAX_FILTER_EVENTS 16
 
