@@ -9,7 +9,6 @@ target_link_libraries(BLWindow bl::Core bl::Math)
 
 # Find required libraries
 find_package(Vulkan REQUIRED)
-find_package(SDL2 CONFIG REQUIRED)
 
 option(SDL_VULKAN "" ON)
 

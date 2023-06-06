@@ -10,7 +10,6 @@ list(APPEND ImGuiSources
 
 add_library(ImGui SHARED ${ImGuiSources})
 target_include_directories(ImGui PUBLIC "Include")
-find_package(SDL2 CONFIG REQUIRED)
 
 include(GenerateExportHeader)
 generate_export_header(
