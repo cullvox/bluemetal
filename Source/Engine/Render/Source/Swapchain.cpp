@@ -1,8 +1,6 @@
 #include "Core/Log.hpp"
 #include "Core/Precompiled.hpp"
 #include "Render/Swapchain.hpp"
-#include <vulkan/vulkan_enums.hpp>
-#include <vulkan/vulkan_to_string.hpp>
 
 blSwapchain::blSwapchain(
     std::shared_ptr<const blRenderDevice> renderDevice)
