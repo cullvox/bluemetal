@@ -3,7 +3,7 @@
 #include "Window/Display.hpp"
 
 #include <vulkan/vulkan.h>
-#include <SDL2/SDL_vulkan.h>
+#include <SDL_vulkan.h>
 
 
 blWindow::blWindow(const blDisplayMode& videoMode, const std::string& title, std::optional<blDisplay> display)

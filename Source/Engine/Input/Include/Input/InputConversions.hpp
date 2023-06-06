@@ -2,8 +2,8 @@
 
 #include "InputEvents.hpp"
 
-#include <SDL2/SDL_video.h>
-#include <SDL2/SDL_keycode.h>
+#include <SDL_video.h>
+#include <SDL_keycode.h>
 
 static inline blWindowEvent blWindowEventFromSDL(uint8_t windowEvent)
 {
