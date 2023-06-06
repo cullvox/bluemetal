@@ -53,6 +53,7 @@ Bluemetal Engine would not have been possible without the contributions and supp
 - [SDL2](https://www.libsdl.org/)
 - [VMA](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
 - [Dear ImGui](https://github.com/ocornut/imgui)
+- [{FMT}](https://github.com/fmtlib/fmt)
 
 We are grateful for the open-source community's efforts in creating and maintaining these fantastic libraries.
 
