@@ -1,6 +1,10 @@
 # Bluemetal Engine
 
 ![bluemetallogo](Images/bluemetal_logo.png)
+![LinuxBuild](https://github.com/cadenmiller/bluemetal/actions/workflows/cmake.yml/badge.svg)
+![CppVer](https://img.shields.io/badge/C%2B%2B-20-blue)
+![VulkanVer](https://img.shields.io/badge/Vulkan-1.3-red)
+
 
 Bluemetal Engine is a powerful and versatile game engine built using modern C++17/20 features. It incorporates cutting-edge technologies such as Vulkan Renderer, a custom configuration language called Noodle, Dear ImGui for user interface, and open-source libraries like SDL2 and VMA.
 
