@@ -7,7 +7,7 @@
 #include "Window/Display.hpp"
 #include "Window/Export.h"
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <vulkan/vulkan.hpp>
 
