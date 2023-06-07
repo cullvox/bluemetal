@@ -63,9 +63,21 @@ endif()
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 
   bl_message("Enabling GNU Pedantic (-Werror -Wall -Wpedantic)")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Wall -Wpedantic")
-  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Werror -Wall -Wpedantic")
+  
+  if (CMAKE_BUILD_TYPE MATCHES "Debug" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Wall -Wpedantic")
+    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -Werror -Wall -Wpedantic")
+  else()
+    bl_message("Enabling GNU Optimization(-O2)")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG} -Werror -Wall -Wpedantic -O2")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} -Werror -Wall -Wpedantic -O2")
+  endif()
 
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+
+  bl_message("Disabling MSVC Permissive ( /W4 /Wall /permissive)")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4 /Wall /permissive")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /W4 /Wall /permissive")
 endif()
 
 #===============================================================================

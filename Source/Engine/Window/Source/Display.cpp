@@ -3,6 +3,7 @@
 #include "Window/Display.hpp"
 
 #include <SDL.h>
+#include <SDL_pixels.h>
 
 uint32_t blDisplay::getIndex() const noexcept
 {
@@ -41,6 +42,7 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
         display._index = displayIndex;
         display._name = SDL_GetDisplayName(displayIndex);
 
+        // Set the displays maximum rect
         SDL_Rect rect{};
         if (SDL_GetDisplayUsableBounds(displayIndex, &rect) < 0)
         {
@@ -48,7 +50,8 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
             continue;
         }
 
-        display._rect = {
+        display._rect = 
+        {
             rect.x, 
             rect.y, 
             (uint32_t)rect.w, 
@@ -62,7 +65,8 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
             continue;
         }
 
-        const blDisplayMode desktopMode{
+        const blDisplayMode desktopMode
+        {
             { (uint32_t)rect.w, (uint32_t)rect.h, },
             0,
             0
@@ -83,12 +87,18 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
                 continue; // Skip adding this display mode because it's invalid.
             }
 
+            // Get the pixel format's information
+            SDL_PixelFormat* pFormat = SDL_AllocFormat(rawDisplayMode.format); 
+
             // Create our bl::DisplayMode from the SDL_DisplayMode.
-            const blDisplayMode mode{
+            const blDisplayMode mode
+            {
                 { (uint32_t)rawDisplayMode.w,  (uint32_t)rawDisplayMode.h },
-                SDL_BITSPERPIXEL(rawDisplayMode.format),
+                pFormat->BitsPerPixel,
                 (uint16_t)rawDisplayMode.refresh_rate,
             };
+
+            SDL_FreeFormat(pFormat);
 
             // Add the display mode.
             displayModes.emplace_back(mode);
