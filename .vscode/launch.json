@@ -6,7 +6,7 @@
     "configurations": [
 
         {
-            "name": "GDB Launch",
+            "name": "GDB Debug Launch",
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/Source/Game/DarkRed",
@@ -29,23 +29,11 @@
                 }
             ]
         },
-
         {
-            "name": "(Windows) Debug Launch",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/Source/Game/Debug/DarkRed.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "console": "externalTerminal"
-        },
-        {
-            "name": "(gdb) Launch",
+            "name": "GDB Release Launch",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/build/Game/DarkRed",
+            "program": "${workspaceFolder}/build/Source/Game/DarkRed",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
@@ -64,6 +52,17 @@
                     "ignoreFailures": true
                 }
             ]
+        },
+        {
+            "name": "Windows Debug Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Source/Game/Debug/DarkRed.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "externalTerminal"
         }
 
     ]

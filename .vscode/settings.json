@@ -102,7 +102,4 @@
         "xutility": "cpp"
     },
     "vcpkg.general.enable": false,
-    "cmake.configureArgs": [],
-    "cmake.configureSettings": {},
-    "cmake.configureArgs": []
 }
