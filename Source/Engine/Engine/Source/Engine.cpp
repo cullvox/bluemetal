@@ -21,15 +21,15 @@ static void HelpMarker(const char* desc)
 }
 
 blEngine::blEngine(const std::string& applicationName)
-    : _window()
-    , _close(false)
+    : _close(false)
+    , _window()
     , _inputSystem()
 {
     SDL_SetMainReady();
 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
     {
-        throw std::runtime_error("Could not initialize SDL2!");
+        throw std::runtime_error(SDL_GetError());
     }
 
     std::vector<blDisplay> displays = blDisplay::getDisplays();

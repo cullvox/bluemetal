@@ -51,6 +51,8 @@ blButton blInputSystem::getKey(blKey key) const noexcept
     int keystatesCount = 0;
     const uint8_t* pKeystates = SDL_GetKeyboardState(&keystatesCount);
 
+    (void)pKeystates;
+
     //pKeystates
     return blButton::eReleased;
 }

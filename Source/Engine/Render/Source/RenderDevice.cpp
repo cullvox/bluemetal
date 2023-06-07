@@ -5,8 +5,14 @@
 #include "Render/RenderDevice.hpp"
 #include <vulkan/vulkan.hpp>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+#pragma GCC diagnostic ignored "-Wparentheses"
+
 #define VMA_IMPLEMENTATION
 #include "Render/Vulkan/vk_mem_alloc.h"
+
+#pragma GCC diagnostic pop
 
 
 blRenderDevice::blRenderDevice(std::shared_ptr<blWindow> window)
@@ -157,7 +163,8 @@ const char* blRenderDevice::getVendorName() const noexcept
 
 const char* blRenderDevice::getDeviceName() const noexcept
 {
-    return _physicalDevice.getProperties().deviceName.data();
+    static const char* pName =_physicalDevice.getProperties().deviceName.data();
+    return pName;
 }
 
 std::vector<const char*> blRenderDevice::getValidationLayers() const
@@ -321,9 +328,7 @@ std::vector<const char*> blRenderDevice::getDeviceExtensions() const
 }
 
 void blRenderDevice::createDevice()
-{
-    uint32_t                                queueFamilyPropertiesCount = 0;
-    
+{   
     const std::vector<const char*>          deviceExtensions = getDeviceExtensions();
     const std::vector<const char*>          validationLayers =
 #ifdef BLUEMETAL_DEBUG

@@ -139,10 +139,10 @@ blNoodle blNoodle::parse(const std::string& noodle)
                             break;
                         }
                         case blNoodleTokenKind::eString:
-                        {
                             array->_array.emplace_back("", std::string(token.lexeme()), current); 
                             break;
-                        }
+                        default: 
+                            break; // These will be caught earlier
                     }
 
                     // Comma is expected or ]
@@ -223,42 +223,42 @@ blNoodle blNoodle::parseFromFile(const std::filesystem::path& path)
 }
 
 blNoodle::blNoodle(const std::string& groupName, blNoodle* parent)
-    : _name(groupName)
-    , _value()
-    , _type(blNoodleType::eGroup)
+    : _type(blNoodleType::eGroup)
+    , _name(groupName)
     , _parent(parent)
+    , _value()
 {
 }
 
 blNoodle::blNoodle(const std::string& name, int value, blNoodle* parent)
-    : _name(name)
-    , _value(value)
-    , _type(blNoodleType::eInteger)
+    : _type(blNoodleType::eInteger)
+    , _name(name) 
     , _parent(parent)
+    , _value(value)
 {
 }
 
 blNoodle::blNoodle(const std::string& name, float value, blNoodle* parent)
-    : _name(name)
-    , _value(value)
-    , _type(blNoodleType::eFloat)
+    : _type(blNoodleType::eFloat)
+    , _name(name)
     , _parent(parent)
+    , _value(value)
 {
 }
 
 blNoodle::blNoodle(const std::string& name, bool value, blNoodle* parent)
-    : _name(name)
-    , _value(value)
-    , _type(blNoodleType::eBoolean)
+    : _type(blNoodleType::eBoolean)
+    , _name(name)
     , _parent(parent)
+    , _value(value)
 {
 }
 
 blNoodle::blNoodle(const std::string& name, const std::string& value, blNoodle* parent)
-    : _name(name)
-    , _value(value)
-    , _type(blNoodleType::eString)
+    : _type(blNoodleType::eString)
+    , _name(name)
     , _parent(parent)
+    , _value(value)
 {
 }
 

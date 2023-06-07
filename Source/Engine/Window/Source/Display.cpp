@@ -34,7 +34,7 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
     int displayCount = SDL_GetNumVideoDisplays();
 
     std::vector<blDisplay> displays{};
-    for (uint32_t displayIndex = 0; displayIndex < displayCount; displayIndex++)
+    for (int displayIndex = 0; displayIndex < displayCount; displayIndex++)
     {
         blDisplay display{};
 
@@ -73,7 +73,7 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
         // Set all the displays desktop modes
         std::vector<blDisplayMode> displayModes{};
         SDL_DisplayMode rawDisplayMode{};
-        for (uint32_t displayModeIndex = 0; displayModeIndex < displayModeCount; displayModeIndex++)
+        for (int displayModeIndex = 0; displayModeIndex < displayModeCount; displayModeIndex++)
         {
 
             // Get the SDL_DisplayMode of this index.

@@ -20,6 +20,7 @@ public:
     bool run();
 
 private:
+    bool _close;
     std::shared_ptr<blWindow> _window;
     std::shared_ptr<blRenderDevice> _renderDevice;
     std::shared_ptr<blSwapchain> _swapchain;
@@ -27,5 +28,4 @@ private:
     std::shared_ptr<blRenderer> _renderer;
     std::shared_ptr<blInputSystem> _inputSystem;
     blFrameCounter _frameCounter;
-    bool _close;
 };

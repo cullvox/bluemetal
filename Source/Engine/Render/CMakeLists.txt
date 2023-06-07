@@ -17,8 +17,3 @@ target_include_directories(BLRender PUBLIC ${Vulkan_INCLUDE_DIRS})
 target_link_libraries(BLRender spirv-reflect-static ${Vulkan_LIBRARIES})
 
 target_link_libraries(BLRender bl::Core bl::Math bl::Window)
-
-find_package(Vulkan REQUIRED)
-
-message("Vulkan Dir: ${Vulkan_INCLUDE_DIRS}")
-

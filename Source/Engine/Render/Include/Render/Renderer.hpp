@@ -31,12 +31,14 @@ private:
     void createSyncObjects();
     void destroySyncObjects() noexcept;
 
+    std::shared_ptr<const blRenderDevice> _renderDevice;
+    std::shared_ptr<blSwapchain> _swapchain;
+    const std::vector<std::shared_ptr<blRenderPass>> _passes;  
+
     uint32_t _currentFrame;
     std::vector<vk::CommandBuffer> _swapCommandBuffers;
     std::vector<vk::Semaphore> _imageAvailableSemaphores;
     std::vector<vk::Semaphore> _renderFinishedSemaphores;
     std::vector<vk::Fence> _inFlightFences;
-    std::shared_ptr<const blRenderDevice> _renderDevice;
-    std::shared_ptr<blSwapchain> _swapchain;
-    const std::vector<std::shared_ptr<blRenderPass>> _passes;  
+    
 };

@@ -1,5 +1,6 @@
 #include "Core/Log.hpp"
 #include "Render/FrameCounter.hpp"
+#include <cstdint>
 
 void blFrameCounter::beginFrame() noexcept
 {
@@ -58,7 +59,7 @@ int blFrameCounter::getFramesPerSecond() const noexcept
     return _framesPerSecond.back();
 }
 
-float blFrameCounter::getAverageFramesPerSecond(int seconds) const noexcept
+float blFrameCounter::getAverageFramesPerSecond(uint32_t seconds) const noexcept
 {
 
     // Make sure we are getting a proper second count.
@@ -68,7 +69,7 @@ float blFrameCounter::getAverageFramesPerSecond(int seconds) const noexcept
     }
 
     // Get the average fps
-    seconds = std::clamp(seconds, 0, (int)_framesPerSecond.size());
+    seconds = std::clamp(seconds, (uint32_t)0, (uint32_t)_framesPerSecond.size());
 
     float averageFPS = 0;
 
@@ -94,7 +95,7 @@ float blFrameCounter::getMillisecondsPerFrame() const noexcept
         std::chrono::duration<float, std::nano>>(msPerFrame).count() / 1000000.0f;
 }
 
-float blFrameCounter::getAverageMillisecondsPerFrame(int frames) const noexcept
+float blFrameCounter::getAverageMillisecondsPerFrame(uint32_t frames) const noexcept
 {
     
     // Make sure we are getting a proper second count
@@ -103,7 +104,7 @@ float blFrameCounter::getAverageMillisecondsPerFrame(int frames) const noexcept
         BL_LOG(blLogType::eError, "Attempting to get an average milliseconds per frame greater than the maximum frame count at {} frames.", frames);
     }
 
-    frames = std::clamp(frames, 0, (int)_millisecondsPerFrame.size());
+    frames = std::clamp(frames, (uint32_t)0, (uint32_t)_millisecondsPerFrame.size());
 
     // Add all the frames together and divide them by the seconds for an average.
     float averageMPF = 0;

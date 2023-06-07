@@ -40,8 +40,8 @@ public:
         return (is(ks) || ...);
     }
 private:
-    std::string_view        _lexeme;
     blNoodleTokenKind       _kind;
     int                     _linePos;
     int                     _characterPos;
+    std::string_view        _lexeme;
 };

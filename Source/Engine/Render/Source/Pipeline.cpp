@@ -35,7 +35,7 @@ void blPipeline::createDescriptorSetLayouts(
     // Create a combined descriptor set layout data
     std::map<int, vk::DescriptorSetLayoutCreateInfo> layouts; 
     
-    for (const auto shader : shaders)
+    for (const auto& shader : shaders)
     {
         const auto& descriptors = shader->getDescriptorReflections();
 
