@@ -20,11 +20,13 @@ static void HelpMarker(const char* desc)
     }
 }
 
-blEngine::blEngine(const std::string& applicationName)
+blEngine::blEngine(const std::string& appName)
     : _close(false)
     , _window()
     , _inputSystem()
 {
+    (void)appName;
+
     SDL_SetMainReady();
 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0)
@@ -120,7 +122,7 @@ blEngine::~blEngine()
 bool blEngine::run()
 {
     
-    while (not _inputSystem->shouldClose())
+    while (!_inputSystem->shouldClose())
     {
         _frameCounter.beginFrame();
         _inputSystem->poll();

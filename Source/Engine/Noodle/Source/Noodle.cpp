@@ -55,8 +55,8 @@ blNoodle blNoodle::parse(const std::string& noodle)
 
             case blNoodleTokenKind::eInteger:
             {
-                int value = (int)std::strtol(token.lexeme().data(), nullptr, 10);
-                current->operator[](identifier) = blNoodle(identifier, value, current);
+                int i = (int)std::strtol(token.lexeme().data(), nullptr, 10);
+                current->operator[](identifier) = blNoodle(identifier, i, current);
 
                 next();
                 break;
@@ -64,8 +64,8 @@ blNoodle blNoodle::parse(const std::string& noodle)
 
             case blNoodleTokenKind::eFloat:
             {
-                float value = (float)std::strtof(token.lexeme().data(), nullptr);
-                current->operator[](identifier) = blNoodle(identifier, value, current);
+                float f = std::strtof(token.lexeme().data(), nullptr);
+                current->operator[](identifier) = blNoodle(identifier, f, current);
 
                 next();
                 break;
@@ -73,8 +73,8 @@ blNoodle blNoodle::parse(const std::string& noodle)
 
             case blNoodleTokenKind::eBoolean:
             {
-                bool value = (std::string(token.lexeme()) == "true") ? "true" : "false"; 
-                current->operator[](identifier) = blNoodle(identifier, value, current);
+                bool b = (std::string(token.lexeme()) == "true") ? "true" : "false"; 
+                current->operator[](identifier) = blNoodle(identifier, b, current);
 
                 next();
                 break;
@@ -122,20 +122,20 @@ blNoodle blNoodle::parse(const std::string& noodle)
                     {
                         case blNoodleTokenKind::eInteger:
                         {
-                            int value = (int)std::strtol(token.lexeme().data(), nullptr, 10);
-                            array->_array.emplace_back("", value, array);
+                            int i = (int)std::strtol(token.lexeme().data(), nullptr, 10);
+                            array->_array.emplace_back("", i, array);
                             break;
                         }
                         case blNoodleTokenKind::eFloat:
                         {
-                            float value = std::strtof(token.lexeme().data(), nullptr);
-                            array->_array.emplace_back("", value, array);
+                            float f = std::strtof(token.lexeme().data(), nullptr);
+                            array->_array.emplace_back("", f, array);
                             break;
                         }
                         case blNoodleTokenKind::eBoolean:
                         {
-                            bool value = (std::string(token.lexeme()) == "true") ? "true" : "false"; 
-                            array->_array.emplace_back("", value, current);
+                            bool b = (std::string(token.lexeme()) == "true") ? "true" : "false"; 
+                            array->_array.emplace_back("", b, current);
                             break;
                         }
                         case blNoodleTokenKind::eString:

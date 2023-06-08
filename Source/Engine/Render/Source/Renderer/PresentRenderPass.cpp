@@ -55,8 +55,7 @@ blPresentRenderPass::blPresentRenderPass(
         {},             // dependencies
     };
 
-    _pass = _renderDevice->getDevice()
-        .createRenderPassUnique(renderPassCreateInfo);
+    _pass = _renderDevice->getDevice().createRenderPassUnique(renderPassCreateInfo);
 
     createFramebuffers();
 }

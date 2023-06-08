@@ -68,7 +68,7 @@ blVector3i& blVector3i::operator/(const blVector3i& rhs) noexcept
 
 int blVector3i::magnitude() const noexcept
 {
-    return std::sqrt(x*x + y*y + z*z);
+    return (int)std::sqrt(x*x + y*y + z*z);
 }
 
 int blVector3i::distance(const blVector3i& other) const noexcept
@@ -76,7 +76,7 @@ int blVector3i::distance(const blVector3i& other) const noexcept
     const int xm = (other.x - x);
     const int ym = (other.y - y);
     const int zm = (other.z - z);
-    return std::sqrt(xm*xm + ym*ym + zm*zm);
+    return (int)std::sqrt(xm*xm + ym*ym + zm*zm);
 }
 
 //===========================//

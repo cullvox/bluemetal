@@ -59,14 +59,14 @@ blVector2i& blVector2i::operator/(const blVector2i& rhs) noexcept
 
 int32_t blVector2i::magnitude() const noexcept
 {
-    return std::sqrt(x*x + y*y);
+    return (int32_t)std::sqrt(x*x + y*y);
 }
 
 int32_t blVector2i::distance(const blVector2i& other) const noexcept
 {
     const int32_t xm = (other.x - x);
     const int32_t ym = (other.y - y);
-    return std::sqrt(xm*xm + ym*ym);
+    return (int32_t)std::sqrt(xm*xm + ym*ym);
 }
 
 //===========================//

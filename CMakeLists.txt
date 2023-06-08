@@ -22,6 +22,11 @@ option(BLUEMETAL_DEVELOPMENT ON "Enables development mode and splits modules int
 # spit out the current options
 bl_message("BLUEMETAL_DEVELOPMENT = ${BLUEMETAL_DEVELOPMENT}")
 
+if (BLUEMETAL_DEVELOPMENT)
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_DEVELOPMENT")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DBLUEMETAL_DEVELOPMENT")
+endif()
+
 #===============================================================================
 # find libraries
 #===============================================================================
@@ -52,6 +57,17 @@ add_subdirectory("ThirdParty")
 # compile options
 #===============================================================================
 
+# define compile platforms
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_COMPILER_GNU")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DBLUEMETAL_COMPILER_GNU")
+elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_COMPILER_MSVC")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DBLUEMETAL_COMPILER_MSVC")
+else()
+  message(FATAL_ERROR "Compiler needs specification.")
+endif()
+
 # export compile commands for clangd on some platforms
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -74,10 +90,11 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   endif()
 
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-
-  bl_message("Disabling MSVC Permissive ( /W4 /Wall /permissive)")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4 /Wall /permissive")
-  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /W4 /Wall /permissive")
+  bl_message("Disabling MSVC Permissive (/W4 /permissive)")
+  bl_message("Enabling MSVC New Preprocessor (/Zc:preprocessor)")
+  bl_message("Disabling MSVC Warning 4251 (/wd4251)")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4 /permissive /Zc:preprocessor /wd4251")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /W4 /permissive /Zc:preprocessor /wd4251")
 endif()
 
 #===============================================================================

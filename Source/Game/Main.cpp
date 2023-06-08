@@ -2,6 +2,9 @@
 
 int main(int argc, const char** argv)
 {
+    (void)argc;
+    (void)argv;
+
     blEngine engine("Dark Red");
     
     engine.run();

@@ -5,6 +5,7 @@
 
 struct BLUEMETAL_MATH_API blVector2i
 {
+    blVector2i() noexcept = default;
     blVector2i(int32_t x, int32_t z) noexcept;
     blVector2i(int32_t xy) noexcept;
     blVector2i(const blVector2i& rhs) noexcept;
@@ -58,7 +59,7 @@ struct BLUEMETAL_MATH_API blExtent2D
 struct BLUEMETAL_MATH_API blRect2D
 {
     blRect2D() = default;
-    blRect2D(blExtent2D offset, blExtent2D extent)
+    blRect2D(blVector2i offset, blExtent2D extent)
         : offset(offset), extent(extent)
     {}
 
@@ -67,6 +68,6 @@ struct BLUEMETAL_MATH_API blRect2D
         : offset(offsetX, offsetY), extent(extentX, extentY) 
     {}
 
-    blExtent2D offset;
+    blVector2i offset;
     blExtent2D extent;
 };

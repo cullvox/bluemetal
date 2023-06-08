@@ -14,7 +14,7 @@
 class BLUEMETAL_ENGINE_API blEngine
 {
 public:
-    blEngine(const std::string& applicationName);
+    blEngine(const std::string& appName);
     ~blEngine();
 
     bool run();

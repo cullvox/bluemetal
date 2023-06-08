@@ -21,8 +21,8 @@ blWindow::blWindow(const blDisplayMode& videoMode, const std::string& title, std
         flags |= SDL_WINDOW_FULLSCREEN;
 
     // Compute the positional values of the window.
-    const int x = display.has_value() ? display->getRect().offset.width : SDL_WINDOWPOS_CENTERED;
-    const int y = display.has_value() ? display->getRect().offset.height : SDL_WINDOWPOS_CENTERED;
+    const int x = display.has_value() ? display->getRect().offset.x : SDL_WINDOWPOS_CENTERED;
+    const int y = display.has_value() ? display->getRect().offset.y : SDL_WINDOWPOS_CENTERED;
     const int width = videoMode.extent.width;
     const int height = videoMode.extent.height;
 

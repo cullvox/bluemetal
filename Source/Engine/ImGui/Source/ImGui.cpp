@@ -100,11 +100,12 @@ void blImGui::init(
 		{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
 	};
 
-	const VkDescriptorPoolCreateInfo poolInfo{
+	const VkDescriptorPoolCreateInfo poolInfo
+	{
 		.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
 		.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
 		.maxSets = 1000,
-		.poolSizeCount = std::size(poolSizes),
+		.poolSizeCount = (uint32_t)std::size(poolSizes),
 		.pPoolSizes = poolSizes,
 	};
 
@@ -130,7 +131,7 @@ void blImGui::init(
 		VK_SAMPLE_COUNT_1_BIT,
 	};
 
-	if (not ImGui_ImplVulkan_Init(&initInfo, _renderPass->getRenderPass()))
+	if (!ImGui_ImplVulkan_Init(&initInfo, _renderPass->getRenderPass()))
 	{
 		throw std::runtime_error("Could not initialize ImGui Vulkan!");
 	}
