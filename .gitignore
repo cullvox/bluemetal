@@ -22,3 +22,4 @@ Source/Engine/Math/Include/Math/Export.h
 Source/Engine/Render/Include/Render/Export.h
 Source/Engine/Window/Include/Window/Export.h
 Source/Engine/Noodle/Include/Noodle/Export.h
+ThirdParty/ImGui/Include/Export.h
