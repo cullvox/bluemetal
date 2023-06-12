@@ -1,7 +1,6 @@
 {
     "editor.rulers": [80],
     "nixEnvSelector.suggestion": false,
-    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
     "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
     "files.associations": {
         "*.nwdl": "properties",
@@ -102,4 +101,5 @@
         "xutility": "cpp"
     },
     "vcpkg.general.enable": false,
+    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
 }

@@ -1,9 +1,12 @@
 #include "Core/Macros.hpp"
 #include "Render/Buffer.hpp"
+#include <vulkan/vulkan_core.h>
 
-blBuffer::blBuffer(std::shared_ptr<const blRenderDevice> renderDevice, 
-        VkDeviceSize size, VkBufferUsageFlags usage, 
-        VkMemoryPropertyFlags memoryProperties)
+blBuffer::blBuffer(
+        std::shared_ptr<blRenderDevice> renderDevice, 
+        vk::BufferUsageFlags usage, 
+        vk::MemoryPropertyFlags memoryProperties,
+        vk::DeviceSize size)
     : _renderDevice(renderDevice)
     , _size(size)
 {
@@ -14,7 +17,7 @@ blBuffer::blBuffer(std::shared_ptr<const blRenderDevice> renderDevice,
         .pNext = nullptr,
         .flags = 0,
         .size = size,
-        .usage = usage,
+        .usage = (VkBufferUsageFlags)usage,
         .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
         .queueFamilyIndexCount = 1,
         .pQueueFamilyIndices = &graphicsFamilyIndex,
@@ -23,7 +26,7 @@ blBuffer::blBuffer(std::shared_ptr<const blRenderDevice> renderDevice,
     const VmaAllocationCreateInfo allocationCreateInfo{
         .flags = 0,
         .usage = VMA_MEMORY_USAGE_GPU_ONLY,
-        .requiredFlags = memoryProperties,
+        .requiredFlags = (VkMemoryPropertyFlags)memoryProperties,
         .preferredFlags = 0,
         .memoryTypeBits = 0,
         .pool = VK_NULL_HANDLE,
@@ -31,11 +34,23 @@ blBuffer::blBuffer(std::shared_ptr<const blRenderDevice> renderDevice,
         .priority = 0.0f,
     };
 
+    VkBuffer tempBuffer;
     if (vmaCreateBuffer(_renderDevice->getAllocator(), &bufferCreateInfo, 
-            &allocationCreateInfo, &_buffer, &_allocation, nullptr) != VK_SUCCESS)
+            &allocationCreateInfo, &tempBuffer, &_allocation, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a vulkan buffer!");
     }
+
+    _buffer = tempBuffer;
+}
+
+blBuffer::blBuffer(
+    std::shared_ptr<blRenderDevice> renderDevice, 
+    vk::BufferUsageFlags usage,
+    vk::DeviceSize size,
+    const void* pData)
+{
+    
 }
 
 blBuffer& blBuffer::operator=(blBuffer&& rhs) noexcept
@@ -66,8 +81,9 @@ VkDeviceSize blBuffer::getSize() const noexcept
     return _size;
 }
 
-void blBuffer::upload(size_t size, const uint8_t* pData)
+void blBuffer::copyTo(blBuffer& other)
 {
+
 }
 
 void blBuffer::collapse() noexcept

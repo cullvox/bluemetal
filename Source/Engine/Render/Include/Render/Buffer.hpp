@@ -1,13 +1,21 @@
 #pragma once
 
 #include "Render/RenderDevice.hpp"
+#include <vulkan/vulkan.hpp>
 
 class BLUEMETAL_RENDER_API blBuffer
 {
 public:
-    blBuffer(std::shared_ptr<const blRenderDevice> renderDevice, 
-        VkDeviceSize size, VkBufferUsageFlags usage, 
-        VkMemoryPropertyFlags memoryProperties);
+    blBuffer( // creates a normal vulkan buffer
+        std::shared_ptr<blRenderDevice> renderDevice, 
+        vk::BufferUsageFlags usage,
+        vk::MemoryPropertyFlags memoryProperties,
+        vk::DeviceSize size); 
+    blBuffer( // + automatically uploads cpu -> gpu
+        std::shared_ptr<blRenderDevice> renderDevice,
+        vk::BufferUsageFlags usage,
+        vk::DeviceSize size, 
+        const void* pData); 
     blBuffer(blBuffer&& other) noexcept;
     blBuffer(blBuffer& other);
     ~blBuffer() noexcept;
@@ -15,17 +23,16 @@ public:
     blBuffer& operator=(blBuffer&& rhs) noexcept;
     blBuffer& operator=(blBuffer& rhs);
 
-    VkDeviceSize getSize() const noexcept;
+    vk::DeviceSize getSize() const noexcept;
+    vk::Buffer getBuffer() const noexcept;
     VmaAllocation getAllocation() const noexcept;
-    VkBuffer getBuffer() const noexcept;
-    void upload(size_t size, const uint8_t* pData);
 
 private:
     void collapse() noexcept;
 
     std::shared_ptr<const blRenderDevice> _renderDevice;
 
-    VkDeviceSize    _size;
+    vk::DeviceSize    _size;
+    vk::Buffer        _buffer;
     VmaAllocation   _allocation;
-    VkBuffer        _buffer;
 };

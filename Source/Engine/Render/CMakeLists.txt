@@ -9,6 +9,7 @@ list(APPEND RenderSources
     "Source/Swapchain.cpp"
     "Source/Renderer.cpp"
     "Source/FrameCounter.cpp"
+    "Source/Mesh.cpp"
 
     "Source/Renderer/PresentRenderPass.cpp")
 

@@ -36,5 +36,8 @@ stdenv.mkDerivation {
     glm
   ];
 
-  VULKAN_SDK = "${vulkan-validation-layers}/share/vulkan/explicit_layer.d";
+  #LD_LIBRARY_PATH = "${lib.makeLibraryPath buildInputs}";
+  VK_LAYER_PATH = "${vulkan-validation-layers}/share/vulkan/explicit_layer.d";
+  XDG_DATA_DIRS = builtins.getEnv "XDG_DATA_DIRS";
+  XDG_RUNTIME_DIR = builtins.getEnv "XDG_RUNTIME_DIR";
 }
