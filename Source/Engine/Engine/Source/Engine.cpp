@@ -4,6 +4,7 @@
 #include "ImGui/ImGui.hpp"
 #include "Noodle/Noodle.hpp"
 #include "imgui.h"
+#include <cstddef>
 #include <vulkan/vulkan_enums.hpp>
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -74,6 +75,7 @@ blEngine::blEngine(const std::string& appName)
         {
             _postRenderCommands.push([&](){
                 _swapchain->recreate(vk::PresentModeKHR::eFifo);
+                _renderer->resize(_swapchain->getExtent());
             });
         }
         ImGui::SameLine();
@@ -84,7 +86,7 @@ blEngine::blEngine(const std::string& appName)
         {      
             _postRenderCommands.push([&](){
                 _swapchain->recreate(vk::PresentModeKHR::eMailbox);
-                _presentPass->resize()
+                _renderer->resize(_swapchain->getExtent());
             }); 
         }
         ImGui::EndDisabled();
@@ -97,6 +99,7 @@ blEngine::blEngine(const std::string& appName)
         {            
             _postRenderCommands.push([&](){
                 _swapchain->recreate(vk::PresentModeKHR::eImmediate);
+                _renderer->resize(_swapchain->getExtent());
             }); 
             
         }
@@ -138,7 +141,7 @@ bool blEngine::run()
         _renderer->render();
         _frameCounter.endFrame();
 
-        for (int i = 0; i < _postRenderCommands.size(); i++)
+        for (size_t i = 0; i < _postRenderCommands.size(); i++)
         {
             _postRenderCommands.front()();
             _postRenderCommands.pop();

@@ -18,14 +18,15 @@ class BLUEMETAL_RENDER_API blRenderer
 {
     static const inline uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 public:
-    blRenderer(std::shared_ptr<const blRenderDevice> renderDevice,
-        std::shared_ptr<blSwapchain> swapchain,
-        const std::vector<std::shared_ptr<blRenderPass>>& passes);
+    blRenderer(
+        std::shared_ptr<const blRenderDevice>               renderDevice,
+        std::shared_ptr<blSwapchain>                        swapchain,
+        const std::vector<std::shared_ptr<blRenderPass>>&   passes);
     ~blRenderer();
 
-    void resize(vk::Extent2D extent);
+    void resize(blExtent2D extent);
     void submit(const Submission& submission) noexcept;
-    void recreate();
+    
     void render();
 
 private:

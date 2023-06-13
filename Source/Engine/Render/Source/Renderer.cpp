@@ -1,6 +1,7 @@
 #include "Core/Log.hpp"
 #include "Core/Macros.hpp"
 #include "Render/Renderer.hpp"
+#include <vulkan/vulkan_structs.hpp>
 
 blRenderer::blRenderer(std::shared_ptr<const blRenderDevice> renderDevice, 
         std::shared_ptr<blSwapchain> swapchain,
@@ -63,17 +64,13 @@ void blRenderer::destroySyncObjects() noexcept
     _renderDevice->getDevice().freeCommandBuffers(_renderDevice->getCommandPool(), _swapCommandBuffers);
 }
 
-void blRenderer::resize(vk::Extent2D extent)
+void blRenderer::resize(blExtent2D extent)
 {
+    vk::Extent2D vkExtent = { extent.width, extent.height };
     for (auto pass : _passes)
     {
-        pass->resize(extent);
+        pass->resize(vkExtent);
     }
-}
-
-void blRenderer::recreate()
-{
-
 }
 
 void blRenderer::render()
@@ -97,7 +94,7 @@ void blRenderer::render()
 
     if (recreated)
     {
-        resize(_swapchain->getExtentVk());
+        resize(_swapchain->getExtent());
     }
 
     _renderDevice->getDevice()
@@ -158,7 +155,7 @@ void blRenderer::render()
     {
         // Gotta recreate the swapchain
         _swapchain->recreate();
-        resize(_swapchain->getExtentVk());
+        resize(_swapchain->getExtent());
     }
 
     _currentFrame = (_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;

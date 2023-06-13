@@ -1,15 +1,16 @@
 #include "Render/Renderer/PresentRenderPass.hpp"
+#include <vulkan/vulkan_structs.hpp>
 
 blPresentRenderPass::blPresentRenderPass(
-		std::shared_ptr<const blRenderDevice> renderDevice,
-        std::shared_ptr<const blSwapchain> swapchain,
+		std::shared_ptr<blRenderDevice> renderDevice,
+        std::shared_ptr<blSwapchain> swapchain,
 		const blRenderPassFunction& func)
     : _renderDevice(renderDevice)
     , _swapchain(swapchain)
     , _func(func)
 {
 
-    const std::array attachments 
+    const std::array attachments =
     {
         vk::AttachmentDescription
         { // Present Attachment
@@ -117,8 +118,7 @@ void blPresentRenderPass::createFramebuffers()
                 1
             };
                 
-            return _renderDevice->getDevice()
-                .createFramebufferUnique(framebufferCreateInfo);
+            return _renderDevice->getDevice().createFramebufferUnique(framebufferCreateInfo);
         });
 }
 
