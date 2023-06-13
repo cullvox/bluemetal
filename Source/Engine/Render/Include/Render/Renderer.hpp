@@ -25,6 +25,7 @@ public:
 
     void resize(vk::Extent2D extent);
     void submit(const Submission& submission) noexcept;
+    void recreate();
     void render();
 
 private:

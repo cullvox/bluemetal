@@ -29,8 +29,7 @@ void blRenderer::createSyncObjects()
         MAX_FRAMES_IN_FLIGHT                // commandBufferCount
     };
 
-    _swapCommandBuffers = _renderDevice->getDevice()
-        .allocateCommandBuffers(allocationInfo);
+    _swapCommandBuffers = _renderDevice->getDevice().allocateCommandBuffers(allocationInfo);
 
 
     // Create the semaphores and fences
@@ -46,12 +45,9 @@ void blRenderer::createSyncObjects()
 
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        _imageAvailableSemaphores[i] = _renderDevice->getDevice()
-            .createSemaphore(semaphoreInfo);
-        _renderFinishedSemaphores[i] = _renderDevice->getDevice()
-            .createSemaphore(semaphoreInfo);
-        _inFlightFences[i] = _renderDevice->getDevice()
-            .createFence(fenceInfo);
+        _imageAvailableSemaphores[i] = _renderDevice->getDevice().createSemaphore(semaphoreInfo);
+        _renderFinishedSemaphores[i] = _renderDevice->getDevice().createSemaphore(semaphoreInfo);
+        _inFlightFences[i] = _renderDevice->getDevice().createFence(fenceInfo);
     }
 }
 
@@ -59,18 +55,12 @@ void blRenderer::destroySyncObjects() noexcept
 {
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        _renderDevice->getDevice()
-            .destroySemaphore(_imageAvailableSemaphores[i]);
-        _renderDevice->getDevice()
-            .destroySemaphore(_renderFinishedSemaphores[i]);
-        _renderDevice->getDevice()
-            .destroyFence(_inFlightFences[i]);
+        _renderDevice->getDevice().destroySemaphore(_imageAvailableSemaphores[i]);
+        _renderDevice->getDevice().destroySemaphore(_renderFinishedSemaphores[i]);
+        _renderDevice->getDevice().destroyFence(_inFlightFences[i]);
     }
 
-    _renderDevice->getDevice()
-        .freeCommandBuffers(
-            _renderDevice->getCommandPool(),
-            _swapCommandBuffers);
+    _renderDevice->getDevice().freeCommandBuffers(_renderDevice->getCommandPool(), _swapCommandBuffers);
 }
 
 void blRenderer::resize(vk::Extent2D extent)
@@ -79,6 +69,11 @@ void blRenderer::resize(vk::Extent2D extent)
     {
         pass->resize(extent);
     }
+}
+
+void blRenderer::recreate()
+{
+
 }
 
 void blRenderer::render()
@@ -157,10 +152,9 @@ void blRenderer::render()
 
     try
     {
-        std::ignore = _renderDevice->getPresentQueue()
-            .presentKHR(presentInfo);
+        std::ignore = _renderDevice->getPresentQueue().presentKHR(presentInfo);
     } 
-    catch (const vk::OutOfDateKHRError& e)
+    catch (const vk::OutOfDateKHRError&)
     {
         // Gotta recreate the swapchain
         _swapchain->recreate();

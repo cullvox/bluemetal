@@ -72,15 +72,20 @@ blEngine::blEngine(const std::string& appName)
         
         if (ImGui::RadioButton("FIFO", &presentModeSelected, 0))
         {
-            _swapchain->recreate(vk::PresentModeKHR::eFifo);
+            _postRenderCommands.push([&](){
+                _swapchain->recreate(vk::PresentModeKHR::eFifo);
+            });
         }
         ImGui::SameLine();
         HelpMarker("Normal VSync, use Mailbox if your system supports it.");
         
         ImGui::BeginDisabled(!_swapchain->isMailboxSupported());
         if (ImGui::RadioButton("Mailbox", &presentModeSelected, 1))
-        {       
-            _swapchain->recreate(vk::PresentModeKHR::eMailbox);
+        {      
+            _postRenderCommands.push([&](){
+                _swapchain->recreate(vk::PresentModeKHR::eMailbox);
+                _presentPass->resize()
+            }); 
         }
         ImGui::EndDisabled();
 
@@ -90,7 +95,10 @@ blEngine::blEngine(const std::string& appName)
         ImGui::BeginDisabled(!_swapchain->isImmediateSupported());        
         if (ImGui::RadioButton("Immediate", &presentModeSelected, 2))
         {            
-            _swapchain->recreate(vk::PresentModeKHR::eImmediate);
+            _postRenderCommands.push([&](){
+                _swapchain->recreate(vk::PresentModeKHR::eImmediate);
+            }); 
+            
         }
         ImGui::EndDisabled();
         
@@ -129,6 +137,12 @@ bool blEngine::run()
         
         _renderer->render();
         _frameCounter.endFrame();
+
+        for (int i = 0; i < _postRenderCommands.size(); i++)
+        {
+            _postRenderCommands.front()();
+            _postRenderCommands.pop();
+        }
     }
 
     return true;

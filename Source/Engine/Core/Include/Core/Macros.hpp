@@ -2,6 +2,8 @@
 
 #include "Core/Log.hpp"
 
+#define BL_NULLABLE // this parameter can be made nullptr
+
 #define BL_CHECK(expr, error) \
 	if (not (expr)) \
 	{ \

@@ -4,13 +4,7 @@ blMesh::blMesh(
     std::shared_ptr<blRenderDevice> renderDevice, 
     const std::vector<blVertex>& vertices, 
     const std::vector<uint32_t>& indices)
-{
-
-    size_t vertexBufferSize = sizeof(blVertex) * vertices.size();
-    size_t indexBufferSize = sizeof(uint32_t) * indices.size(); 
-
-    _vertexBuffer = blBuffer(_renderDevice, vk::BufferUsageFlagBits::eVertexBuffer, vertexBufferSize, vertices.data());
-    _indexBuffer = blBuffer(_renderDevice, vk::BufferUsageFlagBits::eIndexBuffer, indexBufferSize, indices.data());
-
-    
+    : _vertexBuffer(_renderDevice, vk::BufferUsageFlagBits::eVertexBuffer, sizeof(blVertex) * vertices.size(), vertices.data())
+    , _indexBuffer(_renderDevice, vk::BufferUsageFlagBits::eIndexBuffer, sizeof(uint32_t) * indices.size(), indices.data())
+{   
 }

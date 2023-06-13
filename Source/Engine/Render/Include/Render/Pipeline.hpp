@@ -45,6 +45,7 @@ private:
             * Current Time
             * Camera MVP
             * Resolution
+            * Texture Atlas
             * ... (TBD)
     
     Descriptor Slot: 1

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Macros.hpp"
 #include "Render/RenderDevice.hpp"
 #include <vulkan/vulkan.hpp>
 
@@ -10,18 +11,19 @@ public:
         std::shared_ptr<blRenderDevice> renderDevice, 
         vk::BufferUsageFlags usage,
         vk::MemoryPropertyFlags memoryProperties,
-        vk::DeviceSize size); 
+        vk::DeviceSize size,
+        VmaAllocationInfo* BL_NULLABLE pInfo = nullptr,
+        bool mapped = false); // will create a mapped vma allocation 
     blBuffer( // + automatically uploads cpu -> gpu
         std::shared_ptr<blRenderDevice> renderDevice,
         vk::BufferUsageFlags usage,
         vk::DeviceSize size, 
         const void* pData); 
+    blBuffer(blBuffer& other) = delete;
     blBuffer(blBuffer&& other) noexcept;
-    blBuffer(blBuffer& other);
     ~blBuffer() noexcept;
 
     blBuffer& operator=(blBuffer&& rhs) noexcept;
-    blBuffer& operator=(blBuffer& rhs);
 
     vk::DeviceSize getSize() const noexcept;
     vk::Buffer getBuffer() const noexcept;
@@ -30,7 +32,7 @@ public:
 private:
     void collapse() noexcept;
 
-    std::shared_ptr<const blRenderDevice> _renderDevice;
+    std::shared_ptr<blRenderDevice> _renderDevice;
 
     vk::DeviceSize    _size;
     vk::Buffer        _buffer;

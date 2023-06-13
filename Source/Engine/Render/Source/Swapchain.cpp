@@ -209,8 +209,10 @@ void blSwapchain::createImageViews()
 
 void blSwapchain::recreate(vk::PresentModeKHR presentMode) 
 {
-
+    // wait for the device to finish doing it's things
     _renderDevice->waitForDevice();
+
+    // destroy the swapchain
     _renderDevice->getDevice().destroySwapchainKHR(_swapChain.release());
 
     _swapImageViews.clear();

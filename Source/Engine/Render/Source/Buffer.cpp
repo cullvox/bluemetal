@@ -6,7 +6,9 @@ blBuffer::blBuffer(
         std::shared_ptr<blRenderDevice> renderDevice, 
         vk::BufferUsageFlags usage, 
         vk::MemoryPropertyFlags memoryProperties,
-        vk::DeviceSize size)
+        vk::DeviceSize size,
+        VmaAllocationInfo* BL_NULLABLE pInfo,
+        bool mapped)
     : _renderDevice(renderDevice)
     , _size(size)
 {
@@ -24,7 +26,7 @@ blBuffer::blBuffer(
     };
 
     const VmaAllocationCreateInfo allocationCreateInfo{
-        .flags = 0,
+        .flags = mapped ? VMA_ALLOCATION_CREATE_MAPPED_BIT : (VmaAllocationCreateFlags)0,
         .usage = VMA_MEMORY_USAGE_GPU_ONLY,
         .requiredFlags = (VkMemoryPropertyFlags)memoryProperties,
         .preferredFlags = 0,
@@ -35,8 +37,7 @@ blBuffer::blBuffer(
     };
 
     VkBuffer tempBuffer;
-    if (vmaCreateBuffer(_renderDevice->getAllocator(), &bufferCreateInfo, 
-            &allocationCreateInfo, &tempBuffer, &_allocation, nullptr) != VK_SUCCESS)
+    if (vmaCreateBuffer(_renderDevice->getAllocator(), &bufferCreateInfo, &allocationCreateInfo, &tempBuffer, &_allocation, pInfo) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a vulkan buffer!");
     }
@@ -49,8 +50,31 @@ blBuffer::blBuffer(
     vk::BufferUsageFlags usage,
     vk::DeviceSize size,
     const void* pData)
+
+    // call previous constructor for a gpu buffer 
+    :   blBuffer(renderDevice, usage | vk::BufferUsageFlagBits::eTransferDst, vk::MemoryPropertyFlagBits::eDeviceLocal, size)
+
 {
-    
+
+    // create a temporary cpu sided staging buffer
+    VmaAllocationInfo info{};
+    blBuffer stagingBuffer(_renderDevice, usage | vk::BufferUsageFlagBits::eTransferSrc, vk::MemoryPropertyFlagBits::eHostVisible, size, &info, true);
+
+    // copy to the mapped data pointer
+    std::memcpy(info.pMappedData, pData, size);
+
+    // copy the cpu staging buffer to the gpu buffer
+    _renderDevice->immediateSubmit([&](vk::CommandBuffer cmd){
+        const std::array regions = { vk::BufferCopy(0, 0, size) };
+        cmd.copyBuffer(stagingBuffer.getBuffer(), _buffer, regions);
+    });
+
+    // success
+}
+
+blBuffer::~blBuffer() noexcept
+{
+    vmaDestroyBuffer(_renderDevice->getAllocator(), _buffer, _allocation);
 }
 
 blBuffer& blBuffer::operator=(blBuffer&& rhs) noexcept
@@ -71,19 +95,14 @@ VmaAllocation blBuffer::getAllocation() const noexcept
     return _allocation;
 }
 
-VkBuffer blBuffer::getBuffer() const noexcept
+vk::Buffer blBuffer::getBuffer() const noexcept
 {
     return _buffer;
 }
 
-VkDeviceSize blBuffer::getSize() const noexcept
+vk::DeviceSize blBuffer::getSize() const noexcept
 {
     return _size;
-}
-
-void blBuffer::copyTo(blBuffer& other)
-{
-
 }
 
 void blBuffer::collapse() noexcept

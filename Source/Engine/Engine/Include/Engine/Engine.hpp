@@ -10,6 +10,8 @@
 #include "Input/InputSystem.hpp"
 #include "Engine/Export.h"
 
+#include <queue>
+
 
 class BLUEMETAL_ENGINE_API blEngine
 {
@@ -28,4 +30,5 @@ private:
     std::shared_ptr<blRenderer> _renderer;
     std::shared_ptr<blInputSystem> _inputSystem;
     blFrameCounter _frameCounter;
+    std::queue<std::function<void()>> _postRenderCommands;
 };

@@ -315,11 +315,8 @@ void blRenderDevice::choosePhysicalDevice()
 
 std::vector<const char*> blRenderDevice::getDeviceExtensions() const
 {
-    std::vector<const char*> requiredExtensions =
-    {
-         VK_KHR_SWAPCHAIN_EXTENSION_NAME 
-    };
-
+    std::vector requiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
+    
     std::vector<vk::ExtensionProperties> extensionProperties = _physicalDevice.enumerateDeviceExtensionProperties();
 
     for (const char* pName : requiredExtensions)
