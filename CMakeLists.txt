@@ -95,8 +95,8 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
   bl_message("Disabling MSVC Permissive (/W4 /permissive)")
-  bl_message("Enabling MSVC New Preprocessor (/Zc:preprocessor)")
-  bl_message("Disabling MSVC Warning 4251 (/wd4251)")
+  bl_message("Enabling MSVC New Preprocessor (/Zc:preprocessor)") # Enables Cpp20 __VA_OPT__
+  bl_message("Disabling MSVC Warning 4251 (/wd4251)") # Warnings for Shared Libraries 
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /W4 /permissive /Zc:preprocessor /wd4251")
   set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} /W4 /permissive /Zc:preprocessor /wd4251")
 endif()

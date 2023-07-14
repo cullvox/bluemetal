@@ -1,5 +1,4 @@
 {
-    "editor.rulers": [80],
     "nixEnvSelector.suggestion": false,
     "cmake.copyCompileCommands": "${workspaceFolder}/compile_commands.json",
     "files.associations": {
@@ -98,7 +97,9 @@
         "xstddef": "cpp",
         "xtr1common": "cpp",
         "xtree": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "queue": "cpp",
+        "ranges": "cpp"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",

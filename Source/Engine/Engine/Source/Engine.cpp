@@ -23,8 +23,6 @@ static void HelpMarker(const char* desc)
 
 blEngine::blEngine(const std::string& appName)
     : _close(false)
-    , _window()
-    , _inputSystem()
 {
     (void)appName;
 
@@ -54,12 +52,14 @@ blEngine::blEngine(const std::string& appName)
 
     config.dumpToFile("Save/Config/config.noodle");
 
-    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, [&](vk::CommandBuffer cmd){
+    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, 
+    [&](vk::CommandBuffer cmd)
+    {
         blImGui::beginFrame();
     
         ImGui::Begin("Debug Info");
-        ImGui::Text("Graphics Device: %s", _renderDevice->getDeviceName());
-        ImGui::Text("Graphics Vendor: %s", _renderDevice->getVendorName());
+        ImGui::Text("Graphics Device: %s", _renderDevice->getDeviceName().c_str());
+        ImGui::Text("Graphics Vendor: %s", _renderDevice->getVendorName().c_str());
         ImGui::Text("F/S: %d", _frameCounter.getFramesPerSecond());
         ImGui::Text("MS/F: %.2f", _frameCounter.getMillisecondsPerFrame());
         ImGui::Text("Average F/S (Over 10 Seconds): %.1f", _frameCounter.getAverageFramesPerSecond(10));
@@ -68,6 +68,16 @@ blEngine::blEngine(const std::string& appName)
 
         ImGui::Begin("Configuration");
         static int presentModeSelected;
+
+        ImGui::SeparatorText("Interface");
+
+        static float alpha = 1.0f;
+        if (ImGui::SliderFloat("UI Alpha Transparency", &alpha, 0.1f, 1.0f))
+        {
+            ImGui::GetStyle().Alpha = alpha;
+        }
+
+
 
         ImGui::SeparatorText("Swapchain Options");
         
