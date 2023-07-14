@@ -12,14 +12,4 @@ CppProperties.json
 /Doxygen/html
 /doxygen/latex
 
-# Ignore the generated export files
-Source/Engine/Core/Include/Core/Export.h
-Source/Engine/Engine/Include/Engine/Export.h
-Source/Engine/ImGui/Include/ImGui/Export.h
-Source/Engine/Input/Include/Input/Export.h
-Source/Engine/Material/Include/Material/Export.h
-Source/Engine/Math/Include/Math/Export.h
-Source/Engine/Render/Include/Render/Export.h
-Source/Engine/Window/Include/Window/Export.h
-Source/Engine/Noodle/Include/Noodle/Export.h
-ThirdParty/ImGui/Include/Export.h
+Source\Engine\Export.h
