@@ -1,18 +1,17 @@
 #pragma once
 
-#include "Core/Precompiled.hpp"
-#include "Render/Export.h"
-#include <cstdint>
+#include "Export.h"
+#include "Precompiled.h"
 
-class BLUEMETAL_RENDER_API blFrameCounter
+class BLUEMETAL_API blFrameCounter
 {
 public:
-    void beginFrame() noexcept;
-    bool endFrame() noexcept; // returns true if this frame ended with a frame count.
-    int getFramesPerSecond() const noexcept;
-    float getAverageFramesPerSecond(uint32_t seconds) const noexcept;
-    float getMillisecondsPerFrame() const noexcept;
-    float getAverageMillisecondsPerFrame(uint32_t frames) const noexcept;
+    void beginFrame();
+    bool endFrame(); // returns true if this frame ended with a frame count.
+    int getFramesPerSecond();
+    float getAverageFramesPerSecond(uint32_t seconds);
+    float getMillisecondsPerFrame();
+    float getAverageMillisecondsPerFrame(uint32_t frames);
 
 private:
     using time_point = std::chrono::high_resolution_clock::time_point;

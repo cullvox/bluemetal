@@ -1,6 +1,4 @@
-#include "Vector3.hpp"
-
-#include <cmath>
+#include "Vector3.h"
 
 //===========================
 // blVector3i
@@ -165,7 +163,7 @@ blExtent3D::blExtent3D(unsigned int widthHeightDepth)
 {
 }
 
-blExtent3D::blExtent3D(vk::Extent3D extent) const noexcept
+blExtent3D::blExtent3D(VkExtent3D extent) const noexcept
     : width(extent.width), height(extent.height), depth(extent.depth)
 {   
 }

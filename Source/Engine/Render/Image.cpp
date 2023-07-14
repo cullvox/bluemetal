@@ -1,31 +1,32 @@
-#include "Core/Log.hpp"
-#include "Render/Image.hpp"
-#include "Math/Vector2.hpp"
+#include "Image.h"
+#include "Core/Log.h"
 
-blImage::blImage(std::shared_ptr<blRenderDevice> renderDevice, vk::ImageType type, vk::Format format, blExtent3D extent, uint32_t mipLevels, vk::ImageUsageFlags usage, vk::ImageAspectFlags aspectMask)
-    : _renderDevice(renderDevice)
+blImage::blImage(std::shared_ptr<blDevice> device, VkImageType type, VkFormat format, blExtent3D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask)
+    : _device(device)
     , _extent(extent)
     , _type(type)
     , _format(format)
     , _usage(usage)
 {
-    uint32_t graphicsFamilyIndex = _renderDevice->getGraphicsFamilyIndex();
+    uint32_t graphicsFamilyIndex = _device->getGraphicsFamilyIndex();
 
-    const vk::ImageCreateInfo createInfo
+    const VkImageCreateInfo createInfo
     {
-        {},                             // flags
-        _type,                          // imageType
-        _format,                        // format
-        (vk::Extent3D)extent,           // extent
-        mipLevels,                      // mipLevels
-        1,                              // arrayLayers
-        vk::SampleCountFlagBits::e1,    // samples
-        vk::ImageTiling::eOptimal,      // tiling
-        _usage,                         // usage
-        vk::SharingMode::eExclusive,    // sharingMode
-        1,                              // queueFamilyIndexCount
-        &graphicsFamilyIndex,           // pQueueFamilyIndices
-        vk::ImageLayout::eUndefined,    // initialLayout
+        VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,    // sType
+        nullptr,                                // pNext
+        {},                                     // flags
+        _type,                                  // imageType
+        _format,                                // format
+        (VkExtent3D)extent,                     // extent
+        mipLevels,                              // mipLevels
+        1,                                      // arrayLayers
+        VK_SAMPLE_COUNT_1_BIT,                  // samples
+        VK_IMAGE_TILING_OPTIMAL,                // tiling
+        _usage,                                 // usage
+        VK_SHARING_MODE_EXCLUSIVE,              // sharingMode
+        1,                                      // queueFamilyIndexCount
+        &graphicsFamilyIndex,                   // pQueueFamilyIndices
+        VK_IMAGE_LAYOUT_UNDEFINED,              // initialLayout
     };
 
     const VmaAllocationCreateInfo allocationCreateInfo
@@ -40,20 +41,20 @@ blImage::blImage(std::shared_ptr<blRenderDevice> renderDevice, vk::ImageType typ
         1.0f,                                   // priority
     };
 
-    if (vmaCreateImage(_renderDevice.getAllocator(), (VkImageCreateInfo*)&createInfo, &allocationCreateInfo, (VkImage*)&_image, &_allocation, nullptr) != VK_SUCCESS)
+    if (vmaCreateImage(_device->getAllocator(), &createInfo, &allocationCreateInfo, &_image, &_allocation, nullptr) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create a vulkan image!");
+        throw std::runtime_error("Could not create a Vulkan image!");
     }
 
-    const vk::ComponentMapping componentMapping
+    const VkComponentMapping componentMapping
     {
-        vk::ComponentSwizzle::eIdentity, // r  
-        vk::ComponentSwizzle::eIdentity, // g  
-        vk::ComponentSwizzle::eIdentity, // b 
-        vk::ComponentSwizzle::eIdentity  // a 
+        VK_COMPONENT_SWIZZLE_IDENTITY, // r  
+        VK_COMPONENT_SWIZZLE_IDENTITY, // g  
+        VK_COMPONENT_SWIZZLE_IDENTITY, // b 
+        VK_COMPONENT_SWIZZLE_IDENTITY, // a 
     };
 
-    const vk::ImageSubresourceRange subresourceRange
+    const VkImageSubresourceRange subresourceRange
     {
         aspectMask, // aspectMask 
         0,          // baseMipLevel 
@@ -62,49 +63,51 @@ blImage::blImage(std::shared_ptr<blRenderDevice> renderDevice, vk::ImageType typ
         1,          // layerCount
     };
 
-    const vk::ImageViewType viewType = (vk::ImageViewType)_type;
-    const vk::ImageViewCreateInfo viewCreateInfo
+    const VkImageViewCreateInfo viewCreateInfo
     {
-        {},                 // flags
-        _image,             // image
-        viewType,           // viewType
-        _format,            // format
-        componentMapping,   // components
-        subresourceRange,   // subresourceRange
+        VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,   // sType
+        nullptr,                                    // pNext
+        0,                                          // flags
+        _image,                                     // image
+        (VkImageViewType)_type,                     // viewType
+        _format,                                    // format
+        componentMapping,                           // components
+        subresourceRange,                           // subresourceRange
     };
 
-    _imageView = 
-        _renderDevice
-            .getDevice()
-            .createImageViewUnique(viewCreateInfo);
+    if (vkCreateImageView(_device->getDevice(), &viewCreateInfo, nullptr, _imageView) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not create a Vulkan image view!");
+    }
+
 }
 
 blImage::~blImage()
 {
-    if (_image) vmaDestroyImage(_renderDevice.getAllocator(), _image, _allocation);
+    vmaDestroyImage(_device->getAllocator(), _image, _allocation);
 }
 
-blExtent2D blImage::getExtent() const noexcept
+blExtent3D blImage::getExtent() const noexcept
 {
     return _extent;
 }
 
-vk::Format blImage::getFormat() const noexcept
+VkFormat blImage::getFormat() const noexcept
 {
     return _format;
 }
 
-vk::ImageUsageFlags blImage::getUsage() const noexcept
+VkImageUsageFlags blImage::getUsage() const noexcept
 {
     return _usage;
 }
 
-vk::ImageView blImage::getImageView() const noexcept
+VkImageView blImage::getImageView() const noexcept
 {
-    return _imageView.get();
+    return _imageView;
 }
 
-vk::Image blImage::getImage() const noexcept
+VkImage blImage::getImage() const noexcept
 {
     return _image;
 }

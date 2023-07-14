@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Precompiled.hpp"
-#include "Core/Export.h"
+#include "Export.h"
+#include "Precompiled.h"
 
 enum class blLogType
 {
@@ -12,7 +12,7 @@ enum class blLogType
     eDebug,
 };
 
-class BLUEMETAL_CORE_API blLogger
+class BLUEMETAL_API blLogger
 {
 public:
 

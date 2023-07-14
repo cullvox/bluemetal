@@ -1,13 +1,7 @@
+#include "Device.h"
+#include "Core/Log.h"
 
-#include "Core/Version.hpp"
-#include "Core/Log.hpp"
-#include "Core/Precompiled.hpp"
-#include "Render/RenderDevice.hpp"
-
-#include <vulkan/vulkan.hpp>
-
-// disable warnings on gcc for vk_mem_alloc
-// should probably create a pr to fix them...
+// disable vk_mem_alloc warnings on platforms
 #ifdef BLUEMETAL_COMPILER_GNU
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wunused-variable"
@@ -21,7 +15,7 @@
 #endif
 
 #define VMA_IMPLEMENTATION
-#include "Render/Vulkan/vk_mem_alloc.h"
+#include "vk_mem_alloc.h"
 
 #ifdef BLUEMETAL_COMPILER_GNU
   #pragma GCC diagnostic pop
@@ -29,101 +23,63 @@
   #pragma warning(pop)
 #endif
 
-blRenderDevice::blRenderDevice(std::shared_ptr<blWindow> window)
-    : _window(window)
-{   
-    createInstance();
-    choosePhysicalDevice();
+blDevice::blDevice(std::shared_ptr<blInstance> instance, std::shared_ptr<blWindow> window)
+    : _instance(instance)
+    , _window(window)
+{
     createDevice();
     createCommandPool();
     createAllocator();
 }
 
-blRenderDevice::~blRenderDevice()
+blDevice::~blDevice()
 {
     vmaDestroyAllocator(_allocator);
+    vkDestroyCommandPool(_device, _commandPool, nullptr);
+    vkDestroyDevice(_device, nullptr);
 }
 
-std::shared_ptr<blWindow> blRenderDevice::getWindow() const noexcept
-{
-    return _window;
-}
-
-vk::Instance blRenderDevice::getInstance() const noexcept
-{
-    return _instance.get();
-}
-
-vk::SurfaceKHR blRenderDevice::getSurface() const noexcept
-{
-    return _surface.get();
-}
-
-vk::PhysicalDevice blRenderDevice::getPhysicalDevice() const noexcept
-{
-    return _physicalDevice;
-}
-
-uint32_t blRenderDevice::getGraphicsFamilyIndex() const noexcept
+uint32_t blDevice::getGraphicsFamilyIndex() const noexcept
 {
     return _graphicsFamilyIndex;
 }
 
-uint32_t blRenderDevice::getPresentFamilyIndex() const noexcept
+uint32_t blDevice::getPresentFamilyIndex() const noexcept
 {
     return _presentFamilyIndex;
 }
 
-vk::Device blRenderDevice::getDevice() const noexcept
+VkDevice blDevice::getDevice() const noexcept
 {
-    return _device.get();
+    return _device;
 }
 
-vk::Queue blRenderDevice::getGraphicsQueue() const noexcept
+VkQueue blDevice::getGraphicsQueue() const noexcept
 {
     return _graphicsQueue;
 }
 
-vk::Queue blRenderDevice::getPresentQueue() const noexcept
+VkQueue blDevice::getPresentQueue() const noexcept
 {
     return _presentQueue;
 }
 
-vk::CommandPool blRenderDevice::getCommandPool() const noexcept
+VkCommandPool blDevice::getCommandPool() const noexcept
 {
-    return _commandPool.get();
+    return _commandPool;
 }
 
-VmaAllocator blRenderDevice::getAllocator() const noexcept
+VmaAllocator blDevice::getAllocator() const noexcept
 {
     return _allocator;
 }
 
-bool blRenderDevice::areQueuesSame() const noexcept
+bool blDevice::areQueuesSame() const noexcept
 {
     return _graphicsFamilyIndex == _presentFamilyIndex;
 }
 
-vk::Format blRenderDevice::findSupportedFormat(const std::vector<vk::Format>& candidates, vk::ImageTiling tiling, vk::FormatFeatureFlags features) const
-{
-    for (vk::Format format : candidates)
-    {
-        vk::FormatProperties properties = _physicalDevice.getFormatProperties(format);
-
-        if (tiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & features) == features)
-        {
-            return format;
-        }
-        else if (tiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & features) == features)
-        {
-            return format;
-        }
-    }
-
-    throw std::runtime_error("Could not find any valid format!");
-}
-
-void blRenderDevice::immediateSubmit(const std::function<void(vk::CommandBuffer)>& recorder) const
+void blDevice::immediateSubmit(const std::function<void(vk::CommandBuffer)>& recorder) const
 {
     const vk::CommandBufferAllocateInfo allocateInfo{
         getCommandPool(),
@@ -150,12 +106,12 @@ void blRenderDevice::immediateSubmit(const std::function<void(vk::CommandBuffer)
     _graphicsQueue.waitIdle();
 }
 
-void blRenderDevice::waitForDevice() const noexcept
+void blDevice::waitForDevice() const noexcept
 {
     getDevice().waitIdle();
 }
 
-std::string blRenderDevice::getVendorName() const noexcept
+std::string blDevice::getVendorName() const noexcept
 {
     uint32_t vendor = _physicalDevice.getProperties().vendorID;
 
@@ -171,134 +127,32 @@ std::string blRenderDevice::getVendorName() const noexcept
     }
 }
 
-std::string blRenderDevice::getDeviceName() const noexcept
+std::string blDevice::getDeviceName() const noexcept
 {
     return _physicalDevice.getProperties().deviceName;
 }
 
-std::vector<const char*> blRenderDevice::getValidationLayers() const
+std::vector<const char*> blDevice::getValidationLayers() const
 {
-    static const std::vector<const char*> requiredLayers = 
-    {
-        "VK_LAYER_KHRONOS_validation",  
-    };
 
-    std::vector<vk::LayerProperties> layerProperties = vk::enumerateInstanceLayerProperties();
-
-    // Iterate through the required layers to find any that the system does not support.
-    for (const char* name : requiredLayers)
-    {
-        if (std::find_if(layerProperties.begin(), layerProperties.end(), 
-                [name](const vk::LayerProperties& properties)
-                { 
-                    return std::strcmp(properties.layerName, name) == 0; 
-                }
-            ) == layerProperties.end())
-        {
-            BL_LOG(blLogType::eFatal, "Could not find required validation layer: {}", name);
-        }
-    }
-
-    return requiredLayers;
 }
 
-std::vector<const char*> blRenderDevice::getInstanceExtensions() const
+std::vector<const char*> blDevice::getInstanceExtensions() const
 {
 
-    // get our engines required extensions
-    std::vector<const char*> requiredExtensions = 
-    {
-#ifdef BLUEMETAL_DEVELOPMENT
-        VK_EXT_DEBUG_UTILS_EXTENSION_NAME
-#endif
-    };
 
-    // add the surface extensions to the required extensions
-    std::vector<const char*> surfaceExtensions = _window->getVulkanInstanceExtensions();
-
-    requiredExtensions.insert(requiredExtensions.end(), surfaceExtensions.begin(), surfaceExtensions.end());
-
-    // get all the current vulkan instance extensions
-    std::vector<vk::ExtensionProperties> extensionProperties = vk::enumerateInstanceExtensionProperties();
-
-    // check and make sure all of our extensions are present
-    for (const char* pName : requiredExtensions)
-    {
-        if (std::find_if(extensionProperties.begin(), extensionProperties.end(), 
-            [pName](const vk::ExtensionProperties& properties)
-            {
-                return std::strcmp(pName, properties.extensionName) == 0; 
-            }) == extensionProperties.end())
-        {
-            BL_LOG(blLogType::eFatal, "Could not find required instance extension: {}", pName);
-        }
-    }
-
-    // We have all our extensions!
-    return requiredExtensions;
 }
 
-void blRenderDevice::createInstance()
+void blDevice::createInstance()
 {
-    std::vector<const char*> instanceExtensions = getInstanceExtensions();
-    std::vector<const char*> validationLayers = 
-#ifdef BLUEMETAL_DEVELOPMENT
-    getValidationLayers();
-#else
-    {};
-#endif
-
-    // use a debug messenger when in development
-#ifdef BLUEMETAL_DEVELOPMENT
-    const vk::DebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo{
-        {},
-        vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose |
-            vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo |
-            vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
-            vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-        vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance |
-            vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-            vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation,
-        debugCallback,
-        nullptr    
-    };
-#endif
-
-    const vk::ApplicationInfo applicationInfo
-    {
-        applicationName.data(),         // pApplicationName
-        VK_MAKE_VERSION(
-            applicationVersionMajor,
-            applicationVersionMinor,
-            applicationVersionPatch),   // applicationVersion
-        engineName.data(),              // pEngineName
-        VK_MAKE_VERSION(
-            engineVersionMajor, 
-            engineVersionMinor, 
-            engineVersionPatch),        // engineVersion
-        VK_API_VERSION_1_2,             // apiVersion
-    };
-
-    const vk::InstanceCreateInfo createInfo{
-        {},                         // flags
-        &applicationInfo,           // pApplicationInfo
-        validationLayers,           // pEnabledLayerNames
-        instanceExtensions,         // pEnabledExtensionNames
-#ifdef BLUEMETAL_DEVELOPMENT
-        &debugMessengerCreateInfo,   // pNext
-#endif
-    };
-
-    _instance =  vk::createInstanceUnique(createInfo);
-
-    BL_LOG(blLogType::eInfo, "vulkan instance created")
+    
 
     // create the windows surface
     _surface = _window->createSurface(getInstance());
     
 }
 
-void blRenderDevice::choosePhysicalDevice()
+void blDevice::choosePhysicalDevice()
 {
     std::vector<vk::PhysicalDevice> physicalDevices = getInstance().enumeratePhysicalDevices();
 
@@ -310,7 +164,7 @@ void blRenderDevice::choosePhysicalDevice()
     BL_LOG(blLogType::eInfo, "using vulkan physical device: {}", properties.deviceName);
 }
 
-std::vector<const char*> blRenderDevice::getDeviceExtensions() const
+std::vector<const char*> blDevice::getDeviceExtensions() const
 {
     std::vector requiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
     
@@ -331,7 +185,7 @@ std::vector<const char*> blRenderDevice::getDeviceExtensions() const
     return requiredExtensions;
 }
 
-void blRenderDevice::createDevice()
+void blDevice::createDevice()
 {   
     const std::vector<const char*> deviceExtensions = getDeviceExtensions();
     const std::vector<const char*> validationLayers =
@@ -397,7 +251,7 @@ void blRenderDevice::createDevice()
     _presentQueue = getDevice().getQueue(_presentFamilyIndex, 0);
 }
 
-void blRenderDevice::createCommandPool()
+void blDevice::createCommandPool()
 {
     const vk::CommandPoolCreateInfo createInfo
     {
@@ -408,7 +262,7 @@ void blRenderDevice::createCommandPool()
     _commandPool = getDevice().createCommandPoolUnique(createInfo);
 }
 
-void blRenderDevice::createAllocator()
+void blDevice::createAllocator()
 {
     const VmaAllocatorCreateInfo createInfo{
         0,                      // flags
@@ -433,7 +287,7 @@ void blRenderDevice::createAllocator()
     _allocator = std::shared_ptr<VmaAllocator>(allocator, [](VmaAllocator allocator){ vmaDestroyAllocator(allocator); });
 }
 
-VKAPI_ATTR vk::Bool32 VKAPI_CALL blRenderDevice::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) noexcept
+VKAPI_ATTR vk::Bool32 VKAPI_CALL blDevice::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT type, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) noexcept
 {
     (void)pUserData;
     (void)type;

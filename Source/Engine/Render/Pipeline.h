@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Render/Precompiled.hpp"
-#include "Render/RenderDevice.hpp"
-#include "Render/Shader.hpp"
-#include "Render/RenderPass.hpp"
+#include "Device.h"
+#include "Shader.h"
+#include "RenderPass.h"
 
 enum class blUniformType
 {
@@ -35,29 +34,28 @@ struct blUniformReflection
     std::vector<blUniformMemberReflection>  members;
 };
 
-
-class BLUEMETAL_RENDER_API blPipeline
+class BLUEMETAL_API blPipeline
 {
 public:
-    blPipeline(blRenderDevice& renderDevice, const std::vector<std::shared_ptr<blShader>>& shaders, blRenderPass& renderPass, uint32_t subpass = 0);
+    explicit blPipeline(std::shared_ptr<blDevice> device, const std::vector<std::shared_ptr<blShader>>& shaders, std::shared_ptr<blRenderPass> renderPass, uint32_t subpass = 0);
     ~blPipeline() noexcept;
 
-    vk::PipelineLayout getPipelineLayout() const noexcept;
-    vk::Pipeline getPipeline() const noexcept;
-    void getDescriptorSetLayouts(std::vector<vk::DescriptorSetLayout>& descriptorSetLayouts) const noexcept;
-    void getUniformReflection(std::vector<blUniformReflection>& uniformReflection) const noexcept; // materials will create buffers to specifications
+    VkPipelineLayout getPipelineLayout();
+    VkPipeline getPipeline();
+    std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts();
+    std::vector<blUniformReflection> getUniformReflection(); // materials will create buffers to specifications
 
 private:
     void createDescriptorSetLayouts(const std::vector<std::shared_ptr<blShader>>& shaders);
     void createLayout();
     void createPipeline(const std::vector<std::shared_ptr<blShader>>& shaders);
 
-    blRenderDevice&                             _renderDevice;
-    blRenderPass&                               _renderPass;
-    uint32_t                                    _subpass;
-    std::vector<vk::UniqueDescriptorSetLayout>  _setLayouts;
-    vk::UniquePipelineLayout                    _pipelineLayout;
-    vk::UniquePipeline                          _pipeline;
+    std::shared_ptr<blDevice>           _renderDevice;
+    std::shared_ptr<blRenderPass>       _renderPass;
+    uint32_t                            _subpass;
+    std::vector<VkDescriptorSetLayout>  _setLayouts;
+    VkPipelineLayout                    _pipelineLayout;
+    VkPipeline                          _pipeline;
 };
 
 

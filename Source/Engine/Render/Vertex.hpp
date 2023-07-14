@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Math/Vector2.hpp"
-#include "Math/Vector3.hpp"
+#include "Math/Vector2.h"
+#include "Math/Vector3.h"
 
 struct blVertex
 {

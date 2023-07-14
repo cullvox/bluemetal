@@ -1,9 +1,14 @@
-#include "Core/Log.hpp"
-#include "Window/VideoMode.hpp"
-#include "Window/Display.hpp"
+#include "Display.h"
+#include "Core/Log.h"
 
-#include <SDL.h>
-#include <SDL_pixels.h>
+blDisplay::blDisplay(uint32_t index, const std::string& name, const std::vector<blVideoMode>& videoModes, blRect2D rect, blVideoMode desktopMode)
+    :_index(index)
+    , _name(name)
+    , _videoModes(videoModes)
+    , _rect(rect)
+    , _videoMode(videoMode)
+{
+}
 
 uint32_t blDisplay::getIndex() const noexcept
 {
@@ -20,12 +25,12 @@ blRect2D blDisplay::getRect() const noexcept
     return _rect;
 }
 
-const std::vector<blDisplayMode>& blDisplay::getVideoModes() const noexcept
+const std::vector<blVideoMode>& blDisplay::getVideoModes() const noexcept
 {
     return _videoModes;
 }
 
-blDisplayMode blDisplay::getDesktopMode() const noexcept
+blVideoMode blDisplay::getDesktopMode() const noexcept
 {
     return _desktopMode;
 }
@@ -34,10 +39,11 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
 {
     int displayCount = SDL_GetNumVideoDisplays();
 
-    std::vector<blDisplay> displays{};
+    std::vector<blDisplay> displays;
+
     for (int displayIndex = 0; displayIndex < displayCount; displayIndex++)
     {
-        blDisplay display{};
+        blDisplay display();
 
         display._index = displayIndex;
         display._name = SDL_GetDisplayName(displayIndex);
@@ -65,7 +71,7 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
             continue;
         }
 
-        const blDisplayMode desktopMode
+        const blVideoMode desktopMode
         {
             { (uint32_t)rect.w, (uint32_t)rect.h, },
             0,
@@ -75,7 +81,7 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
         display._desktopMode = desktopMode;
         
         // Set all the displays desktop modes
-        std::vector<blDisplayMode> displayModes{};
+        std::vector<blVideoMode> displayModes{};
         SDL_DisplayMode rawDisplayMode{};
         for (int displayModeIndex = 0; displayModeIndex < displayModeCount; displayModeIndex++)
         {
@@ -91,7 +97,7 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
             SDL_PixelFormat* pFormat = SDL_AllocFormat(rawDisplayMode.format); 
 
             // Create our bl::DisplayMode from the SDL_DisplayMode.
-            const blDisplayMode mode
+            const blVideoMode mode
             {
                 { (uint32_t)rawDisplayMode.w,  (uint32_t)rawDisplayMode.h },
                 pFormat->BitsPerPixel,

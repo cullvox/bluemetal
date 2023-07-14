@@ -1,7 +1,4 @@
-#include "Vector2.hpp"
-
-#include <cmath>
-
+#include "Vector2.h"
 
 //===========================
 // blVector2i
@@ -139,12 +136,12 @@ blExtent2D::blExtent2D(uint32_t width, uint32_t height)
 {
 }
 
-blExtent2D::blExtent2D(uint32_t wh)
-    : width(wh), height(wh)
+blExtent2D::blExtent2D(uint32_t widthHeight)
+    : width(widthHeight), height(widthHeight)
 {
 }
 
-blExtent2D::blExtent2D(vk::Extent2D extent)
+blExtent2D::blExtent2D(VkExtent2D extent)
     : width(extent.width), height(extent.height)
 {
 }

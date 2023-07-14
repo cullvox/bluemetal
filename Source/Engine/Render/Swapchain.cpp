@@ -1,20 +1,21 @@
+#include "Swapchain.h"
 #include "Core/Log.hpp"
-#include "Core/Precompiled.hpp"
-#include "Render/Swapchain.hpp"
+#include <cstdint>
+#include <vulkan/vulkan_core.h>
 
-blSwapchain::blSwapchain(std::shared_ptr<blRenderDevice> renderDevice, vk::PresentModeKHR presentMode)
+blSwapchain::blSwapchain(std::shared_ptr<blRenderDevice> renderDevice, VkPresentModeKHR presentMode)
     : _renderDevice(renderDevice)
 {
     ensureSurfaceSupported();
     recreate(presentModes);
 }
 
-vk::SwapchainKHR blSwapchain::getSwapchain() noexcept
+VkSwapchainKHR blSwapchain::getSwapchain() noexcept
 {
-    return _swapChain.get();
+    return _swapChain;
 }
 
-vk::Format blSwapchain::getFormat() const noexcept
+VkFormat blSwapchain::getFormat() const noexcept
 {
     return _surfaceFormat.format;
 }
@@ -29,39 +30,28 @@ uint32_t blSwapchain::getImageCount() const noexcept
     return _imageCount;
 }
 
-std::vector<vk::ImageView> blSwapchain::getImageViews() const noexcept
+std::vector<VkImageView> blSwapchain::getImageViews() const noexcept
 {
-    std::vector<vk::ImageView> swapImageViews;
-
-    // Transform the unique image views into normal image views with get()
-    std::transform(_swapImageViews.begin(), _swapImageViews.end(), std::back_inserter(swapImageViews),
-        [](const vk::UniqueImageView& imageView)
-        {
-            return imageView.get();
-        });
-
-    return swapImageViews;
+    return _swapImageViews;
 }
 
-std::vector<vk::Image> blSwapchain::getImages() const noexcept
+std::vector<VkImage> blSwapchain::getImages() const noexcept
 {
     return _swapImages;
 }
 
-void blSwapchain::acquireNext(vk::Semaphore semaphore, vk::Fence fence, uint32_t& imageIndex, bool& recreated)
+void blSwapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& recreated)
 {
     recreated = false;
 
-    try
-    {
-        imageIndex = _renderDevice->getDevice().acquireNextImageKHR(getSwapchain(), std::numeric_limits<uint64_t>::max(), semaphore, fence).value;
-    }
-    catch (const vk::OutOfDateKHRError&)
+    VkResult result = vkAcquireNextImageKHR(_renderDevice->getDevice(), _swapChain, UINT32_MAX, semaphore, fence, &imageIndex)
+    
+    if (result != VK_OUT_OF_DATE_KHR)
     {
         recreate();
-        recreated = true;
+        recreated = true();
     }
-    catch (...)
+    else
     {
         BL_LOG(blLogType::eFatal, "Could not acquire the next swapchain image!")
     }
@@ -79,7 +69,7 @@ void blSwapchain::ensureSurfaceSupported()
 
 void blSwapchain::chooseImageCount()
 {
-    vk::SurfaceCapabilitiesKHR capabilities = _renderDevice->getPhysicalDevice().getSurfaceCapabilitiesKHR(_renderDevice->getSurface());
+    VkSurfaceCapabilitiesKHR capabilities = _renderDevice->getPhysicalDevice().getSurfaceCapabilitiesKHR(_renderDevice->getSurface());
 
     // Try to at least get one over the minimum
     _imageCount = (capabilities.minImageCount + 1 <= capabilities.maxImageCount) ? capabilities.minImageCount + 1 : capabilities.maxImageCount;
@@ -87,13 +77,13 @@ void blSwapchain::chooseImageCount()
 
 void blSwapchain::chooseFormat()
 {
-    static constexpr vk::SurfaceFormatKHR defaultFormat{DEFAULT_FORMAT, DEFAULT_COLOR_SPACE};
+    static constexpr VkSurfaceFormatKHR defaultFormat{DEFAULT_FORMAT, DEFAULT_COLOR_SPACE};
 
-    std::vector<vk::SurfaceFormatKHR> surfaceFormats = _renderDevice->getPhysicalDevice().getSurfaceFormatsKHR(_renderDevice->getSurface());
+    std::vector<VkSurfaceFormatKHR> surfaceFormats = _renderDevice->getPhysicalDevice().getSurfaceFormatsKHR(_renderDevice->getSurface());
 
     // find the surface format/colorspace to be used
     if (std::find_if(surfaceFormats.begin(), surfaceFormats.end(),
-        [](vk::SurfaceFormatKHR format)
+        [](VkSurfaceFormatKHR format)
         { 
             return (format.colorSpace == defaultFormat.colorSpace) && (format.format == defaultFormat.format);
         }) != surfaceFormats.end())
@@ -106,14 +96,14 @@ void blSwapchain::chooseFormat()
     _surfaceFormat = surfaceFormats.front();
 }
 
-void blSwapchain::choosePresentMode(vk::PresentModeKHR requestedPresentMode)
+void blSwapchain::choosePresentMode(VkPresentModeKHR requestedPresentMode)
 {
     // Obtain the present modes from the physical device.
-    std::vector<vk::PresentModeKHR> presentModes = _renderDevice->getPhysicalDevice().getSurfacePresentModesKHR(_renderDevice->getSurface());
+    std::vector<VkPresentModeKHR> presentModes = _renderDevice->getPhysicalDevice().getSurfacePresentModesKHR(_renderDevice->getSurface());
 
     // Fill up the present meta info
-    _isMailboxSupported = std::find(presentModes.begin(), presentModes.end(), vk::PresentModeKHR::eMailbox) != presentModes.end();
-    _isImmediateSupported = std::find(presentModes.begin(), presentModes.end(), vk::PresentModeKHR::eImmediate) != presentModes.end();
+    _isMailboxSupported = std::find(presentModes.begin(), presentModes.end(), VkPresentModeKHR::eMailbox) != presentModes.end();
+    _isImmediateSupported = std::find(presentModes.begin(), presentModes.end(), VkPresentModeKHR::eImmediate) != presentModes.end();
 
     // Find if we have the requested present mode.
     if (std::find(presentModes.begin(), presentModes.end(), requestedPresentMode) != presentModes.end())
@@ -123,13 +113,13 @@ void blSwapchain::choosePresentMode(vk::PresentModeKHR requestedPresentMode)
     }    
 
     // If our mode wasn't found just use FIFO, that's always available.
-    _presentMode = vk::PresentModeKHR::eFifo; 
-    BL_LOG(blLogType::eWarning, "Present mode {} is unavailable, using FIFO.", vk::to_string(requestedPresentMode));
+    _presentMode = VkPresentModeKHR::eFifo; 
+    BL_LOG(blLogType::eWarning, "Present mode {} is unavailable, using FIFO.", Vkto_string(requestedPresentMode));
 }
 
 void blSwapchain::chooseExtent()
 {
-    vk::SurfaceCapabilitiesKHR capabilities = 
+    VkSurfaceCapabilitiesKHR capabilities = 
         _renderDevice->getPhysicalDevice()
             .getSurfaceCapabilitiesKHR(_renderDevice->getSurface());
 
@@ -156,31 +146,31 @@ void blSwapchain::obtainImages()
 void blSwapchain::createImageViews()
 {
     std::for_each(_swapImages.begin(), _swapImages.end(),
-        [&](vk::Image image)
+        [&](VkImage image)
         {
 
-            const vk::ComponentMapping componentMapping
+            const VkComponentMapping componentMapping
             {
-                vk::ComponentSwizzle::eIdentity, // r
-                vk::ComponentSwizzle::eIdentity, // g
-                vk::ComponentSwizzle::eIdentity, // b
-                vk::ComponentSwizzle::eIdentity  // a
+                VkComponentSwizzle::eIdentity, // r
+                VkComponentSwizzle::eIdentity, // g
+                VkComponentSwizzle::eIdentity, // b
+                VkComponentSwizzle::eIdentity  // a
             };
 
-            const vk::ImageSubresourceRange subresourceRange
+            const VkImageSubresourceRange subresourceRange
             {
-                vk::ImageAspectFlagBits::eColor,    // aspectMask
+                VkImageAspectFlagBits::eColor,    // aspectMask
                 0,                                  // baseMipLevel
                 1,                                  // levelCount
                 0,                                  // baseArrayLayers
                 1                                   // layerCount
             };
 
-            const vk::ImageViewCreateInfo imageViewInfo
+            const VkImageViewCreateInfo imageViewInfo
             {
                 {},                         // flags
                 image,                      // image
-                vk::ImageViewType::e2D,     // format
+                VkImageViewType::e2D,     // format
                 _surfaceFormat.format,      // viewType
                 componentMapping,           // components
                 subresourceRange            // subresourceRange
@@ -191,7 +181,7 @@ void blSwapchain::createImageViews()
 }
 
 
-void blSwapchain::recreate(vk::PresentModeKHR presentMode) 
+void blSwapchain::recreate(VkPresentModeKHR presentMode) 
 {
     // wait for the device to finish doing it's things
     _renderDevice->waitForDevice();
@@ -220,20 +210,20 @@ void blSwapchain::recreate(vk::PresentModeKHR presentMode)
 
     queueFamilyIndices.resize(_renderDevice->areQueuesSame() ? 1 : 2);
 
-    const vk::SwapchainCreateInfoKHR createInfo
+    const VkSwapchainCreateInfoKHR createInfo
     {
         {},                                         // flags 
         _renderDevice->getSurface(),                // surface
         _imageCount,                                // minImageCount
         _surfaceFormat.format,                      // imageFormat
         _surfaceFormat.colorSpace,                  // imageColorSpace
-        vk::Extent2D{ _extent.width, _extent.height }, // imageExtent 
+        VkExtent2D{ _extent.width, _extent.height }, // imageExtent 
         1,                                          // imageArrayLayers
-        vk::ImageUsageFlagBits::eColorAttachment | vk::ImageUsageFlagBits::eTransferDst, // imageUsage
-        _renderDevice->areQueuesSame() ? vk::SharingMode::eExclusive : vk::SharingMode::eConcurrent, // imageSharingMode 
+        VkImageUsageFlagBits::eColorAttachment | VkImageUsageFlagBits::eTransferDst, // imageUsage
+        _renderDevice->areQueuesSame() ? VkSharingMode::eExclusive : VkSharingMode::eConcurrent, // imageSharingMode 
         queueFamilyIndices,                         // queueFamilyIndices
-        vk::SurfaceTransformFlagBitsKHR::eIdentity, // preTransform 
-        vk::CompositeAlphaFlagBitsKHR::eOpaque,     // compositeAlpha
+        VkSurfaceTransformFlagBitsKHR::eIdentity, // preTransform 
+        VkCompositeAlphaFlagBitsKHR::eOpaque,     // compositeAlpha
         _presentMode,                               // presentMode
         VK_TRUE,                                    // clipped
         VK_NULL_HANDLE                              // oldSwapchain

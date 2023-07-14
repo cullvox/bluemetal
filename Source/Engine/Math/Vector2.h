@@ -1,8 +1,6 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
-#include "Precompiled.hpp"
+#include "Precompiled.h"
 #include "Export.h"
 
 struct BLUEMETAL_API blVector2i
@@ -46,11 +44,11 @@ struct BLUEMETAL_API blVector2f
 struct BLUEMETAL_API blExtent2D
 {
     blExtent2D() = default;
-    blExtent2D(uint32_t width, uint32_t height)
-    blExtent2D(uint32_t wh);
-    blExtent2D(vk::Extent2D extent);
+    blExtent2D(uint32_t width, uint32_t height);
+    blExtent2D(uint32_t widthHeight);
+    blExtent2D(VkExtent2D extent);
 
-    explicit operator vk::Extent2D() const noexcept;
+    explicit operator VkExtent2D() const noexcept;
 
     uint32_t width;
     uint32_t height;
