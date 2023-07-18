@@ -2,33 +2,45 @@
 
 #include "Device.h"
 
-struct blShaderDescriptorReflection
+struct blShaderReflectDescriptorBinding
 {
-    uint32_t                                  set;
-    VkDescriptorSetLayoutCreateInfo           info;
-    std::vector<VkDescriptorSetLayoutBinding> bindings;
+    uint32_t            binding;
+    VkDescriptorType    type;
+    uint32_t            descriptorCount;
+    const VkSampler*    pImmutableSamplers;
+    std::string         name;
 };
+
+struct blShaderReflectDescriptorSet
+{
+    uint32_t set;
+    std::string name;
+    std::vector<blShaderReflectDescriptorBinding> bindings;
+}
 
 class BLUEMETAL_API blShader
 {
 public:
-    explicit blShader(std::shared_ptr<blDevice> device, const std::vector<uint32_t>& bytes);
+    explicit blShader(std::shared_ptr<blDevice> device, const std::vector<uint32_t>& spirv);
     ~blShader() noexcept;
 
     VkShaderStageFlagBits getStage();
     VkShaderModule getModule();
-    VkPipelineVertexInputStateCreateInfo getVertexState();
-    std::vector<blShaderDescriptorReflection> getDescriptorReflections();
+    VkVertexInputBindingDescription getVertexBinding();
+    std::vector<VkVertexInputAttributeDescription> getVertexAttributes();
+    void applyDescriptor(std::vector<VkDescriptorSetLayoutBinding>& bindings);
+    std::vector<blShaderReflectDescriptorSet> getDescriptorSetReflections();
 
 private:
+    void createShaderModule(const std::vector<uint32_t>& spirv);
+    void reflect(const std::vector<uint32_t>& spirv);
     void findVertexState(const SpvReflectShaderModule* module);
-    void findDescriptorReflections(const SpvReflectShaderModule* module);
+    void findDescriptorSetReflections(const SpvReflectShaderModule* module);
 
-    std::shared_ptr<blDevice>                       _renderDevice;
+    std::shared_ptr<blDevice>                       _device;
     VkShaderModule                                  _module;
     VkShaderStageFlagBits                           _stage;
     VkVertexInputBindingDescription                 _vertexBinding;
     std::vector<VkVertexInputAttributeDescription>  _vertexAttributes;
-    VkPipelineVertexInputStateCreateInfo            _vertexState;
-    std::vector<blShaderDescriptorReflection>       _descriptorReflections;
+    std::vector<blShaderReflectDescriptorSet>       _descriptorSetReflections;
 };

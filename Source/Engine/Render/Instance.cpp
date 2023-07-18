@@ -1,5 +1,6 @@
 #include "Instance.h"
 #include "Version.h"
+#include "Core/Log.h"
 
 blInstance::blInstance(std::optional<uint32_t> physicalDeviceIndex)
 {
@@ -102,16 +103,16 @@ std::vector<const char*> blInstance::getValidationLayers()
 
     // get the systems validation layer info
     uint32_t propertiesCount = 0;
-    std::vector<VkLayerProperties> layerProperties;
+    std::vector<VkLayerProperties> properties;
 
     if (vkEnumerateInstanceLayerProperties(&propertiesCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan instance layer properties count!");
     }
 
-    layerProperties.resize(propertiesCount);
+    properties.resize(propertiesCount);
 
-    if (vkEnumerateInstanceLayerProperties(&propertiesCount, layerProperties.data()) != VK_SUCCESS)
+    if (vkEnumerateInstanceLayerProperties(&propertiesCount, properties.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not enumerate Vulkan instance layer properties!");
     }
@@ -119,14 +120,14 @@ std::vector<const char*> blInstance::getValidationLayers()
     // ensure that the requested layers are present on the system
     for (const char* name : layers)
     {
-        if (std::find_if(layerProperties.begin(), layerProperties.end(), 
-                [name](const vk::LayerProperties& properties)
+        if (std::find_if(properties.begin(), properties.end(), 
+                [name](const VkLayerProperties& properties)
                 { 
                     return strcmp(properties.layerName, name) == 0; 
                 }
-            ) == layerProperties.end())
+            ) == properties.end())
         {
-            throw std::runtime_error("Could not find required validation layer: " + name);
+            throw std::runtime_error(fmt::format("Could not find required instance layer: {}", name));
         }
     }
 
@@ -183,9 +184,9 @@ void blInstance::createInstance()
 #endif
         0,                                          // flags
         &applicationInfo,                           // pApplicationInfo
-        validationLayers.size()                     // enabledLayerCount
+        (uint32_t)validationLayers.size(),          // enabledLayerCount
         validationLayers.data(),                    // pEnabledLayerNames
-        instanceExtensions.size()                   // enabledExtensionCount
+        (uint32_t)instanceExtensions.size(),        // enabledExtensionCount
         instanceExtensions.data(),                  // pEnabledExtensionNames
     };
 
@@ -199,20 +200,82 @@ void blInstance::createInstance()
 
 void blInstance::choosePhysicalDevice(std::optional<uint32_t> physicalDeviceIndex)
 {
+    // get the vulkan physical devices
+    uint32_t physicalDeviceCount = 0;
+    std::vector<VkPhysicalDevice> physicalDevices;
+    if (vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, nullptr) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get Vulkan physical device count!");
+    }
 
+    physicalDevices.resize(physicalDeviceCount);
+
+    if (vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices.data()) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not enumerate Vulkan physical devices!");
+    }
+
+    // check if we want a specific device
+    if (physicalDeviceIndex)
+    {
+        if (physicalDeviceIndex.value() > physicalDeviceCount - 1)
+        {
+            throw std::runtime_error("Choosen physical device index is out of range!");
+        }
+
+        _physicalDevice = physicalDevices[physicalDeviceIndex.value()];
+    }
+    else
+    {
+        BL_LOG(blLogType::eInfo, "Physical device not choosen, using default.");
+        _physicalDevice = physicalDevices[0];
+    }
+
+    // log the device's name
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
+
+    BL_LOG(blLogType::eInfo, "Choose physical device: {}", properties.deviceName);
+}
+
+
+std::string blInstance::getVendorName()
+{
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
+
+    switch (properties.vendorID)
+    {
+        case 0x1002: return "AMD";
+        case 0x1010: return "ImgTec";
+        case 0x10DE: return "NVIDIA";
+        case 0x13B5: return "ARM";
+        case 0x5143: return "Qualcomm";
+        case 0x8086: return "INTEL";
+        default: return "Undefined Vendor";
+    }
+}
+
+std::string blInstance::getDeviceName()
+{
+    VkPhysicalDeviceProperties properties{};
+    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
+
+    return std::string(properties.deviceName);
 }
 
 VkFormat blInstance::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
-    for (vk::Format format : candidates)
+    for (VkFormat format : candidates)
     {
-        vk::FormatProperties properties = _physicalDevice.getFormatProperties(format);
+        VkFormatProperties properties{};
+        vkGetPhysicalDeviceFormatProperties(_physicalDevice, format, &properties);
 
-        if (tiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & features) == features)
+        if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features)
         {
             return format;
         }
-        else if (tiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & features) == features)
+        else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features)
         {
             return format;
         }

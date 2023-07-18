@@ -1,13 +1,50 @@
 #include "Display.h"
 #include "Core/Log.h"
 
-blDisplay::blDisplay(uint32_t index, const std::string& name, const std::vector<blVideoMode>& videoModes, blRect2D rect, blVideoMode desktopMode)
-    :_index(index)
-    , _name(name)
-    , _videoModes(videoModes)
-    , _rect(rect)
-    , _videoMode(videoMode)
+blDisplay::blDisplay(int display)
 {
+
+    // get the displays rect
+    SDL_Rect sdlRect{};
+    if (SDL_GetDisplayUsableBounds(display, &sdlRect) < 0)
+    {
+        BL_LOG(blLogType::eError, "Could not get the desktop display mode for display #{}", display);
+    }
+
+    blRect2D rect(
+        {(int32_t)sdlRect.x, (int32_t)sdlRect.y}, 
+        {(uint32_t)sdlRect.w, (uint32_t)sdlRect.h}
+    );
+
+    // get the displays video modes
+    int modeCount = SDL_GetNumDisplayModes(display);
+    if (modeCount < 1)
+    {
+        BL_LOG(blLogType::eError, "Could not get video modes for display #{}", display);
+    }
+
+    // desktop mode
+    const blVideoMode desktopMode(rect.extent, 0, 0);
+    
+    std::vector<blVideoMode> videoModes;
+    for (int j = 0; j < modeCount; j++)
+    {
+        // get the display mode
+        SDL_DisplayMode sdlMode = {};
+        if (SDL_GetDisplayMode(display, j, &sdlMode) < 0)
+        {
+            BL_LOG(blLogType::eError, "Could not get a display mode #{} for display #{}!", j, display);
+            continue; // skip adding this display mode because it's invalid
+        }
+
+        // get the pixel format's information
+        SDL_PixelFormat* pFormat = SDL_AllocFormat(sdlMode.format); 
+
+        // add the display mode
+        videoModes.emplace_back(blExtent2D((uint32_t)sdlMode.w, (uint32_t)sdlMode.h), (uint8_t)pFormat->BitsPerPixel, (uint16_t)sdlMode.refresh_rate);
+
+        SDL_FreeFormat(pFormat);
+    }
 }
 
 uint32_t blDisplay::getIndex() const noexcept
@@ -41,77 +78,9 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
 
     std::vector<blDisplay> displays;
 
-    for (int displayIndex = 0; displayIndex < displayCount; displayIndex++)
+    for (int i = 0; i < displayCount; i++)
     {
-        blDisplay display();
-
-        display._index = displayIndex;
-        display._name = SDL_GetDisplayName(displayIndex);
-
-        // Set the displays maximum rect
-        SDL_Rect rect{};
-        if (SDL_GetDisplayUsableBounds(displayIndex, &rect) < 0)
-        {
-            BL_LOG(blLogType::eError, "Could not get the desktop display mode for display #{}: {}\n", display.getIndex(), display.getName());
-            continue;
-        }
-
-        display._rect = 
-        {
-            rect.x, 
-            rect.y, 
-            (uint32_t)rect.w, 
-            (uint32_t)rect.h
-        };
-
-        int displayModeCount = SDL_GetNumDisplayModes(displayIndex);
-        if (displayModeCount < 1)
-        {
-            BL_LOG(blLogType::eError, "Could not get any display modes for display #{}: {}\n", display.getIndex(), display.getName());
-            continue;
-        }
-
-        const blVideoMode desktopMode
-        {
-            { (uint32_t)rect.w, (uint32_t)rect.h, },
-            0,
-            0
-        };
-
-        display._desktopMode = desktopMode;
-        
-        // Set all the displays desktop modes
-        std::vector<blVideoMode> displayModes{};
-        SDL_DisplayMode rawDisplayMode{};
-        for (int displayModeIndex = 0; displayModeIndex < displayModeCount; displayModeIndex++)
-        {
-
-            // Get the SDL_DisplayMode of this index.
-            if (SDL_GetDisplayMode(displayIndex, displayModeIndex, &rawDisplayMode) < 0)
-            {
-                BL_LOG(blLogType::eError, "Could not get a display mode #{} for display #{}: {}\n", displayModeIndex, display.getIndex(), display.getName());
-                continue; // Skip adding this display mode because it's invalid.
-            }
-
-            // Get the pixel format's information
-            SDL_PixelFormat* pFormat = SDL_AllocFormat(rawDisplayMode.format); 
-
-            // Create our bl::DisplayMode from the SDL_DisplayMode.
-            const blVideoMode mode
-            {
-                { (uint32_t)rawDisplayMode.w,  (uint32_t)rawDisplayMode.h },
-                pFormat->BitsPerPixel,
-                (uint16_t)rawDisplayMode.refresh_rate,
-            };
-
-            SDL_FreeFormat(pFormat);
-
-            // Add the display mode.
-            displayModes.emplace_back(mode);
-        }
-
-        display._videoModes = displayModes;
-        displays.emplace_back(display);
+        displays.emplace_back(i);
     }
 
     return displays;

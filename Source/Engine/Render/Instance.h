@@ -1,8 +1,9 @@
 #pragma once
 
 #include "Precompiled.h"
+#include "Export.h"
 
-class blInstance
+class BLUEMETAL_API blInstance
 {
 public:
     blInstance(std::optional<uint32_t> physicalDeviceIndex = std::nullopt);
@@ -10,6 +11,8 @@ public:
 
     VkInstance getInstance();
     VkPhysicalDevice getPhysicalDevice();
+    std::string getDeviceName();
+    std::string getVendorName();
     VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 private:

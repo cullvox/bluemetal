@@ -52,12 +52,24 @@ public:
             abort();
     }
     
+    static constexpr const char* file_name(const char* path) {
+        const char* file = path;
+        while (*path) {
+            if (*path++ == '/') {
+                file = path;
+            }
+        }
+        return file;
+    }
+
+
     template<typename TString, typename...TArgs>
     static void log(blLogType type, const char* pLibraryName, int line, const char* pFunctionName, const TString& format, TArgs&&... args)
     {
         vlog(type, pLibraryName, line, pFunctionName, format, fmt::make_format_args(args...));
     }
+
     
 };
 
-#define BL_LOG(type, format, ...) blLogger::log(type, BLUEMETAL_LIBRARY_NAME, __LINE__, __func__, FMT_STRING(format) __VA_OPT__(,) __VA_ARGS__);
+#define BL_LOG(type, format, ...) blLogger::log(type, blLogger::file_name(__FILE__), __LINE__, __func__, FMT_STRING(format) __VA_OPT__(,) __VA_ARGS__);

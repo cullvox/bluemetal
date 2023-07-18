@@ -163,12 +163,12 @@ blExtent3D::blExtent3D(unsigned int widthHeightDepth)
 {
 }
 
-blExtent3D::blExtent3D(VkExtent3D extent) const noexcept
+blExtent3D::blExtent3D(VkExtent3D extent)
     : width(extent.width), height(extent.height), depth(extent.depth)
 {   
 }
 
-blExtent3D::operator VkExtent3D() const noexcept
+blExtent3D::operator VkExtent3D()
 {
     return VkExtent3D(width, height, depth);
 }

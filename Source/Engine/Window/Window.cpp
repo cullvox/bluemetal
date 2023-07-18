@@ -1,7 +1,7 @@
 #include "Window.h"
-#include <vulkan/vulkan_core.h>
+#include "Core/Log.h"
 
-blWindow::blWindow(std::shared_ptr<blInstance> instance, const std::string& title, blVideoMode videoMode, std::optional<blDisplay> display)
+blWindow::blWindow(std::shared_ptr<blInstance> instance, blVideoMode videoMode, const std::string& title,  std::optional<blDisplay> display)
 {
     createWindow(videoMode, title, display);
     createSurface();
@@ -51,17 +51,8 @@ void blWindow::createWindow(const blVideoMode& videoMode, const std::string& tit
 
 void blWindow::createSurface()
 {
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
-    if (SDL_Vulkan_CreateSurface(_pWindow, _instance->getInstance(), &surface) != SDL_TRUE)
+    if (SDL_Vulkan_CreateSurface(_pWindow, _instance->getInstance(), &_surface) != SDL_TRUE)
     {
         BL_LOG(blLogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
     }
-
-    return surface;
 }
-
-std::vector<const char*> blWindow::getVulkanInstanceExtensions() const
-{
-
-}
-

@@ -11,6 +11,8 @@
 #include <SDL_vulkan.h>
 
 #include <fmt/format.h>
+#include <fmt/color.h>
+#include <fmt/chrono.h>
 
 #include <cstdint>
 #include <cmath>

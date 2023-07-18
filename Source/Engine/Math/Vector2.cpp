@@ -4,62 +4,62 @@
 // blVector2i
 //===========================
 
-blVector2i::blVector2i(int32_t x, int32_t y) noexcept
+blVector2i::blVector2i(int32_t x, int32_t y)
     : x(x), y(y)
 {
 }
 
-blVector2i::blVector2i(int32_t xy) noexcept
+blVector2i::blVector2i(int32_t xy)
     : x(xy), y(xy)
 {
 }
 
-blVector2i::blVector2i(const blVector2i& rhs) noexcept
+blVector2i::blVector2i(const blVector2i& rhs)
     : x(rhs.x), y(rhs.y)
 {
 }
 
-blVector2i& blVector2i::operator=(const blVector2i& rhs) noexcept
+blVector2i& blVector2i::operator=(const blVector2i& rhs)
 {
     x = rhs.x;
     y = rhs.y;
     return *this;
 }
 
-blVector2i& blVector2i::operator+(const blVector2i& rhs) noexcept
+blVector2i& blVector2i::operator+(const blVector2i& rhs)
 {
     x += rhs.x;
     y += rhs.y;
     return *this;
 }
 
-blVector2i& blVector2i::operator-(const blVector2i& rhs) noexcept
+blVector2i& blVector2i::operator-(const blVector2i& rhs)
 {
     x -= rhs.x;
     y -= rhs.y;
     return *this;
 }
 
-blVector2i& blVector2i::operator*(const blVector2i& rhs) noexcept
+blVector2i& blVector2i::operator*(const blVector2i& rhs)
 {
     x *= rhs.x;
     y *= rhs.y;
     return *this;
 }
 
-blVector2i& blVector2i::operator/(const blVector2i& rhs) noexcept
+blVector2i& blVector2i::operator/(const blVector2i& rhs)
 {
     x /= rhs.x;
     y /= rhs.y;
     return *this;
 }
 
-int32_t blVector2i::magnitude() const noexcept
+int32_t blVector2i::magnitude()
 {
     return (int32_t)std::sqrt(x*x + y*y);
 }
 
-int32_t blVector2i::distance(const blVector2i& other) const noexcept
+int32_t blVector2i::distance(const blVector2i& other)
 {
     const int32_t xm = (other.x - x);
     const int32_t ym = (other.y - y);
@@ -70,57 +70,57 @@ int32_t blVector2i::distance(const blVector2i& other) const noexcept
 // blVector2f
 //===========================
 
-blVector2f::blVector2f(float x, float y) noexcept
+blVector2f::blVector2f(float x, float y)
     : x(x), y(y)
 {
 }
 
-blVector2f::blVector2f(float xy) noexcept
+blVector2f::blVector2f(float xy)
     : x(xy), y(xy)
 {
 }
 
-blVector2f& blVector2f::operator=(const blVector2f& rhs) noexcept
+blVector2f& blVector2f::operator=(const blVector2f& rhs)
 {
     x = rhs.x;
     y = rhs.y;
     return *this;
 }
 
-blVector2f& blVector2f::operator+(const blVector2f& rhs) noexcept
+blVector2f& blVector2f::operator+(const blVector2f& rhs)
 {
     x += rhs.x;
     y += rhs.y;
     return *this;
 }
 
-blVector2f& blVector2f::operator-(const blVector2f& rhs) noexcept
+blVector2f& blVector2f::operator-(const blVector2f& rhs)
 {
     x -= rhs.x;
     y -= rhs.y;
     return *this;
 }
 
-blVector2f& blVector2f::operator*(const blVector2f& rhs) noexcept
+blVector2f& blVector2f::operator*(const blVector2f& rhs)
 {
     x *= rhs.x;
     y *= rhs.y;
     return *this;
 }
 
-blVector2f& blVector2f::operator/(const blVector2f& rhs) noexcept
+blVector2f& blVector2f::operator/(const blVector2f& rhs)
 {
     x /= rhs.x;
     y /= rhs.y;
     return *this;
 }
 
-float blVector2f::magnitude() const noexcept
+float blVector2f::magnitude()
 {
     return std::sqrt(x*x + y*y);
 }
 
-float blVector2f::distance(const blVector2f& other) const noexcept
+float blVector2f::distance(const blVector2f& other)
 {
     const float xm = (other.x - x);
     const float ym = (other.y - y);
@@ -146,7 +146,7 @@ blExtent2D::blExtent2D(VkExtent2D extent)
 {
 }
 
-blExtent2D::operator VkExtent2D() const noexcept
+blExtent2D::operator VkExtent2D()
 {
     return VkExtent2D(width, height);
 }

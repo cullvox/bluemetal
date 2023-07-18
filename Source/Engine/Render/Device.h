@@ -26,12 +26,11 @@ public:
 private:
     std::vector<const char*> getValidationLayers();
     std::vector<const char*> getExtensions();
-    void createDevice();
+    void createDevice(std::shared_ptr<blWindow> window);
     void createCommandPool();
     void createAllocator();
 
     std::shared_ptr<blInstance> _instance;
-    std::shared_ptr<blWindow>   _window;
     uint32_t                    _graphicsFamilyIndex, _presentFamilyIndex;
     VkDevice                    _device;
     VkQueue                     _graphicsQueue, _presentQueue;

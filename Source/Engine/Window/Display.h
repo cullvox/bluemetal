@@ -2,12 +2,13 @@
 
 #include "Export.h"
 #include "Precompiled.h"
-#include "Math/Vector2.h"
 #include "VideoMode.h"
 
-class BLUEMETAL_API blDisplay 
+class BLUEMETAL_API blDisplay
 {
 public:
+    blDisplay(int display);
+
     static std::vector<blDisplay> getDisplays() noexcept;
 
     uint32_t getIndex() const noexcept;
@@ -17,9 +18,6 @@ public:
     blVideoMode getDesktopMode() const noexcept;
 
 private:
-    blDisplay() = default;
-    blDisplay(uint32_t index, const std::string& name, const std::vector<blVideoMode>& videoMode, blRect2D rect, blVideoMode desktopMode);
-
     uint32_t                    _index;
     std::string                 _name;
     std::vector<blVideoMode>    _videoModes;

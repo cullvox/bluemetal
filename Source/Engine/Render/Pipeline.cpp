@@ -1,10 +1,8 @@
-#include "Core/Log.hpp"
-#include "Render/Pipeline.hpp"
+#include "Pipeline.h"
+#include "Core/Log.h"
 
-#include <spirv_reflect.h>
-
-blPipeline::blPipeline(blRenderDevice& renderDevice, const std::vector<std::shared_ptr<blShader>>& shaders, blRenderPass& renderPass, uint32_t subpass)
-    : _renderDevice(renderDevice)
+blPipeline::blPipeline(std::shared_ptr<blDevice> device, const std::vector<std::shared_ptr<blShader>>& shaders, std::shared_ptr<blRenderPass> renderPass, uint32_t subpass)
+    : _device(device)
     , _renderPass(renderPass)
     , _subpass(subpass)
 {
@@ -17,21 +15,21 @@ blPipeline::~blPipeline() noexcept
 {
 }
 
-vk::PipelineLayout blPipeline::getPipelineLayout() const noexcept
+VkPipelineLayout blPipeline::getPipelineLayout() const noexcept
 {
-    return _pipelineLayout.get();
+    return _pipelineLayout;
 }
 
-vk::Pipeline blPipeline::getPipeline() const noexcept
+VkPipeline blPipeline::getPipeline() const noexcept
 {
-    return _pipeline.get();
+    return _pipeline;
 }
 
 void blPipeline::createDescriptorSetLayouts(const std::vector<std::shared_ptr<blShader>>& shaders)
 {
 
     // create a combined descriptor set layout data
-    std::map<int, vk::DescriptorSetLayoutCreateInfo> layouts; 
+    std::map<int, VkDescriptorSetLayoutCreateInfo> layouts; 
     
     for (const auto& shader : shaders)
     {

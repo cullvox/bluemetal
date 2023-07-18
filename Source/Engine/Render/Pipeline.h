@@ -50,7 +50,7 @@ private:
     void createLayout();
     void createPipeline(const std::vector<std::shared_ptr<blShader>>& shaders);
 
-    std::shared_ptr<blDevice>           _renderDevice;
+    std::shared_ptr<blDevice>           _device;
     std::shared_ptr<blRenderPass>       _renderPass;
     uint32_t                            _subpass;
     std::vector<VkDescriptorSetLayout>  _setLayouts;

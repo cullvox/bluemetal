@@ -12,7 +12,6 @@ public:
     
     template<typename TVertex>
     void setVertices(const std::vector<TVertex>& vertices);
-
     void setIndices(const std::vector<uint32_t>& indices);
 
 private:

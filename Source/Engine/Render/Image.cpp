@@ -75,7 +75,7 @@ blImage::blImage(std::shared_ptr<blDevice> device, VkImageType type, VkFormat fo
         subresourceRange,                           // subresourceRange
     };
 
-    if (vkCreateImageView(_device->getDevice(), &viewCreateInfo, nullptr, _imageView) != VK_SUCCESS)
+    if (vkCreateImageView(_device->getDevice(), &viewCreateInfo, nullptr, &_imageView) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan image view!");
     }

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-
 #include "Export.h"
 #include "Precompiled.h"
 
@@ -56,7 +54,7 @@ public:
     blExtent3D(uint32_t widthHeightDepth);
     blExtent3D(VkExtent3D extent);
 
-    explicit operator VkExtent3D() const noexcept;
+    explicit operator VkExtent3D();
 
     uint32_t width;
     uint32_t height;
