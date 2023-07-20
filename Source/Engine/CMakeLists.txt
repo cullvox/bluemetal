@@ -6,6 +6,9 @@ list(APPEND Sources
   "Math/Vector3.cpp"
   "Math/Vector4.cpp"
 
+  # Noodle
+  
+
   # Window
   "Window/Window.cpp"
   "Window/Display.cpp"
@@ -16,6 +19,9 @@ list(APPEND Sources
   "Render/Buffer.cpp"
   "Render/Image.cpp"
   "Render/Shader.cpp"
+  "Render/DescriptorLayoutCache.cpp"
+  "Render/DescriptorAllocator.cpp"
+  "Render/PipelineLayoutCache.cpp"
   "Render/Pipeline.cpp"
   "Render/Swapchain.cpp"
   "Render/Renderer.cpp"

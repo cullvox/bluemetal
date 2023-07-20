@@ -22,7 +22,7 @@ private:
     void destroySyncObjects() noexcept;
 
     std::shared_ptr<blDevice>                           _device;
-    std::shared_ptr<blSwapchain> _                      _swapchain;
+    std::shared_ptr<blSwapchain>                        _swapchain;
     const std::vector<std::shared_ptr<blRenderPass>>    _passes;  
     uint32_t                                            _currentFrame;
     std::vector<VkCommandBuffer>                        _swapCommandBuffers;

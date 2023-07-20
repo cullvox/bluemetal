@@ -1,14 +1,13 @@
-#include "Core/Log.hpp"
-#include "Render/FrameCounter.hpp"
-#include <cstdint>
+#include "FrameCounter.h"
+#include "Core/Log.h"
 
-void blFrameCounter::beginFrame() noexcept
+void blFrameCounter::beginFrame()
 {
     _startOfFrame = std::chrono::high_resolution_clock::now();
     _frameCount++;
 }
 
-bool blFrameCounter::endFrame() noexcept
+bool blFrameCounter::endFrame()
 {
     bool endedSecond{};
 
@@ -52,13 +51,13 @@ bool blFrameCounter::endFrame() noexcept
     return endedSecond;
 }
 
-int blFrameCounter::getFramesPerSecond() const noexcept
+int blFrameCounter::getFramesPerSecond()
 {
     if (_framesPerSecond.size() < 1) return 0;
     return _framesPerSecond.back();
 }
 
-float blFrameCounter::getAverageFramesPerSecond(uint32_t seconds) const noexcept
+float blFrameCounter::getAverageFramesPerSecond(uint32_t seconds)
 {
 
     // Make sure we are getting a proper second count.
@@ -84,7 +83,7 @@ float blFrameCounter::getAverageFramesPerSecond(uint32_t seconds) const noexcept
     return averageFPS;
 }
 
-float blFrameCounter::getMillisecondsPerFrame() const noexcept
+float blFrameCounter::getMillisecondsPerFrame()
 {
     if (_millisecondsPerFrame.size() < 1) return 0.0f;
     const auto msPerFrame = _millisecondsPerFrame.back();
@@ -94,7 +93,7 @@ float blFrameCounter::getMillisecondsPerFrame() const noexcept
         std::chrono::duration<float, std::nano>>(msPerFrame).count() / 1000000.0f;
 }
 
-float blFrameCounter::getAverageMillisecondsPerFrame(uint32_t frames) const noexcept
+float blFrameCounter::getAverageMillisecondsPerFrame(uint32_t frames)
 {
     
     // Make sure we are getting a proper second count

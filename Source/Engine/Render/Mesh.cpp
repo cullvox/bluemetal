@@ -1,14 +1,23 @@
-#include "Render/Mesh.hpp"
+#include "Render/Mesh.h"
 
-blMesh::blMesh(std::shared_ptr<blRenderDevice> renderDevice, const std::vector<blVertex>& vertices, const std::vector<uint32_t>& indices)
-{   
-
-    // Create the vertex and index buffers
-    size_t vbSize = sizeof(blVertex) * vertices.size();
+void blMesh::setIndices(const std::vector<uint32_t>& indices)
+{
+     // create the staging buffer
     size_t ibSize = sizeof(uint32_t) * indices.size();
+    
+    VmaAllocationInfo allocInfo = {};
+    blBuffer stagingBuffer(_device, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, ibSize, &allocInfo, true);
 
-    _vertexBuffer = std::make_shared<blBuffer>(_renderDevice, vk::BufferUsageFlagBits::eVertexBuffer, vbSize, vertices.data());
-    _indexBuffer = std::make_shared<blBuffer>(_renderDevice, vk::BufferUsageFlagBits::eIndexBuffer, ibSize, indices.data());
+    // copy the indices to the mapped ptr visible to host
+    memcpy(allocInfo.pMappedData, indices.data(), ibSize);
 
+    // copy staging buffer to a buffer on device
+    _indexBuffer = std::make_unique<blBuffer>(_device, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, ibSize);
 
+    _device->immediateSubmit(
+        [&](VkCommandBuffer cmd)
+        {
+            VkBufferCopy region = { 0, 0, ibSize };
+            vkCmdCopyBuffer(cmd, stagingBuffer.getBuffer(), _vertexBuffer->getBuffer(), 1, &region);
+        });
 }

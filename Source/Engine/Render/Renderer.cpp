@@ -1,10 +1,8 @@
-#include "Core/Log.hpp"
-#include "Core/Macros.hpp"
-#include "Render/Renderer.hpp"
-#include <vulkan/vulkan_structs.hpp>
+#include "Renderer.h"
+#include "Core/Log.h"
 
-blRenderer::blRenderer(std::shared_ptr<blRenderDevice> renderDevice, std::shared_ptr<blSwapchain> swapchain, std::vector<std::shared_ptr<blRenderPass>>& passes)
-    : _renderDevice(renderDevice)
+blRenderer::blRenderer(std::shared_ptr<blDevice> device, std::shared_ptr<blSwapchain> swapchain, std::vector<std::shared_ptr<blRenderPass>>& passes)
+    : _device(device)
     , _swapchain(swapchain)
     , _passes(passes)
     , _currentFrame(0)
@@ -20,15 +18,22 @@ blRenderer::~blRenderer()
 void blRenderer::createSyncObjects()
 {
 
-    // Allocate the per frame - swapping command buffers. 
-    const vk::CommandBufferAllocateInfo allocationInfo
+    // allocate the per frame swapping command buffers. 
+    _swapCommandBuffers.resize(MAX_FRAMES_IN_FLIGHT);
+
+    const VkCommandBufferAllocateInfo allocateInfo
     {
-        _renderDevice->getCommandPool(),    // commandPool 
-        vk::CommandBufferLevel::ePrimary,   // level
-        MAX_FRAMES_IN_FLIGHT                // commandBufferCount
+        VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, // sType
+        nullptr,                                        // pNext
+        _device->getCommandPool(),                      // commandPool
+        VK_COMMAND_BUFFER_LEVEL_PRIMARY,                // level
+        MAX_FRAMES_IN_FLIGHT                            // commandBufferCount
     };
 
-    _swapCommandBuffers = _renderDevice->getDevice().allocateCommandBuffers(allocationInfo);
+    if (vkAllocateCommandBuffers(_device->getDevice(), &allocateInfo, _swapCommandBuffers) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not allocate Vulkan command buffers for the renderer!");
+    }
 
 
     // Create the semaphores and fences

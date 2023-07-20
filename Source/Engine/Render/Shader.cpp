@@ -78,12 +78,12 @@ void blShader::reflect(const std::vector<uint32_t>& spirv)
     _stage = (VkShaderStageFlagBits)reflection.shader_stage;
 
     findVertexState(&reflection);
-    findDescriptorReflections(&reflection);
+    findDescriptorSetReflections(&reflection);
 
     spvReflectDestroyShaderModule(&reflection);
 }
 
-void blShader::findVertexState(const SpvReflectShaderModule* reflection)
+void blShader::findVertexState(const SpvReflectShaderModule& reflection)
 {
     if (_stage != VK_SHADER_STAGE_VERTEX_BIT) return;
 
@@ -93,9 +93,9 @@ void blShader::findVertexState(const SpvReflectShaderModule* reflection)
     _vertexBinding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
     // get the vertex inputs
-    for (uint32_t i = 0; i < reflection->input_variable_count; i++)
+    for (uint32_t i = 0; i < reflection.input_variable_count; i++)
     {
-        const SpvReflectInterfaceVariable* variable = reflection->input_variables[i];
+        const SpvReflectInterfaceVariable* variable = reflection.input_variables[i];
         
         // skip built in variables
         if (variable->decoration_flags & SPV_REFLECT_DECORATION_BUILT_IN)
@@ -128,7 +128,7 @@ void blShader::findVertexState(const SpvReflectShaderModule* reflection)
         });
 }
 
-void blShader::findDescriptorSetReflections(const SpvReflectShaderModule* reflection)
+void blShader::findDescriptorSetLayoutInfo(const SpvReflectShaderModule& reflection)
 {
     size_t descriptorSetCount = reflection->descriptor_set_count;
 
@@ -138,28 +138,28 @@ void blShader::findDescriptorSetReflections(const SpvReflectShaderModule* reflec
     for (size_t i = 0; i < descriptorSetCount; i++)
     {
         // get the descriptor set 
-        const SpvReflectDescriptorSet* descriptor = &reflection->descriptor_sets[i];
+        const SpvReflectDescriptorSet* descriptor = &reflection.descriptor_sets[i];
 
         // populate the list of bindings
         std::vector<VkDescriptorSetLayoutBinding> bindings(descriptor->binding_count);
         
         for (size_t j = 0; j < bindings.size(); j++)
         {
-            const SpvReflectDescriptorBinding* binding = descriptor->bindings[j];
+            const SpvReflectDescriptorBinding* spvBinding = descriptor->bindings[j];
             
             // determine the count of multidimensional arrays 
             uint32_t count = 0;
-            for (uint32_t k = 0; k < binding->array.dims_count; k++)
+            for (uint32_t k = 0; k < spvBinding->array.dims_count; k++)
             {
-                count *= binding->array.dims[k];
+                count *= spvBinding->array.dims[k];
             }
             
             // create the reflected info
-            blShaderReflectDescriptorBinding refl
+            VkDescriptorSetLayoutBinding binding
             {
-                binding->binding,                           // binding
-                (VkDescriptorType)binding->descriptor_type  // type
-                count,                                      // descriptorCount
+                spvBinding->binding,                            // binding
+                (VkDescriptorType)spvBinding->descriptor_type   // descriptorType
+                count,                                          // descriptorCount
                 
             }
 
@@ -167,4 +167,43 @@ void blShader::findDescriptorSetReflections(const SpvReflectShaderModule* reflec
             bindings.push_back(layoutBinding);
         }
     }
+}
+
+bool blDescriptorLayoutInfo::operator==(const blDescriptorLayoutInfo& other) const
+{
+    if (other.bindings.size() != bindings.size())
+    {
+        return false;
+    }
+    else
+    {
+        for (uint32_t i = 0; i < bindings.size(); i++)
+        {
+            if (other.bindings[i].binding != bindings[i].binding) return false;
+            if (other.bindings[i].descriptorType != bindings[i].descriptorType) return false;
+            if (other.bindings[i].descriptorCount != bindings[i].descriptorCount) return false;
+            if (other.bindings[i].stageFlags != bindings[i].stageFlags) return false;
+        }
+    }
+
+    return true;
+}
+
+size_t blDescriptorLayoutInfo::hash() const
+{
+    using std::size_t;
+    using std::hash;
+
+    size_t result = hash<size_t>()(bindings.size());
+
+    for (const VkDescriptorSetLayoutBinding& b : bindings)
+    {
+        // pack binding into a uint64
+        size_t bindingHash = b.binding | b.descriptorType << 8 | b.descriptorCount << 16 | b.stageFlags << 24;
+
+        // shuffle data and xor with the main hash
+        result ^= hash<size_t>()(bindingHash);
+    }
+
+    return result;
 }

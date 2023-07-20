@@ -1,18 +1,13 @@
-#include "Render/Renderer/PresentRenderPass.hpp"
-#include <vulkan/vulkan_structs.hpp>
+#include "PresentRenderPass.h"
 
-blPresentRenderPass::blPresentRenderPass(
-		std::shared_ptr<blRenderDevice> renderDevice,
-        std::shared_ptr<blSwapchain> swapchain,
-		const blRenderPassFunction& func)
+blPresentRenderPass::blPresentRenderPass(std::shared_ptr<blDevice> device, std::shared_ptr<blSwapchain> swapchain, const blRenderPassFunction& func)
     : _renderDevice(renderDevice)
     , _swapchain(swapchain)
     , _func(func)
 {
 
-    const std::array attachments =
+    const std::array<VkAttachmentDescription, 1> attachments =
     {
-        vk::AttachmentDescription
         { // Present Attachment
             {},                              // flags
             _swapchain->getFormat(),         // format

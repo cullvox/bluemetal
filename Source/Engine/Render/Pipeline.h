@@ -2,60 +2,31 @@
 
 #include "Device.h"
 #include "Shader.h"
+#include "DescriptorLayoutCache.h"
+#include "PipelineLayoutCache.h"
 #include "RenderPass.h"
-
-enum class blUniformType
-{
-    eUniformBuffer,
-    eSampler,
-    eSamplerArray,
-};
-
-enum class blUniformMemberType
-{
-    eScalar,
-    eVector, // glsl all vectors are internally vec4
-    eMatrix3,
-    eMatrix4,
-};
-
-struct blUniformMemberReflection
-{
-    size_t              size;
-    blUniformMemberType type;
-    std::string         name;
-};
-
-struct blUniformReflection
-{
-    size_t                                  size;
-    blUniformType                           type;
-    std::string                             name;
-    std::vector<blUniformMemberReflection>  members;
-};
 
 class BLUEMETAL_API blPipeline
 {
 public:
-    explicit blPipeline(std::shared_ptr<blDevice> device, const std::vector<std::shared_ptr<blShader>>& shaders, std::shared_ptr<blRenderPass> renderPass, uint32_t subpass = 0);
+    explicit blPipeline(std::shared_ptr<blDevice> device, std::shared_ptr<blPipelineLayoutCache> pipelineLayoutCache, std::shared_ptr<blDescriptorLayoutCache> descriptorLayoutCache, const std::vector<std::shared_ptr<blShader>>& shaders, std::shared_ptr<blRenderPass> renderPass, uint32_t subpass = 0);
     ~blPipeline() noexcept;
 
     VkPipelineLayout getPipelineLayout();
     VkPipeline getPipeline();
     std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts();
-    std::vector<blUniformReflection> getUniformReflection(); // materials will create buffers to specifications
 
 private:
     void createDescriptorSetLayouts(const std::vector<std::shared_ptr<blShader>>& shaders);
     void createLayout();
     void createPipeline(const std::vector<std::shared_ptr<blShader>>& shaders);
 
-    std::shared_ptr<blDevice>           _device;
-    std::shared_ptr<blRenderPass>       _renderPass;
-    uint32_t                            _subpass;
-    std::vector<VkDescriptorSetLayout>  _setLayouts;
-    VkPipelineLayout                    _pipelineLayout;
-    VkPipeline                          _pipeline;
+    std::shared_ptr<blDevice>                   _device;
+    std::shared_ptr<blRenderPass>               _renderPass;
+    uint32_t                                    _subpass;
+    std::vector<VkDescriptorSetLayout>          _setLayouts;
+    VkPipelineLayout                            _pipelineLayout;
+    VkPipeline                                  _pipeline;
 };
 
 

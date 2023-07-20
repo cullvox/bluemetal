@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vk_enum_string_helper.h>
 
 #include "Render/vk_mem_alloc.h"
 #include "spirv_reflect.h"
@@ -29,3 +30,7 @@
 #include <optional>
 #include <queue>
 #include <list>
+#include <variant>
+#include <map>
+#include <filesystem>
+#include <span>

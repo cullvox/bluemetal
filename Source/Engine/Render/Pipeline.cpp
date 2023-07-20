@@ -1,8 +1,9 @@
 #include "Pipeline.h"
 #include "Core/Log.h"
 
-blPipeline::blPipeline(std::shared_ptr<blDevice> device, const std::vector<std::shared_ptr<blShader>>& shaders, std::shared_ptr<blRenderPass> renderPass, uint32_t subpass)
+blPipeline::blPipeline(std::shared_ptr<blDevice> device, std::shared_ptr<blDescriptorLayoutCache> cache, const std::vector<std::shared_ptr<blShader>>& shaders, std::shared_ptr<blRenderPass> renderPass, uint32_t subpass)
     : _device(device)
+    , _cache(cache)
     , _renderPass(renderPass)
     , _subpass(subpass)
 {
@@ -11,47 +12,41 @@ blPipeline::blPipeline(std::shared_ptr<blDevice> device, const std::vector<std::
     createPipeline(shaders);
 }
 
-blPipeline::~blPipeline() noexcept
+blPipeline::~blPipeline()
 {
 }
 
-VkPipelineLayout blPipeline::getPipelineLayout() const noexcept
+VkPipelineLayout blPipeline::getPipelineLayout()
 {
     return _pipelineLayout;
 }
 
-VkPipeline blPipeline::getPipeline() const noexcept
+VkPipeline blPipeline::getPipeline()
 {
     return _pipeline;
 }
 
-void blPipeline::createDescriptorSetLayouts(const std::vector<std::shared_ptr<blShader>>& shaders)
+void blPipeline::createDescriptorSetLayouts(std::shared_ptr<blDescriptorLayoutCache> layoutCache, const std::vector<std::shared_ptr<blShader>>& shaders)
 {
 
-    // create a combined descriptor set layout data
-    std::map<int, VkDescriptorSetLayoutCreateInfo> layouts; 
-    
-    for (const auto& shader : shaders)
+
+    // create or find a descriptor layout in cache
+    auto createLayout = [&](std::shared_ptr<blShader> shader)
     {
-        const auto& descriptors = shader->getDescriptorReflections();
 
-        for (const auto& descriptor : descriptors)
+        shader->
+
+        VkDescriptorSetLayoutCreateInfo createInfo =
         {
+            VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,    // sType
+            nullptr,                                                // pNext
+            0,                                                      // flags
             
-            // Check if this descriptor set number has already been used
-            if (layouts.contains(descriptor.set))
-            {
-
-                // A copy of the descriptor must be at that location, or somethings wrong!
-                if (layouts[descriptor.set] != descriptor.info)
-                {
-                    throw std::runtime_error("Descriptor used same set location, but different data!");
-                }
-            }
-
-            // Add the descriptor because it hasn't been used before
-            layouts[descriptor.set] = descriptor.info;
+            
         }
+
+        layoutCache->createDescriptorLayout()
+
     }
 
     // Create the descriptor set layouts
@@ -63,18 +58,22 @@ void blPipeline::createDescriptorSetLayouts(const std::vector<std::shared_ptr<bl
 
 void blPipeline::createLayout()
 {
-    // use transform to get not unique versions
-    std::vector<vk::DescriptorSetLayout> setLayouts{};
-
-    std::transform(_setLayouts.begin(), _setLayouts.end(), setLayouts.begin(), [](vk::UniqueDescriptorSetLayout& unique) { return unique.get(); });
-
-    const vk::PipelineLayoutCreateInfo layoutInfo
+    const VkPipelineLayoutCreateInfo createInfo
     {
-        {},
-        setLayouts
+        VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,  // sType
+        nullptr,                                        // pNext
+        0,                                              // flags
+        (uint32_t)_setLayouts.size(),                   // setLayoutCount
+        _setLayouts.data(),                             // pSetLayouts
+        0,                                              // pushConstantRangeCount
+        nullptr                                         // pPushConstantRanges
     };
 
-    _pipelineLayout = _renderDevice.getDevice().createPipelineLayoutUnique(layoutInfo);
+    if (vkCreatePipelineLayout(_device->getDevice(), &createInfo, nullptr, &_pipelineLayout) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not create the Vulkan pipeline layout!");
+    }
+
 }
 
 void blPipeline::createPipeline(const std::vector<std::shared_ptr<blShader>>& shaders)

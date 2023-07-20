@@ -5,7 +5,7 @@
 class BLUEMETAL_API blBuffer
 {
 public:
-    blBuffer(std::shared_ptr<blDevice> renderDevice, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* pInfo = nullptr, bool mapped = false);
+    explicit blBuffer(std::shared_ptr<blDevice> device, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* pInfo = nullptr, bool mapped = false);
     ~blBuffer();
 
     VkDeviceSize getSize();

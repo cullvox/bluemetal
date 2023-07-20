@@ -2,21 +2,17 @@
 
 #include "Device.h"
 
-struct blShaderReflectDescriptorBinding
+struct blDescriptorLayoutInfo
 {
-    uint32_t            binding;
-    VkDescriptorType    type;
-    uint32_t            descriptorCount;
-    const VkSampler*    pImmutableSamplers;
-    std::string         name;
+    std::string                                 name;
+    uint32_t                                    set;
+    std::vector<VkDescriptorSetLayoutBinding>   bindings;
+
+    bool operator==(const blDescriptorLayoutInfo& other) const;
+
+    size_t hash() const;
 };
 
-struct blShaderReflectDescriptorSet
-{
-    uint32_t set;
-    std::string name;
-    std::vector<blShaderReflectDescriptorBinding> bindings;
-}
 
 class BLUEMETAL_API blShader
 {
@@ -29,18 +25,18 @@ public:
     VkVertexInputBindingDescription getVertexBinding();
     std::vector<VkVertexInputAttributeDescription> getVertexAttributes();
     void applyDescriptor(std::vector<VkDescriptorSetLayoutBinding>& bindings);
-    std::vector<blShaderReflectDescriptorSet> getDescriptorSetReflections();
+    std::vector<blDescriptorLayoutInfo> getDescriptorSetReflections();
 
 private:
     void createShaderModule(const std::vector<uint32_t>& spirv);
     void reflect(const std::vector<uint32_t>& spirv);
-    void findVertexState(const SpvReflectShaderModule* module);
-    void findDescriptorSetReflections(const SpvReflectShaderModule* module);
+    void findVertexState(const SpvReflectShaderModule& module);
+    void findDescriptorSetLayoutInfo(const SpvReflectShaderModule& module);
 
     std::shared_ptr<blDevice>                       _device;
     VkShaderModule                                  _module;
     VkShaderStageFlagBits                           _stage;
     VkVertexInputBindingDescription                 _vertexBinding;
     std::vector<VkVertexInputAttributeDescription>  _vertexAttributes;
-    std::vector<blShaderReflectDescriptorSet>       _descriptorSetReflections;
+    std::vector<blDescriptorLayoutInfo>             _descriptorSetReflections;
 };

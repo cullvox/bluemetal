@@ -11,7 +11,7 @@ public:
     static const VkColorSpaceKHR DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; 
     static const VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR; 
 
-    explicit blSwapchain(std::shared_ptr<blDevice> device, VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR);
+    explicit blSwapchain(std::shared_ptr<blDevice> device, std::shared_ptr<blWindow> window, VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR);
 
     std::vector<VkPresentModeKHR> getPresentModes();
     void recreate(VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR);
@@ -21,10 +21,10 @@ public:
     std::vector<VkImage> getImages();
     std::vector<VkImageView> getImageViews();
     std::vector<VkFramebuffer> getFramebuffers();
-    VkSwapchainKHR getSwapchain() noexcept;
+    VkSwapchainKHR getSwapchain();
     void acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& recreated);
-    bool isMailboxSupported() const noexcept { return _isMailboxSupported; }
-    bool isImmediateSupported() const noexcept { return _isImmediateSupported; }
+    bool isMailboxSupported() { return _isMailboxSupported; }
+    bool isImmediateSupported() { return _isImmediateSupported; }
 
 private:  
     void ensureSurfaceSupported();
@@ -37,6 +37,7 @@ private:
     void destroyImageViews();
     
     std::shared_ptr<blDevice>   _device;
+    std::shared_ptr<blWindow>   _window;
     uint32_t                    _imageCount;
     VkSurfaceFormatKHR          _surfaceFormat;
     VkPresentModeKHR            _presentMode;

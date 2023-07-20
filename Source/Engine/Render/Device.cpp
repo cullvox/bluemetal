@@ -48,6 +48,16 @@ uint32_t blDevice::getPresentFamilyIndex()
     return _presentFamilyIndex;
 }
 
+VkInstance blDevice::getInstance()
+{
+    return _instance->getInstance();
+}
+
+VkPhysicalDevice blDevice::getPhysicalDevice()
+{
+    return _instance->getPhysicalDevice();
+}
+
 VkDevice blDevice::getDevice()
 {
     return _device;

@@ -9,7 +9,9 @@ public:
     explicit blDevice(std::shared_ptr<blInstance> instance, std::shared_ptr<blWindow> temporaryWindow);
     ~blDevice();
 
+    VkInstance getInstance();
     VkDevice getDevice();
+    VkPhysicalDevice getPhysicalDevice();
     uint32_t getGraphicsFamilyIndex();
     uint32_t getPresentFamilyIndex();
     VkQueue getGraphicsQueue();
