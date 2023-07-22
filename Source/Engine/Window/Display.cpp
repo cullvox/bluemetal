@@ -1,18 +1,21 @@
 #include "Display.h"
 #include "Core/Log.h"
 
-blDisplay::blDisplay(int display)
+namespace bl
+{
+
+Display::Display(int display)
 {
 
     // get the displays rect
     SDL_Rect sdlRect{};
     if (SDL_GetDisplayUsableBounds(display, &sdlRect) < 0)
     {
-        BL_LOG(blLogType::eError, "Could not get the desktop display mode for display #{}", display);
+        BL_LOG(LogType::eError, "Could not get the desktop display mode for display #{}", display);
     }
 
-    blRect2D rect(
-        {(int32_t)sdlRect.x, (int32_t)sdlRect.y}, 
+    Rect2D rect(
+        {(int32_t)sdlRect.x, (int32_t)sdlRect.y},
         {(uint32_t)sdlRect.w, (uint32_t)sdlRect.h}
     );
 
@@ -20,20 +23,20 @@ blDisplay::blDisplay(int display)
     int modeCount = SDL_GetNumDisplayModes(display);
     if (modeCount < 1)
     {
-        BL_LOG(blLogType::eError, "Could not get video modes for display #{}", display);
+        BL_LOG(LogType::eError, "Could not get video modes for display #{}", display);
     }
 
     // desktop mode
-    const blVideoMode desktopMode(rect.extent, 0, 0);
+    const VideoMode desktopMode(rect.extent, 0, 0);
     
-    std::vector<blVideoMode> videoModes;
+    std::vector<VideoMode> videoModes;
     for (int j = 0; j < modeCount; j++)
     {
         // get the display mode
         SDL_DisplayMode sdlMode = {};
         if (SDL_GetDisplayMode(display, j, &sdlMode) < 0)
         {
-            BL_LOG(blLogType::eError, "Could not get a display mode #{} for display #{}!", j, display);
+            BL_LOG(LogType::eError, "Could not get a display mode #{} for display #{}!", j, display);
             continue; // skip adding this display mode because it's invalid
         }
 
@@ -41,42 +44,42 @@ blDisplay::blDisplay(int display)
         SDL_PixelFormat* pFormat = SDL_AllocFormat(sdlMode.format); 
 
         // add the display mode
-        videoModes.emplace_back(blExtent2D((uint32_t)sdlMode.w, (uint32_t)sdlMode.h), (uint8_t)pFormat->BitsPerPixel, (uint16_t)sdlMode.refresh_rate);
+        videoModes.emplace_back(Extent2D((uint32_t)sdlMode.w, (uint32_t)sdlMode.h), (uint8_t)pFormat->BitsPerPixel, (uint16_t)sdlMode.refresh_rate);
 
         SDL_FreeFormat(pFormat);
     }
 }
 
-uint32_t blDisplay::getIndex() const noexcept
+uint32_t Display::getIndex() const noexcept
 {
     return _index;
 }
 
-const std::string& blDisplay::getName() const noexcept
+const std::string& Display::getName() const noexcept
 {
     return _name;
 }
 
-blRect2D blDisplay::getRect() const noexcept
+Rect2D Display::getRect() const noexcept
 {
     return _rect;
 }
 
-const std::vector<blVideoMode>& blDisplay::getVideoModes() const noexcept
+const std::vector<VideoMode>& Display::getVideoModes() const noexcept
 {
     return _videoModes;
 }
 
-blVideoMode blDisplay::getDesktopMode() const noexcept
+VideoMode Display::getDesktopMode() const noexcept
 {
     return _desktopMode;
 }
 
-std::vector<blDisplay> blDisplay::getDisplays() noexcept
+std::vector<Display> Display::getDisplays() noexcept
 {
     int displayCount = SDL_GetNumVideoDisplays();
 
-    std::vector<blDisplay> displays;
+    std::vector<Display> displays;
 
     for (int i = 0; i < displayCount; i++)
     {
@@ -85,3 +88,5 @@ std::vector<blDisplay> blDisplay::getDisplays() noexcept
 
     return displays;
 }
+
+} // namespace bl

@@ -3,7 +3,10 @@
 #include "Export.h"
 #include "Precompiled.h"
 
-class BLUEMETAL_API blFrameCounter
+namespace bl
+{
+
+class BLUEMETAL_API FrameCounter
 {
 public:
     void beginFrame();
@@ -25,3 +28,5 @@ private:
     std::list<uint32_t>                  _framesPerSecond;
     std::list<std::chrono::nanoseconds>  _millisecondsPerFrame;
 };
+
+} // namespace bl

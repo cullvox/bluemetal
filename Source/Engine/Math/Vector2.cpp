@@ -1,65 +1,68 @@
 #include "Vector2.h"
 
+namespace bl
+{
+
 //===========================
-// blVector2i
+// Vector2i
 //===========================
 
-blVector2i::blVector2i(int32_t x, int32_t y)
+Vector2i::Vector2i(int32_t x, int32_t y)
     : x(x), y(y)
 {
 }
 
-blVector2i::blVector2i(int32_t xy)
+Vector2i::Vector2i(int32_t xy)
     : x(xy), y(xy)
 {
 }
 
-blVector2i::blVector2i(const blVector2i& rhs)
+Vector2i::Vector2i(const Vector2i& rhs)
     : x(rhs.x), y(rhs.y)
 {
 }
 
-blVector2i& blVector2i::operator=(const blVector2i& rhs)
+Vector2i& Vector2i::operator=(const Vector2i& rhs)
 {
     x = rhs.x;
     y = rhs.y;
     return *this;
 }
 
-blVector2i& blVector2i::operator+(const blVector2i& rhs)
+Vector2i& Vector2i::operator+(const Vector2i& rhs)
 {
     x += rhs.x;
     y += rhs.y;
     return *this;
 }
 
-blVector2i& blVector2i::operator-(const blVector2i& rhs)
+Vector2i& Vector2i::operator-(const Vector2i& rhs)
 {
     x -= rhs.x;
     y -= rhs.y;
     return *this;
 }
 
-blVector2i& blVector2i::operator*(const blVector2i& rhs)
+Vector2i& Vector2i::operator*(const Vector2i& rhs)
 {
     x *= rhs.x;
     y *= rhs.y;
     return *this;
 }
 
-blVector2i& blVector2i::operator/(const blVector2i& rhs)
+Vector2i& Vector2i::operator/(const Vector2i& rhs)
 {
     x /= rhs.x;
     y /= rhs.y;
     return *this;
 }
 
-int32_t blVector2i::magnitude()
+int32_t Vector2i::magnitude()
 {
     return (int32_t)std::sqrt(x*x + y*y);
 }
 
-int32_t blVector2i::distance(const blVector2i& other)
+int32_t Vector2i::distance(const Vector2i& other)
 {
     const int32_t xm = (other.x - x);
     const int32_t ym = (other.y - y);
@@ -67,60 +70,60 @@ int32_t blVector2i::distance(const blVector2i& other)
 }
 
 //===========================
-// blVector2f
+// Vector2f
 //===========================
 
-blVector2f::blVector2f(float x, float y)
+Vector2f::Vector2f(float x, float y)
     : x(x), y(y)
 {
 }
 
-blVector2f::blVector2f(float xy)
+Vector2f::Vector2f(float xy)
     : x(xy), y(xy)
 {
 }
 
-blVector2f& blVector2f::operator=(const blVector2f& rhs)
+Vector2f& Vector2f::operator=(const Vector2f& rhs)
 {
     x = rhs.x;
     y = rhs.y;
     return *this;
 }
 
-blVector2f& blVector2f::operator+(const blVector2f& rhs)
+Vector2f& Vector2f::operator+(const Vector2f& rhs)
 {
     x += rhs.x;
     y += rhs.y;
     return *this;
 }
 
-blVector2f& blVector2f::operator-(const blVector2f& rhs)
+Vector2f& Vector2f::operator-(const Vector2f& rhs)
 {
     x -= rhs.x;
     y -= rhs.y;
     return *this;
 }
 
-blVector2f& blVector2f::operator*(const blVector2f& rhs)
+Vector2f& Vector2f::operator*(const Vector2f& rhs)
 {
     x *= rhs.x;
     y *= rhs.y;
     return *this;
 }
 
-blVector2f& blVector2f::operator/(const blVector2f& rhs)
+Vector2f& Vector2f::operator/(const Vector2f& rhs)
 {
     x /= rhs.x;
     y /= rhs.y;
     return *this;
 }
 
-float blVector2f::magnitude()
+float Vector2f::magnitude()
 {
     return std::sqrt(x*x + y*y);
 }
 
-float blVector2f::distance(const blVector2f& other)
+float Vector2f::distance(const Vector2f& other)
 {
     const float xm = (other.x - x);
     const float ym = (other.y - y);
@@ -128,40 +131,41 @@ float blVector2f::distance(const blVector2f& other)
 }
 
 //===========================
-// blExtent2D
+// Extent2D
 //===========================
 
-blExtent2D::blExtent2D(uint32_t width, uint32_t height)
+Extent2D::Extent2D(uint32_t width, uint32_t height)
     : width(width), height(height)
 {
 }
 
-blExtent2D::blExtent2D(uint32_t widthHeight)
+Extent2D::Extent2D(uint32_t widthHeight)
     : width(widthHeight), height(widthHeight)
 {
 }
 
-blExtent2D::blExtent2D(VkExtent2D extent)
+Extent2D::Extent2D(VkExtent2D extent)
     : width(extent.width), height(extent.height)
 {
 }
 
-blExtent2D::operator VkExtent2D()
+Extent2D::operator VkExtent2D()
 {
     return VkExtent2D(width, height);
 }
 
 //===========================
-// blExtent2D
+// Extent2D
 //===========================
 
-blRect2D::blRect2D(blVector2i offset, blExtent2D extent)
+Rect2D::Rect2D(Vector2i offset, Extent2D extent)
     : offset(offset), extent(extent)
 {
 }
 
-blRect2D::blRect2D(int32_t offsetX, int32_t offsetY, uint32_t extentX, uint32_t extentY)
+Rect2D::Rect2D(int32_t offsetX, int32_t offsetY, uint32_t extentX, uint32_t extentY)
     : offset(offsetX, offsetY), extent(extentX, extentY) 
 {
 }
 
+} // namespace bl

@@ -1,6 +1,9 @@
 #include "Render/Mesh.h"
 
-void blMesh::setIndices(const std::vector<uint32_t>& indices)
+namespace bl
+{
+
+void Mesh::setIndices(const std::vector<uint32_t>& indices)
 {
      // create the staging buffer
     size_t ibSize = sizeof(uint32_t) * indices.size();
@@ -21,3 +24,5 @@ void blMesh::setIndices(const std::vector<uint32_t>& indices)
             vkCmdCopyBuffer(cmd, stagingBuffer.getBuffer(), _vertexBuffer->getBuffer(), 1, &region);
         });
 }
+
+} // namespace bl

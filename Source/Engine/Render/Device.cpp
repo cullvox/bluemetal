@@ -23,92 +23,94 @@
   #pragma warning(pop)
 #endif
 
-blDevice::blDevice(std::shared_ptr<blInstance> instance, std::shared_ptr<blWindow> window)
-    : _instance(instance)
+namespace bl
+{
+
+Device::Device(std::shared_ptr<Instance> instance, std::shared_ptr<Window> window)
+    : m_instance(instance)
 {
     createDevice(window);
     createCommandPool();
     createAllocator();
 }
 
-blDevice::~blDevice()
+Device::~Device()
 {
-    vmaDestroyAllocator(_allocator);
-    vkDestroyCommandPool(_device, _commandPool, nullptr);
-    vkDestroyDevice(_device, nullptr);
+    vmaDestroyAllocator(m_allocator);
+    vkDestroyCommandPool(m_device, m_commandPool, nullptr);
+    vkDestroyDevice(m_device, nullptr);
 }
 
-uint32_t blDevice::getGraphicsFamilyIndex()
+uint32_t Device::getGraphicsFamilyIndex()
 {
-    return _graphicsFamilyIndex;
+    return m_graphicsFamilyIndex;
 }
 
-uint32_t blDevice::getPresentFamilyIndex()
+uint32_t Device::getPresentFamilyIndex()
 {
-    return _presentFamilyIndex;
+    return m_presentFamilyIndex;
 }
 
-VkInstance blDevice::getInstance()
+VkInstance Device::getInstance()
 {
-    return _instance->getInstance();
+    return m_instance->getInstance();
 }
 
-VkPhysicalDevice blDevice::getPhysicalDevice()
+VkPhysicalDevice Device::getPhysicalDevice()
 {
-    return _instance->getPhysicalDevice();
+    return m_instance->getPhysicalDevice();
 }
 
-VkDevice blDevice::getDevice()
+VkDevice Device::getDevice()
 {
-    return _device;
+    return m_device;
 }
 
-VkQueue blDevice::getGraphicsQueue()
+VkQueue Device::getGraphicsQueue()
 {
-    return _graphicsQueue;
+    return m_graphicsQueue;
 }
 
-VkQueue blDevice::getPresentQueue()
+VkQueue Device::getPresentQueue()
 {
-    return _presentQueue;
+    return m_presentQueue;
 }
 
-VkCommandPool blDevice::getCommandPool()
+VkCommandPool Device::getCommandPool()
 {
-    return _commandPool;
+    return m_commandPool;
 }
 
-VmaAllocator blDevice::getAllocator()
+VmaAllocator Device::getAllocator()
 {
-    return _allocator;
+    return m_allocator;
 }
 
-bool blDevice::areQueuesSame()
+bool Device::areQueuesSame()
 {
-    return _graphicsFamilyIndex == _presentFamilyIndex;
+    return m_graphicsFamilyIndex == m_presentFamilyIndex;
 }
 
-void blDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder)
+void Device::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder)
 {
-    const VkCommandBufferAllocateInfo allocateInfo
+    VkCommandBufferAllocateInfo allocateInfo = {};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocateInfo.pNext = nullptr;
+    allocateInfo.commandPool = m_commandPool;
+    allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocateInfo.commandBufferCount = 1;
+
+    VkCommandBuffer cmd = VK_NULL_HANDLE;
+    if (vkAllocateCommandBuffers(m_device, &allocateInfo, &cmd) != VK_SUCCESS)
     {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO, // sType
-        nullptr,                                        // pNext
-        _commandPool,                                   // commandPool 
-        VK_COMMAND_BUFFER_LEVEL_PRIMARY,                // level
-        1                                               // commandBufferCount
-    };
+        throw std::runtime_error("Could not allocate a Vulkan command buffer!");
+    }
 
-    VkCommandBuffer cmd{};
-    vkAllocateCommandBuffers(_device, &allocateInfo, &cmd);
-
-    const VkCommandBufferBeginInfo beginInfo
-    {
-        VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,    // sType
-        nullptr,                                        // pNext
-        0,                                              // flags
-        nullptr                                         // pInheritanceInfo
-    };
+    VkCommandBufferBeginInfo beginInfo = {};
+    beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfo.pNext = nullptr;
+    beginInfo.flags = 0;
+    beginInfo.pInheritanceInfo = nullptr;
 
     if (vkBeginCommandBuffer(cmd, &beginInfo) != VK_SUCCESS)
     {
@@ -122,33 +124,31 @@ void blDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& recor
         throw std::runtime_error("Could not end a temporary command buffer!");
     }
 
-    const VkSubmitInfo submitInfo
-    {
-        VK_STRUCTURE_TYPE_SUBMIT_INFO,  // sType
-        nullptr,                        // pNext
-        0,                              // waitSemaphoreCount
-        nullptr,                        // pWaitSemaphores
-        nullptr,                        // pWaitDstStageMask
-        1,                              // commandBufferCount
-        &cmd,                           // pCommandBuffers
-        0,                              // signalSemaphoreCount
-        nullptr                         // pSignalSemaphores
-    };
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pNext = nullptr;
+    submitInfo.waitSemaphoreCount = 0;
+    submitInfo.pWaitSemaphores = nullptr;
+    submitInfo.pWaitDstStageMask = nullptr;
+    submitInfo.commandBufferCount = 1;
+    submitInfo.pCommandBuffers = &cmd;
+    submitInfo.signalSemaphoreCount = 0;
+    submitInfo.pSignalSemaphores = nullptr;
 
-    if (vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+    if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not submit a temporary command buffer!");
     }
 
-    vkQueueWaitIdle(_graphicsQueue);
+    vkQueueWaitIdle(m_graphicsQueue);
 }
 
-void blDevice::waitForDevice()
+void Device::waitForDevice()
 {
-    vkDeviceWaitIdle(_device);
+    vkDeviceWaitIdle(m_device);
 }
 
-std::vector<const char*> blDevice::getValidationLayers()
+std::vector<const char*> Device::getValidationLayers()
 {
     // disable validation layers on release
     if (BLUEMETAL_DEVELOPMENT) return {};
@@ -162,14 +162,14 @@ std::vector<const char*> blDevice::getValidationLayers()
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
 
-    if (vkEnumerateDeviceLayerProperties(_instance->getPhysicalDevice(), &propertiesCount, nullptr) != VK_SUCCESS)
+    if (vkEnumerateDeviceLayerProperties(m_instance->getPhysicalDevice(), &propertiesCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan device layer properties count!");
     }
 
     properties.resize(propertiesCount);
 
-    if (vkEnumerateDeviceLayerProperties(_instance->getPhysicalDevice(), &propertiesCount, properties.data()) != VK_SUCCESS)
+    if (vkEnumerateDeviceLayerProperties(m_instance->getPhysicalDevice(), &propertiesCount, properties.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not enumerate Vulkan device layer properties!");
     }
@@ -192,7 +192,7 @@ std::vector<const char*> blDevice::getValidationLayers()
     return layers;
 }
 
-std::vector<const char*> blDevice::getExtensions()
+std::vector<const char*> Device::getExtensions()
 {
     std::vector requiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
     
@@ -200,14 +200,14 @@ std::vector<const char*> blDevice::getExtensions()
     uint32_t propertyCount = 0;
     std::vector<VkExtensionProperties> properties;
 
-    if (vkEnumerateDeviceExtensionProperties(_instance->getPhysicalDevice(), nullptr, &propertyCount, nullptr) != VK_SUCCESS)
+    if (vkEnumerateDeviceExtensionProperties(m_instance->getPhysicalDevice(), nullptr, &propertyCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan device extension properties count!");
     }
 
     properties.resize(propertyCount);
 
-    if (vkEnumerateDeviceExtensionProperties(_instance->getPhysicalDevice(), nullptr, &propertyCount, properties.data()) != VK_SUCCESS)
+    if (vkEnumerateDeviceExtensionProperties(m_instance->getPhysicalDevice(), nullptr, &propertyCount, properties.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("could not enumerate Vulkan device extension properties!");
     }
@@ -228,7 +228,7 @@ std::vector<const char*> blDevice::getExtensions()
     return requiredExtensions;
 }
 
-void blDevice::createDevice(std::shared_ptr<blWindow> window)
+void Device::createDevice(std::shared_ptr<Window> window)
 {   
     const std::vector<const char*> extensions = getExtensions();
     const std::vector<const char*> validationLayers = getValidationLayers();
@@ -236,11 +236,11 @@ void blDevice::createDevice(std::shared_ptr<blWindow> window)
     // get the queue family properties of the physical device
     uint32_t queuePropertyCount = 0;
     std::vector<VkQueueFamilyProperties> queueProperties;
-    vkGetPhysicalDeviceQueueFamilyProperties(_instance->getPhysicalDevice(), &queuePropertyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(m_instance->getPhysicalDevice(), &queuePropertyCount, nullptr);
 
     queueProperties.resize(queuePropertyCount);
 
-    vkGetPhysicalDeviceQueueFamilyProperties(_instance->getPhysicalDevice(), &queuePropertyCount, queueProperties.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(m_instance->getPhysicalDevice(), &queuePropertyCount, queueProperties.data());
 
     // determine what families will be dedicated to graphics and present
     uint32_t i = 0;
@@ -248,18 +248,18 @@ void blDevice::createDevice(std::shared_ptr<blWindow> window)
     {
         if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT)
         {
-            _graphicsFamilyIndex = i; 
+            m_graphicsFamilyIndex = i; 
         }
 
         VkBool32 surfaceSupported = VK_FALSE;
-        if (vkGetPhysicalDeviceSurfaceSupportKHR(_instance->getPhysicalDevice(), i, window->getSurface(), &surfaceSupported) != VK_SUCCESS)
+        if (vkGetPhysicalDeviceSurfaceSupportKHR(m_instance->getPhysicalDevice(), i, window->getSurface(), &surfaceSupported) != VK_SUCCESS)
         {
             throw std::runtime_error("Could not check Vulkan physical device surface support!");
         }
         
         if (surfaceSupported)
         {
-            _presentFamilyIndex = i;
+            m_presentFamilyIndex = i;
         }
 
         i++;
@@ -272,7 +272,7 @@ void blDevice::createDevice(std::shared_ptr<blWindow> window)
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, // sType
             nullptr,                                    // pNext,
             0,                                          // flags
-            _graphicsFamilyIndex,                       // queueFamilyIndex
+            m_graphicsFamilyIndex,                      // queueFamilyIndex
             1,                                          // queueCount
             queuePriorities,                            // pQueuePriorities
         },
@@ -280,7 +280,7 @@ void blDevice::createDevice(std::shared_ptr<blWindow> window)
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, // sType
             nullptr,                                    // pNext,
             0,                                          // flags
-            _presentFamilyIndex,                        // queueFamilyIndex
+            m_presentFamilyIndex,                       // queueFamilyIndex
             1,                                          // queueCount
             queuePriorities,                            // pQueuePriorities
         }
@@ -291,64 +291,60 @@ void blDevice::createDevice(std::shared_ptr<blWindow> window)
     queueCreateInfos.resize(areQueuesSame() ? 1 : 2);
 
     const VkPhysicalDeviceFeatures features{};
-    const VkDeviceCreateInfo createInfo
-    {
-        VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,   // sType
-        nullptr,                                // pNext
-        0,                                      // flags
-        (uint32_t)queueCreateInfos.size(),      // queueCreateInfoCount
-        queueCreateInfos.data(),                // pQueueCreateInfos
-        (uint32_t)validationLayers.size(),      // enabledLayerCount
-        validationLayers.data(),                // ppEnabledLayerNames
-        (uint32_t)extensions.size(),            // enabledExtensionCount
-        extensions.data(),                      // ppEnabledExtensionNames
-        &features,                              // pEnabledFeatures
-    };
+    VkDeviceCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.pNext = nullptr;
+    createInfo.flags = 0;
+    createInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
+    createInfo.pQueueCreateInfos = queueCreateInfos.data();
+    createInfo.enabledLayerCount = (uint32_t)validationLayers.size();
+    createInfo.ppEnabledLayerNames = validationLayers.data();
+    createInfo.enabledExtensionCount = (uint32_t)extensions.size();
+    createInfo.ppEnabledExtensionNames = extensions.data();
+    createInfo.pEnabledFeatures = &features;
 
-    if (vkCreateDevice(_instance->getPhysicalDevice(), &createInfo, nullptr, &_device) != VK_SUCCESS)
+    if (vkCreateDevice(m_instance->getPhysicalDevice(), &createInfo, nullptr, &m_device) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create the Vulkan device!");
     }
 
-    vkGetDeviceQueue(_device, _graphicsFamilyIndex, 0, &_graphicsQueue);
-    vkGetDeviceQueue(_device, _presentFamilyIndex, 0, &_presentQueue);
+    vkGetDeviceQueue(m_device, m_graphicsFamilyIndex, 0, &m_graphicsQueue);
+    vkGetDeviceQueue(m_device, m_presentFamilyIndex, 0, &m_presentQueue);
 }
 
-void blDevice::createCommandPool()
+void Device::createCommandPool()
 {
-    const VkCommandPoolCreateInfo createInfo
-    {
-        VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,         // sType
-        nullptr,                                            // pNext
-        VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,    // flags
-        _graphicsFamilyIndex                                // queueFamilyIndex
-    };
+    VkCommandPoolCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    createInfo.pNext = nullptr;
+    createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    createInfo.queueFamilyIndex = m_graphicsFamilyIndex;
 
-    if (vkCreateCommandPool(_device, &createInfo, nullptr, &_commandPool) != VK_SUCCESS)
+    if (vkCreateCommandPool(m_device, &createInfo, nullptr, &m_commandPool) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan command pool!");
     }
 }
 
-void blDevice::createAllocator()
+void Device::createAllocator()
 {
-    const VmaAllocatorCreateInfo createInfo
-    {
-        0,                              // flags
-        _instance->getPhysicalDevice(), // physicalDevice
-        _device,                        // device
-        0,                              // preferredLargeHeapBlockSize
-        nullptr,                        // pAllocationCallbacks
-        nullptr,                        // pDeviceMemoryCallbacks
-        nullptr,                        // pHeapSizeLimit
-        nullptr,                        // pVulkanFunctions
-        _instance->getInstance(),       // instance
-        VK_API_VERSION_1_2,             // vulkanApiVersion
-        nullptr,                        // pTypeExternalMemoryHandleTypes
-    };
+    VmaAllocatorCreateInfo createInfo = {};
+    createInfo.flags = 0;
+    createInfo.physicalDevice = m_instance->getPhysicalDevice();
+    createInfo.device = m_device;
+    createInfo.preferredLargeHeapBlockSize = 0;
+    createInfo.pAllocationCallbacks = nullptr;
+    createInfo.pDeviceMemoryCallbacks = nullptr;
+    createInfo.pHeapSizeLimit = nullptr;
+    createInfo.pVulkanFunctions = nullptr;
+    createInfo.instance = m_instance->getInstance();
+    createInfo.vulkanApiVersion = VK_API_VERSION_1_2;
+    createInfo.pTypeExternalMemoryHandleTypes = nullptr;
 
-    if (vmaCreateAllocator(&createInfo, &_allocator) != VK_SUCCESS)
+    if (vmaCreateAllocator(&createInfo, &m_allocator) != VK_SUCCESS)
     {
         throw std::runtime_error("could not create the vulkan memory allocator!");
     }
 }
+
+} // namespace bl

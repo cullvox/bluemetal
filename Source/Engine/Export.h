@@ -22,7 +22,7 @@
 #endif
 
 #ifndef BLUEMETAL_DEPRECATED
-#  define BLUEMETAL_DEPRECATED __attribute__ ((__deprecated__))
+#  define BLUEMETAL_DEPRECATED __declspec(deprecated)
 #endif
 
 #ifndef BLUEMETAL_DEPRECATED_EXPORT

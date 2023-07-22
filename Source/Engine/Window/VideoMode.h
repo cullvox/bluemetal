@@ -2,17 +2,22 @@
 
 #include "Math/Vector2.h"
 
-struct blVideoMode
+namespace bl
 {
-    blVideoMode() = default;
-    blVideoMode(blExtent2D extent, uint8_t bitsPerPixel, uint16_t refreshRate)
+
+struct VideoMode
+{
+    VideoMode() = default;
+    VideoMode(Extent2D extent, uint8_t bitsPerPixel, uint16_t refreshRate)
         : extent(extent)
         , bitsPerPixel(bitsPerPixel)
         , refreshRate(refreshRate)
     {
     }
 
-    blExtent2D extent;      // size of the display mode in pixels
+    Extent2D extent;      // size of the display mode in pixels
     uint8_t bitsPerPixel;   // amount of bits for each pixel
     uint16_t refreshRate;   // refresh rate of the monitor in hz
 };
+
+} // namespace bl

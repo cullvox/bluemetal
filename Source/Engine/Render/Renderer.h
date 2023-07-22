@@ -6,28 +6,32 @@
 #include "RenderPass.h"
 #include "Pipeline.h"
 
-class BLUEMETAL_API blRenderer
+namespace bl
+{
+
+class BLUEMETAL_API Renderer
 {
     static const inline uint32_t MAX_FRAMES_IN_FLIGHT = 2;
 
 public:
-    explicit blRenderer(std::shared_ptr<blDevice> device, std::shared_ptr<blSwapchain> swapchain, std::vector<std::shared_ptr<blRenderPass>>& passes);
-    ~blRenderer();
+    Renderer(std::shared_ptr<Device> device, std::shared_ptr<Swapchain> swapchain, std::vector<std::shared_ptr<RenderPass>>& passes);
+    ~Renderer();
 
-    void resize(blExtent2D extent);
+    void resize(Extent2D extent);
     void render();
 
 private:
     void createSyncObjects();
     void destroySyncObjects() noexcept;
 
-    std::shared_ptr<blDevice>                           _device;
-    std::shared_ptr<blSwapchain>                        _swapchain;
-    const std::vector<std::shared_ptr<blRenderPass>>    _passes;  
-    uint32_t                                            _currentFrame;
-    std::vector<VkCommandBuffer>                        _swapCommandBuffers;
-    std::vector<VkSemaphore>                            _imageAvailableSemaphores;
-    std::vector<VkSemaphore>                            _renderFinishedSemaphores;
-    std::vector<VkFence>                                _inFlightFences;
-    
+    std::shared_ptr<Device>                         m_device;
+    std::shared_ptr<Swapchain>                      m_swapchain;
+    const std::vector<std::shared_ptr<RenderPass>>  m_passes;  
+    uint32_t                                        m_currentFrame;
+    std::vector<VkCommandBuffer>                    m_swapCommandBuffers;
+    std::vector<VkSemaphore>                        m_imageAvailableSemaphores;
+    std::vector<VkSemaphore>                        m_renderFinishedSemaphores;
+    std::vector<VkFence>                            m_inFlightFences;
 };
+
+} // namespace bl

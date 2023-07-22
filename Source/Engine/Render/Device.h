@@ -3,11 +3,14 @@
 #include "Render/Instance.h"
 #include "Window/Window.h"
 
-class BLUEMETAL_API blDevice
+namespace bl
+{
+
+class BLUEMETAL_API Device
 {
 public:
-    explicit blDevice(std::shared_ptr<blInstance> instance, std::shared_ptr<blWindow> temporaryWindow);
-    ~blDevice();
+    Device(std::shared_ptr<Instance> instance, std::shared_ptr<Window> temporaryWindow);
+    ~Device();
 
     VkInstance getInstance();
     VkDevice getDevice();
@@ -28,14 +31,16 @@ public:
 private:
     std::vector<const char*> getValidationLayers();
     std::vector<const char*> getExtensions();
-    void createDevice(std::shared_ptr<blWindow> window);
+    void createDevice(std::shared_ptr<Window> window);
     void createCommandPool();
     void createAllocator();
 
-    std::shared_ptr<blInstance> _instance;
-    uint32_t                    _graphicsFamilyIndex, _presentFamilyIndex;
-    VkDevice                    _device;
-    VkQueue                     _graphicsQueue, _presentQueue;
-    VkCommandPool               _commandPool;
-    VmaAllocator                _allocator;
+    std::shared_ptr<Instance>   m_instance;
+    uint32_t                    m_graphicsFamilyIndex, m_presentFamilyIndex;
+    VkDevice                    m_device;
+    VkQueue                     m_graphicsQueue, m_presentQueue;
+    VkCommandPool               m_commandPool;
+    VmaAllocator                m_allocator;
 };
+
+} // namespace bl

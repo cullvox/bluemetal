@@ -2,7 +2,10 @@
 
 #include "Precompiled.h"
 
-struct blVulkanFormat
+namespace bl
+{
+
+struct VulkanFormat
 {
     static inline uint32_t getSize(VkFormat format)
     {
@@ -136,3 +139,5 @@ struct blVulkanFormat
         }
     } 
 };
+
+} // namespace bl

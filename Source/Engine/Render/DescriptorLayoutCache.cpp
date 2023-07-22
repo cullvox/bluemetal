@@ -1,21 +1,24 @@
 #include "DescriptorLayoutCache.h"
 
-blDescriptorLayoutCache::blDescriptorLayoutCache(std::shared_ptr<blDevice> device)
-    : _device(device)
+namespace bl
+{
+
+DescriptorLayoutCache::DescriptorLayoutCache(std::shared_ptr<Device> device)
+    : m_device(device)
 {
 }
 
-blDescriptorLayoutCache::~blDescriptorLayoutCache()
+DescriptorLayoutCache::~DescriptorLayoutCache()
 {
-    for (auto pair : _cache)
+    for (auto pair : m_cache)
     {
-        vkDestroyDescriptorSetLayout(_device->getDevice(), pair.second, nullptr);
+        vkDestroyDescriptorSetLayout(m_device->getDevice(), pair.second, nullptr);
     }
 }
 
-VkDescriptorSetLayout blDescriptorLayoutCache::createDescriptorLayout(const VkDescriptorSetLayoutCreateInfo& createInfo)
+VkDescriptorSetLayout DescriptorLayoutCache::createDescriptorLayout(const VkDescriptorSetLayoutCreateInfo& createInfo)
 {
-    blDescriptorLayoutInfo info;
+    DescriptorLayoutInfo info;
     info.bindings.resize(createInfo.bindingCount);
 
     // add bindings to our info
@@ -32,9 +35,9 @@ VkDescriptorSetLayout blDescriptorLayoutCache::createDescriptorLayout(const VkDe
         });
 
     // look for descriptor set in cache
-    auto it = _cache.find(info);
+    auto it = m_cache.find(info);
 
-    if (it != _cache.end())
+    if (it != m_cache.end())
     {
         // return found layout
         return (*it).second;
@@ -43,15 +46,16 @@ VkDescriptorSetLayout blDescriptorLayoutCache::createDescriptorLayout(const VkDe
     {
         // create a new descriptor set layout
         VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-        if (vkCreateDescriptorSetLayout(_device->getDevice(), &createInfo, nullptr, &layout) != VK_SUCCESS)
+        if (vkCreateDescriptorSetLayout(m_device->getDevice(), &createInfo, nullptr, &layout) != VK_SUCCESS)
         {
             throw std::runtime_error("Could not crate a Vulkan descriptor set layout!");
         }
 
         // add layout to cache
-        _cache[info] = layout;
+        m_cache[info] = layout;
         
         return layout;
     }
 }
 
+} // namespace bl

@@ -3,23 +3,28 @@
 #include "Device.h"
 #include "Shader.h"
 
-class blDescriptorLayoutCache
+namespace bl
+{
+
+class DescriptorLayoutCache
 {
 public:
-    explicit blDescriptorLayoutCache(std::shared_ptr<blDevice> device);
-    ~blDescriptorLayoutCache();
+    DescriptorLayoutCache(std::shared_ptr<Device> device);
+    ~DescriptorLayoutCache();
 
     VkDescriptorSetLayout createDescriptorLayout(const VkDescriptorSetLayoutCreateInfo& createInfo);
 
 private:
-    struct blDescriptorLayoutHash
+    struct DescriptorLayoutHash
     {
-        size_t operator()(const blDescriptorLayoutInfo& value) const
+        size_t operator()(const DescriptorLayoutInfo& value) const
         {
             return value.hash();
         }
     };
 
-    std::shared_ptr<blDevice> _device;
-    std::map<blDescriptorLayoutInfo, VkDescriptorSetLayout, blDescriptorLayoutHash> _cache;
+    std::shared_ptr<Device> m_device;
+    std::map<DescriptorLayoutInfo, VkDescriptorSetLayout, DescriptorLayoutHash> m_cache;
 };
+
+} // namespace bl

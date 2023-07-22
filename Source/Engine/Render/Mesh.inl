@@ -1,4 +1,7 @@
 
+namespace bl
+{
+
 template<typename TVertex>
 blMesh(std::shared_ptr<blDevice> device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices)
     : _device(device)
@@ -29,3 +32,5 @@ void setVertices(const std::vector<TVertex>& vertices)
         });
    
 }
+
+} // namespace bl

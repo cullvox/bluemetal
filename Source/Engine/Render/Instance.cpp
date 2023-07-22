@@ -2,13 +2,16 @@
 #include "Version.h"
 #include "Core/Log.h"
 
-blInstance::blInstance(std::optional<uint32_t> physicalDeviceIndex)
+namespace bl
+{
+
+Instance::Instance(std::optional<uint32_t> physicalDeviceIndex)
 {
     createInstance();
     choosePhysicalDevice(physicalDeviceIndex);
 }
 
-std::vector<const char*> blInstance::getExtensionsForSDL()
+std::vector<const char*> Instance::getExtensionsForSDL()
 {
 
     // create a temporary window to get extensions from SDL
@@ -43,7 +46,7 @@ std::vector<const char*> blInstance::getExtensionsForSDL()
     return extensions;
 }
 
-std::vector<const char*> blInstance::getExtensions()
+std::vector<const char*> Instance::getExtensions()
 {
     
     // our engines required extensions
@@ -83,7 +86,7 @@ std::vector<const char*> blInstance::getExtensions()
                 return strcmp(pName, properties.extensionName) == 0; 
             }) == extensionProperties.end())
         {
-            BL_LOG(blLogType::eFatal, "Could not find required instance extension: {}", pName);
+            BL_LOG(LogType::eFatal, "Could not find required instance extension: {}", pName);
         }
     }
 
@@ -91,7 +94,7 @@ std::vector<const char*> blInstance::getExtensions()
     return extensions;
 }
 
-std::vector<const char*> blInstance::getValidationLayers()
+std::vector<const char*> Instance::getValidationLayers()
 {
     // disable validation layers on release
     if (BLUEMETAL_DEVELOPMENT) return {};
@@ -135,70 +138,54 @@ std::vector<const char*> blInstance::getValidationLayers()
     return layers;
 }
 
-void blInstance::createInstance()
+void Instance::createInstance()
 {
     std::vector<const char*> instanceExtensions = getExtensions();
     std::vector<const char*> validationLayers = getValidationLayers();
 
     // use a debug messenger while in development
-    const VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo
-    {
-        VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT,    // sType
-        nullptr,                                                    // pNext
-        0,                                                          // flags
-        VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |           // messageSeverity
-            VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
-            VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
-            VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT,
-        VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |           // messageType
-            VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-            VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT,
-        debugCallback,                                              // pfnUserCallback
-        nullptr                                                     // pUserData
-    };
+    VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo = {};
+    debugMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    debugMessengerCreateInfo.pNext = nullptr;
+    debugMessengerCreateInfo.flags = 0;
+    debugMessengerCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    debugMessengerCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
+        VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+    debugMessengerCreateInfo.pfnUserCallback = debugCallback;
+    debugMessengerCreateInfo.pUserData = nullptr;
 
-    const VkApplicationInfo applicationInfo
-    {
-        VK_STRUCTURE_TYPE_APPLICATION_INFO, // sType
-        nullptr,                            // pNext
-        applicationName.data(),             // pApplicationName
-        VK_MAKE_VERSION(                    // applicationVersion
-            applicationVersion.major,
-            applicationVersion.minor,
-            applicationVersion.patch),      
-        engineName.data(),                  // pEngineName
-        VK_MAKE_VERSION(                    // engineVersion
-            engineVersion.major, 
-            engineVersion.minor, 
-            engineVersion.patch),        
-        VK_API_VERSION_1_2,                 // apiVersion
-    };
+    VkApplicationInfo applicationInfo = {};
+    applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+    applicationInfo.pNext = nullptr;
+    applicationInfo.pApplicationName = applicationName.data();
+    applicationInfo.applicationVersion = VK_MAKE_VERSION(applicationVersion.major, applicationVersion.minor, applicationVersion.patch);
+    applicationInfo.pEngineName = engineName.data();
+    applicationInfo.engineVersion = VK_MAKE_VERSION(engineVersion.major, engineVersion.minor, engineVersion.patch);
+    applicationInfo.apiVersion = VK_API_VERSION_1_2;
 
-    const VkInstanceCreateInfo createInfo
-    {    
-        VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO,     // sType
-#ifdef BLUEMETAL_DEVELOPMENT                        // pNext
-        &debugMessengerCreateInfo,
-#else
-        nullptr
-#endif
-        0,                                          // flags
-        &applicationInfo,                           // pApplicationInfo
-        (uint32_t)validationLayers.size(),          // enabledLayerCount
-        validationLayers.data(),                    // pEnabledLayerNames
-        (uint32_t)instanceExtensions.size(),        // enabledExtensionCount
-        instanceExtensions.data(),                  // pEnabledExtensionNames
-    };
+    VkInstanceCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; 
+    createInfo.pNext = BLUEMETAL_DEVELOPMENT ? &debugMessengerCreateInfo : nullptr;
+    createInfo.flags = 0;
+    createInfo.pApplicationInfo = &applicationInfo;
+    createInfo.enabledLayerCount = (uint32_t)validationLayers.size();
+    createInfo.ppEnabledLayerNames = validationLayers.data();
+    createInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
+    createInfo.ppEnabledExtensionNames = instanceExtensions.data();
 
     if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan instance!");
     }
 
-    BL_LOG(blLogType::eInfo, "vulkan instance created")
+    BL_LOG(LogType::eInfo, "vulkan instance created")
 }
 
-void blInstance::choosePhysicalDevice(std::optional<uint32_t> physicalDeviceIndex)
+void Instance::choosePhysicalDevice(std::optional<uint32_t> physicalDeviceIndex)
 {
     // get the vulkan physical devices
     uint32_t physicalDeviceCount = 0;
@@ -227,7 +214,7 @@ void blInstance::choosePhysicalDevice(std::optional<uint32_t> physicalDeviceInde
     }
     else
     {
-        BL_LOG(blLogType::eInfo, "Physical device not choosen, using default.");
+        BL_LOG(LogType::eInfo, "Physical device not choosen, using default.");
         _physicalDevice = physicalDevices[0];
     }
 
@@ -235,11 +222,11 @@ void blInstance::choosePhysicalDevice(std::optional<uint32_t> physicalDeviceInde
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
 
-    BL_LOG(blLogType::eInfo, "Choose physical device: {}", properties.deviceName);
+    BL_LOG(LogType::eInfo, "Choose physical device: {}", properties.deviceName);
 }
 
 
-std::string blInstance::getVendorName()
+std::string Instance::getVendorName()
 {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
@@ -256,7 +243,7 @@ std::string blInstance::getVendorName()
     }
 }
 
-std::string blInstance::getDeviceName()
+std::string Instance::getDeviceName()
 {
     VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
@@ -264,7 +251,7 @@ std::string blInstance::getDeviceName()
     return std::string(properties.deviceName);
 }
 
-VkFormat blInstance::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+VkFormat Instance::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
     for (VkFormat format : candidates)
     {
@@ -283,3 +270,5 @@ VkFormat blInstance::findSupportedFormat(const std::vector<VkFormat>& candidates
 
     throw std::runtime_error("Could not find any valid format!");
 }
+
+} // namespace bl

@@ -3,56 +3,59 @@
 #include "Export.h"
 #include "Precompiled.h"
 
-class BLUEMETAL_API blVector3i
+namespace bl
+{
+
+class BLUEMETAL_API Vector3i
 {
 public:
-    blVector3i() noexcept;
-    blVector3i(int32_t x, int32_t y, int32_t z) noexcept;
-    blVector3i(int32_t xyz) noexcept;
-    blVector3i(const blVector3i& rhs) noexcept;
+    Vector3i() noexcept;
+    Vector3i(int32_t x, int32_t y, int32_t z) noexcept;
+    Vector3i(int32_t xyz) noexcept;
+    Vector3i(const Vector3i& rhs) noexcept;
 
-    blVector3i& operator=(const blVector3i& rhs) noexcept;
-    blVector3i& operator+(const blVector3i& rhs) noexcept;
-    blVector3i& operator-(const blVector3i& rhs) noexcept;
-    blVector3i& operator*(const blVector3i& rhs) noexcept;
-    blVector3i& operator/(const blVector3i& rhs) noexcept;
+    Vector3i& operator=(const Vector3i& rhs) noexcept;
+    Vector3i& operator+(const Vector3i& rhs) noexcept;
+    Vector3i& operator-(const Vector3i& rhs) noexcept;
+    Vector3i& operator*(const Vector3i& rhs) noexcept;
+    Vector3i& operator/(const Vector3i& rhs) noexcept;
 
     int magnitude() const noexcept;
-    int distance(const blVector3i& other) const noexcept;
+    int distance(const Vector3i& other) const noexcept;
 
     int x;
     int y;
     int z;
 };
 
-class BLUEMETAL_API blVector3f
+class BLUEMETAL_API Vector3f
 {
 public:
-    blVector3f() noexcept;
-    blVector3f(float x, float y, float z) noexcept;
-    blVector3f(float xyz) noexcept;
+    Vector3f() noexcept;
+    Vector3f(float x, float y, float z) noexcept;
+    Vector3f(float xyz) noexcept;
 
-    blVector3f& operator=(const blVector3f& rhs) noexcept;
-    blVector3f& operator+(const blVector3f& rhs) noexcept;
-    blVector3f& operator-(const blVector3f& rhs) noexcept;
-    blVector3f& operator*(const blVector3f& rhs) noexcept;
-    blVector3f& operator/(const blVector3f& rhs) noexcept;
+    Vector3f& operator=(const Vector3f& rhs) noexcept;
+    Vector3f& operator+(const Vector3f& rhs) noexcept;
+    Vector3f& operator-(const Vector3f& rhs) noexcept;
+    Vector3f& operator*(const Vector3f& rhs) noexcept;
+    Vector3f& operator/(const Vector3f& rhs) noexcept;
 
     float magnitude() const noexcept;
-    float distance(const blVector3f& other) const noexcept;
+    float distance(const Vector3f& other) const noexcept;
 
     float x;
     float y;
     float z;
 };
 
-class BLUEMETAL_API blExtent3D
+class BLUEMETAL_API Extent3D
 {
 public:
-    blExtent3D() = default;
-    blExtent3D(uint32_t width, uint32_t height, uint32_t depth);
-    blExtent3D(uint32_t widthHeightDepth);
-    blExtent3D(VkExtent3D extent);
+    Extent3D() = default;
+    Extent3D(uint32_t width, uint32_t height, uint32_t depth);
+    Extent3D(uint32_t widthHeightDepth);
+    Extent3D(VkExtent3D extent);
 
     explicit operator VkExtent3D();
 
@@ -60,3 +63,5 @@ public:
     uint32_t height;
     uint32_t depth;
 };
+
+} // namespace bl

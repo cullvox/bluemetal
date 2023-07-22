@@ -9,20 +9,20 @@
 #  ifndef IMGUI_EXPORT
 #    ifdef ImGui_EXPORTS
         /* We are building this library */
-#      define IMGUI_EXPORT __attribute__((visibility("default")))
+#      define IMGUI_EXPORT __declspec(dllexport)
 #    else
         /* We are using this library */
-#      define IMGUI_EXPORT __attribute__((visibility("default")))
+#      define IMGUI_EXPORT __declspec(dllimport)
 #    endif
 #  endif
 
 #  ifndef IMGUI_NO_EXPORT
-#    define IMGUI_NO_EXPORT __attribute__((visibility("hidden")))
+#    define IMGUI_NO_EXPORT 
 #  endif
 #endif
 
 #ifndef IMGUI_DEPRECATED
-#  define IMGUI_DEPRECATED __attribute__ ((__deprecated__))
+#  define IMGUI_DEPRECATED __declspec(deprecated)
 #endif
 
 #ifndef IMGUI_DEPRECATED_EXPORT

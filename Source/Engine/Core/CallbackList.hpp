@@ -2,8 +2,11 @@
 
 #include "Core/Precompiled.hpp"
 
+namespace bl
+{
+
 template<typename TReturn, typename...TArgs>
-class blCallbackList;
+class CallbackList;
 
 /** \brief Custom doubly linked list containing std::function's with a specific signature. 
 *
@@ -15,7 +18,7 @@ class blCallbackList;
 * 
 */
 template<typename TReturn, typename...TArgs>
-class blCallbackList<TReturn(TArgs...)>
+class CallbackList<TReturn(TArgs...)>
 {
 	using _Callback = std::function<TReturn(TArgs...)>;
 	using _Handle = std::list<_Callback>::iterator;
@@ -100,3 +103,5 @@ public:
 		return _callbacks.size();
 	}
 };
+
+} // namespace bl

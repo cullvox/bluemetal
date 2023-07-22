@@ -3,7 +3,10 @@
 #include "Precompiled.h"
 #include "Export.h"
 
-struct BLUEMETAL_API blMatrix4
+namespace bl
+{
+
+struct BLUEMETAL_API Matrix4
 {
     blMatrix4() = default;
     blMatrix4(std::array<float, 16> data);
@@ -13,3 +16,5 @@ struct BLUEMETAL_API blMatrix4
     float m20, m21, m22, m23;
     float m30, m31, m32, m33;
 };
+
+} // namespace bl

@@ -21,7 +21,6 @@ list(APPEND Sources
   "Render/Shader.cpp"
   "Render/DescriptorLayoutCache.cpp"
   "Render/DescriptorAllocator.cpp"
-  "Render/PipelineLayoutCache.cpp"
   "Render/Pipeline.cpp"
   "Render/Swapchain.cpp"
   "Render/Renderer.cpp"

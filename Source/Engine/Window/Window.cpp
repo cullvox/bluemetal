@@ -1,32 +1,35 @@
 #include "Window.h"
 #include "Core/Log.h"
 
-blWindow::blWindow(std::shared_ptr<blInstance> instance, blVideoMode videoMode, const std::string& title,  std::optional<blDisplay> display)
+namespace bl
+{
+
+Window::Window(std::shared_ptr<Instance> instance, VideoMode videoMode, const std::string& title,  std::optional<Display> display)
 {
     createWindow(videoMode, title, display);
     createSurface();
 }
 
-blWindow::~blWindow()
+Window::~Window()
 {
     vkDestroySurfaceKHR(_instance->getInstance(), _surface, nullptr);
     SDL_DestroyWindow(_pWindow);
 }
 
-blExtent2D blWindow::getExtent()
+Extent2D Window::getExtent()
 {
     int width = 0, height = 0;
     SDL_Vulkan_GetDrawableSize(_pWindow, &width, &height);
 
-    return blExtent2D((uint32_t)width, (uint32_t)height);
+    return Extent2D((uint32_t)width, (uint32_t)height);
 }
 
-SDL_Window* blWindow::getHandle()
+SDL_Window* Window::getHandle()
 {
     return _pWindow;
 }
 
-void blWindow::createWindow(const blVideoMode& videoMode, const std::string& title, std::optional<blDisplay> display)
+void Window::createWindow(const VideoMode& videoMode, const std::string& title, std::optional<Display> display)
 {
     // default window flags
     uint32_t flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -49,10 +52,12 @@ void blWindow::createWindow(const blVideoMode& videoMode, const std::string& tit
     SDL_ShowWindow(_pWindow);
 }
 
-void blWindow::createSurface()
+void Window::createSurface()
 {
     if (SDL_Vulkan_CreateSurface(_pWindow, _instance->getInstance(), &_surface) != SDL_TRUE)
     {
-        BL_LOG(blLogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
+        BL_LOG(LogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
     }
 }
+
+} // namespace bl

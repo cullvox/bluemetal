@@ -2,29 +2,32 @@
 #include "FormatConversions.h"
 #include "Core/Log.h"
 
-blShader::blShader(std::shared_ptr<blDevice> device, const std::vector<uint32_t>& spirv)
+namespace bl
+{
+
+Shader::Shader(std::shared_ptr<Device> device, const std::vector<uint32_t>& spirv)
     : _device(device)
 {
     createShaderModule(spirv);
     reflect(spirv);
 }
 
-blShader::~blShader()
+Shader::~Shader()
 {
     vkDestroyShaderModule(_device->getDevice(), _module, nullptr);
 } 
 
-VkShaderStageFlagBits blShader::getStage()
+VkShaderStageFlagBits Shader::getStage()
 {
     return _stage;
 }
 
-VkShaderModule blShader::getModule()
+VkShaderModule Shader::getModule()
 {
     return _module;
 }
 
-VkVertexInputBindingDescription blShader::getVertexBinding()
+VkVertexInputBindingDescription Shader::getVertexBinding()
 {
     if (_stage != VK_SHADER_STAGE_VERTEX_BIT)
     {
@@ -34,7 +37,7 @@ VkVertexInputBindingDescription blShader::getVertexBinding()
     return _vertexBinding;
 }
 
-std::vector<VkVertexInputAttributeDescription> blShader::getVertexAttributes()
+std::vector<VkVertexInputAttributeDescription> Shader::getVertexAttributes()
 {
     if (_stage != VK_SHADER_STAGE_VERTEX_BIT)
     {
@@ -44,21 +47,19 @@ std::vector<VkVertexInputAttributeDescription> blShader::getVertexAttributes()
     return _vertexAttributes;
 }
 
-std::vector<blShaderReflectDescriptorSet> blShader::getDescriptorSetReflections()
+std::vector<DescriptorLayoutInfo> Shader::getDescriptorSetReflections()
 {
     return _descriptorSetReflections;
 }
 
-void blShader::createShaderModule(const std::vector<uint32_t>& spirv)
+void Shader::createShaderModule(const std::vector<uint32_t>& spirv)
 {
-    const VkShaderModuleCreateInfo createInfo
-    {
-        VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO,    // sType
-        nullptr,                                        // pNext
-        0,                                              // flags
-        spirv.size(),                                   // codeSize
-        spirv.data()                                    // pCode
-    };
+    VkShaderModuleCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    createInfo.pNext = nullptr;
+    createInfo.flags = 0;
+    createInfo.codeSize = spirv.size();
+    createInfo.pCode = spirv.data();
 
     if (vkCreateShaderModule(_device->getDevice(), &createInfo, nullptr, &_module) != VK_SUCCESS)
     {
@@ -66,7 +67,7 @@ void blShader::createShaderModule(const std::vector<uint32_t>& spirv)
     }
 }
 
-void blShader::reflect(const std::vector<uint32_t>& spirv)
+void Shader::reflect(const std::vector<uint32_t>& spirv)
 {
     // preform reflection for materials and others
     SpvReflectShaderModule reflection{};
@@ -77,13 +78,13 @@ void blShader::reflect(const std::vector<uint32_t>& spirv)
 
     _stage = (VkShaderStageFlagBits)reflection.shader_stage;
 
-    findVertexState(&reflection);
-    findDescriptorSetReflections(&reflection);
+    findVertexState(reflection);
+    findDescriptorSetLayoutInfo(reflection);
 
     spvReflectDestroyShaderModule(&reflection);
 }
 
-void blShader::findVertexState(const SpvReflectShaderModule& reflection)
+void Shader::findVertexState(const SpvReflectShaderModule& reflection)
 {
     if (_stage != VK_SHADER_STAGE_VERTEX_BIT) return;
 
@@ -106,16 +107,14 @@ void blShader::findVertexState(const SpvReflectShaderModule& reflection)
         auto format = (VkFormat)variable->format;
 
         // create attrib description
-        const VkVertexInputAttributeDescription attribute
-        {
-            variable->location,         // location
-            0,                          // binding
-            (VkFormat)variable->format, // format
-            _vertexBinding.stride,      // offset
-        };
+        VkVertexInputAttributeDescription attribute = {};
+        attribute.location = variable->location;
+        attribute.binding = 0;
+        attribute.format = (VkFormat)variable->format;
+        attribute.offset = _vertexBinding.stride;
 
         // compute offset
-        _vertexBinding.stride += blVulkanFormat::getSize(format);
+        _vertexBinding.stride += VulkanFormat::getSize(format);
 
         _vertexAttributes.push_back(attribute);
     }
@@ -128,9 +127,9 @@ void blShader::findVertexState(const SpvReflectShaderModule& reflection)
         });
 }
 
-void blShader::findDescriptorSetLayoutInfo(const SpvReflectShaderModule& reflection)
+void Shader::findDescriptorSetLayoutInfo(const SpvReflectShaderModule& reflection)
 {
-    size_t descriptorSetCount = reflection->descriptor_set_count;
+    size_t descriptorSetCount = reflection.descriptor_set_count;
 
     // create descriptor reflections
     _descriptorSetReflections.resize(descriptorSetCount);
@@ -155,21 +154,21 @@ void blShader::findDescriptorSetLayoutInfo(const SpvReflectShaderModule& reflect
             }
             
             // create the reflected info
-            VkDescriptorSetLayoutBinding binding
+            /*VkDescriptorSetLayoutBinding binding
             {
                 spvBinding->binding,                            // binding
                 (VkDescriptorType)spvBinding->descriptor_type   // descriptorType
                 count,                                          // descriptorCount
                 
-            }
+            }*/
 
 
-            bindings.push_back(layoutBinding);
+            // bindings.push_back(layoutBinding);
         }
     }
 }
 
-bool blDescriptorLayoutInfo::operator==(const blDescriptorLayoutInfo& other) const
+bool DescriptorLayoutInfo::operator==(const DescriptorLayoutInfo& other) const
 {
     if (other.bindings.size() != bindings.size())
     {
@@ -189,7 +188,7 @@ bool blDescriptorLayoutInfo::operator==(const blDescriptorLayoutInfo& other) con
     return true;
 }
 
-size_t blDescriptorLayoutInfo::hash() const
+size_t DescriptorLayoutInfo::hash() const
 {
     using std::size_t;
     using std::hash;
@@ -207,3 +206,5 @@ size_t blDescriptorLayoutInfo::hash() const
 
     return result;
 }
+
+} // namespace bl

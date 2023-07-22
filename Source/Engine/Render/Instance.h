@@ -3,11 +3,14 @@
 #include "Precompiled.h"
 #include "Export.h"
 
-class BLUEMETAL_API blInstance
+namespace bl
+{
+
+class BLUEMETAL_API Instance
 {
 public:
-    blInstance(std::optional<uint32_t> physicalDeviceIndex = std::nullopt);
-    ~blInstance();
+    Instance(std::optional<uint32_t> physicalDeviceIndex = std::nullopt);
+    ~Instance();
 
     VkInstance getInstance();
     VkPhysicalDevice getPhysicalDevice();
@@ -28,3 +31,5 @@ private:
     VkDebugUtilsMessengerEXT    _messenger;
     VkPhysicalDevice            _physicalDevice;
 };
+
+} // namespace bl

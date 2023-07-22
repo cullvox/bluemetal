@@ -3,25 +3,30 @@
 #include "Math/Vector3.h"
 #include "Device.h"
 
-class BLUEMETAL_API blImage
+namespace bl
+{
+
+class BLUEMETAL_API Image
 {
 public:
-    blImage(std::shared_ptr<blDevice> device, VkImageType type, VkFormat format, blExtent3D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
-    ~blImage();
+    Image(std::shared_ptr<Device> device, VkImageType type, VkFormat format, Extent3D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask);
+    ~Image();
 
-    blExtent3D getExtent() const noexcept;
-    VkFormat getFormat() const noexcept;
-    VkImageUsageFlags getUsage() const noexcept;
-    VkImage getImage() const noexcept;
-    VkImageView getImageView() const noexcept;
+    Extent3D getExtent();
+    VkFormat getFormat();
+    VkImageUsageFlags getUsage();
+    VkImage getImage();
+    VkImageView getImageView();
 
 private:
-    std::shared_ptr<blDevice>   _device;
-    blExtent3D                  _extent;
-    VkImageType                 _type;
-    VkFormat                    _format;
-    VkImageUsageFlags           _usage;
-    VkImage                     _image;
-    VkImageView                 _imageView;
-    VmaAllocation               _allocation;
+    std::shared_ptr<Device> m_device;
+    Extent3D                m_extent;
+    VkImageType             m_type;
+    VkFormat                m_format;
+    VkImageUsageFlags       m_usage;
+    VkImage                 m_image;
+    VkImageView             m_imageView;
+    VmaAllocation           m_allocation;
 };
+
+} // namespace bl

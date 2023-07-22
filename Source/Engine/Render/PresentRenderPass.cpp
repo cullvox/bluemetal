@@ -1,9 +1,12 @@
 #include "PresentRenderPass.h"
 
-blPresentRenderPass::blPresentRenderPass(std::shared_ptr<blDevice> device, std::shared_ptr<blSwapchain> swapchain, const blRenderPassFunction& func)
+namespace bl
+{
+
+PresentRenderPass::PresentRenderPass(std::shared_ptr<blDevice> device, std::shared_ptr<blSwapchain> swapchain, const blRenderPassFunction& func)
     : _renderDevice(renderDevice)
     , _swapchain(swapchain)
-    , _func(func)
+    , m_func(func)
 {
 
     const std::array<VkAttachmentDescription, 1> attachments =
@@ -51,28 +54,28 @@ blPresentRenderPass::blPresentRenderPass(std::shared_ptr<blDevice> device, std::
         {},             // dependencies
     };
 
-    _pass = _renderDevice->getDevice().createRenderPassUnique(renderPassCreateInfo);
+    m_pass = _renderDevice->getDevice().createRenderPassUnique(renderPassCreateInfo);
 
     createFramebuffers();
 }
 
-blPresentRenderPass::~blPresentRenderPass()
+PresentRenderPass::~PresentRenderPass()
 {
     destroyFramebuffers();
 }
 
-vk::RenderPass blPresentRenderPass::getRenderPass() const noexcept
+vk::RenderPass PresentRenderPass::getRenderPass() const noexcept
 {
-    return _pass.get();
+    return m_pass.get();
 }
 
-void blPresentRenderPass::resize(vk::Extent2D extent)
+void PresentRenderPass::resize(vk::Extent2D extent)
 {
     destroyFramebuffers();
     createFramebuffers();
 }
 
-void blPresentRenderPass::record(vk::CommandBuffer cmd, vk::Rect2D renderArea, uint32_t index)
+void PresentRenderPass::record(vk::CommandBuffer cmd, vk::Rect2D renderArea, uint32_t index)
 {
     std::array<vk::ClearValue, 2> clearValues;
     const std::array clearColor = { 0.33f, 0.34f, 0.34f, 1.0f };
@@ -82,24 +85,24 @@ void blPresentRenderPass::record(vk::CommandBuffer cmd, vk::Rect2D renderArea, u
     const vk::RenderPassBeginInfo beginInfo
     {
         getRenderPass(),                // renderPass
-        _swapFramebuffers[index].get(), // framebuffer
+        m_swapFramebuffers[index].get(), // framebuffer
         renderArea,                     // renderArea
         clearValues,                    // clearValues
     };
 
     cmd.beginRenderPass(beginInfo, vk::SubpassContents::eInline);
-        _func(cmd);
+        m_func(cmd);
     cmd.endRenderPass();
 }
 
-void blPresentRenderPass::createFramebuffers()
+void PresentRenderPass::createFramebuffers()
 {
-    const std::vector<vk::ImageView> attachments = _swapchain->getImageViews();
-    const blExtent2D extent = _swapchain->getExtent();
+    const std::vector<vk::ImageView> attachments = m_swapchain->getImageViews();
+    const blExtent2D extent = m_swapchain->getExtent();
 
     std::transform(
         attachments.begin(), attachments.end(),
-        std::back_inserter(_swapFramebuffers),
+        std::back_inserter(m_swapFramebuffers),
         [&](vk::ImageView imageView)
         {
             const std::array imageViews = { imageView }; 
@@ -113,11 +116,13 @@ void blPresentRenderPass::createFramebuffers()
                 1
             };
                 
-            return _renderDevice->getDevice().createFramebufferUnique(framebufferCreateInfo);
+            return m_device->getDevice().createFramebufferUnique(framebufferCreateInfo);
         });
 }
 
-void blPresentRenderPass::destroyFramebuffers()
+void PresentRenderPass::destroyFramebuffers()
 {
-    _swapFramebuffers.clear();
+    m_swapFramebuffers.clear();
 }
+
+} // namespace bl

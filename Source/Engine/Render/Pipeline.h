@@ -3,31 +3,35 @@
 #include "Device.h"
 #include "Shader.h"
 #include "DescriptorLayoutCache.h"
-#include "PipelineLayoutCache.h"
 #include "RenderPass.h"
 
-class BLUEMETAL_API blPipeline
+namespace bl
+{
+
+class BLUEMETAL_API Pipeline
 {
 public:
-    explicit blPipeline(std::shared_ptr<blDevice> device, std::shared_ptr<blPipelineLayoutCache> pipelineLayoutCache, std::shared_ptr<blDescriptorLayoutCache> descriptorLayoutCache, const std::vector<std::shared_ptr<blShader>>& shaders, std::shared_ptr<blRenderPass> renderPass, uint32_t subpass = 0);
-    ~blPipeline() noexcept;
+    Pipeline(std::shared_ptr<Device> device, std::shared_ptr<DescriptorLayoutCache> descriptorLayoutCache, std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader, std::shared_ptr<RenderPass> renderPass, uint32_t subpass = 0);
+    ~Pipeline();
 
     VkPipelineLayout getPipelineLayout();
     VkPipeline getPipeline();
     std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts();
 
 private:
-    void createDescriptorSetLayouts(const std::vector<std::shared_ptr<blShader>>& shaders);
+    void getDescriptorLayouts(std::shared_ptr<DescriptorLayoutCache> descriptorLayoutCache);
     void createLayout();
-    void createPipeline(const std::vector<std::shared_ptr<blShader>>& shaders);
+    void createPipeline(std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader);
 
-    std::shared_ptr<blDevice>                   _device;
-    std::shared_ptr<blRenderPass>               _renderPass;
-    uint32_t                                    _subpass;
-    std::vector<VkDescriptorSetLayout>          _setLayouts;
-    VkPipelineLayout                            _pipelineLayout;
-    VkPipeline                                  _pipeline;
+    std::shared_ptr<Device>             m_device;
+    std::shared_ptr<RenderPass>         m_renderPass;
+    uint32_t                            m_subpass;
+    std::vector<VkDescriptorSetLayout>  m_setLayouts;
+    VkPipelineLayout                    m_pipelineLayout;
+    VkPipeline                          m_pipeline;
 };
+
+} // namespace bl
 
 
 /* Getting real with descriptor sets.

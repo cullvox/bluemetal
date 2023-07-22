@@ -3,9 +3,14 @@
 #include "Math/Vector2.h"
 #include "Math/Vector3.h"
 
-struct blVertex
+namespace bl
 {
-   blVector3f position;
-   blVector3f normal;
-   blVector2f texCoords;
+
+struct Vertex
+{
+   Vector3f position;
+   Vector3f normal;
+   Vector2f texCoords;
 };
+
+} // namespace bl

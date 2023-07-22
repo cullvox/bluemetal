@@ -1,13 +1,16 @@
 #include "FrameCounter.h"
 #include "Core/Log.h"
 
-void blFrameCounter::beginFrame()
+namespace bl
+{
+
+void FrameCounter::beginFrame()
 {
     _startOfFrame = std::chrono::high_resolution_clock::now();
     _frameCount++;
 }
 
-bool blFrameCounter::endFrame()
+bool FrameCounter::endFrame()
 {
     bool endedSecond{};
 
@@ -51,19 +54,19 @@ bool blFrameCounter::endFrame()
     return endedSecond;
 }
 
-int blFrameCounter::getFramesPerSecond()
+int FrameCounter::getFramesPerSecond()
 {
     if (_framesPerSecond.size() < 1) return 0;
     return _framesPerSecond.back();
 }
 
-float blFrameCounter::getAverageFramesPerSecond(uint32_t seconds)
+float FrameCounter::getAverageFramesPerSecond(uint32_t seconds)
 {
 
     // Make sure we are getting a proper second count.
     if (seconds > _maximumHeldFramesPerSecond || seconds < 1)
     {
-        BL_LOG(blLogType::eError, "Attempting to get an average FPS greater than the maximum at {} seconds.", seconds);
+        BL_LOG(LogType::eError, "Attempting to get an average FPS greater than the maximum at {} seconds.", seconds);
     }
 
     // Get the average fps
@@ -83,7 +86,7 @@ float blFrameCounter::getAverageFramesPerSecond(uint32_t seconds)
     return averageFPS;
 }
 
-float blFrameCounter::getMillisecondsPerFrame()
+float FrameCounter::getMillisecondsPerFrame()
 {
     if (_millisecondsPerFrame.size() < 1) return 0.0f;
     const auto msPerFrame = _millisecondsPerFrame.back();
@@ -93,13 +96,13 @@ float blFrameCounter::getMillisecondsPerFrame()
         std::chrono::duration<float, std::nano>>(msPerFrame).count() / 1000000.0f;
 }
 
-float blFrameCounter::getAverageMillisecondsPerFrame(uint32_t frames)
+float FrameCounter::getAverageMillisecondsPerFrame(uint32_t frames)
 {
     
     // Make sure we are getting a proper second count
     if (frames > _maximumHeldMillisecondsPerFrame || frames < 1)
     {
-        BL_LOG(blLogType::eError, "Attempting to get an average milliseconds per frame greater than the maximum frame count at {} frames.", frames);
+        BL_LOG(LogType::eError, "Attempting to get an average milliseconds per frame greater than the maximum frame count at {} frames.", frames);
     }
 
     frames = std::clamp(frames, (uint32_t)0, (uint32_t)_millisecondsPerFrame.size());
@@ -116,3 +119,5 @@ float blFrameCounter::getAverageMillisecondsPerFrame(uint32_t frames)
     averageMPF /= frames;
     return averageMPF;
 }
+
+} // namespace bl
