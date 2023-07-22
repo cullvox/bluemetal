@@ -30,6 +30,7 @@
 #include <optional>
 #include <queue>
 #include <list>
+#include <unordered_set>
 #include <variant>
 #include <map>
 #include <filesystem>

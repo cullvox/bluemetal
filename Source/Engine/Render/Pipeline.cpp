@@ -28,22 +28,20 @@ VkPipeline Pipeline::getPipeline()
     return m_pipeline;
 }
 
-void Pipeline::createDescriptorSetLayouts(std::shared_ptr<DescriptorLayoutCache> layoutCache, const std::vector<std::shared_ptr<Shader>>& shaders)
+void Pipeline::createDescriptorSetLayouts(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader)
 {
 
+    ShaderReflection vertexReflection()
 
     // create or find a descriptor layout in cache
     auto createLayout = [&](std::shared_ptr<Shader> shader)
     {
-
-        shader->
-
         VkDescriptorSetLayoutCreateInfo createInfo =
         {
             VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,    // sType
             nullptr,                                                // pNext
             0,                                                      // flags
-            
+
             
         }
 
