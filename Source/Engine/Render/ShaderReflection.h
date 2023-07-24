@@ -2,6 +2,7 @@
 
 #include "Precompiled.h"
 #include "Export.h"
+#include "PipelineResource.h"
 
 namespace bl
 {
@@ -26,12 +27,13 @@ public:
     VkShaderStageFlags getStage();
     VkVertexInputBindingDescription getVertexBinding(); // only applicable for vertex shader
     std::vector<VkVertexInputAttributeDescription> getVertexAttributes(); // only applicable for vertex shader
-    void addDescriptorInfo(VkDescriptorSetLayoutBinding)
+    std::vector<PipelineResource> getResources(); // obtains the reflected uniforms
 
 private:
     VkShaderStageFlagBits                           m_stage;
     VkVertexInputBindingDescription                 m_vertexBinding;
     std::vector<VkVertexInputAttributeDescription>  m_vertexAttributes;
+    std::vector<PipelineResource>                   m_resources;
 
 };
 

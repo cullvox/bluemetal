@@ -1,5 +1,6 @@
 #include "Pipeline.h"
 #include "Core/Log.h"
+#include "ShaderReflection.h"
 
 namespace bl
 {
@@ -28,10 +29,34 @@ VkPipeline Pipeline::getPipeline()
     return m_pipeline;
 }
 
+void Pipeline::mergeShaderResources(const std::vector<PipelineResource>& shaderResources)
+{
+    for (auto& resource : shaderResources)
+    {
+        // shader resources for input and outputs can have the same names, adding the stage name makes them unique
+        auto key = resource.name;
+        if (resource.type == PIPELINE_RESOURCE_TYPE_OUTPUT || resource.type == PIPELINE_RESOURCE_TYPE_INPUT)
+            key = std::to_string(resource.stages) + ":" + key;
+        
+        // try to find the resource in the pipelines resources
+        auto it = m_resources.find(key);
+
+        // if the resource is found add this stage to it, else add a new resource
+        if (it != m_resources.end())
+            it->second.stages |= resource.stages;
+        else
+            m_resources.emplace(key, resource);
+    }
+}
+
 void Pipeline::createDescriptorSetLayouts(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader)
 {
 
-    ShaderReflection vertexReflection()
+    ShaderReflection vertexReflection(vertexShader->getBinary());
+    ShaderReflection fragmentReflection(fragmentShader->getBinary());
+
+    auto vertexResources = vertexReflection.getResources();
+    auto fragmentResources = 
 
     // create or find a descriptor layout in cache
     auto createLayout = [&](std::shared_ptr<Shader> shader)
