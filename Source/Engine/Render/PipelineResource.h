@@ -34,7 +34,7 @@ struct PipelineMemberInfo
 struct PipelineResource
 {
     VkShaderStageFlags stages;
-    PipelineResourceType type;
+    VkDescriptorType type;
     VkAccessFlags access;
     uint32_t set;
     uint32_t binding;

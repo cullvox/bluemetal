@@ -5,10 +5,15 @@
 namespace bl
 {
 
-Instance::Instance(std::optional<uint32_t> physicalDeviceIndex)
+Instance::Instance()
 {
     createInstance();
-    choosePhysicalDevice(physicalDeviceIndex);
+}
+
+Instance::~Instance()
+{
+    m_destroyDebugUtilsMessengerEXT(m_instance, m_messenger, nullptr);
+    vkDestroyInstance(m_instance, nullptr);
 }
 
 std::vector<const char*> Instance::getExtensionsForSDL()
@@ -177,98 +182,59 @@ void Instance::createInstance()
     createInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
     createInfo.ppEnabledExtensionNames = instanceExtensions.data();
 
-    if (vkCreateInstance(&createInfo, nullptr, &_instance) != VK_SUCCESS)
+    if (vkCreateInstance(&createInfo, nullptr, &m_instance) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan instance!");
+    }
+
+    // To get debug utils messenger the functions must be loaded in
+    if (BLUEMETAL_DEVELOPMENT)
+    {
+        m_createDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkCreateDebugUtilsMessengerEXT");
+        m_destroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugUtilsMessengerEXT");
+        
+        if (!m_createDebugUtilsMessengerEXT || !m_destroyDebugUtilsMessengerEXT)
+        {
+            vkDestroyInstance(m_instance, nullptr);
+            throw std::runtime_error("Could not get Vulkan debug utils messenger create and destroy pointer functions!");
+        }
+
+        if (m_createDebugUtilsMessengerEXT(m_instance, &debugMessengerCreateInfo, nullptr, &m_messenger) != VK_SUCCESS)
+        {
+            vkDestroyInstance(m_instance, nullptr);
+            throw std::runtime_error("Could not create a Vulkan debug utils messenger!");
+        }
     }
 
     BL_LOG(LogType::eInfo, "vulkan instance created")
 }
 
-void Instance::choosePhysicalDevice(std::optional<uint32_t> physicalDeviceIndex)
+void Instance::createPhysicalDevices()
 {
-    // get the vulkan physical devices
+
+    // Enumerate all Vulkan physical devices. 
     uint32_t physicalDeviceCount = 0;
     std::vector<VkPhysicalDevice> physicalDevices;
-    if (vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, nullptr) != VK_SUCCESS)
+    
+    if (vkEnumeratePhysicalDevices(m_instance, &physicalDeviceCount, nullptr) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not get Vulkan physical device count!");
+        throw std::runtime_error("Could not get the Vulkan physical device count!");
     }
 
     physicalDevices.resize(physicalDeviceCount);
 
-    if (vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices.data()) != VK_SUCCESS)
+    if (vkEnumeratePhysicalDevices(m_instance, &physicalDeviceCount, physicalDevices.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not enumerate Vulkan physical devices!");
     }
 
-    // check if we want a specific device
-    if (physicalDeviceIndex)
+    // Create the bl::PhysicalDevices
+    uint32_t i = 0;
+    for (VkPhysicalDevice pd : physicalDevices)
     {
-        if (physicalDeviceIndex.value() > physicalDeviceCount - 1)
-        {
-            throw std::runtime_error("Choosen physical device index is out of range!");
-        }
-
-        _physicalDevice = physicalDevices[physicalDeviceIndex.value()];
-    }
-    else
-    {
-        BL_LOG(LogType::eInfo, "Physical device not choosen, using default.");
-        _physicalDevice = physicalDevices[0];
-    }
-
-    // log the device's name
-    VkPhysicalDeviceProperties properties{};
-    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
-
-    BL_LOG(LogType::eInfo, "Choose physical device: {}", properties.deviceName);
-}
-
-
-std::string Instance::getVendorName()
-{
-    VkPhysicalDeviceProperties properties{};
-    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
-
-    switch (properties.vendorID)
-    {
-        case 0x1002: return "AMD";
-        case 0x1010: return "ImgTec";
-        case 0x10DE: return "NVIDIA";
-        case 0x13B5: return "ARM";
-        case 0x5143: return "Qualcomm";
-        case 0x8086: return "INTEL";
-        default: return "Undefined Vendor";
-    }
-}
-
-std::string Instance::getDeviceName()
-{
-    VkPhysicalDeviceProperties properties{};
-    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
-
-    return std::string(properties.deviceName);
-}
-
-VkFormat Instance::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
-{
-    for (VkFormat format : candidates)
-    {
-        VkFormatProperties properties{};
-        vkGetPhysicalDeviceFormatProperties(_physicalDevice, format, &properties);
-
-        if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features)
-        {
-            return format;
-        }
-        else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features)
-        {
-            return format;
-        }
-    }
-
-    throw std::runtime_error("Could not find any valid format!");
+        m_physicalDevices.push_back(std::make_shared<PhysicalDevice>(i, pd));
+        i++;
+    }   
 }
 
 } // namespace bl

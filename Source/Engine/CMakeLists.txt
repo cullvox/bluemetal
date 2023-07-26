@@ -15,10 +15,12 @@ list(APPEND Sources
 
   # Render
   "Render/Instance.cpp"
+  "Render/PhysicalDevice.cpp"
   "Render/Device.cpp"
   "Render/Buffer.cpp"
   "Render/Image.cpp"
   "Render/Shader.cpp"
+  "Render/ShaderReflection.cpp"
   "Render/DescriptorLayoutCache.cpp"
   "Render/DescriptorAllocator.cpp"
   "Render/Pipeline.cpp"

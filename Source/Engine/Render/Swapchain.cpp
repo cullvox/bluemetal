@@ -14,7 +14,7 @@ Swapchain::Swapchain(std::shared_ptr<Device> device, std::shared_ptr<Window> win
 
 Swapchain::~Swapchain()
 {
-    vkDestroySwapchainKHR(m_device->getDevice(), m_swapchain, nullptr);
+    vkDestroySwapchainKHR(m_device->getHandle(), m_swapchain, nullptr);
 }
 
 VkSwapchainKHR Swapchain::getSwapchain()
@@ -51,7 +51,7 @@ void Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imag
 {
     recreated = false;
 
-    VkResult result = vkAcquireNextImageKHR(m_device->getDevice(), m_swapchain, UINT32_MAX, semaphore, fence, &imageIndex);
+    VkResult result = vkAcquireNextImageKHR(m_device->getHandle(), m_swapchain, UINT32_MAX, semaphore, fence, &imageIndex);
     
     if (result != VK_ERROR_OUT_OF_DATE_KHR)
     {
@@ -181,14 +181,14 @@ void Swapchain::chooseExtent()
 void Swapchain::obtainImages()
 {
     uint32_t imageCount = 0;
-    if (vkGetSwapchainImagesKHR(m_device->getDevice(), m_swapchain, &imageCount, nullptr) != VK_SUCCESS)
+    if (vkGetSwapchainImagesKHR(m_device->getHandle(), m_swapchain, &imageCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan swapchain image count!");
     }
 
     m_swapImages.resize(imageCount);
 
-    if (vkGetSwapchainImagesKHR(m_device->getDevice(), m_swapchain, &imageCount, m_swapImages.data()) != VK_SUCCESS)
+    if (vkGetSwapchainImagesKHR(m_device->getHandle(), m_swapchain, &imageCount, m_swapImages.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan swapchain images!");
     }
@@ -229,7 +229,7 @@ void Swapchain::createImageViews()
             subresourceRange                            // subresourceRange
         };
 
-        if (vkCreateImageView(m_device->getDevice(), &imageViewInfo, nullptr, &m_swapImageViews[i]) != VK_SUCCESS)
+        if (vkCreateImageView(m_device->getHandle(), &imageViewInfo, nullptr, &m_swapImageViews[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("Could not create a Vulkan image view for the swapchain!");
         }
@@ -243,7 +243,7 @@ void Swapchain::recreate(VkPresentModeKHR presentMode)
     m_device->waitForDevice();
 
     // destroy the previous swapchain
-    vkDestroySwapchainKHR(m_device->getDevice(), m_swapchain, nullptr);
+    vkDestroySwapchainKHR(m_device->getHandle(), m_swapchain, nullptr);
 
     m_swapImageViews.clear();
 
@@ -293,7 +293,7 @@ void Swapchain::recreate(VkPresentModeKHR presentMode)
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(m_device->getDevice(), &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
+    if (vkCreateSwapchainKHR(m_device->getHandle(), &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan swapchain!");
     }

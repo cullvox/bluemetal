@@ -109,7 +109,7 @@ void blImGui::init(
 		.pPoolSizes = poolSizes,
 	};
 
-	_descriptorPool = _renderDevice->getDevice().createDescriptorPool(poolInfo);
+	_descriptorPool = _renderDevice->getHandle().createDescriptorPool(poolInfo);
 
 	ImGui::CreateContext();
 	
@@ -120,7 +120,7 @@ void blImGui::init(
 	{
 		(VkInstance)_renderDevice->getInstance(),
 		(VkPhysicalDevice)_renderDevice->getPhysicalDevice(),
-		(VkDevice)_renderDevice->getDevice(),
+		(VkDevice)_renderDevice->getHandle(),
 		_renderDevice->getGraphicsFamilyIndex(),
 		(VkQueue)_renderDevice->getGraphicsQueue(),
 		VK_NULL_HANDLE,
@@ -164,7 +164,7 @@ void blImGui::shutdown() noexcept
 	_renderDevice->waitForDevice();
 	_inputSystem->removeHook(_hookCallback);
 
-	_renderDevice->getDevice()
+	_renderDevice->getHandle()
 		.destroyDescriptorPool(_descriptorPool);
 
 	ImGui_ImplVulkan_Shutdown();

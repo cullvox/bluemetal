@@ -6,22 +6,10 @@
 
 namespace bl
 {
-
-struct BLUEMETAL_API DescriptorLayoutInfo
-{
-    std::string                                 name;
-    uint32_t                                    set;
-    std::vector<VkDescriptorSetLayoutBinding>   bindings;
-
-    bool operator==(const DescriptorLayoutInfo& other) const;
-
-    size_t hash() const;
-};
-
 class BLUEMETAL_API ShaderReflection
 {
 public:
-    ShaderReflection(const std::vector<uint32_t>& code);
+    ShaderReflection(const std::vector<uint32_t>& binary);
     ~ShaderReflection();
 
     VkShaderStageFlags getStage();
@@ -30,6 +18,11 @@ public:
     std::vector<PipelineResource> getResources(); // obtains the reflected uniforms
 
 private:
+    void createReflection(const std::vector<uint32_t>& binary);
+    void findVertexState();
+    void findResources();
+
+    SpvReflectShaderModule                          m_reflection;
     VkShaderStageFlagBits                           m_stage;
     VkVertexInputBindingDescription                 m_vertexBinding;
     std::vector<VkVertexInputAttributeDescription>  m_vertexAttributes;

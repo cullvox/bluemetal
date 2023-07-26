@@ -68,7 +68,7 @@ Image::Image(std::shared_ptr<Device> device, VkImageType type, VkFormat format, 
     viewCreateInfo.components = componentMapping;
     viewCreateInfo.subresourceRange = subresourceRange;
 
-    if (vkCreateImageView(m_device->getDevice(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
+    if (vkCreateImageView(m_device->getHandle(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan image view!");
     }

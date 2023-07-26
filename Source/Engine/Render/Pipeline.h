@@ -9,16 +9,45 @@
 namespace bl
 {
 
+/// A program consisting of multiple shaders that run on the GPU.
+///
+///     Underlying is a VkPipeline object that is constructed.
 class BLUEMETAL_API Pipeline
 {
 public:
-    Pipeline(std::shared_ptr<Device> device, std::shared_ptr<DescriptorLayoutCache> descriptorLayoutCache, std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader, std::shared_ptr<RenderPass> renderPass, uint32_t subpass = 0);
+
+    /// Constructs a pipeline object.
+    ///
+    ///     @param device Logical device used to create this pipeline. 
+    ///     @param descriptorLayoutCache Speed up creation by caching descriptor set layouts.
+    ///     @param shaders The shaders used in this pipeline program.
+    ///     @param renderPass What pass this pipeline is used in.
+    ///     @param subpass What subpass on the render pass is this used in.
+    Pipeline(
+        std::shared_ptr<Device>                 device, 
+        std::shared_ptr<DescriptorLayoutCache>  descriptorLayoutCache, 
+        std::vector<std::shared_ptr<Shader>>    shaders, 
+        std::shared_ptr<RenderPass>             renderPass, 
+        uint32_t                                subpass);
+
+    /// Default destructor.
     ~Pipeline();
 
+    /// Gets the raw VkPipelineLayout used to create this pipeline.
     VkPipelineLayout getPipelineLayout();
+
+    /// Gets the raw VkPipeline underlying this object.
     VkPipeline getPipeline();
+
+    /// Returns reflected resource info that this pipeline uses for materials and others. 
+    ///
+    ///     Gets information for materials like descriptor set bindings.
     std::vector<PipelineResource> getResources();
-    std::vector<VkDescriptorSetLayout> getDescriptorSetLayouts();
+
+    /// Binds this pipeline to a command buffer.
+    ///
+    ///     @param cmd Command buffer to bind on. 
+    void bind(VkCommandBuffer cmd);
 
 private:
     void getDescriptorLayouts(std::shared_ptr<DescriptorLayoutCache> descriptorLayoutCache);
@@ -26,13 +55,13 @@ private:
     void createPipeline(std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader);
     void mergeShaderResources(const std::vector<PipelineResource>& resources);
 
-    std::shared_ptr<Device>             m_device;
-    std::shared_ptr<RenderPass>         m_renderPass;
-    uint32_t                            m_subpass;
+    std::shared_ptr<Device>                 m_device;
+    std::shared_ptr<RenderPass>             m_renderPass;
+    uint32_t                                m_subpass;
     std::map<std::string, PipelineResource> m_resources;
-    std::vector<VkDescriptorSetLayout>  m_setLayouts;
-    VkPipelineLayout                    m_pipelineLayout;
-    VkPipeline                          m_pipeline;
+    std::vector<VkDescriptorSetLayout>      m_setLayouts;
+    VkPipelineLayout                        m_pipelineLayout;
+    VkPipeline                              m_pipeline;
     
 };
 

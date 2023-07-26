@@ -54,7 +54,7 @@ PresentRenderPass::PresentRenderPass(std::shared_ptr<blDevice> device, std::shar
         {},             // dependencies
     };
 
-    m_pass = _renderDevice->getDevice().createRenderPassUnique(renderPassCreateInfo);
+    m_pass = _renderDevice->getHandle().createRenderPassUnique(renderPassCreateInfo);
 
     createFramebuffers();
 }
@@ -116,7 +116,7 @@ void PresentRenderPass::createFramebuffers()
                 1
             };
                 
-            return m_device->getDevice().createFramebufferUnique(framebufferCreateInfo);
+            return m_device->getHandle().createFramebufferUnique(framebufferCreateInfo);
         });
 }
 

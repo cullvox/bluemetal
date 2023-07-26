@@ -12,7 +12,7 @@ public:
     PresentRenderPass(std::shared_ptr<Device> device, std::shared_ptr<Swapchain> swapchain, const RenderPassFunction& func);
     virtual ~PresentRenderPass();
 
-    virtual VkRenderPass getRenderPass() override;
+    virtual VkRenderPass getHandle() override;
     virtual void record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;
     virtual void resize(VkExtent2D extent) override;
 

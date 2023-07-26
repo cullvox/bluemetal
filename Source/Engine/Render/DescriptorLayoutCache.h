@@ -1,10 +1,20 @@
 #pragma once
 
 #include "Device.h"
-#include "Shader.h"
+#include "ShaderReflection.h"
 
 namespace bl
 {
+
+struct BLUEMETAL_API DescriptorLayoutInfo
+{
+    uint32_t                                    set;
+    std::vector<VkDescriptorSetLayoutBinding>   bindings;
+
+    bool operator==(const DescriptorLayoutInfo& other) const;
+
+    size_t hash() const;
+};
 
 class DescriptorLayoutCache
 {
@@ -12,7 +22,7 @@ public:
     DescriptorLayoutCache(std::shared_ptr<Device> device);
     ~DescriptorLayoutCache();
 
-    VkDescriptorSetLayout createDescriptorLayout(const VkDescriptorSetLayoutCreateInfo& createInfo);
+    VkDescriptorSetLayout createLayout(const VkDescriptorSetLayoutCreateInfo& createInfo);
 
 private:
     struct DescriptorLayoutHash
@@ -23,8 +33,9 @@ private:
         }
     };
 
-    std::shared_ptr<Device> m_device;
-    std::map<DescriptorLayoutInfo, VkDescriptorSetLayout, DescriptorLayoutHash> m_cache;
+    std::shared_ptr<Device>                                 m_device;
+    std::map<DescriptorLayoutInfo, VkDescriptorSetLayout, 
+        DescriptorLayoutHash>                               m_cache;
 };
 
 } // namespace bl

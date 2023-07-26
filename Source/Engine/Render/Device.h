@@ -9,11 +9,11 @@ namespace bl
 class BLUEMETAL_API Device
 {
 public:
-    Device(std::shared_ptr<Instance> instance, std::shared_ptr<Window> temporaryWindow);
+    Device(std::shared_ptr<Instance> instance, std::shared_ptr<PhysicalDevice> physicalDevice, std::shared_ptr<Window> temporaryWindow);
     ~Device();
 
     VkInstance getInstance();
-    VkDevice getDevice();
+    VkDevice getHandle();
     VkPhysicalDevice getPhysicalDevice();
     uint32_t getGraphicsFamilyIndex();
     uint32_t getPresentFamilyIndex();
@@ -35,12 +35,13 @@ private:
     void createCommandPool();
     void createAllocator();
 
-    std::shared_ptr<Instance>   m_instance;
-    uint32_t                    m_graphicsFamilyIndex, m_presentFamilyIndex;
-    VkDevice                    m_device;
-    VkQueue                     m_graphicsQueue, m_presentQueue;
-    VkCommandPool               m_commandPool;
-    VmaAllocator                m_allocator;
+    std::shared_ptr<Instance>       m_instance;
+    std::shared_ptr<PhysicalDevice> m_physicalDevice;
+    uint32_t                        m_graphicsFamilyIndex, m_presentFamilyIndex;
+    VkDevice                        m_device;
+    VkQueue                         m_graphicsQueue, m_presentQueue;
+    VkCommandPool                   m_commandPool;
+    VmaAllocator                    m_allocator;
 };
 
 } // namespace bl

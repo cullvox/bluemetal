@@ -12,7 +12,7 @@ Window::Window(std::shared_ptr<Instance> instance, VideoMode videoMode, const st
 
 Window::~Window()
 {
-    vkDestroySurfaceKHR(_instance->getInstance(), _surface, nullptr);
+    vkDestroySurfaceKHR(_instance->getHandle(), _surface, nullptr);
     SDL_DestroyWindow(_pWindow);
 }
 
@@ -54,7 +54,7 @@ void Window::createWindow(const VideoMode& videoMode, const std::string& title, 
 
 void Window::createSurface()
 {
-    if (SDL_Vulkan_CreateSurface(_pWindow, _instance->getInstance(), &_surface) != SDL_TRUE)
+    if (SDL_Vulkan_CreateSurface(_pWindow, _instance->getHandle(), &_surface) != SDL_TRUE)
     {
         BL_LOG(LogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
     }

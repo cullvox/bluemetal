@@ -5,18 +5,18 @@
 namespace bl
 {
 
-Pipeline:: Pipeline(std::shared_ptr<Device> device, std::shared_ptr<DescriptorLayoutCache> cache, std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader, std::shared_ptr<RenderPass> renderPass, uint32_t subpass)
+Pipeline:: Pipeline(std::shared_ptr<Device> device, std::shared_ptr<DescriptorLayoutCache> cache, std::vector<std::shared_ptr<Shader>> shaders, std::shared_ptr<RenderPass> renderPass, uint32_t subpass)
     : m_device(device)
     , m_renderPass(renderPass)
     , m_subpass(subpass)
 {
     createLayout();
-    createPipeline(vertexShader, fragmentShader);
+    createPipeline(shaders);
 }
 
 Pipeline::~Pipeline()
 {
-    vkDestroyPipeline(m_device->getDevice(), m_pipeline, nullptr);
+    vkDestroyPipeline(m_device->getHandle(), m_pipeline, nullptr);
 }
 
 VkPipelineLayout Pipeline::getPipelineLayout()
@@ -49,41 +49,39 @@ void Pipeline::mergeShaderResources(const std::vector<PipelineResource>& shaderR
     }
 }
 
-void Pipeline::createDescriptorSetLayouts(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader)
+void Pipeline::createDescriptorSetLayouts(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::vector<std::shared_ptr<Shader>> shaders)
 {
 
-    ShaderReflection vertexReflection(vertexShader->getBinary());
-    ShaderReflection fragmentReflection(fragmentShader->getBinary());
-
-    auto vertexResources = vertexReflection.getResources();
-    auto fragmentResources = 
-
-    // create or find a descriptor layout in cache
-    auto createLayout = [&](std::shared_ptr<Shader> shader)
-    {
-        VkDescriptorSetLayoutCreateInfo createInfo =
-        {
-            VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO,    // sType
-            nullptr,                                                // pNext
-            0,                                                      // flags
-
-            
-        }
-
-        layoutCache->createDescriptorLayout()
-
-    }
 
     // Create the descriptor set layouts
-    for (const auto& layout : layouts)
+    VkDescriptorSetLayoutCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    createInfo.pNext = nullptr;
+    createInfo.flags = 0;
+
+    std::vector<std::shared_ptr<Shader>> shaders;
+
+    for (auto shader : shaders)
     {
-        m_setLayouts.push_back(_renderDevice.getDevice().createDescriptorSetLayoutUnique(layout.second));
+        ShaderReflection reflection(shader->getBinary());  
+
+        DescriptorLayoutInfo info;
+
+        for (auto& resource : reflection.getResources())
+        {
+            if (resource.type != VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT && resource.type != VK_DESCRIPTOR_TYPE_OU)
+
+            info.set = resource.set;
+            info.bindings = resource.binding
+            createInfo.bindingCount = 
+
+            m_setLayouts.push_back(_renderDevice.getDevice().createDescriptorSetLayoutUnique(layout.second));
+        }
     }
 }
 
 void Pipeline::getDescriptorLayouts(std::shared_ptr<DescriptorLayoutCache> descriptorLayoutCache)
 {
-
 
     VkDescriptorSetLayoutCreateInfo createInfo;
     createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -106,15 +104,20 @@ void Pipeline::createLayout()
     createInfo.pushConstantRangeCount = 0;
     createInfo.pPushConstantRanges = nullptr;
 
-    if (vkCreatePipelineLayout(m_device->getDevice(), &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
+    if (vkCreatePipelineLayout(m_device->getHandle(), &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create the Vulkan pipeline layout!");
     }
 
 }
 
-void Pipeline::createPipeline(std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader)
+void Pipeline::createPipeline(std::vector<std::shared_ptr<Shader>> shaders)
 {
+    for (std::shared_ptr<Shader> shader : shaders)
+    {
+        shader->
+    }
+
     std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
     shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStages[0].pNext = nullptr;
@@ -132,7 +135,10 @@ void Pipeline::createPipeline(std::shared_ptr<Shader> vertexShader, std::shared_
     shaderStages[1].pName = "main";
     shaderStages[1].pSpecializationInfo = nullptr;
 
-    VkPipelineVertexInputStateCreateInfo vertexInputState = vertexShader->getVertexState();
+    VkPipelineVertexInputStateCreateInfo vertexInputState = {};
+    vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+    vertexInputState.pNext = nullptr;
+    vertexInputState.flags = 0;
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
     inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -246,12 +252,12 @@ void Pipeline::createPipeline(std::shared_ptr<Shader> vertexShader, std::shared_
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.layout = m_pipelineLayout;
-    pipelineCreateInfo.renderPass = m_renderPass->getRenderPass();
+    pipelineCreateInfo.renderPass = m_renderPass->getHandle();
     pipelineCreateInfo.subpass = m_subpass;
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineCreateInfo.basePipelineIndex = 0;
 
-    if (vkCreateGraphicsPipelines(m_device->getDevice(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline) != VK_SUCCESS)
+    if (vkCreateGraphicsPipelines(m_device->getHandle(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan graphics pipeline!");
     }

@@ -31,7 +31,7 @@ void Renderer::createSyncObjects()
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocateInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
 
-    if (vkAllocateCommandBuffers(m_device->getDevice(), &allocateInfo, m_swapCommandBuffers.data()) != VK_SUCCESS)
+    if (vkAllocateCommandBuffers(m_device->getHandle(), &allocateInfo, m_swapCommandBuffers.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not allocate Vulkan command buffers for the renderer!");
     }
@@ -54,9 +54,9 @@ void Renderer::createSyncObjects()
 
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        if (vkCreateSemaphore(m_device->getDevice(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(m_device->getDevice(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(m_device->getDevice(), &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
+        if (vkCreateSemaphore(m_device->getHandle(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
+            vkCreateSemaphore(m_device->getHandle(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
+            vkCreateFence(m_device->getHandle(), &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
         {
             throw std::runtime_error("Could not create a Vulkan sync object!");
         }
@@ -67,12 +67,12 @@ void Renderer::destroySyncObjects() noexcept
 {
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
-        vkDestroySemaphore(m_device->getDevice(), m_imageAvailableSemaphores[i], nullptr);
-        vkDestroySemaphore(m_device->getDevice(), m_renderFinishedSemaphores[i], nullptr);
-        vkDestroyFence(m_device->getDevice(), m_inFlightFences[i], nullptr);
+        vkDestroySemaphore(m_device->getHandle(), m_imageAvailableSemaphores[i], nullptr);
+        vkDestroySemaphore(m_device->getHandle(), m_renderFinishedSemaphores[i], nullptr);
+        vkDestroyFence(m_device->getHandle(), m_inFlightFences[i], nullptr);
     }
 
-    vkFreeCommandBuffers(m_device->getDevice(), m_device->getCommandPool(), (uint32_t)m_swapCommandBuffers.size(), m_swapCommandBuffers.data());
+    vkFreeCommandBuffers(m_device->getHandle(), m_device->getCommandPool(), (uint32_t)m_swapCommandBuffers.size(), m_swapCommandBuffers.data());
 }
 
 void Renderer::resize(Extent2D extent)
@@ -92,7 +92,7 @@ void Renderer::render()
         return;
     }
 
-    vkWaitForFences(m_device->getDevice(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
+    vkWaitForFences(m_device->getHandle(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
 
     // Get the specific command buffer and image frame to use.
     uint32_t imageIndex = 0;
@@ -105,7 +105,7 @@ void Renderer::render()
         resize(m_swapchain->getExtent());
     }
 
-    vkResetFences(m_device->getDevice(), 1, &m_inFlightFences[m_currentFrame]);
+    vkResetFences(m_device->getHandle(), 1, &m_inFlightFences[m_currentFrame]);
     
     // Record each render pass
     vkResetCommandBuffer(m_swapCommandBuffers[m_currentFrame], 0);

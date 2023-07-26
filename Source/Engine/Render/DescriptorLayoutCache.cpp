@@ -3,6 +3,45 @@
 namespace bl
 {
 
+bool DescriptorLayoutInfo::operator==(const DescriptorLayoutInfo& other) const
+{
+    if (other.bindings.size() != bindings.size())
+    {
+        return false;
+    }
+    else
+    {
+        for (uint32_t i = 0; i < bindings.size(); i++)
+        {
+            if (other.bindings[i].binding != bindings[i].binding) return false;
+            if (other.bindings[i].descriptorType != bindings[i].descriptorType) return false;
+            if (other.bindings[i].descriptorCount != bindings[i].descriptorCount) return false;
+            if (other.bindings[i].stageFlags != bindings[i].stageFlags) return false;
+        }
+    }
+
+    return true;
+}
+
+size_t DescriptorLayoutInfo::hash() const
+{
+    using std::size_t;
+    using std::hash;
+
+    size_t result = hash<size_t>()(bindings.size());
+
+    for (const VkDescriptorSetLayoutBinding& b : bindings)
+    {
+        // pack binding into a uint64
+        size_t bindingHash = b.binding | b.descriptorType << 8 | b.descriptorCount << 16 | b.stageFlags << 24;
+
+        // shuffle data and xor with the main hash
+        result ^= hash<size_t>()(bindingHash);
+    }
+
+    return result;
+}
+
 DescriptorLayoutCache::DescriptorLayoutCache(std::shared_ptr<Device> device)
     : m_device(device)
 {
@@ -12,11 +51,11 @@ DescriptorLayoutCache::~DescriptorLayoutCache()
 {
     for (auto pair : m_cache)
     {
-        vkDestroyDescriptorSetLayout(m_device->getDevice(), pair.second, nullptr);
+        vkDestroyDescriptorSetLayout(m_device->getHandle(), pair.second, nullptr);
     }
 }
 
-VkDescriptorSetLayout DescriptorLayoutCache::createDescriptorLayout(const VkDescriptorSetLayoutCreateInfo& createInfo)
+VkDescriptorSetLayout DescriptorLayoutCache::createLayout(const VkDescriptorSetLayoutCreateInfo& createInfo)
 {
     DescriptorLayoutInfo info;
     info.bindings.resize(createInfo.bindingCount);
@@ -46,7 +85,7 @@ VkDescriptorSetLayout DescriptorLayoutCache::createDescriptorLayout(const VkDesc
     {
         // create a new descriptor set layout
         VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-        if (vkCreateDescriptorSetLayout(m_device->getDevice(), &createInfo, nullptr, &layout) != VK_SUCCESS)
+        if (vkCreateDescriptorSetLayout(m_device->getHandle(), &createInfo, nullptr, &layout) != VK_SUCCESS)
         {
             throw std::runtime_error("Could not crate a Vulkan descriptor set layout!");
         }

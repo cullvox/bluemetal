@@ -26,8 +26,12 @@
 namespace bl
 {
 
-Device::Device(std::shared_ptr<Instance> instance, std::shared_ptr<Window> window)
+Device::Device(
+    std::shared_ptr<Instance> instance, 
+    std::shared_ptr<PhysicalDevice> physicalDevice,
+    std::shared_ptr<Window> window)
     : m_instance(instance)
+    , m_physicalDevice(physicalDevice)
 {
     createDevice(window);
     createCommandPool();
@@ -51,17 +55,7 @@ uint32_t Device::getPresentFamilyIndex()
     return m_presentFamilyIndex;
 }
 
-VkInstance Device::getInstance()
-{
-    return m_instance->getInstance();
-}
-
-VkPhysicalDevice Device::getPhysicalDevice()
-{
-    return m_instance->getPhysicalDevice();
-}
-
-VkDevice Device::getDevice()
+VkDevice Device::getHandle()
 {
     return m_device;
 }
@@ -162,14 +156,14 @@ std::vector<const char*> Device::getValidationLayers()
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
 
-    if (vkEnumerateDeviceLayerProperties(m_instance->getPhysicalDevice(), &propertiesCount, nullptr) != VK_SUCCESS)
+    if (vkEnumerateDeviceLayerProperties(m_physicalDevice->getHandle(), &propertiesCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan device layer properties count!");
     }
 
     properties.resize(propertiesCount);
 
-    if (vkEnumerateDeviceLayerProperties(m_instance->getPhysicalDevice(), &propertiesCount, properties.data()) != VK_SUCCESS)
+    if (vkEnumerateDeviceLayerProperties(m_physicalDevice->getHandle(), &propertiesCount, properties.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not enumerate Vulkan device layer properties!");
     }
@@ -200,14 +194,14 @@ std::vector<const char*> Device::getExtensions()
     uint32_t propertyCount = 0;
     std::vector<VkExtensionProperties> properties;
 
-    if (vkEnumerateDeviceExtensionProperties(m_instance->getPhysicalDevice(), nullptr, &propertyCount, nullptr) != VK_SUCCESS)
+    if (vkEnumerateDeviceExtensionProperties(m_physicalDevice->getHandle(), nullptr, &propertyCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan device extension properties count!");
     }
 
     properties.resize(propertyCount);
 
-    if (vkEnumerateDeviceExtensionProperties(m_instance->getPhysicalDevice(), nullptr, &propertyCount, properties.data()) != VK_SUCCESS)
+    if (vkEnumerateDeviceExtensionProperties(m_physicalDevice->getHandle(), nullptr, &propertyCount, properties.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("could not enumerate Vulkan device extension properties!");
     }
@@ -236,11 +230,11 @@ void Device::createDevice(std::shared_ptr<Window> window)
     // get the queue family properties of the physical device
     uint32_t queuePropertyCount = 0;
     std::vector<VkQueueFamilyProperties> queueProperties;
-    vkGetPhysicalDeviceQueueFamilyProperties(m_instance->getPhysicalDevice(), &queuePropertyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice->getHandle(), &queuePropertyCount, nullptr);
 
     queueProperties.resize(queuePropertyCount);
 
-    vkGetPhysicalDeviceQueueFamilyProperties(m_instance->getPhysicalDevice(), &queuePropertyCount, queueProperties.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice->getHandle(), &queuePropertyCount, queueProperties.data());
 
     // determine what families will be dedicated to graphics and present
     uint32_t i = 0;
@@ -252,7 +246,7 @@ void Device::createDevice(std::shared_ptr<Window> window)
         }
 
         VkBool32 surfaceSupported = VK_FALSE;
-        if (vkGetPhysicalDeviceSurfaceSupportKHR(m_instance->getPhysicalDevice(), i, window->getSurface(), &surfaceSupported) != VK_SUCCESS)
+        if (vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice->getHandle(), i, window->getSurface(), &surfaceSupported) != VK_SUCCESS)
         {
             throw std::runtime_error("Could not check Vulkan physical device surface support!");
         }
@@ -303,7 +297,7 @@ void Device::createDevice(std::shared_ptr<Window> window)
     createInfo.ppEnabledExtensionNames = extensions.data();
     createInfo.pEnabledFeatures = &features;
 
-    if (vkCreateDevice(m_instance->getPhysicalDevice(), &createInfo, nullptr, &m_device) != VK_SUCCESS)
+    if (vkCreateDevice(m_physicalDevice->getHandle(), &createInfo, nullptr, &m_device) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create the Vulkan device!");
     }
@@ -330,14 +324,14 @@ void Device::createAllocator()
 {
     VmaAllocatorCreateInfo createInfo = {};
     createInfo.flags = 0;
-    createInfo.physicalDevice = m_instance->getPhysicalDevice();
+    createInfo.physicalDevice = m_physicalDevice->getHandle();
     createInfo.device = m_device;
     createInfo.preferredLargeHeapBlockSize = 0;
     createInfo.pAllocationCallbacks = nullptr;
     createInfo.pDeviceMemoryCallbacks = nullptr;
     createInfo.pHeapSizeLimit = nullptr;
     createInfo.pVulkanFunctions = nullptr;
-    createInfo.instance = m_instance->getInstance();
+    createInfo.instance = m_instance->getHandle();
     createInfo.vulkanApiVersion = VK_API_VERSION_1_2;
     createInfo.pTypeExternalMemoryHandleTypes = nullptr;
 
