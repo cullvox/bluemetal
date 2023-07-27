@@ -18,12 +18,12 @@ Shader::~Shader()
     vkDestroyShaderModule(m_device->getHandle(), m_module, nullptr);
 } 
 
-VkShaderStageFlags Shader::getStage()
+VkShaderStageFlagBits Shader::getStage()
 {
     return m_stage;
 }
 
-VkShaderModule Shader::getModule()
+VkShaderModule Shader::getHandle()
 {
     return m_module;
 }

@@ -24,11 +24,11 @@ public:
     ///     @param renderPass What pass this pipeline is used in.
     ///     @param subpass What subpass on the render pass is this used in.
     Pipeline(
-        std::shared_ptr<Device>                 device, 
-        std::shared_ptr<DescriptorLayoutCache>  descriptorLayoutCache, 
-        std::vector<std::shared_ptr<Shader>>    shaders, 
-        std::shared_ptr<RenderPass>             renderPass, 
-        uint32_t                                subpass);
+        std::shared_ptr<Device>                     device, 
+        std::shared_ptr<DescriptorLayoutCache>      descriptorLayoutCache, 
+        const std::vector<std::shared_ptr<Shader>>& shaders, 
+        std::shared_ptr<RenderPass>                 renderPass, 
+        uint32_t                                    subpass);
 
     /// Default destructor.
     ~Pipeline();
@@ -41,7 +41,7 @@ public:
 
     /// Returns reflected resource info that this pipeline uses for materials and others. 
     ///
-    ///     Gets information for materials like descriptor set bindings.
+    /// Gets information for materials like descriptor set bindings.
     std::vector<PipelineResource> getResources();
 
     /// Binds this pipeline to a command buffer.
@@ -52,7 +52,7 @@ public:
 private:
     void getDescriptorLayouts(std::shared_ptr<DescriptorLayoutCache> descriptorLayoutCache);
     void createLayout();
-    void createPipeline(std::shared_ptr<Shader> vertexShader, std::shared_ptr<Shader> fragmentShader);
+    void createPipeline(const std::vector<std::shared_ptr<Shader>>& shaders);
     void mergeShaderResources(const std::vector<PipelineResource>& resources);
 
     std::shared_ptr<Device>                 m_device;

@@ -33,9 +33,11 @@ private:
         }
     };
 
-    std::shared_ptr<Device>                                 m_device;
-    std::map<DescriptorLayoutInfo, VkDescriptorSetLayout, 
-        DescriptorLayoutHash>                               m_cache;
+    std::shared_ptr<Device>     m_device;
+    std::unordered_map<
+        DescriptorLayoutInfo, 
+        VkDescriptorSetLayout, 
+        DescriptorLayoutHash>   m_cache;
 };
 
 } // namespace bl

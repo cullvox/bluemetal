@@ -3,7 +3,7 @@
 #include "NoodleToken.h"
 #include "Export.h"
 
-class BLUEMETAL_API blNoodleLexerUtils
+class BLUEMETAL_API NoodleLexerUtils
 {
 public:
     static bool isSpace(char c);
@@ -11,19 +11,19 @@ public:
     static bool isIdentifierChar(char c);
 };
 
-class BLUEMETAL_API blNoodleLexer 
+class BLUEMETAL_API NoodleLexer 
 {
 public:
-    explicit blNoodleLexer(const std::string& content);
+    explicit NoodleLexer(const std::string& content);
 
-    blNoodleToken next();
+    NoodleToken next();
     int linePos() const;
     int characterPos() const;
 private:
-    blNoodleToken createIdentifier();
-    blNoodleToken createString();
-    blNoodleToken createNumber();
-    blNoodleToken createAtom(blNoodleTokenKind kind);
+    NoodleToken createIdentifier();
+    NoodleToken createString();
+    NoodleToken createNumber();
+    NoodleToken createAtom(NoodleTokenKind kind);
     char peek();
     char get();
 

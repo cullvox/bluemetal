@@ -1,11 +1,11 @@
-#include "Engine/Engine.hpp"
+#include "Engine/Engine.h"
 
 int main(int argc, const char** argv)
 {
     (void)argc;
     (void)argv;
 
-    blEngine engine("Dark Red");
+    bl::Engine engine("Dark Red");
     
     engine.run();
 

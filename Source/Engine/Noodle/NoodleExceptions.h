@@ -1,15 +1,15 @@
 #pragma once
 
-#include "Noodle/Precompiled.hpp"
+#include "Precompiled.h"
 
 // These would normally be based on blException, but that is in a different 
 // module. This modules is supposed to be separated from the others
 
 
-class blNoodleException : public std::exception
+class NoodleException : public std::exception
 {
 public:
-    blNoodleException(const std::string& what)
+    NoodleException(const std::string& what)
         : std::exception()
         , _what(what) {}
     virtual const char* what() const noexcept { return _what.c_str(); }
@@ -17,16 +17,16 @@ private:
     std::string _what;
 };
 
-class blNoodleParseException : public blNoodleException
+class NoodleParseException : public NoodleException
 {
 public:
-    blNoodleParseException(const std::string& what)
-        : blNoodleException(what) {}
+    NoodleParseException(const std::string& what)
+        : NoodleException(what) {}
 };
 
-class blNoodleInvalidAccessException : public blNoodleException
+class NoodleInvalidAccessException : public NoodleException
 {
 public:
-    blNoodleInvalidAccessException(const std::string& what)
-        : blNoodleException(what) {}
+    NoodleInvalidAccessException(const std::string& what)
+        : NoodleException(what) {}
 };

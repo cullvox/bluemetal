@@ -27,8 +27,20 @@ list(APPEND Sources
   "Render/Swapchain.cpp"
   "Render/Renderer.cpp"
   "Render/FrameCounter.cpp"
-  "Render/Mesh.cpp"
-  "Render/PresentRenderPass.cpp")
+  # "Render/Mesh.cpp"
+  "Render/PresentRenderPass.cpp"
+
+  # imgui
+  "imgui/imgui.cpp"
+  "imgui/imgui_demo.cpp"
+  "imgui/imgui_draw.cpp"
+  "imgui/imgui_tables.cpp"
+  "imgui/imgui_widgets.cpp"
+  "imgui/imgui_impl_sdl2.cpp"
+  "imgui/imgui_impl_vulkan.cpp"
+  "imgui/imgui_impl_bluemetal.cpp"
+
+  "Engine/Engine.cpp")
 
 add_library(BlueMetal STATIC ${Sources})
 

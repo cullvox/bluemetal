@@ -103,4 +103,8 @@
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
+    "cSpell.words": [
+        "Bluemetal",
+        "subpass"
+    ],
 }

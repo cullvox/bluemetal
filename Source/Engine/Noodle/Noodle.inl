@@ -1,5 +1,5 @@
 
-#include "NoodleExceptions.hpp"
+#include "NoodleExceptions.h"
 
 namespace ntu
 {
@@ -8,9 +8,9 @@ namespace ntu
 }
 
 template<typename T> 
-blNoodle::blNoodle(const std::string& name, const std::vector<T>& value, blNoodle* parent)
+Noodle::Noodle(const std::string& name, const std::vector<T>& value, Noodle* parent)
     : _name(name)
-    , _type(blNoodleType::eArray)
+    , _type(NoodleType::eArray)
     , _parent(parent)
 {
 
@@ -19,19 +19,19 @@ blNoodle::blNoodle(const std::string& name, const std::vector<T>& value, blNoodl
 
     for (const T& v : value)
     {
-        _array.push_back(blNoodle("", v, parent));
+        _array.push_back(Noodle("", v, parent));
     }    
 }
 
 template<typename T> 
-T& blNoodle::get()
+T& Noodle::get()
 {
-    if (_type != blNoodleType::eInteger &&
-        _type != blNoodleType::eFloat &&
-        _type != blNoodleType::eBoolean &&
-        _type != blNoodleType::eString)
+    if (_type != NoodleType::eInteger &&
+        _type != NoodleType::eFloat &&
+        _type != NoodleType::eBoolean &&
+        _type != NoodleType::eString)
     {
-        throw blNoodleInvalidAccessException("get expected integer, float, boolean, or string type");
+        throw NoodleInvalidAccessException("get expected integer, float, boolean, or string type");
     }
 
     static_assert(ntu::is_any<T, int, float, bool, std::string>() && "Must be one of the types!");
@@ -39,7 +39,7 @@ T& blNoodle::get()
 }
 
 template<typename T> 
-blNoodle& blNoodle::operator=(const std::vector<T>& value) noexcept
+Noodle& Noodle::operator=(const std::vector<T>& value) noexcept
 {
     
     return *this;

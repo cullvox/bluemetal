@@ -28,7 +28,7 @@
 
 // Caden: ImGui may not suggest being used as a DLL, however it wouldn't make sence to link it as a static library 
 //      with all the things we'd need to to to allow for this to function in our other shared libraries. 
-#define IMGUI_API IMGUI_EXPORT
+#define IMGUI_API BLUEMETAL_API
 
 //---- Don't define obsolete functions/enums/behaviors. Consider enabling from time to time after updating to avoid using soon-to-be obsolete function/names.
 //#define IMGUI_DISABLE_OBSOLETE_FUNCTIONS

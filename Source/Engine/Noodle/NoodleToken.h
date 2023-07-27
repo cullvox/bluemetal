@@ -2,7 +2,7 @@
 
 #include "Precompiled.h"
 
-enum class blNoodleTokenKind
+enum class NoodleTokenKind
 {
     eUnexpected,
     eIdentifier,
@@ -21,11 +21,11 @@ enum class blNoodleTokenKind
     eNewLine,
 };
 
-class blNoodleToken
+class NoodleToken
 {
 public:
-    blNoodleToken() = default;
-    blNoodleToken(blNoodleTokenKind kind, const std::string_view lexeme, int linePos, int characterPos)
+    NoodleToken() = default;
+    NoodleToken(NoodleTokenKind kind, const std::string_view lexeme, int linePos, int characterPos)
         : _kind(kind)
         , _lexeme(lexeme)
         , _linePos(linePos)
@@ -33,11 +33,11 @@ public:
     {
     }
 
-    blNoodleTokenKind kind() { return _kind; }
+    NoodleTokenKind kind() { return _kind; }
     std::string_view lexeme() { return _lexeme; }
     int linePos() { return _linePos; }
     int characterPos() { return _characterPos; }
-    bool is(blNoodleTokenKind kind) { return _kind == kind; }
+    bool is(NoodleTokenKind kind) { return _kind == kind; }
 
     template <typename... Ts>
     inline bool isOneOf(Ts... ks)
@@ -46,7 +46,7 @@ public:
     }
     
 private:
-    blNoodleTokenKind       _kind;
+    NoodleTokenKind       _kind;
     int                     _linePos;
     int                     _characterPos;
     std::string_view        _lexeme;

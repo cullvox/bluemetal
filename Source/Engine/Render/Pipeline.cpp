@@ -5,7 +5,7 @@
 namespace bl
 {
 
-Pipeline:: Pipeline(std::shared_ptr<Device> device, std::shared_ptr<DescriptorLayoutCache> cache, std::vector<std::shared_ptr<Shader>> shaders, std::shared_ptr<RenderPass> renderPass, uint32_t subpass)
+Pipeline::Pipeline(std::shared_ptr<Device> device, std::shared_ptr<DescriptorLayoutCache> cache, const std::vector<std::shared_ptr<Shader>>& shaders, std::shared_ptr<RenderPass> renderPass, uint32_t subpass)
     : m_device(device)
     , m_renderPass(renderPass)
     , m_subpass(subpass)
@@ -35,8 +35,8 @@ void Pipeline::mergeShaderResources(const std::vector<PipelineResource>& shaderR
     {
         // shader resources for input and outputs can have the same names, adding the stage name makes them unique
         auto key = resource.name;
-        if (resource.type == PIPELINE_RESOURCE_TYPE_OUTPUT || resource.type == PIPELINE_RESOURCE_TYPE_INPUT)
-            key = std::to_string(resource.stages) + ":" + key;
+        //if (resource.type  == PIPELINE_RESOURCE_TYPE_OUTPUT || resource.type == PIPELINE_RESOURCE_TYPE_INPUT)
+        //    key = std::to_string(resource.stages) + ":" + key;
         
         // try to find the resource in the pipelines resources
         auto it = m_resources.find(key);
@@ -49,48 +49,17 @@ void Pipeline::mergeShaderResources(const std::vector<PipelineResource>& shaderR
     }
 }
 
-void Pipeline::createDescriptorSetLayouts(std::shared_ptr<DescriptorLayoutCache> layoutCache, std::vector<std::shared_ptr<Shader>> shaders)
-{
-
-
-    // Create the descriptor set layouts
-    VkDescriptorSetLayoutCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    createInfo.pNext = nullptr;
-    createInfo.flags = 0;
-
-    std::vector<std::shared_ptr<Shader>> shaders;
-
-    for (auto shader : shaders)
-    {
-        ShaderReflection reflection(shader->getBinary());  
-
-        DescriptorLayoutInfo info;
-
-        for (auto& resource : reflection.getResources())
-        {
-            if (resource.type != VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT && resource.type != VK_DESCRIPTOR_TYPE_OU)
-
-            info.set = resource.set;
-            info.bindings = resource.binding
-            createInfo.bindingCount = 
-
-            m_setLayouts.push_back(_renderDevice.getDevice().createDescriptorSetLayoutUnique(layout.second));
-        }
-    }
-}
-
 void Pipeline::getDescriptorLayouts(std::shared_ptr<DescriptorLayoutCache> descriptorLayoutCache)
 {
 
-    VkDescriptorSetLayoutCreateInfo createInfo;
-    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    createInfo.pNext = nullptr;
-    createInfo.flags = 0;
-    createInfo.bindingCount = ;
-    createInfo.pBindings = ;
+    // VkDescriptorSetLayoutCreateInfo createInfo = {};
+    // createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    // createInfo.pNext = nullptr;
+    // createInfo.flags = 0;
+    // createInfo.bindingCount = ;
+    // createInfo.pBindings = ;
 
-    descriptorLayoutCache->createDescriptorLayout()
+    // descriptorLayoutCache->createDescriptorLayout()
 }
 
 void Pipeline::createLayout()
@@ -111,29 +80,23 @@ void Pipeline::createLayout()
 
 }
 
-void Pipeline::createPipeline(std::vector<std::shared_ptr<Shader>> shaders)
+void Pipeline::createPipeline(const std::vector<std::shared_ptr<Shader>>& shaders)
 {
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {};
+
+    uint32_t i = 0;
     for (std::shared_ptr<Shader> shader : shaders)
     {
-        shader->
+        shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shaderStages[i].pNext = nullptr;
+        shaderStages[i].flags = 0;
+        shaderStages[i].stage = shader->getStage();
+        shaderStages[i].module = shader->getHandle();
+        shaderStages[i].pName = "main";
+        shaderStages[i].pSpecializationInfo = nullptr;
+
+        i++;
     }
-
-    std::array<VkPipelineShaderStageCreateInfo, 2> shaderStages;
-    shaderStages[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[0].pNext = nullptr;
-    shaderStages[0].flags = 0;
-    shaderStages[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-    shaderStages[0].module = vertexShader->getModule();
-    shaderStages[0].pName = "main";
-    shaderStages[0].pSpecializationInfo = nullptr;
-
-    shaderStages[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-    shaderStages[1].pNext = nullptr;
-    shaderStages[1].flags = 0;
-    shaderStages[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    shaderStages[1].module = fragmentShader->getModule();
-    shaderStages[1].pName = "main";
-    shaderStages[1].pSpecializationInfo = nullptr;
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -199,7 +162,7 @@ void Pipeline::createPipeline(std::vector<std::shared_ptr<Shader>> shaders)
     multisampleState.alphaToCoverageEnable = VK_FALSE;
     multisampleState.alphaToOneEnable = VK_FALSE;
 
-    VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
+    // VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
 
     std::array<VkPipelineColorBlendAttachmentState, 1> attachments = {};
     attachments[0].blendEnable = VK_TRUE;

@@ -12,8 +12,8 @@ public:
     ~Shader();
 
 
-    VkShaderStageFlags getStage();
-    VkShaderModule getModule();
+    VkShaderStageFlagBits getStage();
+    VkShaderModule getHandle();
     std::vector<uint32_t> getBinary();
 
 private:

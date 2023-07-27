@@ -1,9 +1,12 @@
-#include "Core/Log.hpp"
-#include "Engine/Engine.hpp"
-#include "Render/Renderer/PresentRenderPass.hpp"
-#include "ImGui/ImGui.hpp"
-#include "Noodle/Noodle.hpp"
-#include "imgui.h"
+#include "Engine/Engine.h"
+#include "Core/Log.h"
+#include "Render/PresentRenderPass.h"
+#include "Noodle/Noodle.h"
+
+#include "imgui/imgui.h"
+
+namespace bl
+{
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see docs/FONTS.md)
@@ -19,7 +22,7 @@ static void HelpMarker(const char* desc)
     }
 }
 
-blEngine::blEngine(const std::string& appName)
+Engine::Engine(const std::string& appName)
     : _close(false)
 {
     (void)appName;
@@ -31,19 +34,19 @@ blEngine::blEngine(const std::string& appName)
         throw std::runtime_error(SDL_GetError());
     }
 
-    std::vector<blDisplay> displays = blDisplay::getDisplays();
+    std::vector<Display> displays = Display::getDisplays();
 
     
-    _window = std::make_shared<blWindow>(displays[0].getDesktopMode());
-    _inputSystem = blInputSystem::getInstance();
-    _renderDevice = std::make_shared<blRenderDevice>(_window);
-    _swapchain = std::make_shared<blSwapchain>(_renderDevice);
+    _window = std::make_shared<Window>(displays[0].getDesktopMode());
+    //_inputSystem = blInputSystem::getInstance();
+    _renderDevice = std::make_shared<Device>(_window);
+    _swapchain = std::make_shared<Swapchain>(_renderDevice);
 
     const std::string defaultConfig = 
         #include "defaultConfig.nwdl"
     ;
 
-    blNoodle config = blNoodle::parseFromFile("Save/Config/config.noodle");
+    Noodle config = Noodle::parseFromFile("Save/Config/config.noodle");
     int& value = config["window"]["width"].get<int>();
     config["window"]["height"] = 1600;
     value = value + 100;
@@ -133,12 +136,12 @@ blEngine::blEngine(const std::string& appName)
     blImGui::init(_window, _renderDevice, _presentPass);
 }
 
-blEngine::~blEngine()
+Engine::~Engine()
 {
     blImGui::shutdown();
 }
 
-bool blEngine::run()
+bool Engine::run()
 {
     
     while (!_inputSystem->shouldClose())
@@ -158,3 +161,5 @@ bool blEngine::run()
 
     return true;
 }
+
+} // namespace bl
