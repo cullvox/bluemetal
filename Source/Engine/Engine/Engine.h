@@ -22,11 +22,13 @@ public:
 
 private:
     bool _close;
-    std::shared_ptr<Window> _window;
-    std::shared_ptr<Device> _renderDevice;
-    std::shared_ptr<Swapchain> _swapchain;
-    std::shared_ptr<RenderPass> _presentPass;
-    std::shared_ptr<Renderer> _renderer;
+    std::shared_ptr<Instance> m_instance;
+    std::shared_ptr<PhysicalDevice> m_physicalDevice;
+    std::shared_ptr<Window> m_window;
+    std::shared_ptr<Device> m_device;
+    std::shared_ptr<Swapchain> m_swapchain;
+    std::shared_ptr<RenderPass> m_presentPass;
+    std::shared_ptr<Renderer> m_renderer;
     FrameCounter _frameCounter;
     std::queue<std::function<void()>> _postRenderCommands;
 };

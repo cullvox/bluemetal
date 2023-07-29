@@ -1,6 +1,6 @@
-#include "Noodle/Noodle.hpp"
-#include "Noodle/NoodleExceptions.hpp"
-#include "NoodleLexer.hpp"
+#include "Noodle/Noodle.h"
+#include "Noodle/NoodleExceptions.h"
+#include "NoodleLexer.h"
 
 Noodle Noodle::parse(const std::string& noodle)
 {
@@ -262,7 +262,7 @@ Noodle::Noodle(const std::string& name, const std::string& value, Noodle* parent
 {
 }
 
-NoodleType Noodle::arrayType() const
+NoodleType Noodle::arrayType()
 {
     if (_type != NoodleType::eArray)
     {
@@ -272,7 +272,7 @@ NoodleType Noodle::arrayType() const
     return _arrayType;
 }
 
-size_t Noodle::size() const
+size_t Noodle::size()
 {
     switch(_type)
     {
@@ -285,14 +285,14 @@ size_t Noodle::size() const
     }
 }
 
-std::string Noodle::dump() const noexcept
+std::string Noodle::dump() 
 {
     std::stringstream ss;
     recursiveDump(ss, 0);
     return ss.str();
 }
 
-void Noodle::dumpToFile(const std::filesystem::path& path) const noexcept
+void Noodle::dumpToFile(const std::filesystem::path& path) 
 {
     std::ofstream file(path);
 
@@ -301,7 +301,7 @@ void Noodle::dumpToFile(const std::filesystem::path& path) const noexcept
     file << ss.str();
 }
 
-std::string Noodle::toString() const noexcept
+std::string Noodle::toString() const
 {
     switch(_type)
     {
@@ -337,28 +337,28 @@ std::string Noodle::toString() const noexcept
     }
 }
 
-Noodle& Noodle::operator=(int value) noexcept
+Noodle& Noodle::operator=(int value)
 {
     _type = NoodleType::eInteger;
     _value = value;
     return *this;
 }
 
-Noodle& Noodle::operator=(float value) noexcept
+Noodle& Noodle::operator=(float value)
 {
     _type = NoodleType::eFloat;
     _value = value;
     return *this;
 }
 
-Noodle& Noodle::operator=(bool value) noexcept
+Noodle& Noodle::operator=(bool value)
 {
     _type = NoodleType::eBoolean;
     _value = value;
     return *this;
 }
 
-Noodle& Noodle::operator=(const std::string& value) noexcept
+Noodle& Noodle::operator=(const std::string& value)
 {
     _type = NoodleType::eString;
     _value = value;
@@ -394,7 +394,7 @@ std::ostream& operator<<(std::ostream& os, const Noodle& noodle)
     return os;
 }
 
-void Noodle::recursiveDump(std::stringstream& ss, int tabs) const noexcept
+void Noodle::recursiveDump(std::stringstream& ss, int tabs) const
 {
     auto offset = [&]()
     {

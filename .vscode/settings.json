@@ -105,6 +105,8 @@
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
     "cSpell.words": [
         "Bluemetal",
-        "subpass"
+        "framebuffer",
+        "subpass",
+        "swapchain"
     ],
 }

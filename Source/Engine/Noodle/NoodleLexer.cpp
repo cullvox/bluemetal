@@ -1,6 +1,6 @@
-#include "NoodleLexer.hpp"
+#include "NoodleLexer.h"
 
-bool NoodleLexerUtils::isSpace(char c) noexcept
+bool NoodleLexerUtils::isSpace(char c)
 {
     switch (c)
     {
@@ -14,7 +14,7 @@ bool NoodleLexerUtils::isSpace(char c) noexcept
     }
 }
 
-bool NoodleLexerUtils::isDigit(char c) noexcept
+bool NoodleLexerUtils::isDigit(char c)
 {
     switch (c)
     {
@@ -35,7 +35,7 @@ bool NoodleLexerUtils::isDigit(char c) noexcept
     }
 }
 
-bool NoodleLexerUtils::isIdentifierChar(char c) noexcept
+bool NoodleLexerUtils::isIdentifierChar(char c)
 {
     switch (c)
     {
@@ -112,7 +112,7 @@ bool NoodleLexerUtils::isIdentifierChar(char c) noexcept
 // NoodleLexer
 //==============================================================================
 
-NoodleLexer::NoodleLexer(const std::string& content) noexcept
+NoodleLexer::NoodleLexer(const std::string& content)
     : _content(content)
     , _it(content.begin())
     , _linePos(0)
@@ -120,7 +120,7 @@ NoodleLexer::NoodleLexer(const std::string& content) noexcept
 {
 }
 
-NoodleToken NoodleLexer::next() noexcept
+NoodleToken NoodleLexer::next()
 {
 
     if (_it == _content.end())
@@ -242,17 +242,17 @@ NoodleToken NoodleLexer::next() noexcept
     }
 }
 
-int NoodleLexer::linePos() const noexcept
+int NoodleLexer::linePos() const
 {
     return _linePos;
 }
 
-int NoodleLexer::characterPos() const noexcept
+int NoodleLexer::characterPos() const
 {
     return _characterPos;
 }
 
-NoodleToken NoodleLexer::createIdentifier() noexcept
+NoodleToken NoodleLexer::createIdentifier()
 {
     std::string::const_iterator start = _it;
     
@@ -270,7 +270,7 @@ NoodleToken NoodleLexer::createIdentifier() noexcept
     return NoodleToken(kind, view, linePos(), characterPos());
 }
 
-NoodleToken NoodleLexer::createString() noexcept
+NoodleToken NoodleLexer::createString()
 {
     std::string::const_iterator start = _it;
 
@@ -288,7 +288,7 @@ NoodleToken NoodleLexer::createString() noexcept
         linePos(), characterPos());
 }
 
-NoodleToken NoodleLexer::createNumber() noexcept
+NoodleToken NoodleLexer::createNumber()
 {
     std::string::const_iterator start = _it;
 
@@ -316,12 +316,12 @@ NoodleToken NoodleLexer::createNumber() noexcept
     return NoodleToken(kind, std::string_view{start, _it}, linePos(), characterPos());
 }
 
-NoodleToken NoodleLexer::createAtom(NoodleTokenKind kind) noexcept
+NoodleToken NoodleLexer::createAtom(NoodleTokenKind kind)
 {
     return NoodleToken(kind, std::string_view{_it++, _it}, linePos(), characterPos());
 }
 
-char NoodleLexer::peek() const noexcept
+char NoodleLexer::peek() const
 {
     if (_it == _content.end())
         return '\0';
@@ -329,7 +329,7 @@ char NoodleLexer::peek() const noexcept
         return *_it;
 }
 
-char NoodleLexer::get() noexcept
+char NoodleLexer::get()
 {
     char current = *_it++;
 

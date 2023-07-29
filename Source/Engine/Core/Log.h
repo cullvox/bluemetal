@@ -1,7 +1,15 @@
 #pragma once
 
-#include "Export.h"
+
 #include "Precompiled.h"
+#include "Export.h"
+#include "Core/Platform.h"
+
+#ifdef BLUEMETAL_SYSTEM_WINDOWS
+    #define BLUEMETAL_SLASH '\\'
+#else
+    #define BLUEMETAL_SLASH '/'
+#endif
 
 namespace bl
 {
@@ -48,7 +56,7 @@ public:
             case LogType::eFatal:     style = fatal_style; type_name = "FATAL"; break;
         }
 
-        fmt::print(style, "{} | {} | {:%Y-%m-%d-%H:%M:%S} | {}():{} - ", type_name, libraryName, fmt::localtime(std::chrono::system_clock::now()), function, line);
+        fmt::print(style, "{} | {}:{} | {:%Y-%m-%d-%H:%M:%S} | {}() - ", type_name, libraryName, line, fmt::localtime(std::chrono::system_clock::now()), function);
         fmt::vprint(fmt::format(style, "{}\n", format), args);
 
         if (type == LogType::eFatal)
@@ -58,7 +66,7 @@ public:
     static constexpr const char* file_name(const char* path) {
         const char* file = path;
         while (*path) {
-            if (*path++ == '/') {
+            if (*path++ == BLUEMETAL_SLASH) {
                 file = path;
             }
         }
@@ -75,6 +83,6 @@ public:
     
 };
 
-#define BL_LOG(type, format, ...) Logger::log(type, Logger::file_name(__FILE__), __LINE__, __func__, FMT_STRING(format) __VA_OPT__(,) __VA_ARGS__);
-
 } // namespace bl
+
+#define BL_LOG(type, format, ...) bl::Logger::log(type, bl::Logger::file_name(__FILE__), __LINE__, __func__, FMT_STRING(format) __VA_OPT__(,) __VA_ARGS__);

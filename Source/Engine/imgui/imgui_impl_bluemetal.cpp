@@ -1,15 +1,24 @@
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_vulkan.h"
+#include "imgui_impl_bluemetal.h"
 
 #include "Core/Log.h"
 
-std::shared_ptr<Window> _window;
-//std::shared_ptr<InputSystem> _inputSystem;
-std::shared_ptr<Device> _renderDevice;
-std::shared_ptr<RenderPass> _renderPass;
-vk::DescriptorPool _descriptorPool;
-blInputHookCallback _hookCallback;
+struct ImGui_ImplBluemetal_Data
+{
+    std::shared_ptr<bl::Instance>       instance;
+    std::shared_ptr<bl::PhysicalDevice> physicalDevice;
+    std::shared_ptr<bl::Device>         device;
+    std::shared_ptr<bl::Window>         window;
+    std::shared_ptr<bl::RenderPass>     renderPass;
+    VkDescriptorPool                    descriptorPool;
+};
+
+static ImGui_ImplBluemetal_Data* pData = nullptr;
+
+//std::shared_ptr<InputSystem> inputSystem;
+//blInputHookCallback _hookCallback;
 
 static void applyStyle()
 {
@@ -72,12 +81,16 @@ static void applyStyle()
     style.GrabRounding = style.FrameRounding = 2.3f;
 }
 
-bool ImGui_ImplBluemetal_InitInfo(const ImGui_ImplBluemetal_InitInfo* init)
+bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
 {
-    _window = window;
-    _renderDevice = renderDevice;
-    _renderPass = renderPass;
-    _inputSystem = blInputSystem::getInstance();
+    pData = new ImGui_ImplBluemetal_Data();
+    if (!pData) return false;
+
+    pData->instance = init->instance;
+    pData->physicalDevice = init->physicalDevice;
+    pData->device = init->device;
+    pData->window = init->window;
+    pData->renderPass = init->renderPass;
 
     VkDescriptorPoolSize poolSizes[] =
     {
@@ -101,7 +114,7 @@ bool ImGui_ImplBluemetal_InitInfo(const ImGui_ImplBluemetal_InitInfo* init)
     poolInfo.poolSizeCount = (uint32_t)std::size(poolSizes);
     poolInfo.pPoolSizes = poolSizes;
 
-    if (vkCreateDescriptorPool(init->device->getHandle(), &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS)
+    if (vkCreateDescriptorPool(pData->device->getHandle(), &poolInfo, nullptr, &pData->descriptorPool) != VK_SUCCESS)
     {
         BL_LOG(bl::LogType::eError, "Could not create a vulkan descriptor pool for ImGui!");
         return false;
@@ -109,25 +122,25 @@ bool ImGui_ImplBluemetal_InitInfo(const ImGui_ImplBluemetal_InitInfo* init)
 
     ImGui::CreateContext();
     
-    ImGui_ImplSDL2_InitForVulkan(window->getHandle());
+    ImGui_ImplSDL2_InitForVulkan(pData->window->getHandle());
 
     // Initialize ImGui for Vulkan, pass created objects.
-    ImGui_ImplVulkan_InitInfo initInfo
-    {
-        (VkInstance)_renderDevice->getInstance(),
-        (VkPhysicalDevice)_renderDevice->getPhysicalDevice(),
-        (VkDevice)_renderDevice->getHandle(),
-        _renderDevice->getGraphicsFamilyIndex(),
-        (VkQueue)_renderDevice->getGraphicsQueue(),
-        VK_NULL_HANDLE,
-        _descriptorPool,
-        0,
-        3,
-        3,
-        VK_SAMPLE_COUNT_1_BIT,
-    };
+    ImGui_ImplVulkan_InitInfo initInfo = {};
+    initInfo.Instance = pData->instance->getHandle();
+    initInfo.PhysicalDevice = pData->physicalDevice->getHandle();
+    initInfo.Device = pData->device->getHandle();
+    initInfo.QueueFamily = pData->device->getGraphicsFamilyIndex();
+    initInfo.Queue =  pData->device->getGraphicsQueue();
+    initInfo.PipelineCache = VK_NULL_HANDLE;
+    initInfo.DescriptorPool = pData->descriptorPool;
+    initInfo.Subpass = 0;
+    initInfo.MinImageCount = 3;
+    initInfo.ImageCount = 3;
+    initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    initInfo.Allocator = nullptr;
+    initInfo.CheckVkResultFn = nullptr;
 
-    if (!ImGui_ImplVulkan_Init(&initInfo, _renderPass->getRenderPass()))
+    if (!ImGui_ImplVulkan_Init(&initInfo, pData->renderPass->getHandle()))
     {
         throw std::runtime_error("Could not initialize ImGui Vulkan!");
     }
@@ -141,32 +154,35 @@ bool ImGui_ImplBluemetal_InitInfo(const ImGui_ImplBluemetal_InitInfo* init)
     ImFont* pFont = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto-Regular.ttf", 18.0f);
     io.FontDefault = pFont;
 
-    _renderDevice->immediateSubmit([&](VkCommandBuffer cmd) {
+    pData->device->immediateSubmit([&](VkCommandBuffer cmd)
+        {
             ImGui_ImplVulkan_CreateFontsTexture(cmd);
         });
 
     // Clear the font texture data from host memory.
     ImGui_ImplVulkan_DestroyFontUploadObjects();
 
-    _hookCallback = _inputSystem->addHook([&](const SDL_Event* pEvent) {
-            ImGui_ImplSDL2_ProcessEvent(pEvent);
-        });
+    //_hookCallback = _inputSystem->addHook([&](const SDL_Event* pEvent) {
+    //        ImGui_ImplSDL2_ProcessEvent(pEvent);
+    //    });
 
     applyStyle();
+
+    return true;
 }
 
-void blImGui::shutdown() noexcept
+void ImGui_ImplBluemetal_Shutdown()
 {
-    _renderDevice->waitForDevice();
-    _inputSystem->removeHook(_hookCallback);
+    pData->device->waitForDevice();
 
-    _renderDevice->getHandle()
-        .destroyDescriptorPool(_descriptorPool);
+    vkDestroyDescriptorPool(pData->device->getHandle(), pData->descriptorPool, nullptr);
 
     ImGui_ImplVulkan_Shutdown();
+
+    delete pData;
 }
 
-void blImGui::beginFrame() noexcept
+void ImGui_ImplBluemetal_BeginFrame()
 {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL2_NewFrame();
@@ -174,7 +190,7 @@ void blImGui::beginFrame() noexcept
     ImGui::NewFrame();
 }
 
-void blImGui::endFrame(VkCommandBuffer cmd) noexcept
+void ImGui_ImplBluemetal_EndFrame(VkCommandBuffer cmd)
 {
     ImGui::Render();
 

@@ -13,6 +13,7 @@ struct ImGui_ImplBluemetal_InitInfo
     std::shared_ptr<bl::Instance>           instance;
     std::shared_ptr<bl::PhysicalDevice>     physicalDevice;
     std::shared_ptr<bl::Device>             device;
+    std::shared_ptr<bl::RenderPass>         renderPass;
     std::shared_ptr<bl::Window>             window;
 };
 

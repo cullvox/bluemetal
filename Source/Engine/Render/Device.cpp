@@ -45,6 +45,11 @@ Device::~Device()
     vkDestroyDevice(m_device, nullptr);
 }
 
+std::shared_ptr<PhysicalDevice> Device::getPhysicalDevice()
+{
+    return m_physicalDevice;
+}
+
 uint32_t Device::getGraphicsFamilyIndex()
 {
     return m_graphicsFamilyIndex;
@@ -304,6 +309,8 @@ void Device::createDevice(std::shared_ptr<Window> window)
 
     vkGetDeviceQueue(m_device, m_graphicsFamilyIndex, 0, &m_graphicsQueue);
     vkGetDeviceQueue(m_device, m_presentFamilyIndex, 0, &m_presentQueue);
+
+    BL_LOG(LogType::eInfo, "Created Vulkan device using {}.", m_physicalDevice->getDeviceName())
 }
 
 void Device::createCommandPool()

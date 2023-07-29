@@ -7,7 +7,9 @@ list(APPEND Sources
   "Math/Vector4.cpp"
 
   # Noodle
-  
+  "Noodle/Noodle.cpp"
+  "Noodle/NoodleLexer.cpp"
+  "Noodle/NoodleToken.cpp"
 
   # Window
   "Window/Window.cpp"
@@ -42,16 +44,16 @@ list(APPEND Sources
 
   "Engine/Engine.cpp")
 
-add_library(BlueMetal STATIC ${Sources})
+add_library(Bluemetal STATIC ${Sources})
 
-target_include_directories(BlueMetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(BlueMetal ${Vulkan_LIBRARY} spirv-reflect-static SDL2::SDL2 fmt)
+target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(Bluemetal ${Vulkan_LIBRARY} spirv-reflect-static SDL2::SDL2 fmt::fmt)
 
 # generate export header
 include(GenerateExportHeader)
 
 generate_export_header(
-  BlueMetal
+  Bluemetal
   BASE_NAME "BLUEMETAL"
   EXPORT_MACRO_NAME "BLUEMETAL_API"
   DEPRECATED_MACRO_NAME "BLUEMETAL_DEPRECATED"

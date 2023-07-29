@@ -39,7 +39,7 @@ T& Noodle::get()
 }
 
 template<typename T> 
-Noodle& Noodle::operator=(const std::vector<T>& value) noexcept
+Noodle& Noodle::operator=(const std::vector<T>& value)
 {
     
     return *this;

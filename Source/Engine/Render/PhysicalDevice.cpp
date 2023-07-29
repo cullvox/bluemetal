@@ -1,4 +1,5 @@
 #include "PhysicalDevice.h"
+#include "Window/Window.h"
 
 namespace bl
 {
@@ -7,6 +8,15 @@ PhysicalDevice::PhysicalDevice(uint32_t index, VkPhysicalDevice physicalDevice)
     : m_index(index)
     , m_physicalDevice(physicalDevice)
 {
+}
+
+PhysicalDevice::~PhysicalDevice()
+{
+}
+
+VkPhysicalDevice PhysicalDevice::getHandle()
+{
+    return m_physicalDevice;
 }
 
 std::string PhysicalDevice::getVendorName()
@@ -37,6 +47,44 @@ std::string PhysicalDevice::getDeviceName()
 uint32_t PhysicalDevice::getIndex()
 {
     return m_index;
+}
+
+std::vector<VkPresentModeKHR> PhysicalDevice::getPresentModes(std::shared_ptr<Window> window)
+{
+    uint32_t presentModeCount = 0;
+    std::vector<VkPresentModeKHR> presentModes;
+    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, window->getSurface(), &presentModeCount, nullptr) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get Vulkan physical device surface present mode count!");
+    }
+
+    presentModes.resize(presentModeCount);
+
+    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, window->getSurface(), &presentModeCount, presentModes.data()))
+    {
+        throw std::runtime_error("Could not get Vulkan physical device surface present modes!");
+    }
+
+    return presentModes;
+}
+
+std::vector<VkSurfaceFormatKHR> PhysicalDevice::getSurfaceFormats(std::shared_ptr<Window> window)
+{
+    uint32_t formatCount = 0;
+    std::vector<VkSurfaceFormatKHR> formats;
+    if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, window->getSurface(), &formatCount, nullptr) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get Vulkan physical device surface formats!");
+    }
+
+    formats.resize(formatCount);
+    
+    if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, window->getSurface(), &formatCount, formats.data()) != VK_SUCCESS)
+    {
+        throw std::runtime_error("Could not get Vulkan physical device surface formats!");
+    }
+
+    return formats;
 }
 
 VkFormat PhysicalDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)

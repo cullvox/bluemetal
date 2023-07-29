@@ -4,6 +4,7 @@
 #include "Noodle/Noodle.h"
 
 #include "imgui/imgui.h"
+#include "imgui/imgui_impl_bluemetal.h"
 
 namespace bl
 {
@@ -37,10 +38,13 @@ Engine::Engine(const std::string& appName)
     std::vector<Display> displays = Display::getDisplays();
 
     
-    _window = std::make_shared<Window>(displays[0].getDesktopMode());
+    
     //_inputSystem = blInputSystem::getInstance();
-    _renderDevice = std::make_shared<Device>(_window);
-    _swapchain = std::make_shared<Swapchain>(_renderDevice);
+    m_instance = std::make_shared<Instance>();
+    m_physicalDevice = m_instance->getPhysicalDevices()[0];
+    m_window = std::make_shared<Window>(m_instance, displays[0].getDesktopMode());
+    m_device = std::make_shared<Device>(m_instance, m_physicalDevice, m_window);
+    m_swapchain = std::make_shared<Swapchain>(m_device, m_window);
 
     const std::string defaultConfig = 
         #include "defaultConfig.nwdl"
@@ -53,14 +57,14 @@ Engine::Engine(const std::string& appName)
 
     config.dumpToFile("Save/Config/config.noodle");
 
-    _presentPass = std::make_shared<blPresentRenderPass>(_renderDevice, _swapchain, 
-    [&](vk::CommandBuffer cmd)
+    m_presentPass = std::make_shared<PresentRenderPass>(m_device, m_swapchain, 
+    [&](VkCommandBuffer cmd)
     {
-        blImGui::beginFrame();
-    
+        ImGui_ImplBluemetal_BeginFrame();
+
         ImGui::Begin("Debug Info");
-        ImGui::Text("Graphics Device: %s", _renderDevice->getDeviceName().c_str());
-        ImGui::Text("Graphics Vendor: %s", _renderDevice->getVendorName().c_str());
+        ImGui::Text("Graphics Device: %s", m_physicalDevice->getDeviceName().c_str());
+        ImGui::Text("Graphics Vendor: %s", m_physicalDevice->getVendorName().c_str());
         ImGui::Text("F/S: %d", _frameCounter.getFramesPerSecond());
         ImGui::Text("MS/F: %.2f", _frameCounter.getMillisecondsPerFrame());
         ImGui::Text("Average F/S (Over 10 Seconds): %.1f", _frameCounter.getAverageFramesPerSecond(10));
@@ -78,86 +82,94 @@ Engine::Engine(const std::string& appName)
             ImGui::GetStyle().Alpha = alpha;
         }
 
-
-
         ImGui::SeparatorText("Swapchain Options");
         
         if (ImGui::RadioButton("FIFO", &presentModeSelected, 0))
         {
             _postRenderCommands.push([&](){
-                _swapchain->recreate(vk::PresentModeKHR::eFifo);
-                _renderer->resize(_swapchain->getExtent());
+                m_swapchain->recreate(VK_PRESENT_MODE_FIFO_KHR);
+                m_renderer->resize(m_swapchain->getExtent());
             });
         }
         ImGui::SameLine();
         HelpMarker("Normal VSync, use Mailbox if your system supports it.");
         
-        ImGui::BeginDisabled(!_swapchain->isMailboxSupported());
+        ImGui::BeginDisabled(!m_swapchain->isMailboxSupported());
         if (ImGui::RadioButton("Mailbox", &presentModeSelected, 1))
         {      
             _postRenderCommands.push([&](){
-                _swapchain->recreate(vk::PresentModeKHR::eMailbox);
-                _renderer->resize(_swapchain->getExtent());
+                m_swapchain->recreate(VK_PRESENT_MODE_MAILBOX_KHR);
+                m_renderer->resize(m_swapchain->getExtent());
             }); 
         }
         ImGui::EndDisabled();
 
         ImGui::SameLine();
-        HelpMarker( (!_swapchain->isMailboxSupported()) ? "Mailbox is not supported on this system." : "Performs fast like Immediate but with no tearing, like FIFO.");
+        HelpMarker( (!m_swapchain->isMailboxSupported()) ? "Mailbox is not supported on this system." : "Performs fast like Immediate but with no tearing, like FIFO.");
 
-        ImGui::BeginDisabled(!_swapchain->isImmediateSupported());        
+        ImGui::BeginDisabled(!m_swapchain->isImmediateSupported());        
         if (ImGui::RadioButton("Immediate", &presentModeSelected, 2))
         {            
             _postRenderCommands.push([&](){
-                _swapchain->recreate(vk::PresentModeKHR::eImmediate);
-                _renderer->resize(_swapchain->getExtent());
+                m_swapchain->recreate(VK_PRESENT_MODE_IMMEDIATE_KHR);
+                m_renderer->resize(m_swapchain->getExtent());
             }); 
             
         }
         ImGui::EndDisabled();
         
         ImGui::SameLine();
-        HelpMarker( (!_swapchain->isImmediateSupported()) ?  "Immediate is not supported on this system." : "Renders as fast as possible to screen, may cause screen tearing.");
+        HelpMarker( (!m_swapchain->isImmediateSupported()) ?  "Immediate is not supported on this system." : "Renders as fast as possible to screen, may cause screen tearing.");
 
         ImGui::End();
 
         ImGui::ShowDemoWindow();
         
-        blImGui::endFrame(cmd);
+        ImGui_ImplBluemetal_EndFrame(cmd);
     });
 
-    std::vector<std::shared_ptr<blRenderPass>> passes
+    std::vector<std::shared_ptr<RenderPass>> passes
     {
-        _presentPass
+        m_presentPass
     };
 
-    _renderer = std::make_shared<blRenderer>(_renderDevice, _swapchain, passes);
+    m_renderer = std::make_shared<Renderer>(m_device, m_swapchain, passes);
 
-    blImGui::init(_window, _renderDevice, _presentPass);
+    ImGui_ImplBluemetal_InitInfo info = {};
+    info.instance = m_instance;
+    info.physicalDevice = m_physicalDevice;
+    info.device = m_device;
+    info.renderPass = m_presentPass;
+    info.window = m_window;
+
+    if (!ImGui_ImplBluemetal_Init(&info))
+    {
+        throw std::runtime_error("Could not init ImGui!");
+    }
 }
 
 Engine::~Engine()
 {
-    blImGui::shutdown();
+    ImGui_ImplBluemetal_Shutdown();
 }
 
 bool Engine::run()
 {
     
-    while (!_inputSystem->shouldClose())
-    {
-        _frameCounter.beginFrame();
-        _inputSystem->poll();
-        
-        _renderer->render();
-        _frameCounter.endFrame();
-
-        for (size_t i = 0; i < _postRenderCommands.size(); i++)
-        {
-            _postRenderCommands.front()();
-            _postRenderCommands.pop();
-        }
-    }
+    //while (!_inputSystem->shouldClose())
+    //{
+    //    _frameCounter.beginFrame();
+    //    _inputSystem->poll();
+    //    
+    //    _renderer->render();
+    //    _frameCounter.endFrame();
+    //
+    //    for (size_t i = 0; i < _postRenderCommands.size(); i++)
+    //    {
+    //        _postRenderCommands.front()();
+    //        _postRenderCommands.pop();
+    //    }
+    //}
 
     return true;
 }

@@ -41,7 +41,11 @@ private:
     /// Creates the array of bl::PhysicalDevices from VkPhysicalDevices.
     void createPhysicalDevices();
 
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT,VkDebugUtilsMessageTypeFlagsEXT,const VkDebugUtilsMessengerCallbackDataEXT*,void*) noexcept;
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT,
+        VkDebugUtilsMessageTypeFlagsEXT,
+        const VkDebugUtilsMessengerCallbackDataEXT*,
+        void*) noexcept;
     
     VkInstance                                      m_instance;
     PFN_vkCreateDebugUtilsMessengerEXT              m_createDebugUtilsMessengerEXT;

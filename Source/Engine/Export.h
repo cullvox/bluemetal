@@ -7,7 +7,7 @@
 #  define BLUEMETAL_NO_EXPORT
 #else
 #  ifndef BLUEMETAL_API
-#    ifdef BlueMetal_EXPORTS
+#    ifdef Bluemetal_EXPORTS
         /* We are building this library */
 #      define BLUEMETAL_API 
 #    else
@@ -22,7 +22,7 @@
 #endif
 
 #ifndef BLUEMETAL_DEPRECATED
-#  define BLUEMETAL_DEPRECATED __attribute__ ((__deprecated__))
+#  define BLUEMETAL_DEPRECATED __declspec(deprecated)
 #endif
 
 #ifndef BLUEMETAL_DEPRECATED_EXPORT

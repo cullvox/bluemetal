@@ -24,9 +24,9 @@ private:
     void createWindow(const VideoMode& videoMode, const std::string& title, std::optional<Display> display);
     void createSurface();
 
-    SDL_Window*                 _pWindow;
-    std::shared_ptr<Instance>   _instance;
-    VkSurfaceKHR                _surface;
+    SDL_Window*                 m_pWindow;
+    std::shared_ptr<Instance>   m_instance;
+    VkSurfaceKHR                m_surface;
 };
 
 } // namespace bl

@@ -35,8 +35,8 @@ public:
     std::string dump(); // Recursively dumps the noodles into a human readable soup
     void dumpToFile(const std::filesystem::path& path); // Dumps the noodles into a file
     Noodle* parent() { return _parent; } // Returns the noodle one up the chains 
-    bool isRoot() { return _parent == nullptr; } // Returns true if this is the root noodle
-    std::string toString(); // Converts this noodle to a string value
+    bool isRoot() const { return _parent == nullptr; } // Returns true if this is the root noodle
+    std::string toString() const; // Converts this noodle to a string value
 
     template<typename T> 
     T& get(); // Returns the value of this noodle, will except if invalid
@@ -55,7 +55,7 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const Noodle& noodle);
 
 private:
-    void recursiveDump(std::stringstream& ss, int tabs);
+    void recursiveDump(std::stringstream& ss, int tabs) const;
 
     NoodleType                                _type;
     std::string                                 _name;

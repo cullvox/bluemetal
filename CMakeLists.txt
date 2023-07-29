@@ -34,6 +34,10 @@ endif()
 # find libraries
 #===============================================================================
 
+# find {fmt}
+
+find_package(fmt REQUIRED)
+bl_message("Found FMT")
 
 # find SDL2
 if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/SDL2/CMakeLists.txt")

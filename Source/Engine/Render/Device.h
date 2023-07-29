@@ -12,9 +12,9 @@ public:
     Device(std::shared_ptr<Instance> instance, std::shared_ptr<PhysicalDevice> physicalDevice, std::shared_ptr<Window> temporaryWindow);
     ~Device();
 
-    VkInstance getInstance();
+    std::shared_ptr<PhysicalDevice> getPhysicalDevice();
+
     VkDevice getHandle();
-    VkPhysicalDevice getPhysicalDevice();
     uint32_t getGraphicsFamilyIndex();
     uint32_t getPresentFamilyIndex();
     VkQueue getGraphicsQueue();

@@ -87,7 +87,7 @@ void Renderer::render()
 {
 
     // If the swapchain is invalid we cannot render anything
-    if (!m_swapchain->getSwapchain())
+    if (!m_swapchain->getHandle())
     {
         return;
     }
@@ -98,7 +98,7 @@ void Renderer::render()
     uint32_t imageIndex = 0;
     bool recreated = false;
 
-    m_swapchain->acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, imageIndex, recreated);
+    m_swapchain->acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex, &recreated);
 
     if (recreated)
     {
@@ -137,8 +137,6 @@ void Renderer::render()
         throw std::runtime_error("Could not end a Vulkan command buffer!");
     }
 
-    
-
     // submit the command buffer to the graphics queue
     std::array waitSemaphores = { m_imageAvailableSemaphores[m_currentFrame] };
     std::array signalSemaphores = { m_renderFinishedSemaphores[m_currentFrame] };
@@ -160,7 +158,7 @@ void Renderer::render()
     vkQueueSubmit(m_device->getGraphicsQueue(), 1, &submitInfo, m_inFlightFences[m_currentFrame]);
 
     // Present the rendered frame
-    std::array swapchains = { m_swapchain->getSwapchain() };
+    std::array swapchains = { m_swapchain->getHandle() };
     std::array imageIndices = { imageIndex };
 
     VkPresentInfoKHR presentInfo = {};

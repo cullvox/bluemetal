@@ -6,6 +6,8 @@
 namespace bl
 {
 
+class Window;
+
 class BLUEMETAL_API PhysicalDevice
 {
 
@@ -24,6 +26,16 @@ public:
 
     /// Gets the index of this physical device as per vkEnumeratePhysicalDevices(). 
     uint32_t getIndex();
+
+    /// Gets the available present modes on the system.
+    ///
+    /// Useful for @ref Swapchain::recreate.
+    std::vector<VkPresentModeKHR> getPresentModes(std::shared_ptr<Window> window);
+
+    /// Gets the available surface formats on this physical device.
+    ///
+    /// Useful for @ref Swapchain::recreate.
+    std::vector<VkSurfaceFormatKHR> getSurfaceFormats(std::shared_ptr<Window> window);
     
     /// Finds a supported format within a list.
     ///

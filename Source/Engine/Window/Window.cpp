@@ -5,6 +5,7 @@ namespace bl
 {
 
 Window::Window(std::shared_ptr<Instance> instance, VideoMode videoMode, const std::string& title,  std::optional<Display> display)
+    : m_instance(instance)
 {
     createWindow(videoMode, title, display);
     createSurface();
@@ -12,21 +13,26 @@ Window::Window(std::shared_ptr<Instance> instance, VideoMode videoMode, const st
 
 Window::~Window()
 {
-    vkDestroySurfaceKHR(_instance->getHandle(), _surface, nullptr);
-    SDL_DestroyWindow(_pWindow);
+    vkDestroySurfaceKHR(m_instance->getHandle(), m_surface, nullptr);
+    SDL_DestroyWindow(m_pWindow);
 }
 
 Extent2D Window::getExtent()
 {
     int width = 0, height = 0;
-    SDL_Vulkan_GetDrawableSize(_pWindow, &width, &height);
+    SDL_Vulkan_GetDrawableSize(m_pWindow, &width, &height);
 
     return Extent2D((uint32_t)width, (uint32_t)height);
 }
 
+VkSurfaceKHR Window::getSurface()
+{
+    return m_surface;
+}
+
 SDL_Window* Window::getHandle()
 {
-    return _pWindow;
+    return m_pWindow;
 }
 
 void Window::createWindow(const VideoMode& videoMode, const std::string& title, std::optional<Display> display)
@@ -42,19 +48,19 @@ void Window::createWindow(const VideoMode& videoMode, const std::string& title, 
     const int width = videoMode.extent.width;
     const int height = videoMode.extent.height;
 
-    _pWindow = SDL_CreateWindow(title.c_str(), x, y, width, height, flags);
+    m_pWindow = SDL_CreateWindow(title.c_str(), x, y, width, height, flags);
 
-    if (!_pWindow)
+    if (!m_pWindow)
     {
         throw std::runtime_error("Could not create an SDL2 window! Error: " + std::string(SDL_GetError()));
     }
 
-    SDL_ShowWindow(_pWindow);
+    SDL_ShowWindow(m_pWindow);
 }
 
 void Window::createSurface()
 {
-    if (SDL_Vulkan_CreateSurface(_pWindow, _instance->getHandle(), &_surface) != SDL_TRUE)
+    if (SDL_Vulkan_CreateSurface(m_pWindow, m_instance->getHandle(), &m_surface) != SDL_TRUE)
     {
         BL_LOG(LogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
     }

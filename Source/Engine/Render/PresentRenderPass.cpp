@@ -61,6 +61,7 @@ PresentRenderPass::PresentRenderPass(std::shared_ptr<Device> device, std::shared
 PresentRenderPass::~PresentRenderPass()
 {
     destroyFramebuffers();
+    vkDestroyRenderPass(m_device->getHandle(), m_pass, nullptr);
 }
 
 VkRenderPass PresentRenderPass::getHandle()
@@ -144,6 +145,11 @@ void PresentRenderPass::createFramebuffers()
 
 void PresentRenderPass::destroyFramebuffers()
 {
+    for (size_t i = 0; i < m_swapFramebuffers.size(); i++)
+    {
+        vkDestroyFramebuffer(m_device->getHandle(), m_swapFramebuffers[i], nullptr);
+    }
+
     m_swapFramebuffers.clear();
 }
 

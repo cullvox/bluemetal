@@ -25,13 +25,7 @@ class NoodleToken
 {
 public:
     NoodleToken() = default;
-    NoodleToken(NoodleTokenKind kind, const std::string_view lexeme, int linePos, int characterPos)
-        : _kind(kind)
-        , _lexeme(lexeme)
-        , _linePos(linePos)
-        , _characterPos(characterPos)
-    {
-    }
+    NoodleToken(NoodleTokenKind kind, const std::string_view lexeme, int linePos, int characterPos);
 
     NoodleTokenKind kind() { return _kind; }
     std::string_view lexeme() { return _lexeme; }

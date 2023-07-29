@@ -24,7 +24,7 @@ private:
     NoodleToken createString();
     NoodleToken createNumber();
     NoodleToken createAtom(NoodleTokenKind kind);
-    char peek();
+    char peek() const;
     char get();
 
     const std::string&          _content;

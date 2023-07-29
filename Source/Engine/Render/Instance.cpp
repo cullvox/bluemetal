@@ -8,12 +8,25 @@ namespace bl
 Instance::Instance()
 {
     createInstance();
+    createPhysicalDevices();
 }
 
 Instance::~Instance()
 {
-    m_destroyDebugUtilsMessengerEXT(m_instance, m_messenger, nullptr);
+    if (BLUEMETAL_DEVELOPMENT)
+        m_destroyDebugUtilsMessengerEXT(m_instance, m_messenger, nullptr);
+    
     vkDestroyInstance(m_instance, nullptr);
+}
+
+VkInstance Instance::getHandle()
+{
+    return m_instance;
+}
+
+std::vector<std::shared_ptr<PhysicalDevice>> Instance::getPhysicalDevices()
+{
+    return m_physicalDevices;
 }
 
 std::vector<const char*> Instance::getExtensionsForSDL()
@@ -206,7 +219,7 @@ void Instance::createInstance()
         }
     }
 
-    BL_LOG(LogType::eInfo, "vulkan instance created")
+    BL_LOG(LogType::eInfo, "Created Vulkan instance.")
 }
 
 void Instance::createPhysicalDevices()
@@ -235,6 +248,29 @@ void Instance::createPhysicalDevices()
         m_physicalDevices.push_back(std::make_shared<PhysicalDevice>(i, pd));
         i++;
     }   
+}
+
+VKAPI_ATTR VkBool32 VKAPI_CALL Instance::debugCallback(
+    VkDebugUtilsMessageSeverityFlagBitsEXT      severity, 
+    VkDebugUtilsMessageTypeFlagsEXT             type, 
+    const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
+    void*                                       pUserData) noexcept
+{
+    (void)type;
+    (void)pUserData;
+
+    if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+    {
+        BL_LOG(LogType::eError, "{}", pCallbackData->pMessage);
+    } else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    {
+        BL_LOG(LogType::eWarning, "{}", pCallbackData->pMessage);
+    } else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+    {
+        BL_LOG(LogType::eInfo, "{}", pCallbackData->pMessage);
+    }
+
+    return false;
 }
 
 } // namespace bl
