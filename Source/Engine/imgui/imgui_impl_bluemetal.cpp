@@ -174,6 +174,7 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
 void ImGui_ImplBluemetal_Shutdown()
 {
     pData->device->waitForDevice();
+    ImGui_ImplSDL2_Shutdown();
 
     vkDestroyDescriptorPool(pData->device->getHandle(), pData->descriptorPool, nullptr);
 
@@ -186,7 +187,7 @@ void ImGui_ImplBluemetal_BeginFrame()
 {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL2_NewFrame();
-
+    
     ImGui::NewFrame();
 }
 

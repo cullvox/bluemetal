@@ -8,7 +8,58 @@ PresentRenderPass::PresentRenderPass(std::shared_ptr<Device> device, std::shared
     , m_swapchain(swapchain)
     , m_func(func)
 {
+    createRenderPass();
+    createFramebuffers();
+}
 
+PresentRenderPass::~PresentRenderPass()
+{
+    destroyFramebuffers();
+    destroyRenderPass();
+}
+
+VkRenderPass PresentRenderPass::getHandle()
+{
+    return m_pass;
+}
+
+void PresentRenderPass::resize(VkExtent2D extent)
+{
+    destroyFramebuffers();
+    createFramebuffers();
+}
+
+void PresentRenderPass::record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
+{
+    std::array<VkClearValue, 2> clearValues = {};
+
+    VkClearColorValue value = {};
+    value.float32[0] = 0.33f;
+    value.float32[1] = 0.34f;
+    value.float32[2] = 0.34f;
+    value.float32[3] = 1.0f;
+
+    clearValues[0].color = value;
+    clearValues[1].depthStencil = VkClearDepthStencilValue(1.0f, 0);
+
+    VkRenderPassBeginInfo beginInfo = {};
+    beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    beginInfo.pNext = nullptr;
+    beginInfo.renderPass = m_pass;
+    beginInfo.framebuffer = m_swapFramebuffers[index];
+    beginInfo.renderArea = renderArea;
+    beginInfo.clearValueCount = (uint32_t)clearValues.size();
+    beginInfo.pClearValues = clearValues.data();
+
+    vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    
+    m_func(cmd);
+    
+    vkCmdEndRenderPass(cmd);
+}
+
+void PresentRenderPass::createRenderPass()
+{
     std::array<VkAttachmentDescription, 1> attachments = {};
     attachments[0].flags = 0;
     attachments[0].format = m_swapchain->getFormat();
@@ -55,53 +106,11 @@ PresentRenderPass::PresentRenderPass(std::shared_ptr<Device> device, std::shared
         throw std::runtime_error("Could not create a Vulkan present render pass!");
     }
 
-    createFramebuffers();
 }
 
-PresentRenderPass::~PresentRenderPass()
+void PresentRenderPass::destroyRenderPass()
 {
-    destroyFramebuffers();
     vkDestroyRenderPass(m_device->getHandle(), m_pass, nullptr);
-}
-
-VkRenderPass PresentRenderPass::getHandle()
-{
-    return m_pass;
-}
-
-void PresentRenderPass::resize(VkExtent2D extent)
-{
-    destroyFramebuffers();
-    createFramebuffers();
-}
-
-void PresentRenderPass::record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
-{
-    std::array<VkClearValue, 2> clearValues = {};
-
-    VkClearColorValue value = {};
-    value.float32[0] = 0.33f;
-    value.float32[1] = 0.34f;
-    value.float32[2] = 0.34f;
-    value.float32[3] = 1.0f;
-
-    clearValues[0].color = value;
-    clearValues[1].depthStencil = VkClearDepthStencilValue(1.0f, 0);
-
-    VkRenderPassBeginInfo beginInfo = {};
-    beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    beginInfo.pNext = nullptr;
-    beginInfo.renderPass = m_pass;
-    beginInfo.framebuffer = m_swapFramebuffers[index];
-    beginInfo.renderArea = renderArea;
-    beginInfo.clearValueCount = (uint32_t)clearValues.size();
-    beginInfo.pClearValues = clearValues.data();
-
-    vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    
-    m_func(cmd);
-    
-    vkCmdEndRenderPass(cmd);
 }
 
 void PresentRenderPass::createFramebuffers()

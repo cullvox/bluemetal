@@ -52,6 +52,16 @@ uint32_t Swapchain::getImageCount()
     return m_imageCount;
 }
 
+VkPresentModeKHR Swapchain::getPresentMode()
+{
+    return m_presentMode;
+}
+
+VkSurfaceFormatKHR Swapchain::getSurfaceFormat()
+{
+    return m_surfaceFormat;
+}
+
 std::vector<VkImageView> Swapchain::getImageViews() 
 {
     return m_swapImageViews;
@@ -69,12 +79,12 @@ void Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t* pIma
 
     VkResult result = vkAcquireNextImageKHR(m_device->getHandle(), m_swapchain, UINT32_MAX, semaphore, fence, pImageIndex);
     
-    if (result != VK_ERROR_OUT_OF_DATE_KHR)
+    if (result == VK_ERROR_OUT_OF_DATE_KHR)
     {
         recreate();
         *pRecreated = true;
     }
-    else
+    else if (result != VK_SUCCESS)
     {
         throw std::runtime_error("Could not acquire the next swapchain image!");
     }
@@ -126,8 +136,8 @@ void Swapchain::chooseFormat(std::optional<VkSurfaceFormatKHR> format)
     }
 
     // as fallback use the first format
-    BL_LOG(LogType::eInfo, "Could not find Vulkan default surface format: ({}, {}), falling back to: ({}, {}).", string_VkFormat(toFind.format), string_VkColorSpaceKHR(toFind.colorSpace), string_VkFormat(m_surfaceFormat.format), string_VkColorSpaceKHR(m_surfaceFormat.colorSpace));
     m_surfaceFormat = formats.front();
+    BL_LOG(LogType::eWarning, "Could not find Vulkan default surface format: ({}, {}), falling back to: ({}, {}).", string_VkFormat(toFind.format), string_VkColorSpaceKHR(toFind.colorSpace), string_VkFormat(m_surfaceFormat.format), string_VkColorSpaceKHR(m_surfaceFormat.colorSpace));
 }
 
 void Swapchain::choosePresentMode(std::optional<VkPresentModeKHR> presentMode)
@@ -200,34 +210,28 @@ void Swapchain::createImageViews()
 
     for (uint32_t i = 0; i < m_imageCount; i++)
     {
-        const VkComponentMapping componentMapping
-        {
-            VK_COMPONENT_SWIZZLE_IDENTITY, // r
-            VK_COMPONENT_SWIZZLE_IDENTITY, // g
-            VK_COMPONENT_SWIZZLE_IDENTITY, // b
-            VK_COMPONENT_SWIZZLE_IDENTITY  // a
-        };
+        VkComponentMapping componentMapping = {};
+        componentMapping.r = VK_COMPONENT_SWIZZLE_IDENTITY; 
+        componentMapping.g = VK_COMPONENT_SWIZZLE_IDENTITY; 
+        componentMapping.b = VK_COMPONENT_SWIZZLE_IDENTITY; 
+        componentMapping.a = VK_COMPONENT_SWIZZLE_IDENTITY; 
+        
+        VkImageSubresourceRange subresourceRange = {};
+        subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        subresourceRange.baseMipLevel = 0;
+        subresourceRange.levelCount = 1;
+        subresourceRange.baseArrayLayer = 0;
+        subresourceRange.layerCount = 1;
 
-        const VkImageSubresourceRange subresourceRange
-        {
-            VK_IMAGE_ASPECT_COLOR_BIT,  // aspectMask
-            0,                          // baseMipLevel
-            1,                          // levelCount
-            0,                          // baseArrayLayers
-            1                           // layerCount
-        };
-
-        const VkImageViewCreateInfo imageViewInfo
-        {
-            VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO,   // sType
-            nullptr,                                    // pNext
-            0,                                          // flags
-            m_swapImages[i],                            // image
-            VK_IMAGE_VIEW_TYPE_2D,                      // viewType
-            m_surfaceFormat.format,                     // format
-            componentMapping,                           // components
-            subresourceRange                            // subresourceRange
-        };
+        VkImageViewCreateInfo imageViewInfo = {};
+        imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        imageViewInfo.pNext = nullptr;
+        imageViewInfo.flags = 0;
+        imageViewInfo.image = m_swapImages[i];
+        imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+        imageViewInfo.format = m_surfaceFormat.format;
+        imageViewInfo.components = componentMapping;
+        imageViewInfo.subresourceRange = subresourceRange;
 
         if (vkCreateImageView(m_device->getHandle(), &imageViewInfo, nullptr, &m_swapImageViews[i]) != VK_SUCCESS)
         {

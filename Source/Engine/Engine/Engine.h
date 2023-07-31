@@ -2,6 +2,7 @@
 
 
 #include "Export.h"
+#include "Noodle/Noodle.h"
 #include "Window/Window.h"
 #include "Render/Instance.h"
 #include "Render/Device.h"
@@ -21,7 +22,10 @@ public:
     bool run();
 
 private:
-    bool _close;
+    bool m_shouldClose;
+    bool m_showImGui;
+    bool m_fullscreen;
+    Noodle m_config;
     std::shared_ptr<Instance> m_instance;
     std::shared_ptr<PhysicalDevice> m_physicalDevice;
     std::shared_ptr<Window> m_window;

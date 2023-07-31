@@ -12,7 +12,17 @@ class BLUEMETAL_API PhysicalDevice
 {
 
 public:
+
+    /// Constructs a physical device object.
+    ///
+    ///     @param index Index for this physical device.
+    ///     @param physicalDevice Vulkan physical device object.
+    ///
+    ///     This function should only be called from bl::Instance.
+    ///
     PhysicalDevice(uint32_t index, VkPhysicalDevice physicalDevice);
+    
+    /// Default destructor.
     ~PhysicalDevice();
 
     /// Gets the underlying VkPhysicalDevice object.

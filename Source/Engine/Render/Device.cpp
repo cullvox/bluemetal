@@ -150,7 +150,9 @@ void Device::waitForDevice()
 std::vector<const char*> Device::getValidationLayers()
 {
     // disable validation layers on release
-    if (BLUEMETAL_DEVELOPMENT) return {};
+#ifdef BLUEMETAL_DEVELOPMENT 
+    return {};
+#else
 
     std::vector<const char*> layers = 
     {
@@ -189,6 +191,8 @@ std::vector<const char*> Device::getValidationLayers()
 
     // found all layers!
     return layers;
+
+#endif
 }
 
 std::vector<const char*> Device::getExtensions()

@@ -52,7 +52,7 @@ uint32_t PhysicalDevice::getIndex()
 std::vector<VkPresentModeKHR> PhysicalDevice::getPresentModes(std::shared_ptr<Window> window)
 {
     uint32_t presentModeCount = 0;
-    std::vector<VkPresentModeKHR> presentModes;
+    std::vector<VkPresentModeKHR> presentModes = {};
     if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, window->getSurface(), &presentModeCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan physical device surface present mode count!");
@@ -71,7 +71,7 @@ std::vector<VkPresentModeKHR> PhysicalDevice::getPresentModes(std::shared_ptr<Wi
 std::vector<VkSurfaceFormatKHR> PhysicalDevice::getSurfaceFormats(std::shared_ptr<Window> window)
 {
     uint32_t formatCount = 0;
-    std::vector<VkSurfaceFormatKHR> formats;
+    std::vector<VkSurfaceFormatKHR> formats = {};
     if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, window->getSurface(), &formatCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan physical device surface formats!");
@@ -91,7 +91,7 @@ VkFormat PhysicalDevice::findSupportedFormat(const std::vector<VkFormat>& candid
 {
     for (VkFormat format : candidates)
     {
-        VkFormatProperties properties{};
+        VkFormatProperties properties = {};
         vkGetPhysicalDeviceFormatProperties(m_physicalDevice, format, &properties);
 
         if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features)

@@ -13,9 +13,10 @@ Instance::Instance()
 
 Instance::~Instance()
 {
-    if (BLUEMETAL_DEVELOPMENT)
-        m_destroyDebugUtilsMessengerEXT(m_instance, m_messenger, nullptr);
-    
+#ifdef BLUEMETAL_DEVELOPMENT
+    m_destroyDebugUtilsMessengerEXT(m_instance, m_messenger, nullptr);
+#endif
+
     vkDestroyInstance(m_instance, nullptr);
 }
 
@@ -41,7 +42,7 @@ std::vector<const char*> Instance::getExtensionsForSDL()
     }
 
     // enumerate the instance extensions from SDL
-    std::vector<const char*> extensions;
+    std::vector<const char*> extensions = {};
     unsigned int extensionsCount = 0;
     
     if (!SDL_Vulkan_GetInstanceExtensions(pTemporaryWindow, &extensionsCount, nullptr))
@@ -115,7 +116,9 @@ std::vector<const char*> Instance::getExtensions()
 std::vector<const char*> Instance::getValidationLayers()
 {
     // disable validation layers on release
-    if (BLUEMETAL_DEVELOPMENT) return {};
+#ifdef BLUEMETAL_DEVELOPMENT
+    return {};
+#else
 
     std::vector<const char*> layers = 
     {
@@ -154,6 +157,8 @@ std::vector<const char*> Instance::getValidationLayers()
 
     // found all layers!
     return layers;
+
+#endif
 }
 
 void Instance::createInstance()
@@ -161,6 +166,7 @@ void Instance::createInstance()
     std::vector<const char*> instanceExtensions = getExtensions();
     std::vector<const char*> validationLayers = getValidationLayers();
 
+#ifdef BLUEMETAL_DEVELOPMENT
     // use a debug messenger while in development
     VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo = {};
     debugMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -175,6 +181,7 @@ void Instance::createInstance()
         VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
     debugMessengerCreateInfo.pfnUserCallback = debugCallback;
     debugMessengerCreateInfo.pUserData = nullptr;
+#endif
 
     VkApplicationInfo applicationInfo = {};
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -186,8 +193,12 @@ void Instance::createInstance()
     applicationInfo.apiVersion = VK_API_VERSION_1_2;
 
     VkInstanceCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO; 
-    createInfo.pNext = BLUEMETAL_DEVELOPMENT ? &debugMessengerCreateInfo : nullptr;
+    createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+#ifdef BLUEMETAL_DEVELOPMENT 
+    createInfo.pNext = &debugMessengerCreateInfo;
+#else
+    createInfo.pNext = nullptr;
+#endif
     createInfo.flags = 0;
     createInfo.pApplicationInfo = &applicationInfo;
     createInfo.enabledLayerCount = (uint32_t)validationLayers.size();
@@ -201,23 +212,22 @@ void Instance::createInstance()
     }
 
     // To get debug utils messenger the functions must be loaded in
-    if (BLUEMETAL_DEVELOPMENT)
+#ifdef BLUEMETAL_DEVELOPMENT
+    m_createDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkCreateDebugUtilsMessengerEXT");
+    m_destroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugUtilsMessengerEXT");
+    
+    if (!m_createDebugUtilsMessengerEXT || !m_destroyDebugUtilsMessengerEXT)
     {
-        m_createDebugUtilsMessengerEXT = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkCreateDebugUtilsMessengerEXT");
-        m_destroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugUtilsMessengerEXT");
-        
-        if (!m_createDebugUtilsMessengerEXT || !m_destroyDebugUtilsMessengerEXT)
-        {
-            vkDestroyInstance(m_instance, nullptr);
-            throw std::runtime_error("Could not get Vulkan debug utils messenger create and destroy pointer functions!");
-        }
-
-        if (m_createDebugUtilsMessengerEXT(m_instance, &debugMessengerCreateInfo, nullptr, &m_messenger) != VK_SUCCESS)
-        {
-            vkDestroyInstance(m_instance, nullptr);
-            throw std::runtime_error("Could not create a Vulkan debug utils messenger!");
-        }
+        vkDestroyInstance(m_instance, nullptr);
+        throw std::runtime_error("Could not get Vulkan debug utils messenger create and destroy pointer functions!");
     }
+
+    if (m_createDebugUtilsMessengerEXT(m_instance, &debugMessengerCreateInfo, nullptr, &m_messenger) != VK_SUCCESS)
+    {
+        vkDestroyInstance(m_instance, nullptr);
+        throw std::runtime_error("Could not create a Vulkan debug utils messenger!");
+    }
+#endif
 
     BL_LOG(LogType::eInfo, "Created Vulkan instance.")
 }

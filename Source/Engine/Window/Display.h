@@ -11,6 +11,7 @@ class BLUEMETAL_API Display
 {
 public:
     Display(int display);
+    Display(const Display& rhs);
 
     static std::vector<Display> getDisplays() noexcept;
 
@@ -21,11 +22,13 @@ public:
     VideoMode getDesktopMode() const noexcept;
 
 private:
-    uint32_t                _index;
-    std::string             _name;
-    std::vector<VideoMode>  _videoModes;
-    Rect2D                  _rect;
-    VideoMode               _desktopMode;
+    
+
+    uint32_t                m_index;
+    std::string             m_name;
+    std::vector<VideoMode>  m_videoModes;
+    Rect2D                  m_rect;
+    VideoMode               m_desktopMode;
 };
 
 } // namespace bl

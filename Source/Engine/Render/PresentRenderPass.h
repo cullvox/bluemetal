@@ -19,6 +19,8 @@ public:
 private:
     void createFramebuffers();
     void destroyFramebuffers();
+    void createRenderPass();
+    void destroyRenderPass();
 
     std::shared_ptr<Device>     m_device;
     std::shared_ptr<Swapchain>  m_swapchain;	

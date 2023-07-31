@@ -49,6 +49,12 @@ public:
     /// Returns the number of images that the swapchain is swapping between.
     uint32_t getImageCount();
 
+    /// Returns the present mode the swapchain is using.
+    VkPresentModeKHR getPresentMode();
+
+    /// Returns the surface format the swapchain is using.
+    VkSurfaceFormatKHR getSurfaceFormat();
+
     /// Returns the handles to images that are being swapped.
     std::vector<VkImage> getImages();
 

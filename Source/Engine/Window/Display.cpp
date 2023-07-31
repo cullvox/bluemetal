@@ -5,7 +5,11 @@ namespace bl
 {
 
 Display::Display(int display)
+    : m_index(display)
 {
+
+    // Get the display's name
+    m_name = std::string(SDL_GetDisplayName(display));
 
     // get the displays rect
     SDL_Rect sdlRect{};
@@ -14,7 +18,7 @@ Display::Display(int display)
         BL_LOG(LogType::eError, "Could not get the desktop display mode for display #{}", display);
     }
 
-    Rect2D rect(
+    m_rect = Rect2D(
         {(int32_t)sdlRect.x, (int32_t)sdlRect.y},
         {(uint32_t)sdlRect.w, (uint32_t)sdlRect.h}
     );
@@ -27,9 +31,8 @@ Display::Display(int display)
     }
 
     // desktop mode
-    const VideoMode desktopMode(rect.extent, 0, 0);
+    m_desktopMode = VideoMode(m_rect.extent, 0, 0);
     
-    std::vector<VideoMode> videoModes;
     for (int j = 0; j < modeCount; j++)
     {
         // get the display mode
@@ -44,7 +47,7 @@ Display::Display(int display)
         SDL_PixelFormat* pFormat = SDL_AllocFormat(sdlMode.format); 
 
         // add the display mode
-        videoModes.emplace_back(Extent2D((uint32_t)sdlMode.w, (uint32_t)sdlMode.h), (uint8_t)pFormat->BitsPerPixel, (uint16_t)sdlMode.refresh_rate);
+        m_videoModes.emplace_back(Extent2D((uint32_t)sdlMode.w, (uint32_t)sdlMode.h), (uint8_t)pFormat->BitsPerPixel, (uint16_t)sdlMode.refresh_rate);
 
         SDL_FreeFormat(pFormat);
     }
@@ -52,34 +55,34 @@ Display::Display(int display)
 
 uint32_t Display::getIndex() const noexcept
 {
-    return _index;
+    return m_index;
 }
 
 const std::string& Display::getName() const noexcept
 {
-    return _name;
+    return m_name;
 }
 
 Rect2D Display::getRect() const noexcept
 {
-    return _rect;
+    return m_rect;
 }
 
 const std::vector<VideoMode>& Display::getVideoModes() const noexcept
 {
-    return _videoModes;
+    return m_videoModes;
 }
 
 VideoMode Display::getDesktopMode() const noexcept
 {
-    return _desktopMode;
+    return m_desktopMode;
 }
 
 std::vector<Display> Display::getDisplays() noexcept
 {
     int displayCount = SDL_GetNumVideoDisplays();
 
-    std::vector<Display> displays;
+    std::vector<Display> displays = {};
 
     for (int i = 0; i < displayCount; i++)
     {
@@ -87,6 +90,15 @@ std::vector<Display> Display::getDisplays() noexcept
     }
 
     return displays;
+}
+
+Display::Display(const Display& rhs)
+    : m_index(rhs.m_index)
+    , m_name(rhs.m_name)
+    , m_videoModes(rhs.m_videoModes)
+    , m_rect(rhs.m_rect)
+    , m_desktopMode(rhs.m_desktopMode)
+{
 }
 
 } // namespace bl
