@@ -22,7 +22,6 @@ player = {
 }
 render = {
 	physicalDevice = 2,
-	 = 1,
 	resolution = {
 		height = 1080,
 		width = 1920,
@@ -36,5 +35,5 @@ window = {
 	monitor = 1,
 	someValue = [ 20, 40, 60, 80 ],
 	title = "My Game Window",
-	width = 13880,
+	width = 13980,
 }

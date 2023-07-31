@@ -26,7 +26,6 @@ private:
     std::shared_ptr<Swapchain>  m_swapchain;	
     std::vector<VkFramebuffer>  m_swapFramebuffers;
     VkRenderPass                m_pass;
-    RenderPassFunction          m_func;
 };
 
 } // namespace bl

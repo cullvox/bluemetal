@@ -98,7 +98,12 @@ Engine::Engine(const std::string& appName)
 
             ImGui::SeparatorText("Graphics");
 
-            
+
+            if (ImGui::CollapsingHeader("Physical Device"))
+            {
+                for (size_t i = 0; i < physicalDevices)
+            }
+
             if (ImGui::CollapsingHeader("Surface Formats"))
             {
 
