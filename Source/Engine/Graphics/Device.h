@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Render/Instance.h"
+#include "Graphics/Instance.h"
 #include "Window/Window.h"
 
 namespace bl

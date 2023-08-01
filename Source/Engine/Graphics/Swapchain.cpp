@@ -13,7 +13,7 @@ Swapchain::Swapchain(
     , m_device(device)
     , m_window(window)
     , m_imageCount(0)
-    , m_surfaceFormat({})
+    , m_surfaceFormat(surfaceFormat.value_or(DEFAULT_SURFACE_FORMAT))
     , m_presentMode(VK_PRESENT_MODE_FIFO_KHR)
     , m_extent({})
     , m_swapchain(VK_NULL_HANDLE)
@@ -23,7 +23,7 @@ Swapchain::Swapchain(
     , m_isImmediateSupported(false)
 {
     ensureSurfaceSupported();
-    recreate(presentMode, surfaceFormat);
+    recreate(presentMode);
 }
 
 Swapchain::~Swapchain()
@@ -251,8 +251,7 @@ void Swapchain::destroyImageViews()
 }
 
 void Swapchain::recreate(
-    std::optional<VkPresentModeKHR>     presentMode,
-    std::optional<VkSurfaceFormatKHR>   surfaceFormat) 
+    std::optional<VkPresentModeKHR> presentMode) 
 {
     // Wait for the device to finish doing it's things.
     m_device->waitForDevice();
@@ -263,7 +262,7 @@ void Swapchain::recreate(
 
     // Begin recreating the swapchain.
     chooseImageCount();
-    chooseFormat(surfaceFormat);
+    chooseFormat(m_surfaceFormat);
     chooseExtent();
     choosePresentMode(presentMode);
 
@@ -315,6 +314,11 @@ void Swapchain::recreate(
 
     obtainImages();
     createImageViews();
+}
+
+void Swapchain::recreate()
+{
+    recreate(m_presentMode);
 }
 
 } // namespace bl

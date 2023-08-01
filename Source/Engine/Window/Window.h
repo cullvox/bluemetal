@@ -3,7 +3,7 @@
 #include "Precompiled.h"
 #include "Export.h"
 #include "Math/Vector2.h"
-#include "Render/Instance.h"
+#include "Graphics/Instance.h"
 #include "VideoMode.h"
 #include "Display.h"
 

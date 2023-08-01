@@ -1,7 +1,7 @@
 #pragma once
 
-#include "RenderPass.h"
-#include "Swapchain.h"
+#include "Graphics/RenderPass.h"
+#include "Graphics/Swapchain.h"
 
 namespace bl
 {
@@ -9,7 +9,7 @@ namespace bl
 class BLUEMETAL_API PresentRenderPass : public RenderPass
 {
 public:
-    PresentRenderPass(std::shared_ptr<Device> device, std::shared_ptr<Swapchain> swapchain, const RenderPassFunction& func);
+    PresentRenderPass(std::shared_ptr<Device> device, std::shared_ptr<Swapchain> swapchain);
     virtual ~PresentRenderPass();
 
     virtual VkRenderPass getHandle() override;

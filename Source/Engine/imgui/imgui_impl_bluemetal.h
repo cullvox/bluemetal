@@ -3,10 +3,10 @@
 #include "imgui.h"
 
 #include "Window/Window.h"
-#include "Render/Instance.h"
-#include "Render/PhysicalDevice.h"
-#include "Render/Device.h"
-#include "Render/RenderPass.h"
+#include "Graphics/Instance.h"
+#include "Graphics/PhysicalDevice.h"
+#include "Graphics/Device.h"
+#include "Graphics/RenderPass.h"
 
 struct ImGui_ImplBluemetal_InitInfo
 {

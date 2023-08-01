@@ -94,15 +94,15 @@ public:
         uint32_t*       pImageIndex, 
         bool*           pRecreated);
 
-    /// Destroys and recreates the swapchain.
+    /// Destroys and recreates the swapchain, changes present mode.
     ///
     ///     @param presentMode What present mode the swapchain is using, FIFO is VSync. Use @ref PhysicalDevice::getPresentModes to get them.
-    ///     @param surfaceFormat How colors are formatted on the screen. Use @ref PhysicalDevice::getSurfaceFormats to get them. 
     ///
     void recreate(
-        std::optional<VkPresentModeKHR>     presentMode = VK_PRESENT_MODE_FIFO_KHR,
-        std::optional<VkSurfaceFormatKHR>   surfaceFormat = std::nullopt);
+        std::optional<VkPresentModeKHR> presentMode);
         
+    /// Destroy and creates the swapchain without changing any parameters.
+    void recreate();
 
 private:  
     void ensureSurfaceSupported();

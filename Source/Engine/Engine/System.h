@@ -1,9 +1,11 @@
 #pragma once
 
-#include "Render/Device.h"
+#include "Graphics/Device.h"
 
 namespace bl
 {
+
+static inline uint32_t maxSystems = 128;
 
 class System
 {

@@ -2,8 +2,8 @@
 
 
 #include "Math/Vector4.hpp"
-#include "Render/RenderDevice.hpp"
-#include "Render/Pipeline.hpp"
+#include "Graphics/RenderDevice.hpp"
+#include "Graphics/Pipeline.hpp"
 #include "Material/Export.h"
 #include <vulkan/vulkan_handles.hpp>
 
