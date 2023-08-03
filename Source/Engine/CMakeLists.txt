@@ -11,11 +11,11 @@ list(APPEND Sources
   "Noodle/NoodleLexer.cpp"
   "Noodle/NoodleToken.cpp"
 
-  # Window
-  "Window/Window.cpp"
-  "Window/Display.cpp"
+  # Audio
 
-  # Render
+  # Graphics
+  "Graphics/Window/Window.cpp"
+  "Graphics/Window/Display.cpp"
   "Graphics/Instance.cpp"
   "Graphics/PhysicalDevice.cpp"
   "Graphics/Device.cpp"
@@ -29,9 +29,8 @@ list(APPEND Sources
   "Graphics/Swapchain.cpp"
   "Graphics/FrameCounter.cpp"
   # "Render/Mesh.cpp"
-
-  "Render/Renderer.cpp"
-  "Render/PresentRenderPass.cpp"
+  "Graphics/Render/Renderer.cpp"
+  "Graphics/Render/PresentRenderPass.cpp"
 
   # imgui
   "imgui/imgui.cpp"
@@ -43,12 +42,15 @@ list(APPEND Sources
   "imgui/imgui_impl_vulkan.cpp"
   "imgui/imgui_impl_bluemetal.cpp"
 
-  "Engine/Engine.cpp")
+  "Engine/AudioSubsystem.cpp"
+  "Engine/GraphicsSubsystem.cpp"
+  "Engine/Engine.cpp"
+  )
 
 add_library(Bluemetal STATIC ${Sources})
 
 target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(Bluemetal ${Vulkan_LIBRARY} spirv-reflect-static SDL2::SDL2 fmt::fmt)
+target_link_libraries(Bluemetal ${Vulkan_LIBRARY} spirv-reflect-static SDL2::SDL2 fmt::fmt FMOD)
 
 # generate export header
 include(GenerateExportHeader)

@@ -1,24 +1,33 @@
 #pragma once
 
-
-#include "Export.h"
+#include "Core/Flags.h"
 #include "Noodle/Noodle.h"
-#include "Window/Window.h"
-#include "Graphics/Instance.h"
-#include "Graphics/Device.h"
-#include "Graphics/Swapchain.h"
-#include "Graphics/FrameCounter.h"
-#include "Render/Renderer.h"
+#include "GraphicsSubsystem.h"
+#include "AudioSubsystem.h"
+#include "Precompiled.h"
+#include "Export.h"
 
 namespace bl
 {
 
+enum SubsystemFlagBits
+{
+    eSubsystemResourcesBit      = bl::bit(0),
+    eSubsystemGraphicsBit       = bl::bit(1),
+    eSubsystemImGuiBit          = bl::bit(2),
+    eSubsystemAudioBit          = bl::bit(3),
+    eSubsystemWorldBit          = bl::bit(4),
+};
+
+using SubsystemFlags = uint32_t;
+
+struct SubsystemInitInfo
+{
+    const GraphicsSubsystemInitInfo* pGraphicsInit;
+};
+
 class BLUEMETAL_API Engine
 {
-public:
-    /// Returns the singleton instance of the engine. 
-    static Engine& get();
-
 public:
 
     /// Constructs the engine building the engine up to a working state.
@@ -27,34 +36,35 @@ public:
     /// Destroys the entire engine and shuts everything down.
     ~Engine();
 
-    /// Returns the config noodle.
-    Noodle& getConfig() { return m_config; }
+    /// Initializes parts of the engine that haven't been initialized yet.
+    ///
+    ///     @param flags Specify subsystems to initialize.
+    ///
+    /// Can call multiple times, if a subsystem has already initialzed it will be skipped.
+    ///     
+    void init(SubsystemFlags flags);
 
-    /// Returns the 
-    std::shared_ptr<Instance> getInstance() { return m_instance; }
-    std::shared_ptr<Device> getDevice() { return m_device; }
-    std::shared_ptr<PhysicalDevice> getPhysicalDevice() { return m_physicalDevice; }
-    std::shared_ptr<Window> getWindow() { return m_window; }
-    std::shared_ptr<Device> getDevice() { return m_device; }
-    std::shared_ptr<Swapchain> getSwapchain() { return m_swapchain; }
-    std::shared_ptr<Renderer> getRenderer() { return m_renderer; }
+    /// Shuts down all subsystems.
+    void shutdown();
+
+    /// Returns a noodle to the config.
+    Noodle& getConfig();
+
+    /// Returns the graphics subsystem.
+    GraphicsSubsystem& getGraphicsSubsystem();
+
+    /// Returns the audio subsystem.
+    AudioSubsystem& getAudioSubsystem();
+
 
     /// Begins the engines game loop.
     void run();
     
 private:
-    bool                                m_shouldClose;
-    bool                                m_showImGui;
-    bool                                m_fullscreen;
-    Noodle                              m_config;
-    std::shared_ptr<Instance>           m_instance;
-    std::shared_ptr<PhysicalDevice>     m_physicalDevice;
-    std::shared_ptr<Window>             m_window;
-    std::shared_ptr<Device>             m_device;
-    std::shared_ptr<Swapchain>          m_swapchain;
-    std::shared_ptr<Renderer>           m_renderer;
-    FrameCounter                        _frameCounter;
-    std::queue<std::function<void()>>   _postRenderCommands;
+    Noodle m_config;
+    GraphicsSubsystem m_graphics;
+    AudioSubsystem m_audio;
+
 };
 
 } // namespace bl
