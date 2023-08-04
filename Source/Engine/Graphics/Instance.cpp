@@ -25,7 +25,7 @@ VkInstance Instance::getHandle()
     return m_instance;
 }
 
-std::vector<std::shared_ptr<PhysicalDevice>> Instance::getPhysicalDevices()
+std::vector<PhysicalDevice> Instance::getPhysicalDevices()
 {
     return m_physicalDevices;
 }
@@ -255,7 +255,7 @@ void Instance::createPhysicalDevices()
     uint32_t i = 0;
     for (VkPhysicalDevice pd : physicalDevices)
     {
-        m_physicalDevices.push_back(std::make_shared<PhysicalDevice>(i, pd));
+        m_physicalDevices.emplace_back(pd, i);
         i++;
     }   
 }

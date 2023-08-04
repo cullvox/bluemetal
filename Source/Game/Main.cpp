@@ -24,11 +24,11 @@ int main(int argc, const char** argv)
     
     engine.init(bl::eSubsystemGraphicsBit | bl::eSubsystemAudioBit);
     
-    auto& audio = engine.getAudioSubsystem();
+    auto audio = engine.getAudio();
 
-    auto sound = audio.createSound("Resources/Audio/Music/Aria Math.flac");
-    auto listener = audio.createListener();
-    auto source = audio.createSource();
+    auto sound = audio->createSound("Resources/Audio/Music/Aria Math.flac");
+    auto listener = audio->createListener();
+    auto source = audio->createSource();
 
     source->setSound(sound);
     source->play();
@@ -47,7 +47,7 @@ int main(int argc, const char** argv)
         bl::Vector3f velocity{ cosf(bl::Time::current() / 1000.f) * 1/100.f, 0.0f, 0.0f };
 
         source->set3DAttributes(position, velocity);
-        audio.update();
+        audio->update();
     }
 
     //auto& graphics = engine.getGraphicsSubsystem();

@@ -4,9 +4,9 @@
 namespace bl
 {
 
-PhysicalDevice::PhysicalDevice(uint32_t index, VkPhysicalDevice physicalDevice)
-    : m_index(index)
-    , m_physicalDevice(physicalDevice)
+PhysicalDevice::PhysicalDevice(VkPhysicalDevice physicalDevice, uint32_t index)
+    : m_physicalDevice(physicalDevice)
+    , m_index(index)
 {
 }
 
