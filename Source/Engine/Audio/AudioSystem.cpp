@@ -21,6 +21,11 @@ AudioSystem::~AudioSystem()
     FMOD_System_Close(m_pSystem);
 }
 
+FMOD_SYSTEM* AudioSystem::getHandle()
+{
+    return m_pSystem;
+}
+
 void AudioSystem::update()
 {
     if (FMOD_System_Update(m_pSystem) != FMOD_OK)

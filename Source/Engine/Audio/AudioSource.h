@@ -36,7 +36,8 @@ public:
     bool isStopped();
 
 private:
-    std::shared_ptr<AudioSystem>    m_device;
+    std::shared_ptr<AudioSystem>    m_system;
+    std::shared_ptr<Sound>          m_sound;
     FMOD_CHANNEL*                   m_pChannel;
 };
 

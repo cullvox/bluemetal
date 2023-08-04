@@ -25,6 +25,8 @@ public:
 
     void set3DAttributes(Vector3i position, Vector3i velocity);
 
+private:
+    std::shared_ptr<AudioSystem> m_system;
 };
 
 } // namespace bl

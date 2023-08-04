@@ -1,16 +1,28 @@
 #pragma once
 
+///////////////////////////////
+// Headers
+///////////////////////////////
+
 #include "Precompiled.h"
 #include "Export.h"
 
 namespace bl
 {
 
+///////////////////////////////
+// Forward Declarations
+///////////////////////////////
+
 class Window;
 
+///////////////////////////////
+// Classes
+///////////////////////////////
+
+/// A physical GPU within the system.
 class BLUEMETAL_API PhysicalDevice
 {
-
 public:
 
     /// Constructs a physical device object.
@@ -18,12 +30,16 @@ public:
     ///     @param index Index for this physical device.
     ///     @param physicalDevice Vulkan physical device object.
     ///
-    ///     This function should only be called from bl::Instance.
-    ///
-    PhysicalDevice(uint32_t index, VkPhysicalDevice physicalDevice);
+    PhysicalDevice(VkPhysicalDevice physicalDevice, uint32_t index);
+
+    /// Copy Constructor
+    PhysicalDevice(PhysicalDevice& other) = default;
+
+    /// Move Constructor
+    PhysicalDevice(PhysicalDevice&& other) = default;
     
     /// Default destructor.
-    ~PhysicalDevice();
+    ~PhysicalDevice() = default;
 
     /// Gets the underlying VkPhysicalDevice object.
     VkPhysicalDevice getHandle();

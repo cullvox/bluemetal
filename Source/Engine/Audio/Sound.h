@@ -28,8 +28,10 @@ public:
     Sound(std::shared_ptr<AudioSystem> device, const std::filesystem::path& file);
     ~Sound();
 
+    FMOD_SOUND* getHandle();
+
 private:
-    std::shared_ptr<AudioSystem>    m_device;
+    std::shared_ptr<AudioSystem>    m_system;
     FMOD_SOUND*                     m_pSound;
 };
 

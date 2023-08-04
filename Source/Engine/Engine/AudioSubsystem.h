@@ -25,8 +25,8 @@ class AudioInput;
 
 struct AudioSubsystemInitInfo
 {
-    uint32_t inputDeviceIndex;
-    uint32_t outputDeviceIndex;
+    uint32_t inputId;
+    uint32_t outputId;
 };
 
 class AudioSubsystem
@@ -34,26 +34,27 @@ class AudioSubsystem
 public:
 
     /// Engine Constructor
-    AudioSubsystem(Engine& engine);
+    AudioSubsystem(Engine* engine);
 
     /// Default Destructor
     ~AudioSubsystem();
 
-    std::vector<std::shared_ptr<AudioInput>> getInputs();
-    std::vector<std::shared_ptr<AudioOutput>> getOutputs();
+    
 
     void init();
     void shutdown();
     void update();
 
-    std::shared_ptr<Sound> createSound(std::filesystem::path path);
-    std::shared_ptr<AudioListener> createListener();
-    std::shared_ptr<AudioSource> createSource();
+    std::vector<AudioInput*> getInputs();
+    std::vector<AudioOutput> getOutputs();
+    std::unique_ptr<Sound> createSound(std::filesystem::path path);
+    std::unique_ptr<AudioListener> createListener();
+    std::unique_ptr<AudioSource> createSource();
 
 private:
-    Engine& m_engine;
+    Engine* engine;
 
-    std::shared_ptr<AudioSystem> m_system;
+    std::unique_ptr<AudioSystem> system;
 
 };
 

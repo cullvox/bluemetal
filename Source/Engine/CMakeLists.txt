@@ -12,6 +12,10 @@ list(APPEND Sources
   "Noodle/NoodleToken.cpp"
 
   # Audio
+  "Audio/AudioSystem.cpp"
+  "Audio/AudioListener.cpp"
+  "Audio/AudioSource.cpp"
+  "Audio/Sound.cpp"
 
   # Graphics
   "Graphics/Window/Window.cpp"

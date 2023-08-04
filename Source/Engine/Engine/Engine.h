@@ -39,10 +39,11 @@ public:
     /// Initializes parts of the engine that haven't been initialized yet.
     ///
     ///     @param flags Specify subsystems to initialize.
+    ///     @param info Customize parts of the engines initialization, so you don't have to later.
     ///
     /// Can call multiple times, if a subsystem has already initialzed it will be skipped.
     ///     
-    void init(SubsystemFlags flags);
+    void init(SubsystemFlags flags, const SubsystemInitInfo* info = nullptr);
 
     /// Shuts down all subsystems.
     void shutdown();
@@ -51,19 +52,19 @@ public:
     Noodle& getConfig();
 
     /// Returns the graphics subsystem.
-    GraphicsSubsystem& getGraphicsSubsystem();
+    GraphicsSubsystem* getGraphics();
 
     /// Returns the audio subsystem.
-    AudioSubsystem& getAudioSubsystem();
+    AudioSubsystem* getAudio();
 
 
     /// Begins the engines game loop.
     void run();
     
 private:
-    Noodle m_config;
-    GraphicsSubsystem m_graphics;
-    AudioSubsystem m_audio;
+    Noodle config;
+    std::unique_ptr<GraphicsSubsystem> graphics;
+    std::unique_ptr<AudioSubsystem> audio;
 
 };
 

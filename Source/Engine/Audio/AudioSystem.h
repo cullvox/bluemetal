@@ -5,6 +5,7 @@
 ///////////////////////////////
 
 #include "fmod.h"
+#include "Precompiled.h"
 #include "Export.h"
 
 namespace bl
@@ -20,6 +21,7 @@ public:
     AudioSystem();
     ~AudioSystem();
 
+    FMOD_SYSTEM* getHandle();
     void update();
 
 private:

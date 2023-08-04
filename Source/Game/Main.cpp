@@ -1,5 +1,5 @@
 #include "Engine/Engine.h"
-
+#include "Core/Time.h"
 
 //Helper to display a little (?) mark which shows a tooltip when hovered.
 //In your own code you may want to display an actual icon if you are using a merged icon fonts (see docs/FONTS.md)
@@ -26,15 +26,27 @@ int main(int argc, const char** argv)
     
     auto& audio = engine.getAudioSubsystem();
 
-    auto sound = audio.createSound("Resources/Audio/Music/Aria Math.ogg");
+    auto sound = audio.createSound("Resources/Audio/Music/Aria Math.flac");
     auto listener = audio.createListener();
     auto source = audio.createSource();
 
-    source.setSound(sound);
-    source.play();
+    source->setSound(sound);
+    source->play();
+
+    float last = 0.0f;
+    float current = bl::Time::current();
 
     while (true)
     {
+        last = current;
+        current = bl::Time::current();
+
+
+
+        bl::Vector3f position{ sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
+        bl::Vector3f velocity{ cosf(bl::Time::current() / 1000.f) * 1/100.f, 0.0f, 0.0f };
+
+        source->set3DAttributes(position, velocity);
         audio.update();
     }
 

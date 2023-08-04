@@ -22,7 +22,7 @@ public:
     VkInstance getHandle();
  
     /// Gets the underlying VkPhysicalDevice representing the choosen GPU.
-    std::vector<std::shared_ptr<PhysicalDevice>> getPhysicalDevices();
+    std::vector<PhysicalDevice> getPhysicalDevices();
 
 private:
  
@@ -42,16 +42,16 @@ private:
     void createPhysicalDevices();
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT,
-        VkDebugUtilsMessageTypeFlagsEXT,
-        const VkDebugUtilsMessengerCallbackDataEXT*,
-        void*) noexcept;
+        VkDebugUtilsMessageSeverityFlagBitsEXT          severity,
+        VkDebugUtilsMessageTypeFlagsEXT                 messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT*     pCallbackData,
+        void*                                           pUserData) noexcept;
     
-    VkInstance                                      m_instance;
-    PFN_vkCreateDebugUtilsMessengerEXT              m_createDebugUtilsMessengerEXT;
-    PFN_vkDestroyDebugUtilsMessengerEXT             m_destroyDebugUtilsMessengerEXT;
-    VkDebugUtilsMessengerEXT                        m_messenger;
-    std::vector<std::shared_ptr<PhysicalDevice>>    m_physicalDevices;
+    VkInstance                          m_instance;
+    PFN_vkCreateDebugUtilsMessengerEXT  m_createDebugUtilsMessengerEXT;
+    PFN_vkDestroyDebugUtilsMessengerEXT m_destroyDebugUtilsMessengerEXT;
+    VkDebugUtilsMessengerEXT            m_messenger;
+    std::vector<PhysicalDevice>         m_physicalDevices;
 };
 
 } // namespace bl

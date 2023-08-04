@@ -15,10 +15,18 @@ namespace bl
 AudioSubsystem::AudioSubsystem(Engine& engine)
     : m_engine(engine)
 {
-    m_system = std::make_shared<AudioSystem>();
 }
 
 AudioSubsystem::~AudioSubsystem()
+{
+}
+
+void AudioSubsystem::init()
+{
+    m_system = std::make_shared<AudioSystem>();
+}
+
+void AudioSubsystem::shutdown()
 {
 }
 

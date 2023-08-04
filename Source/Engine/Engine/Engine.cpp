@@ -27,12 +27,27 @@ Engine::~Engine()
 {
 }
 
-void Engine::init(SubsystemFlags flags)
+void Engine::init(SubsystemFlags flags, const SubsystemInitInfo* pInfo)
 {
     if (flags & eSubsystemAudioBit)
     {
-        m_audio.init();
+        audio->init();
     }
+
+    if (flags & eSubsystemGraphicsBit)
+    {
+        graphics->init(pInfo->pGraphicsInit);
+    }
+}
+
+GraphicsSubsystem* Engine::getGraphics()
+{
+    return graphics.get();
+}
+
+AudioSubsystem* Engine::getAudio()
+{
+    return audio.get();
 }
 
 } // namespace bl
