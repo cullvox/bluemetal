@@ -8,7 +8,7 @@ namespace bl
 class BLUEMETAL_API Shader
 {
 public:
-    Shader(std::shared_ptr<Device> device, VkShaderStageFlagBits stage, const std::vector<uint32_t>& binary);
+    Shader(GraphicsDevice* pDevice, VkShaderStageFlagBits stage, const std::vector<uint32_t>& binary);
     ~Shader();
 
 
@@ -19,7 +19,7 @@ public:
 private:
     void createModule();
 
-    std::shared_ptr<Device> m_device;
+    GraphicsDevice*         m_pDevice;
     VkShaderModule          m_module;
     VkShaderStageFlagBits   m_stage;
     std::vector<uint32_t>   m_binary;

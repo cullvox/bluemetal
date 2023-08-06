@@ -12,8 +12,8 @@ namespace bl
 // Classes
 ///////////////////////////////
 
-AudioListener::AudioListener(std::shared_ptr<AudioSystem> system)
-    : m_system(system)
+AudioListener::AudioListener(AudioSystem* pSystem)
+    : m_pSystem(pSystem)
 {
 }
 

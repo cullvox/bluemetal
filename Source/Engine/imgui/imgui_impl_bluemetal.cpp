@@ -7,12 +7,12 @@
 
 struct ImGui_ImplBluemetal_Data
 {
-    std::shared_ptr<bl::Instance>       instance;
-    std::shared_ptr<bl::PhysicalDevice> physicalDevice;
-    std::shared_ptr<bl::Device>         device;
-    std::shared_ptr<bl::Window>         window;
-    std::shared_ptr<bl::RenderPass>     renderPass;
-    VkDescriptorPool                    descriptorPool;
+    bl::GraphicsInstance*       pInstance;
+    bl::GraphicsPhysicalDevice* pPhysicalDevice;
+    bl::GraphicsDevice*         pDevice;
+    bl::Window*                 pWindow;
+    bl::RenderPass*             pRenderPass;
+    VkDescriptorPool            descriptorPool;
 };
 
 static ImGui_ImplBluemetal_Data* pData = nullptr;
@@ -86,11 +86,11 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     pData = new ImGui_ImplBluemetal_Data();
     if (!pData) return false;
 
-    pData->instance = init->instance;
-    pData->physicalDevice = init->physicalDevice;
-    pData->device = init->device;
-    pData->window = init->window;
-    pData->renderPass = init->renderPass;
+    pData->pInstance = init->pInstance;
+    pData->pPhysicalDevice = init->pPhysicalDevice;
+    pData->pDevice = init->pDevice;
+    pData->pWindow = init->pWindow;
+    pData->pRenderPass = init->pRenderPass;
 
     VkDescriptorPoolSize poolSizes[] =
     {
@@ -114,7 +114,7 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     poolInfo.poolSizeCount = (uint32_t)std::size(poolSizes);
     poolInfo.pPoolSizes = poolSizes;
 
-    if (vkCreateDescriptorPool(pData->device->getHandle(), &poolInfo, nullptr, &pData->descriptorPool) != VK_SUCCESS)
+    if (vkCreateDescriptorPool(pData->pDevice->getHandle(), &poolInfo, nullptr, &pData->descriptorPool) != VK_SUCCESS)
     {
         BL_LOG(bl::LogType::eError, "Could not create a vulkan descriptor pool for ImGui!");
         return false;
@@ -122,15 +122,15 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
 
     ImGui::CreateContext();
     
-    ImGui_ImplSDL2_InitForVulkan(pData->window->getHandle());
+    ImGui_ImplSDL2_InitForVulkan(pData->pWindow->getHandle());
 
     // Initialize ImGui for Vulkan, pass created objects.
     ImGui_ImplVulkan_InitInfo initInfo = {};
-    initInfo.Instance = pData->instance->getHandle();
-    initInfo.PhysicalDevice = pData->physicalDevice->getHandle();
-    initInfo.Device = pData->device->getHandle();
-    initInfo.QueueFamily = pData->device->getGraphicsFamilyIndex();
-    initInfo.Queue =  pData->device->getGraphicsQueue();
+    initInfo.Instance = pData->pInstance->getHandle();
+    initInfo.PhysicalDevice = pData->pPhysicalDevice->getHandle();
+    initInfo.Device = pData->pDevice->getHandle();
+    initInfo.QueueFamily = pData->pDevice->getGraphicsFamilyIndex();
+    initInfo.Queue =  pData->pDevice->getGraphicsQueue();
     initInfo.PipelineCache = VK_NULL_HANDLE;
     initInfo.DescriptorPool = pData->descriptorPool;
     initInfo.Subpass = 0;
@@ -140,7 +140,7 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     initInfo.Allocator = nullptr;
     initInfo.CheckVkResultFn = nullptr;
 
-    if (!ImGui_ImplVulkan_Init(&initInfo, pData->renderPass->getHandle()))
+    if (!ImGui_ImplVulkan_Init(&initInfo, pData->pRenderPass->getHandle()))
     {
         throw std::runtime_error("Could not initialize ImGui Vulkan!");
     }
@@ -154,7 +154,7 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     ImFont* pFont = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto-Regular.ttf", 18.0f);
     io.FontDefault = pFont;
 
-    pData->device->immediateSubmit([&](VkCommandBuffer cmd)
+    pData->pDevice->immediateSubmit([&](VkCommandBuffer cmd)
         {
             ImGui_ImplVulkan_CreateFontsTexture(cmd);
         });
@@ -173,10 +173,10 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
 
 void ImGui_ImplBluemetal_Shutdown()
 {
-    pData->device->waitForDevice();
+    pData->pDevice->waitForDevice();
     ImGui_ImplSDL2_Shutdown();
 
-    vkDestroyDescriptorPool(pData->device->getHandle(), pData->descriptorPool, nullptr);
+    vkDestroyDescriptorPool(pData->pDevice->getHandle(), pData->descriptorPool, nullptr);
 
     ImGui_ImplVulkan_Shutdown();
 

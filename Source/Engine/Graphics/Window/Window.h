@@ -13,7 +13,7 @@ namespace bl
 class BLUEMETAL_API Window
 {
 public:
-    Window(std::shared_ptr<Instance> instance, VideoMode videoMode, const std::string& title = "Window", std::optional<Display> display = std::nullopt);
+    Window(GraphicsInstance* pInstance, VideoMode videoMode, const std::string& title = "Window", std::optional<Display> display = std::nullopt);
     ~Window();
 
     Extent2D getExtent();
@@ -24,9 +24,9 @@ private:
     void createWindow(const VideoMode& videoMode, const std::string& title, std::optional<Display> display);
     void createSurface();
 
-    SDL_Window*                 m_pWindow;
-    std::shared_ptr<Instance>   m_instance;
-    VkSurfaceKHR                m_surface;
+    SDL_Window*         m_pWindow;
+    GraphicsInstance*   m_pInstance;
+    VkSurfaceKHR        m_surface;
 };
 
 } // namespace bl

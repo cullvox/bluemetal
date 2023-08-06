@@ -4,10 +4,9 @@
 // Headers
 ///////////////////////////////
 
-#include "fmod.h"
-#include "AudioSystem.h"
-
-#include "Resource/Resource.h"
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_bluemetal.h"
+#include "Export.h"
 
 namespace bl
 {
@@ -16,23 +15,23 @@ namespace bl
 // Forward Declarations
 ///////////////////////////////
 
-class AudioSystem;
+class Engine;
 
 ///////////////////////////////
 // Classes
 ///////////////////////////////
 
-class BLUEMETAL_API Sound
+class ImGuiSubsystem
 {
 public:
-    Sound(AudioSystem* pSystem, const std::filesystem::path& file);
-    ~Sound();
+    ImGuiSubsystem(Engine* pEngine);
+    ~ImGuiSubsystem();
 
-    FMOD_SOUND* getHandle();
+    void init();
+    void shutdown();
 
 private:
-    AudioSystem*    m_pSystem;
-    FMOD_SOUND*     m_pSound;
+    Engine* m_pEngine;
 };
 
 } // namespace bl

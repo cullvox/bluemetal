@@ -8,21 +8,24 @@ namespace bl
 {
 
 
-class BLUEMETAL_API Instance
+class BLUEMETAL_API GraphicsInstance
 {
 public:
 
     /// Default Constructor.
-    Instance();
+    GraphicsInstance();
     
     /// @brief Default Destructor.
-    ~Instance();
+    ~GraphicsInstance();
+
+    /// Move Constructor 
+    GraphicsInstance(GraphicsInstance&& other);
 
     /// Gets the underlying VkInstance object.
     VkInstance getHandle();
  
     /// Gets the underlying VkPhysicalDevice representing the choosen GPU.
-    std::vector<PhysicalDevice> getPhysicalDevices();
+    std::vector<GraphicsPhysicalDevice*> getPhysicalDevices();
 
 private:
  
@@ -51,7 +54,7 @@ private:
     PFN_vkCreateDebugUtilsMessengerEXT  m_createDebugUtilsMessengerEXT;
     PFN_vkDestroyDebugUtilsMessengerEXT m_destroyDebugUtilsMessengerEXT;
     VkDebugUtilsMessengerEXT            m_messenger;
-    std::vector<PhysicalDevice>         m_physicalDevices;
+    std::vector<std::unique_ptr<GraphicsPhysicalDevice>> m_physicalDevices;
 };
 
 } // namespace bl

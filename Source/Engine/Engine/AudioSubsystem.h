@@ -39,8 +39,6 @@ public:
     /// Default Destructor
     ~AudioSubsystem();
 
-    
-
     void init();
     void shutdown();
     void update();

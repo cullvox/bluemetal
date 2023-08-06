@@ -1,7 +1,16 @@
-#include "Device.h"
-#include "Core/Log.h"
 
-// disable vk_mem_alloc warnings on platforms
+///////////////////////////////
+// Headers
+///////////////////////////////
+
+#include "Core/Log.h"
+#include "Device.h"
+
+///////////////////////////////
+// Disable Warnings
+///////////////////////////////
+
+// disable warnings from vk_mem_alloc warnings on platforms
 #ifdef BLUEMETAL_COMPILER_GNU
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wunused-variable"
@@ -26,10 +35,14 @@
 namespace bl
 {
 
-Device::Device(
-    std::shared_ptr<Instance> instance, 
-    std::shared_ptr<PhysicalDevice> physicalDevice,
-    std::shared_ptr<Window> window)
+///////////////////////////////
+// Classes
+///////////////////////////////
+
+GraphicsDevice::GraphicsDevice(
+    GraphicsInstance*                   instance, 
+    GraphicsPhysicalDevice*             physicalDevice,
+    Window*                             window)
     : m_instance(instance)
     , m_physicalDevice(physicalDevice)
 {
@@ -38,60 +51,61 @@ Device::Device(
     createAllocator();
 }
 
-Device::~Device()
+GraphicsDevice::~GraphicsDevice()
 {
     vmaDestroyAllocator(m_allocator);
     vkDestroyCommandPool(m_device, m_commandPool, nullptr);
     vkDestroyDevice(m_device, nullptr);
 }
 
-std::shared_ptr<PhysicalDevice> Device::getPhysicalDevice()
+GraphicsPhysicalDevice* GraphicsDevice::getPhysicalDevice()
 {
     return m_physicalDevice;
 }
 
-uint32_t Device::getGraphicsFamilyIndex()
+uint32_t GraphicsDevice::getGraphicsFamilyIndex()
 {
     return m_graphicsFamilyIndex;
 }
 
-uint32_t Device::getPresentFamilyIndex()
+uint32_t GraphicsDevice::getPresentFamilyIndex()
 {
     return m_presentFamilyIndex;
 }
 
-VkDevice Device::getHandle()
+VkDevice GraphicsDevice::getHandle()
 {
     return m_device;
 }
 
-VkQueue Device::getGraphicsQueue()
+VkQueue GraphicsDevice::getGraphicsQueue()
 {
     return m_graphicsQueue;
 }
 
-VkQueue Device::getPresentQueue()
+VkQueue GraphicsDevice::getPresentQueue()
 {
     return m_presentQueue;
 }
 
-VkCommandPool Device::getCommandPool()
+VkCommandPool GraphicsDevice::getCommandPool()
 {
     return m_commandPool;
 }
 
-VmaAllocator Device::getAllocator()
+VmaAllocator GraphicsDevice::getAllocator()
 {
     return m_allocator;
 }
 
-bool Device::areQueuesSame()
+bool GraphicsDevice::areQueuesSame()
 {
     return m_graphicsFamilyIndex == m_presentFamilyIndex;
 }
 
-void Device::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder)
+void GraphicsDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder)
 {
+    // Allocate the command buffer used to record the submission.
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocateInfo.pNext = nullptr;
@@ -105,6 +119,7 @@ void Device::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorde
         throw std::runtime_error("Could not allocate a Vulkan command buffer!");
     }
 
+    // Begin the command buffer.
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.pNext = nullptr;
@@ -116,13 +131,16 @@ void Device::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorde
         throw std::runtime_error("Could not begin a temporary command buffer!");
     }
 
+    // Record the commands onto the buffer.
     recorder(cmd);
 
+    // End the command buffer.
     if (vkEndCommandBuffer(cmd) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not end a temporary command buffer!");
     }
 
+    // Submit the command buffer using the graphics queue.
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.pNext = nullptr;
@@ -142,24 +160,26 @@ void Device::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorde
     vkQueueWaitIdle(m_graphicsQueue);
 }
 
-void Device::waitForDevice()
+void GraphicsDevice::waitForDevice()
 {
     vkDeviceWaitIdle(m_device);
 }
 
-std::vector<const char*> Device::getValidationLayers()
+std::vector<const char*> GraphicsDevice::getValidationLayers()
 {
-    // disable validation layers on release
-#ifdef BLUEMETAL_DEVELOPMENT 
+   
+#ifdef BLUEMETAL_DEVELOPMENT // Disable validation layers on release.
     return {};
-#else
 
-    std::vector<const char*> layers = 
+    
+#else // Enable validation layers on debug.
+
+    std::vector layers = // Requested layers.
     {
         "VK_LAYER_KHRONOS_validation",  
     };
 
-    // get the systems validation layer info
+    // Get the systems validation layers.
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
 
@@ -175,7 +195,7 @@ std::vector<const char*> Device::getValidationLayers()
         throw std::runtime_error("Could not enumerate Vulkan device layer properties!");
     }
 
-    // ensure that the requested layers are present on the system
+    // Ensure that the requested layers are present on the system.
     for (const char* name : layers)
     {
         if (std::find_if(properties.begin(), properties.end(), 
@@ -189,17 +209,18 @@ std::vector<const char*> Device::getValidationLayers()
         }
     }
 
-    // found all layers!
+    // Found all requested layers layers!
     return layers;
 
 #endif
 }
 
-std::vector<const char*> Device::getExtensions()
+std::vector<const char*> GraphicsDevice::getExtensions()
 {
+
     std::vector requiredExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
     
-    // get vulkan device extensions
+    // Get vulkan device extensions on this system.
     uint32_t propertyCount = 0;
     std::vector<VkExtensionProperties> properties;
 
@@ -215,7 +236,7 @@ std::vector<const char*> Device::getExtensions()
         throw std::runtime_error("could not enumerate Vulkan device extension properties!");
     }
    
-    // check if our extensions are on the system
+    // Check if our extensions are available.
     for (const char* pName : requiredExtensions)
     {
         if (std::find_if(properties.begin(), properties.end(), 
@@ -231,12 +252,12 @@ std::vector<const char*> Device::getExtensions()
     return requiredExtensions;
 }
 
-void Device::createDevice(std::shared_ptr<Window> window)
+void GraphicsDevice::createDevice(Window* window)
 {   
     const std::vector<const char*> extensions = getExtensions();
     const std::vector<const char*> validationLayers = getValidationLayers();
 
-    // get the queue family properties of the physical device
+    // Get the queue family properties of the physical device.
     uint32_t queuePropertyCount = 0;
     std::vector<VkQueueFamilyProperties> queueProperties;
     vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice->getHandle(), &queuePropertyCount, nullptr);
@@ -245,7 +266,7 @@ void Device::createDevice(std::shared_ptr<Window> window)
 
     vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice->getHandle(), &queuePropertyCount, queueProperties.data());
 
-    // determine what families will be dedicated to graphics and present
+    // Determine what families will be dedicated to graphics and present.
     uint32_t i = 0;
     for (const VkQueueFamilyProperties& properties : queueProperties)
     {
@@ -289,10 +310,11 @@ void Device::createDevice(std::shared_ptr<Window> window)
         }
     };
 
-    // only use the unique queue indices, this is a basic way to do that
-    // in the event that we use compute, this needs to be upgraded
+    // Only use the unique queue indices, this is a basic way to do that.
+    // In the event that we use compute, this needs to be upgraded.
     queueCreateInfos.resize(areQueuesSame() ? 1 : 2);
 
+    // Create the device.
     const VkPhysicalDeviceFeatures features{};
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -311,13 +333,14 @@ void Device::createDevice(std::shared_ptr<Window> window)
         throw std::runtime_error("Could not create the Vulkan device!");
     }
 
+    // Get the graphics and present queue objects.
     vkGetDeviceQueue(m_device, m_graphicsFamilyIndex, 0, &m_graphicsQueue);
     vkGetDeviceQueue(m_device, m_presentFamilyIndex, 0, &m_presentQueue);
 
     BL_LOG(LogType::eInfo, "Created Vulkan device using {}.", m_physicalDevice->getDeviceName())
 }
 
-void Device::createCommandPool()
+void GraphicsDevice::createCommandPool()
 {
     VkCommandPoolCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -331,7 +354,7 @@ void Device::createCommandPool()
     }
 }
 
-void Device::createAllocator()
+void GraphicsDevice::createAllocator()
 {
     VmaAllocatorCreateInfo createInfo = {};
     createInfo.flags = 0;

@@ -4,27 +4,34 @@
 namespace bl
 {
 
-Image::Image(std::shared_ptr<Device> device, VkImageType type, VkFormat format, Extent3D extent, uint32_t mipLevels, VkImageUsageFlags usage, VkImageAspectFlags aspectMask)
-    : m_device(device)
+Image::Image(
+    GraphicsDevice*     pDevice, 
+    VkImageType         type, 
+    VkFormat            format, 
+    VkExtent3D          extent,  
+    VkImageUsageFlags   usage, 
+    VkImageAspectFlags  aspectMask,
+    uint32_t            mipLevels)
+    : m_pDevice(pDevice)
     , m_extent(extent)
     , m_type(type)
     , m_format(format)
     , m_usage(usage)
 {
-    uint32_t graphicsFamilyIndex = m_device->getGraphicsFamilyIndex();
+    auto graphicsFamilyIndex = m_pDevice->getGraphicsFamilyIndex();
 
     VkImageCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
     createInfo.pNext = nullptr;
     createInfo.flags = {};
-    createInfo.imageType = m_type;
-    createInfo.format = m_format;
-    createInfo.extent = (VkExtent3D)extent;
+    createInfo.imageType = type;
+    createInfo.format = format;
+    createInfo.extent = extent;
     createInfo.mipLevels = mipLevels;
     createInfo.arrayLayers = 1;
     createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    createInfo.usage = m_usage;
+    createInfo.usage = usage;
     createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     createInfo.queueFamilyIndexCount = 1;
     createInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
@@ -40,7 +47,7 @@ Image::Image(std::shared_ptr<Device> device, VkImageType type, VkFormat format, 
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 1.0f;
 
-    if (vmaCreateImage(m_device->getAllocator(), &createInfo, &allocationCreateInfo, &m_image, &m_allocation, nullptr) != VK_SUCCESS)
+    if (vmaCreateImage(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_image, &m_allocation, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan image!");
     }
@@ -68,7 +75,7 @@ Image::Image(std::shared_ptr<Device> device, VkImageType type, VkFormat format, 
     viewCreateInfo.components = componentMapping;
     viewCreateInfo.subresourceRange = subresourceRange;
 
-    if (vkCreateImageView(m_device->getHandle(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
+    if (vkCreateImageView(m_pDevice->getHandle(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan image view!");
     }
@@ -77,7 +84,7 @@ Image::Image(std::shared_ptr<Device> device, VkImageType type, VkFormat format, 
 
 Image::~Image()
 {
-    vmaDestroyImage(m_device->getAllocator(), m_image, m_allocation);
+    vmaDestroyImage(m_pDevice->getAllocator(), m_image, m_allocation);
 }
 
 Extent3D Image::getExtent()
@@ -95,12 +102,12 @@ VkImageUsageFlags Image::getUsage()
     return m_usage;
 }
 
-VkImageView Image::getImageView()
+VkImageView Image::getDefaultView()
 {
     return m_imageView;
 }
 
-VkImage Image::getImage()
+VkImage Image::getHandle()
 {
     return m_image;
 }

@@ -21,7 +21,7 @@ class Window;
 ///////////////////////////////
 
 /// A physical GPU within the system.
-class BLUEMETAL_API PhysicalDevice
+class BLUEMETAL_API GraphicsPhysicalDevice
 {
 public:
 
@@ -30,16 +30,16 @@ public:
     ///     @param index Index for this physical device.
     ///     @param physicalDevice Vulkan physical device object.
     ///
-    PhysicalDevice(VkPhysicalDevice physicalDevice, uint32_t index);
+    GraphicsPhysicalDevice(VkPhysicalDevice physicalDevice, uint32_t index);
 
     /// Copy Constructor
-    PhysicalDevice(PhysicalDevice& other) = default;
+    GraphicsPhysicalDevice(GraphicsPhysicalDevice& other) = default;
 
     /// Move Constructor
-    PhysicalDevice(PhysicalDevice&& other) = default;
+    GraphicsPhysicalDevice(GraphicsPhysicalDevice&& other) = default;
     
     /// Default destructor.
-    ~PhysicalDevice() = default;
+    ~GraphicsPhysicalDevice() = default;
 
     /// Gets the underlying VkPhysicalDevice object.
     VkPhysicalDevice getHandle();
@@ -56,12 +56,12 @@ public:
     /// Gets the available present modes on the system.
     ///
     /// Useful for @ref Swapchain::recreate.
-    std::vector<VkPresentModeKHR> getPresentModes(std::shared_ptr<Window> window);
+    std::vector<VkPresentModeKHR> getPresentModes(Window* pWindow);
 
     /// Gets the available surface formats on this physical device.
     ///
     /// Useful for @ref Swapchain::recreate.
-    std::vector<VkSurfaceFormatKHR> getSurfaceFormats(std::shared_ptr<Window> window);
+    std::vector<VkSurfaceFormatKHR> getSurfaceFormats(Window* pWindow);
     
     /// Finds a supported format within a list.
     ///

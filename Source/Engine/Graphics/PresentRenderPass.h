@@ -9,7 +9,7 @@ namespace bl
 class BLUEMETAL_API PresentRenderPass : public RenderPass
 {
 public:
-    PresentRenderPass(std::shared_ptr<Device> device, std::shared_ptr<Swapchain> swapchain);
+    PresentRenderPass(GraphicsDevice* pDevice, Swapchain* pSwapchain);
     virtual ~PresentRenderPass();
 
     virtual VkRenderPass getHandle() override;
@@ -22,8 +22,8 @@ private:
     void createRenderPass();
     void destroyRenderPass();
 
-    std::shared_ptr<Device>     m_device;
-    std::shared_ptr<Swapchain>  m_swapchain;	
+    GraphicsDevice*             m_pDevice;
+    Swapchain*                  m_pSwapchain;	
     std::vector<VkFramebuffer>  m_swapFramebuffers;
     VkRenderPass                m_pass;
 };

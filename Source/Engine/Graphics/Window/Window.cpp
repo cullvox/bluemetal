@@ -4,8 +4,12 @@
 namespace bl
 {
 
-Window::Window(std::shared_ptr<Instance> instance, VideoMode videoMode, const std::string& title,  std::optional<Display> display)
-    : m_instance(instance)
+Window::Window(
+    GraphicsInstance*       pInstance, 
+    VideoMode               videoMode, 
+    const std::string&      title, 
+    std::optional<Display>  display)
+    : m_pInstance(pInstance)
 {
     createWindow(videoMode, title, display);
     createSurface();
@@ -13,7 +17,7 @@ Window::Window(std::shared_ptr<Instance> instance, VideoMode videoMode, const st
 
 Window::~Window()
 {
-    vkDestroySurfaceKHR(m_instance->getHandle(), m_surface, nullptr);
+    vkDestroySurfaceKHR(m_pInstance->getHandle(), m_surface, nullptr);
     SDL_DestroyWindow(m_pWindow);
 }
 
@@ -60,7 +64,7 @@ void Window::createWindow(const VideoMode& videoMode, const std::string& title, 
 
 void Window::createSurface()
 {
-    if (SDL_Vulkan_CreateSurface(m_pWindow, m_instance->getHandle(), &m_surface) != SDL_TRUE)
+    if (SDL_Vulkan_CreateSurface(m_pWindow, m_pInstance->getHandle(), &m_surface) != SDL_TRUE)
     {
         BL_LOG(LogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
     }

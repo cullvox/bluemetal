@@ -5,9 +5,14 @@
 namespace bl
 {
 
-Pipeline::Pipeline(std::shared_ptr<Device> device, std::shared_ptr<DescriptorLayoutCache> cache, const std::vector<std::shared_ptr<Shader>>& shaders, std::shared_ptr<RenderPass> renderPass, uint32_t subpass)
-    : m_device(device)
-    , m_renderPass(renderPass)
+Pipeline::Pipeline(
+    GraphicsDevice*                 pDevice,
+    DescriptorLayoutCache*          pCache, 
+    const std::vector<Shader*>&     shaders, 
+    RenderPass*                     pRenderPass, 
+    uint32_t                        subpass)
+    : m_pDevice(pDevice)
+    , m_pRenderPass(pRenderPass)
     , m_subpass(subpass)
 {
     createLayout();
@@ -16,7 +21,7 @@ Pipeline::Pipeline(std::shared_ptr<Device> device, std::shared_ptr<DescriptorLay
 
 Pipeline::~Pipeline()
 {
-    vkDestroyPipeline(m_device->getHandle(), m_pipeline, nullptr);
+    vkDestroyPipeline(m_pDevice->getHandle(), m_pipeline, nullptr);
 }
 
 VkPipelineLayout Pipeline::getPipelineLayout()
@@ -49,7 +54,7 @@ void Pipeline::mergeShaderResources(const std::vector<PipelineResource>& shaderR
     }
 }
 
-void Pipeline::getDescriptorLayouts(std::shared_ptr<DescriptorLayoutCache> descriptorLayoutCache)
+void Pipeline::getDescriptorLayouts(DescriptorLayoutCache* descriptorLayoutCache)
 {
 
     // VkDescriptorSetLayoutCreateInfo createInfo = {};
@@ -73,25 +78,25 @@ void Pipeline::createLayout()
     createInfo.pushConstantRangeCount = 0;
     createInfo.pPushConstantRanges = nullptr;
 
-    if (vkCreatePipelineLayout(m_device->getHandle(), &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
+    if (vkCreatePipelineLayout(m_pDevice->getHandle(), &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create the Vulkan pipeline layout!");
     }
 
 }
 
-void Pipeline::createPipeline(const std::vector<std::shared_ptr<Shader>>& shaders)
+void Pipeline::createPipeline(const std::vector<Shader*>& shaders)
 {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {};
 
     uint32_t i = 0;
-    for (std::shared_ptr<Shader> shader : shaders)
+    for (Shader* pShader : shaders)
     {
         shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStages[i].pNext = nullptr;
         shaderStages[i].flags = 0;
-        shaderStages[i].stage = shader->getStage();
-        shaderStages[i].module = shader->getHandle();
+        shaderStages[i].stage = pShader->getStage();
+        shaderStages[i].module = pShader->getHandle();
         shaderStages[i].pName = "main";
         shaderStages[i].pSpecializationInfo = nullptr;
 
@@ -215,12 +220,12 @@ void Pipeline::createPipeline(const std::vector<std::shared_ptr<Shader>>& shader
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.layout = m_pipelineLayout;
-    pipelineCreateInfo.renderPass = m_renderPass->getHandle();
+    pipelineCreateInfo.renderPass = m_pRenderPass->getHandle();
     pipelineCreateInfo.subpass = m_subpass;
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineCreateInfo.basePipelineIndex = 0;
 
-    if (vkCreateGraphicsPipelines(m_device->getHandle(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline) != VK_SUCCESS)
+    if (vkCreateGraphicsPipelines(m_pDevice->getHandle(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a Vulkan graphics pipeline!");
     }

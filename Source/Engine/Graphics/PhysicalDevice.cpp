@@ -4,22 +4,18 @@
 namespace bl
 {
 
-PhysicalDevice::PhysicalDevice(VkPhysicalDevice physicalDevice, uint32_t index)
+GraphicsPhysicalDevice::GraphicsPhysicalDevice(VkPhysicalDevice physicalDevice, uint32_t index)
     : m_physicalDevice(physicalDevice)
     , m_index(index)
 {
 }
 
-PhysicalDevice::~PhysicalDevice()
-{
-}
-
-VkPhysicalDevice PhysicalDevice::getHandle()
+VkPhysicalDevice GraphicsPhysicalDevice::getHandle()
 {
     return m_physicalDevice;
 }
 
-std::string PhysicalDevice::getVendorName()
+std::string GraphicsPhysicalDevice::getVendorName()
 {
     VkPhysicalDeviceProperties properties = {};
     vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
@@ -36,7 +32,7 @@ std::string PhysicalDevice::getVendorName()
     }
 }
 
-std::string PhysicalDevice::getDeviceName()
+std::string GraphicsPhysicalDevice::getDeviceName()
 {
     VkPhysicalDeviceProperties properties = {};
     vkGetPhysicalDeviceProperties(m_physicalDevice, &properties);
@@ -44,23 +40,23 @@ std::string PhysicalDevice::getDeviceName()
     return std::string(properties.deviceName);
 }
 
-uint32_t PhysicalDevice::getIndex()
+uint32_t GraphicsPhysicalDevice::getIndex()
 {
     return m_index;
 }
 
-std::vector<VkPresentModeKHR> PhysicalDevice::getPresentModes(std::shared_ptr<Window> window)
+std::vector<VkPresentModeKHR> GraphicsPhysicalDevice::getPresentModes(Window* pWindow)
 {
     uint32_t presentModeCount = 0;
     std::vector<VkPresentModeKHR> presentModes = {};
-    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, window->getSurface(), &presentModeCount, nullptr) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, pWindow->getSurface(), &presentModeCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan physical device surface present mode count!");
     }
 
     presentModes.resize(presentModeCount);
 
-    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, window->getSurface(), &presentModeCount, presentModes.data()))
+    if (vkGetPhysicalDeviceSurfacePresentModesKHR(m_physicalDevice, pWindow->getSurface(), &presentModeCount, presentModes.data()))
     {
         throw std::runtime_error("Could not get Vulkan physical device surface present modes!");
     }
@@ -68,18 +64,18 @@ std::vector<VkPresentModeKHR> PhysicalDevice::getPresentModes(std::shared_ptr<Wi
     return presentModes;
 }
 
-std::vector<VkSurfaceFormatKHR> PhysicalDevice::getSurfaceFormats(std::shared_ptr<Window> window)
+std::vector<VkSurfaceFormatKHR> GraphicsPhysicalDevice::getSurfaceFormats(Window* pWindow)
 {
     uint32_t formatCount = 0;
     std::vector<VkSurfaceFormatKHR> formats = {};
-    if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, window->getSurface(), &formatCount, nullptr) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, pWindow->getSurface(), &formatCount, nullptr) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan physical device surface formats!");
     }
 
     formats.resize(formatCount);
     
-    if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, window->getSurface(), &formatCount, formats.data()) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfaceFormatsKHR(m_physicalDevice, pWindow->getSurface(), &formatCount, formats.data()) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan physical device surface formats!");
     }
@@ -87,7 +83,7 @@ std::vector<VkSurfaceFormatKHR> PhysicalDevice::getSurfaceFormats(std::shared_pt
     return formats;
 }
 
-VkFormat PhysicalDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+VkFormat GraphicsPhysicalDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
 {
     for (VkFormat format : candidates)
     {

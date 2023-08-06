@@ -5,13 +5,13 @@
 namespace bl
 {
 
-Instance::Instance()
+GraphicsInstance::GraphicsInstance()
 {
     createInstance();
     createPhysicalDevices();
 }
 
-Instance::~Instance()
+GraphicsInstance::~GraphicsInstance()
 {
 #ifdef BLUEMETAL_DEVELOPMENT
     m_destroyDebugUtilsMessengerEXT(m_instance, m_messenger, nullptr);
@@ -20,17 +20,25 @@ Instance::~Instance()
     vkDestroyInstance(m_instance, nullptr);
 }
 
-VkInstance Instance::getHandle()
+VkInstance GraphicsInstance::getHandle()
 {
     return m_instance;
 }
 
-std::vector<PhysicalDevice> Instance::getPhysicalDevices()
+std::vector<GraphicsPhysicalDevice*> GraphicsInstance::getPhysicalDevices()
 {
-    return m_physicalDevices;
+    std::vector<GraphicsPhysicalDevice*> temp;
+
+    // Retrieve the unique_ptr's value using get(). 
+    std::transform(m_physicalDevices.begin(), m_physicalDevices.end(), std::back_inserter(temp),
+        [](auto& pd){
+            return pd.get();
+        });
+
+    return temp;
 }
 
-std::vector<const char*> Instance::getExtensionsForSDL()
+std::vector<const char*> GraphicsInstance::getExtensionsForSDL()
 {
 
     // create a temporary window to get extensions from SDL
@@ -65,7 +73,7 @@ std::vector<const char*> Instance::getExtensionsForSDL()
     return extensions;
 }
 
-std::vector<const char*> Instance::getExtensions()
+std::vector<const char*> GraphicsInstance::getExtensions()
 {
     
     // our engines required extensions
@@ -113,7 +121,7 @@ std::vector<const char*> Instance::getExtensions()
     return extensions;
 }
 
-std::vector<const char*> Instance::getValidationLayers()
+std::vector<const char*> GraphicsInstance::getValidationLayers()
 {
     // disable validation layers on release
 #ifdef BLUEMETAL_DEVELOPMENT
@@ -161,7 +169,7 @@ std::vector<const char*> Instance::getValidationLayers()
 #endif
 }
 
-void Instance::createInstance()
+void GraphicsInstance::createInstance()
 {
     std::vector<const char*> instanceExtensions = getExtensions();
     std::vector<const char*> validationLayers = getValidationLayers();
@@ -232,7 +240,7 @@ void Instance::createInstance()
     BL_LOG(LogType::eInfo, "Created Vulkan instance.")
 }
 
-void Instance::createPhysicalDevices()
+void GraphicsInstance::createPhysicalDevices()
 {
 
     // Enumerate all Vulkan physical devices. 
@@ -255,12 +263,12 @@ void Instance::createPhysicalDevices()
     uint32_t i = 0;
     for (VkPhysicalDevice pd : physicalDevices)
     {
-        m_physicalDevices.emplace_back(pd, i);
+        m_physicalDevices.emplace_back(std::move(std::make_unique<GraphicsPhysicalDevice>(pd, i)));
         i++;
     }   
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL Instance::debugCallback(
+VKAPI_ATTR VkBool32 VKAPI_CALL GraphicsInstance::debugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT      severity, 
     VkDebugUtilsMessageTypeFlagsEXT             type, 
     const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 

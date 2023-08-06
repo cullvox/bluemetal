@@ -34,7 +34,7 @@ list(APPEND Sources
   "Graphics/FrameCounter.cpp"
   # "Render/Mesh.cpp"
   "Graphics/Render/Renderer.cpp"
-  "Graphics/Render/PresentRenderPass.cpp"
+  "Graphics/GeometryPass.cpp"
 
   # imgui
   "imgui/imgui.cpp"

@@ -18,19 +18,20 @@ public:
 
     /// Constructs a pipeline object.
     ///
-    ///     @param device Logical device used to create this pipeline. 
+    ///     @param pDevice Logical device used to create this pipeline. 
     ///     @param descriptorLayoutCache Speed up creation by caching descriptor set layouts.
     ///     @param shaders The shaders used in this pipeline program.
     ///     @param renderPass What pass this pipeline is used in.
     ///     @param subpass What subpass on the render pass is this used in.
+    ///
     Pipeline(
-        std::shared_ptr<Device>                     device, 
-        std::shared_ptr<DescriptorLayoutCache>      descriptorLayoutCache, 
-        const std::vector<std::shared_ptr<Shader>>& shaders, 
-        std::shared_ptr<RenderPass>                 renderPass, 
+        GraphicsDevice*                             pDevice, 
+        DescriptorLayoutCache*                      descriptorLayoutCache, 
+        const std::vector<Shader*>&                 shaders, 
+        RenderPass*                                 renderPass, 
         uint32_t                                    subpass);
 
-    /// Default destructor.
+    /// Default Destructor
     ~Pipeline();
 
     /// Gets the raw VkPipelineLayout used to create this pipeline.
@@ -50,13 +51,13 @@ public:
     void bind(VkCommandBuffer cmd);
 
 private:
-    void getDescriptorLayouts(std::shared_ptr<DescriptorLayoutCache> descriptorLayoutCache);
+    void getDescriptorLayouts(DescriptorLayoutCache* descriptorLayoutCache);
     void createLayout();
-    void createPipeline(const std::vector<std::shared_ptr<Shader>>& shaders);
+    void createPipeline(const std::vector<Shader*>& shaders);
     void mergeShaderResources(const std::vector<PipelineResource>& resources);
 
-    std::shared_ptr<Device>                 m_device;
-    std::shared_ptr<RenderPass>             m_renderPass;
+    GraphicsDevice*                         m_pDevice;
+    std::shared_ptr<RenderPass>             m_pRenderPass;
     uint32_t                                m_subpass;
     std::map<std::string, PipelineResource> m_resources;
     std::vector<VkDescriptorSetLayout>      m_setLayouts;

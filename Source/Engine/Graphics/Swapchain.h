@@ -26,14 +26,14 @@ public:
 
     /// Constructs a swapchain object.
     ///
-    ///     @param device Logical device used to create the swapchain.
-    ///     @param window The window this swapchain is swapping onto.
+    ///     @param pDevice Logical device used to create the swapchain.
+    ///     @param pWindow The window this swapchain is swapping onto.
     ///     @param presentMode Method of presentation onto the screen.
     ///     @param surfaceFormat Color and image format used to create swapchain images.
     ///
     Swapchain(
-        std::shared_ptr<Device>             device, 
-        std::shared_ptr<Window>             window, 
+        GraphicsDevice*                     pDevice, 
+        Window*                             pWindow, 
         std::optional<VkPresentModeKHR>     presentMode = std::nullopt,
         std::optional<VkSurfaceFormatKHR>   surfaceFormat = std::nullopt);
 
@@ -114,9 +114,9 @@ private:
     void createImageViews();
     void destroyImageViews();
     
-    std::shared_ptr<PhysicalDevice> m_physicalDevice;
-    std::shared_ptr<Device>         m_device;
-    std::shared_ptr<Window>         m_window;
+    GraphicsPhysicalDevice*         m_pPhysicalDevice;
+    GraphicsDevice*                 m_pDevice;
+    Window*                         m_pWindow;
     uint32_t                        m_imageCount;
     VkSurfaceFormatKHR              m_surfaceFormat;
     VkPresentModeKHR                m_presentMode;

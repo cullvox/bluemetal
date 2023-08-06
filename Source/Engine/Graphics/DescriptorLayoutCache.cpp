@@ -42,8 +42,8 @@ size_t DescriptorLayoutInfo::hash() const
     return result;
 }
 
-DescriptorLayoutCache::DescriptorLayoutCache(std::shared_ptr<Device> device)
-    : m_device(device)
+DescriptorLayoutCache::DescriptorLayoutCache(GraphicsDevice* pDevice)
+    : m_pDevice(pDevice)
 {
 }
 
@@ -51,7 +51,7 @@ DescriptorLayoutCache::~DescriptorLayoutCache()
 {
     for (auto pair : m_cache)
     {
-        vkDestroyDescriptorSetLayout(m_device->getHandle(), pair.second, nullptr);
+        vkDestroyDescriptorSetLayout(m_pDevice->getHandle(), pair.second, nullptr);
     }
 }
 
@@ -85,7 +85,7 @@ VkDescriptorSetLayout DescriptorLayoutCache::createLayout(const VkDescriptorSetL
     {
         // create a new descriptor set layout
         VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-        if (vkCreateDescriptorSetLayout(m_device->getHandle(), &createInfo, nullptr, &layout) != VK_SUCCESS)
+        if (vkCreateDescriptorSetLayout(m_pDevice->getHandle(), &createInfo, nullptr, &layout) != VK_SUCCESS)
         {
             throw std::runtime_error("Could not crate a Vulkan descriptor set layout!");
         }

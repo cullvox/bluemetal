@@ -3,12 +3,19 @@
 namespace bl
 {
 
-Buffer::Buffer(std::shared_ptr<Device> device, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* pInfo, bool mapped)
-    : _device(device)
-    , _size(size)
+Buffer::Buffer(
+    GraphicsDevice*         pDevice, 
+    VkBufferUsageFlags      usage, 
+    VkMemoryPropertyFlags   memoryProperties, 
+    VkDeviceSize            size, 
+    VmaAllocationInfo*      pInfo, 
+    bool                    mapped)
+    : m_pDevice(pDevice)
+    , m_size(size)
 {
 
-    uint32_t graphicsFamilyIndex = _device->getGraphicsFamilyIndex();
+    // Build the buffer create info.
+    uint32_t graphicsFamilyIndex = m_pDevice->getGraphicsFamilyIndex();
     
     VkBufferCreateInfo bufferCreateInfo = {};
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -20,8 +27,10 @@ Buffer::Buffer(std::shared_ptr<Device> device, VkBufferUsageFlags usage, VkMemor
     bufferCreateInfo.queueFamilyIndexCount = 1;
     bufferCreateInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
 
+    // If the user wanted a mapped buffer.
     VmaAllocatorCreateFlags flags = mapped ? VMA_ALLOCATION_CREATE_MAPPED_BIT : 0;
 
+    // Allocate the buffer.
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.flags = flags;
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -32,7 +41,7 @@ Buffer::Buffer(std::shared_ptr<Device> device, VkBufferUsageFlags usage, VkMemor
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 0.0f;
 
-    if (vmaCreateBuffer(_device->getAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, pInfo) != VK_SUCCESS)
+    if (vmaCreateBuffer(m_pDevice->getAllocator(), &bufferCreateInfo, &allocationCreateInfo, &m_buffer, &m_allocation, pInfo) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not create a vulkan buffer!");
     }
@@ -40,22 +49,22 @@ Buffer::Buffer(std::shared_ptr<Device> device, VkBufferUsageFlags usage, VkMemor
 
 Buffer::~Buffer()
 {
-    vmaDestroyBuffer(_device->getAllocator(), _buffer, _allocation);
+    vmaDestroyBuffer(m_pDevice->getAllocator(), m_buffer, m_allocation);
 }
 
 VmaAllocation Buffer::getAllocation()
 {
-    return _allocation;
+    return m_allocation;
 }
 
 VkBuffer Buffer::getBuffer()
 {
-    return _buffer;
+    return m_buffer;
 }
 
 VkDeviceSize Buffer::getSize()
 {
-    return _size;
+    return m_size;
 }
 
 } // namespace bl

@@ -20,13 +20,13 @@ namespace bl
 class BLUEMETAL_API AudioListener
 {
 public:
-    AudioListener(std::shared_ptr<AudioSystem> system);
+    AudioListener(AudioSystem* pSystem);
     ~AudioListener();
 
     void set3DAttributes(Vector3i position, Vector3i velocity);
 
 private:
-    std::shared_ptr<AudioSystem> m_system;
+    AudioSystem* m_pSystem;
 };
 
 } // namespace bl

@@ -10,8 +10,8 @@ namespace bl
 {
 
 Engine::Engine()
-    : m_graphics(*this)
-    , m_audio(*this)
+    : graphics(std::make_unique<GraphicsSubsystem>(this))
+    , audio(std::make_unique<AudioSubsystem>(this))
 {
     SDL_SetMainReady();
     
@@ -19,7 +19,7 @@ Engine::Engine()
         #include "default.nwdl"
     ;
 
-    m_config = Noodle::parseFromFile("Save/Config/config.noodle");
+    // m_config = Noodle::parseFromFile("Save/Config/config.noodle");
 
 }
 
@@ -36,7 +36,12 @@ void Engine::init(SubsystemFlags flags, const SubsystemInitInfo* pInfo)
 
     if (flags & eSubsystemGraphicsBit)
     {
-        graphics->init(pInfo->pGraphicsInit);
+        graphics->init(pInfo ? pInfo->pGraphicsInit : nullptr);
+    }
+
+    if (flags & eSubsystemImGuiBit)
+    {
+        
     }
 }
 
