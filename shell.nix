@@ -6,6 +6,7 @@ pkgs.mkShell
   packages = with pkgs; [
 
     # Build requirements
+    git-lfs
     pkg-config
     cmake
     gnumake
