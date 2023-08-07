@@ -73,9 +73,8 @@ public:
     VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
 
 private:
-    uint32_t            m_index;
     VkPhysicalDevice    m_physicalDevice;
-
+    uint32_t            m_index;
 };
 
 }

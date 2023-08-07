@@ -26,9 +26,9 @@ int main(int argc, const char** argv)
     engine.init(bl::eSubsystemGraphicsBit | bl::eSubsystemAudioBit);
     
     auto audio = engine.getAudio();
-    auto graphics = engine.getGraphics();
+    //auto graphics = engine.getGraphics();
 
-    auto renderer = graphics->getRenderer();
+    //auto renderer = graphics->getRenderer();
 
     auto sound = audio->createSound("Resources/Audio/Music/Aria Math.flac");
     auto listener = audio->createListener();
@@ -38,13 +38,14 @@ int main(int argc, const char** argv)
     source->setSound(sound.get());
     source->play();
 
-    float last = 0.0f;
-    float current = bl::Time::current();
+    //float last = 0.0f;
+    //float current = bl::Time::current();
 
     while (true)
     {
-        last = current;
-        current = bl::Time::current();
+        //last = current;
+        //current = bl::Time::current();
+        //auto dt = current - last;
 
 
         bl::Vector3f position{ sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };

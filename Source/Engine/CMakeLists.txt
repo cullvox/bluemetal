@@ -33,7 +33,8 @@ list(APPEND Sources
   "Graphics/Swapchain.cpp"
   "Graphics/FrameCounter.cpp"
   # "Render/Mesh.cpp"
-  "Graphics/Render/Renderer.cpp"
+  "Graphics/PresentPass.cpp"
+  "Graphics/Renderer.cpp"
   "Graphics/GeometryPass.cpp"
 
   # imgui
