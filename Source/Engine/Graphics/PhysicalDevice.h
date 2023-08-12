@@ -25,21 +25,30 @@ class BLUEMETAL_API GraphicsPhysicalDevice
 {
 public:
 
+    /// Default Constructor
+    GraphicsPhysicalDevice() = default;
+
+    /// Copy Constructor
+    GraphicsPhysicalDevice(const GraphicsPhysicalDevice& other) = default;
+
+    /// Move Constructor
+    GraphicsPhysicalDevice(GraphicsPhysicalDevice&& other) = default;
+
     /// Constructs a physical device object.
     ///
     ///     @param index Index for this physical device.
     ///     @param physicalDevice Vulkan physical device object.
     ///
     GraphicsPhysicalDevice(VkPhysicalDevice physicalDevice, uint32_t index);
-
-    /// Copy Constructor
-    GraphicsPhysicalDevice(GraphicsPhysicalDevice& other) = default;
-
-    /// Move Constructor
-    GraphicsPhysicalDevice(GraphicsPhysicalDevice&& other) = default;
     
     /// Default destructor.
     ~GraphicsPhysicalDevice() = default;
+
+    /// Set Operator
+    GraphicsPhysicalDevice& operator=(const GraphicsPhysicalDevice& rhs) = default;
+    
+    /// Move Operator
+    GraphicsPhysicalDevice& operator=(GraphicsPhysicalDevice&& rhs) = default;
 
     /// Gets the underlying VkPhysicalDevice object.
     VkPhysicalDevice getHandle();
@@ -54,13 +63,9 @@ public:
     uint32_t getIndex();
 
     /// Gets the available present modes on the system.
-    ///
-    /// Useful for @ref Swapchain::recreate.
     std::vector<VkPresentModeKHR> getPresentModes(Window* pWindow);
 
     /// Gets the available surface formats on this physical device.
-    ///
-    /// Useful for @ref Swapchain::recreate.
     std::vector<VkSurfaceFormatKHR> getSurfaceFormats(Window* pWindow);
     
     /// Finds a supported format within a list.

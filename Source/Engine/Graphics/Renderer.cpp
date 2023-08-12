@@ -42,7 +42,6 @@ void Renderer::createSyncObjects()
         throw std::runtime_error("Could not allocate Vulkan command buffers for the renderer!");
     }
 
-
     // Create the semaphores and fences
     m_imageAvailableSemaphores.resize(m_pSwapchain->getImageCount());
     m_renderFinishedSemaphores.resize(m_pSwapchain->getImageCount());
@@ -86,7 +85,7 @@ void Renderer::resize(VkExtent2D extent)
     m_presentPass->resize(extent);
 }
 
-void Renderer::render()
+void Renderer::render(std::function<void(VkCommandBuffer)> func)
 {
     // If the swapchain is invalid we cannot render anything.
     if (!m_pSwapchain->getHandle()) return;
@@ -130,6 +129,10 @@ void Renderer::render()
     };
 
     // Record the render passes.
+    
+
+    func(m_swapCommandBuffers[m_currentFrame]);
+
     m_presentPass->record(m_swapCommandBuffers[m_currentFrame], renderArea, imageIndex);
 
     if (vkEndCommandBuffer(m_swapCommandBuffers[m_currentFrame]) != VK_SUCCESS)

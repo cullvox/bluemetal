@@ -9,7 +9,7 @@ Swapchain::Swapchain(
     Window*                             pWindow, 
     std::optional<VkPresentModeKHR>     presentMode,
     std::optional<VkSurfaceFormatKHR>   surfaceFormat)
-    : m_pPhysicalDevice(pDevice->getPhysicalDevice())
+    : m_physicalDevice(pDevice->getPhysicalDevice())
     , m_pDevice(pDevice)
     , m_pWindow(pWindow)
     , m_imageCount(0)
@@ -93,7 +93,7 @@ void Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t* pIma
 void Swapchain::ensureSurfaceSupported()
 {
     VkBool32 supported = false;
-    vkGetPhysicalDeviceSurfaceSupportKHR(m_pPhysicalDevice->getHandle(), m_pDevice->getPresentFamilyIndex(), m_pWindow->getSurface(), &supported);
+    vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice.getHandle(), m_pDevice->getPresentFamilyIndex(), m_pWindow->getSurface(), &supported);
 
     if (!supported)
     {
@@ -104,7 +104,7 @@ void Swapchain::ensureSurfaceSupported()
 void Swapchain::chooseImageCount()
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_pPhysicalDevice->getHandle(), m_pWindow->getSurface(), &capabilities) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice.getHandle(), m_pWindow->getSurface(), &capabilities) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan surface capabilities!");
     }
@@ -117,7 +117,7 @@ void Swapchain::chooseFormat(std::optional<VkSurfaceFormatKHR> format)
 {
  
     // Get the surface formats from the physical device.
-    std::vector<VkSurfaceFormatKHR> formats = m_pPhysicalDevice->getSurfaceFormats(m_pWindow);
+    std::vector<VkSurfaceFormatKHR> formats = m_physicalDevice.getSurfaceFormats(m_pWindow);
 
     // find the surface format/colorspace to be used
     VkSurfaceFormatKHR toFind = format.value_or(DEFAULT_SURFACE_FORMAT);
@@ -143,7 +143,7 @@ void Swapchain::chooseFormat(std::optional<VkSurfaceFormatKHR> format)
 void Swapchain::choosePresentMode(std::optional<VkPresentModeKHR> presentMode)
 {
     // Obtain the present modes from the physical device.
-    std::vector<VkPresentModeKHR> modes = m_pPhysicalDevice->getPresentModes(m_pWindow);
+    std::vector<VkPresentModeKHR> modes = m_physicalDevice.getPresentModes(m_pWindow);
 
     // Fill up the present meta info.
     m_isMailboxSupported = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_MAILBOX_KHR) != modes.end();
@@ -169,7 +169,7 @@ void Swapchain::chooseExtent()
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
 
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_pPhysicalDevice->getHandle(), m_pWindow->getSurface(), &capabilities) != VK_SUCCESS)
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physicalDevice.getHandle(), m_pWindow->getSurface(), &capabilities) != VK_SUCCESS)
     {
         throw std::runtime_error("Could not get Vulkan physical device surface capabilities!");
     }

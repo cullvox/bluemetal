@@ -9,6 +9,16 @@
 namespace bl
 {
 
+/// Create info for pipeline objects.
+struct PipelineCreateInfo
+{
+    GraphicsDevice*             pDevice; /// Logical device used to create this pipeline. 
+    DescriptorLayoutCache*      pDescriptorLayoutCache;/// Speed up creation by caching descriptor set layouts.
+    RenderPass*                 pRenderPass; /// The shaders used in this pipeline program.
+    uint32_t                    subpass; /// What pass this pipeline is used in.
+    std::vector<Shader*>        shaders; /// What subpass on the render pass is this used in.
+};
+
 /// A program consisting of multiple shaders that run on the GPU.
 ///
 ///     Underlying is a VkPipeline object that is constructed.
@@ -16,29 +26,23 @@ class BLUEMETAL_API Pipeline
 {
 public:
 
-    /// Constructs a pipeline object.
-    ///
-    ///     @param pDevice Logical device used to create this pipeline. 
-    ///     @param descriptorLayoutCache Speed up creation by caching descriptor set layouts.
-    ///     @param shaders The shaders used in this pipeline program.
-    ///     @param renderPass What pass this pipeline is used in.
-    ///     @param subpass What subpass on the render pass is this used in.
-    ///
-    Pipeline(
-        GraphicsDevice*                             pDevice, 
-        DescriptorLayoutCache*                      descriptorLayoutCache, 
-        const std::vector<Shader*>&                 shaders, 
-        RenderPass*                                 renderPass, 
-        uint32_t                                    subpass);
+    /// Default Constructor
+    Pipeline();
+
+    /// Constructs the pipeline also calls create.    
+    Pipeline(const PipelineCreateInfo& createInfo);
 
     /// Default Destructor
     ~Pipeline();
 
+    /// Creates 
+    bool create(const PipelineCreateInfo& createInfo);
+
     /// Gets the raw VkPipelineLayout used to create this pipeline.
-    VkPipelineLayout getPipelineLayout();
+    VkPipelineLayout getLayout();
 
     /// Gets the raw VkPipeline underlying this object.
-    VkPipeline getPipeline();
+    VkPipeline getHandle();
 
     /// Returns reflected resource info that this pipeline uses for materials and others. 
     ///
@@ -57,7 +61,7 @@ private:
     void mergeShaderResources(const std::vector<PipelineResource>& resources);
 
     GraphicsDevice*                         m_pDevice;
-    std::shared_ptr<RenderPass>             m_pRenderPass;
+    RenderPass*                             m_pRenderPass;
     uint32_t                                m_subpass;
     std::map<std::string, PipelineResource> m_resources;
     std::vector<VkDescriptorSetLayout>      m_setLayouts;
