@@ -5,31 +5,57 @@
 namespace bl
 {
 
-Pipeline::Pipeline(
-    GraphicsDevice*                 pDevice,
-    DescriptorLayoutCache*          pCache, 
-    const std::vector<Shader*>&     shaders, 
-    RenderPass*                     pRenderPass, 
-    uint32_t                        subpass)
-    : m_pDevice(pDevice)
-    , m_pRenderPass(pRenderPass)
-    , m_subpass(subpass)
+Pipeline::Pipeline()
 {
-    createLayout();
-    createPipeline(shaders);
+}
+
+Pipeline::Pipeline(const PipelineCreateInfo& createInfo)
+{
+    if (!create(createInfo))
+        throw std::runtime_error(getError());
 }
 
 Pipeline::~Pipeline()
 {
+    destroy();
+}
+
+bool Pipeline::create(const PipelineCreateInfo& createInfo)
+{
+    assert(createInfo.pDevice && "PipelineCreateInfo.pDevice must not be nullptr!");
+    assert(createInfo.pRenderPass && "PipelineCreateInfo.pRenderPass must not be nullptr!");
+    assert(createInfo.pDescriptorLayoutCache && "PipelineCreateInfo.pDescriptorLayoutCache must not be nullptr!");
+
+    m_pDevice = createInfo.pDevice;
+    m_pRenderPass = createInfo.pRenderPass;
+    m_subpass = createInfo.subpass;
+
+    createLayout();
+    createPipeline(createInfo.shaders);
+}
+
+void Pipeline::destroy() noexcept
+{
+    if (!isCreated()) return;
     vkDestroyPipeline(m_pDevice->getHandle(), m_pipeline, nullptr);
 }
 
-VkPipelineLayout Pipeline::getPipelineLayout()
+bool Pipeline::isCreated() const noexcept
+{
+    return m_pipeline != VK_NULL_HANDLE;
+}
+
+std::string Pipeline::getError() const noexcept
+{
+    return m_err;
+}
+
+VkPipelineLayout Pipeline::getLayout() const
 {
     return m_pipelineLayout;
 }
 
-VkPipeline Pipeline::getPipeline()
+VkPipeline Pipeline::getHandle() const
 {
     return m_pipeline;
 }
@@ -67,7 +93,7 @@ void Pipeline::getDescriptorLayouts(DescriptorLayoutCache* descriptorLayoutCache
     // descriptorLayoutCache->createDescriptorLayout()
 }
 
-void Pipeline::createLayout()
+bool Pipeline::createLayout()
 {
     VkPipelineLayoutCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -80,12 +106,14 @@ void Pipeline::createLayout()
 
     if (vkCreatePipelineLayout(m_pDevice->getHandle(), &createInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create the Vulkan pipeline layout!");
+        m_err = "Could not create the Vulkan pipeline layout!";
+        return false;
     }
 
+    return true;
 }
 
-void Pipeline::createPipeline(const std::vector<Shader*>& shaders)
+bool Pipeline::createPipeline(const std::vector<Shader*>& shaders)
 {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {};
 
@@ -227,8 +255,11 @@ void Pipeline::createPipeline(const std::vector<Shader*>& shaders)
 
     if (vkCreateGraphicsPipelines(m_pDevice->getHandle(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not create a Vulkan graphics pipeline!");
+        m_err = "Could not create a Vulkan graphics pipeline!";
+        return false;
     }
+
+    return true;
 }
 
 } // namespace bl

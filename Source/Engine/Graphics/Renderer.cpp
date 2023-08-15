@@ -4,13 +4,17 @@
 namespace bl
 {
 
-Renderer::Renderer(
-    GraphicsDevice* pDevice, Swapchain* pSwapchain)
-    : m_pDevice(pDevice)
-    , m_pSwapchain(pSwapchain)
-    , m_currentFrame(0)
-    , m_presentPass(std::make_unique<PresentRenderPass>(pDevice, pSwapchain))
+Renderer::Renderer()
 {
+}
+
+Renderer::Renderer(const RendererCreateInfo& createInfo)
+    : m_pDevice(createInfo->pDevice)
+    , m_pSwapchain(createInfo->pSwapchain)
+    , m_currentFrame(0)
+{
+    m_presentPass = std::make_unique<PresentPass>();
+
     createSyncObjects();
 }
 

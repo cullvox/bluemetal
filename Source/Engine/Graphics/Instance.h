@@ -62,7 +62,7 @@ public:
     VkInstance getHandle() const;
  
     /// Gets the possible physical devices to choose from.
-    std::vector<GraphicsPhysicalDevice> getPhysicalDevices() const;
+    std::vector<GraphicsPhysicalDevice*> getPhysicalDevices() const;
 
 private:
  
@@ -87,13 +87,13 @@ private:
         const VkDebugUtilsMessengerCallbackDataEXT*     pCallbackData,
         void*                                           pUserData) noexcept;
     
-    std::string                         m_err;
-    GraphicsInstanceCreateInfo          m_createInfo;
-    VkInstance                          m_instance;
-    PFN_vkCreateDebugUtilsMessengerEXT  m_createDebugUtilsMessengerEXT;
-    PFN_vkDestroyDebugUtilsMessengerEXT m_destroyDebugUtilsMessengerEXT;
-    VkDebugUtilsMessengerEXT            m_messenger;
-    std::vector<GraphicsPhysicalDevice> m_physicalDevices;
+    std::string                                             m_err;
+    GraphicsInstanceCreateInfo                              m_createInfo;
+    VkInstance                                              m_instance;
+    PFN_vkCreateDebugUtilsMessengerEXT                      m_createDebugUtilsMessengerEXT;
+    PFN_vkDestroyDebugUtilsMessengerEXT                     m_destroyDebugUtilsMessengerEXT;
+    VkDebugUtilsMessengerEXT                                m_messenger;
+    std::vector<std::unique_ptr<GraphicsPhysicalDevice>>    m_physicalDevices;
 };
 
 } // namespace bl

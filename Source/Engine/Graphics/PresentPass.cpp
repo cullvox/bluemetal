@@ -1,4 +1,4 @@
-#include "PresentRenderPass.h"
+#include "PresentPass.h"
 #include "Engine/Engine.h"
 
 #include "imgui/imgui.h"
@@ -7,7 +7,7 @@
 namespace bl
 {
 
-PresentRenderPass::PresentRenderPass(GraphicsDevice* pDevice, Swapchain* pSwapchain)
+PresentPass::PresentPass(GraphicsDevice* pDevice, Swapchain* pSwapchain)
     : m_pDevice(pDevice)
     , m_pSwapchain(pSwapchain)
 {
@@ -15,18 +15,18 @@ PresentRenderPass::PresentRenderPass(GraphicsDevice* pDevice, Swapchain* pSwapch
     createFramebuffers();
 }
 
-PresentRenderPass::~PresentRenderPass()
+PresentPass::~PresentPass()
 {
     destroyFramebuffers();
     destroyRenderPass();
 }
 
-VkRenderPass PresentRenderPass::getHandle()
+VkRenderPass PresentPass::getHandle()
 {
     return m_pass;
 }
 
-void PresentRenderPass::resize(VkExtent2D extent)
+void PresentPass::resize(VkExtent2D extent)
 {
     (void)extent;
     destroyFramebuffers();
@@ -34,7 +34,7 @@ void PresentRenderPass::resize(VkExtent2D extent)
 }
 
 
-void PresentRenderPass::record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
+void PresentPass::record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
 {
     std::array<VkClearValue, 2> clearValues = {};
 
@@ -64,7 +64,7 @@ void PresentRenderPass::record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_
     vkCmdEndRenderPass(cmd);
 }
 
-void PresentRenderPass::createRenderPass()
+void PresentPass::createRenderPass()
 {
     std::array<VkAttachmentDescription, 1> attachments = {};
     attachments[0].flags = 0;
@@ -114,12 +114,12 @@ void PresentRenderPass::createRenderPass()
 
 }
 
-void PresentRenderPass::destroyRenderPass()
+void PresentPass::destroyRenderPass()
 {
     vkDestroyRenderPass(m_pDevice->getHandle(), m_pass, nullptr);
 }
 
-void PresentRenderPass::createFramebuffers()
+void PresentPass::createFramebuffers()
 {
     // Get the image views from the swapchain.
     std::vector<VkImageView> attachments = m_pSwapchain->getImageViews();
@@ -158,7 +158,7 @@ void PresentRenderPass::createFramebuffers()
     }
 }
 
-void PresentRenderPass::destroyFramebuffers()
+void PresentPass::destroyFramebuffers()
 {
     for (size_t i = 0; i < m_swapFramebuffers.size(); i++)
     {

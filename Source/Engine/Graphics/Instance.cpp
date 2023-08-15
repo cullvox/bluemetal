@@ -40,7 +40,7 @@ GraphicsInstance& GraphicsInstance::operator=(GraphicsInstance&& rhs)
     rhs.m_createDebugUtilsMessengerEXT = nullptr;
     rhs.m_destroyDebugUtilsMessengerEXT = nullptr;
     rhs.m_messenger = VK_NULL_HANDLE;
-    rhs.m_physicalDevices = {};
+    rhs.m_pPhysicalDevices.clear();
 
     return *this;
 }
@@ -89,11 +89,16 @@ VkInstance GraphicsInstance::getHandle() const
     return m_instance;
 }
 
-std::vector<GraphicsPhysicalDevice> GraphicsInstance::getPhysicalDevices() const
+std::vector<GraphicsPhysicalDevice*> GraphicsInstance::getPhysicalDevices() const
 {
     assert(isCreated() && "Instance must be created before physical devices can be retrieved.");
 
-    return m_physicalDevices;
+    std::vector<GraphicsPhysicalDevice*> physicalDevices;
+
+    std::transform(m_physicalDevices.begin(), m_physicalDevices.end(), std::back_inserter(physicalDevices),
+        [](auto& pd){ return pd.get(); });
+
+    return physicalDevices;
 }
 
 bool GraphicsInstance::getExtensionsForSDL(std::vector<const char*>& outExtensions)
@@ -109,7 +114,7 @@ bool GraphicsInstance::getExtensionsForSDL(std::vector<const char*>& outExtensio
     }
 
     // Enumerate the instance extensions from SDL.
-    std::vector<const char*> extensions = {};
+    std::vector<const char*> extensions;
     unsigned int extensionsCount = 0;
     
     if (!SDL_Vulkan_GetInstanceExtensions(pTemporaryWindow, &extensionsCount, nullptr))
@@ -317,6 +322,7 @@ bool GraphicsInstance::createInstance()
 #endif
 
     BL_LOG(LogType::eInfo, "Created Vulkan instance.")
+    return true;
 }
 
 bool GraphicsInstance::createPhysicalDevices()
@@ -344,9 +350,11 @@ bool GraphicsInstance::createPhysicalDevices()
     uint32_t i = 0;
     for (VkPhysicalDevice pd : physicalDevices)
     {
-        m_physicalDevices.emplace_back(pd, i);
+        m_physicalDevices.emplace_back(std::make_unique<GraphicsPhysicalDevice>(pd, i));
         i++;
-    }   
+    }
+    
+    return true;
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL GraphicsInstance::debugCallback(

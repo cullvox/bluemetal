@@ -6,10 +6,10 @@
 
 #include "Device.h"
 #include "Image.h"
-#include "Swapchain.h"
 #include "Pipeline.h"
-#include "RenderPass.h"
-#include "PresentRenderPass.h"
+#include "Swapchain.h"
+#include "GeometryPass.h"
+#include "PresentPass.h"
 
 namespace bl
 {
@@ -18,18 +18,34 @@ namespace bl
 // Classes
 ///////////////////////////////
 
+struct RendererCreateInfo
+{
+    GraphicsDevice* pDevice;
+    Swapchain*      pSwapchain;
+};
+
 class BLUEMETAL_API Renderer
 {
     static const inline uint32_t maxFramesInFlight = 2;
 
 public:
+
+    // Default Constructor
     Renderer();
+
+    // Create Constructor
+    Renderer(const RendererCreateInfo& createInfo);
+
+    // Default Destructor
     ~Renderer();
 
-    bool create(GraphicsDevice& device, Swapchain& swapchain);
+    /// Create a renderer instance.
+    [[nodiscard]] bool create(const RendererCreateInfo& createInfo);
+    
+    void destroy() noexcept;
 
-    RenderPass& getGeometryPass();
-    RenderPass& getUserInterfacePass();
+    RenderPass* getGeometryPass();
+    RenderPass* getUserInterfacePass();
 
     void resize(VkExtent2D extent);
     void render(std::function<void(VkCommandBuffer)> func);
@@ -46,8 +62,8 @@ private:
     std::vector<VkSemaphore>            m_renderFinishedSemaphores;
     std::vector<VkFence>                m_inFlightFences;
 
-    GeometryPass                        m_geometryPass;
-    PresentPass                         m_presentPass;
+    std::unique_ptr<GeometryPass>       m_geometryPass;
+    std::unique_ptr<PresentPass>        m_presentPass;
 };
 
 } // namespace bl

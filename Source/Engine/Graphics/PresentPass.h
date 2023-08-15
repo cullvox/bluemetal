@@ -6,11 +6,11 @@
 namespace bl
 {
 
-class BLUEMETAL_API PresentRenderPass : public RenderPass
+class BLUEMETAL_API PresentPass : public RenderPass
 {
 public:
-    PresentRenderPass(GraphicsDevice* pDevice, Swapchain* pSwapchain);
-    virtual ~PresentRenderPass();
+    PresentPass(GraphicsDevice* pDevice, Swapchain* pSwapchain);
+    virtual ~PresentPass();
 
     virtual VkRenderPass getHandle() override;
     virtual void record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;

@@ -114,7 +114,7 @@ private:
     void createImageViews();
     void destroyImageViews();
     
-    GraphicsPhysicalDevice          m_physicalDevice;
+    GraphicsPhysicalDevice*         m_pPhysicalDevice;
     GraphicsDevice*                 m_pDevice;
     Window*                         m_pWindow;
     uint32_t                        m_imageCount;

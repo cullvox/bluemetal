@@ -62,7 +62,7 @@ public:
     const std::string& getError() const noexcept;
 
     /// Returns the physical device this device was crated with. 
-    const GraphicsPhysicalDevice& getPhysicalDevice() const;
+    GraphicsPhysicalDevice* getPhysicalDevice() const;
 
     /// Returns the underlying Vulkan device. 
     VkDevice getHandle() const;
@@ -132,7 +132,7 @@ private:
     std::string                 m_err;
     GraphicsDeviceCreateInfo    m_createInfo;
     GraphicsInstance*           m_pInstance;
-    GraphicsPhysicalDevice      m_physicalDevice;
+    GraphicsPhysicalDevice*     m_pPhysicalDevice;
 
     uint32_t                    m_graphicsFamilyIndex, m_presentFamilyIndex;
     VkDevice                    m_device;

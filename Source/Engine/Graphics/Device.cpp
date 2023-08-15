@@ -49,7 +49,7 @@ GraphicsDevice::GraphicsDevice(GraphicsDevice&& rhs)
 
     m_createInfo = std::move(rhs.m_createInfo);
     m_pInstance = std::move(rhs.m_pInstance);
-    m_physicalDevice = std::move(rhs.m_physicalDevice);
+    m_pPhysicalDevice = std::move(rhs.m_pPhysicalDevice);
     m_graphicsFamilyIndex = std::move(rhs.m_graphicsFamilyIndex);
     m_presentFamilyIndex = std::move(rhs.m_presentFamilyIndex);
     m_device = std::move(rhs.m_device);
@@ -60,7 +60,7 @@ GraphicsDevice::GraphicsDevice(GraphicsDevice&& rhs)
 
     rhs.m_createInfo = {};
     rhs.m_pInstance = nullptr;
-    rhs.m_physicalDevice = {};
+    rhs.m_pPhysicalDevice = {};
     rhs.m_graphicsFamilyIndex = 0;
     rhs.m_presentFamilyIndex = 0;
     rhs.m_device = VK_NULL_HANDLE;
@@ -84,7 +84,7 @@ bool GraphicsDevice::create(const GraphicsDeviceCreateInfo& createInfo)
 {
     m_createInfo = createInfo;
     m_pInstance = createInfo.pInstance;
-    m_physicalDevice = *createInfo.pPhysicalDevice;
+    m_pPhysicalDevice = createInfo.pPhysicalDevice;
 
     return (createDevice() &&
             createCommandPool() &&
@@ -105,11 +105,11 @@ bool GraphicsDevice::isCreated() const noexcept
     return m_device != VK_NULL_HANDLE;
 }
 
-const GraphicsPhysicalDevice& GraphicsDevice::getPhysicalDevice() const
+GraphicsPhysicalDevice* GraphicsDevice::getPhysicalDevice() const
 {
     assert(isCreated() && "Device must be created before the physical device can be retrieved.");
 
-    return m_physicalDevice;
+    return m_pPhysicalDevice;
 }
 
 uint32_t GraphicsDevice::getGraphicsFamilyIndex() const
@@ -222,6 +222,8 @@ bool GraphicsDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>&
     {
         m_err = "Could not submit a temporary command buffer!";
     }
+
+    return true;
 }
 
 void GraphicsDevice::waitForDevice()
@@ -245,7 +247,7 @@ bool GraphicsDevice::getValidationLayers(std::vector<const char*>& outLayers)
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
 
-    if (vkEnumerateDeviceLayerProperties(m_physicalDevice.getHandle(), &propertiesCount, nullptr) != VK_SUCCESS)
+    if (vkEnumerateDeviceLayerProperties(m_pPhysicalDevice->getHandle(), &propertiesCount, nullptr) != VK_SUCCESS)
     {
         m_err = "Could not get Vulkan device layer properties count!";
         return false;
@@ -253,7 +255,7 @@ bool GraphicsDevice::getValidationLayers(std::vector<const char*>& outLayers)
 
     properties.resize(propertiesCount);
 
-    if (vkEnumerateDeviceLayerProperties(m_physicalDevice.getHandle(), &propertiesCount, properties.data()) != VK_SUCCESS)
+    if (vkEnumerateDeviceLayerProperties(m_pPhysicalDevice->getHandle(), &propertiesCount, properties.data()) != VK_SUCCESS)
     {
         m_err = "Could not enumerate Vulkan device layer properties!";
         return false;
@@ -290,7 +292,7 @@ bool GraphicsDevice::getExtensions(std::vector<const char*>& outExtensions)
     uint32_t propertyCount = 0;
     std::vector<VkExtensionProperties> properties;
 
-    if (vkEnumerateDeviceExtensionProperties(m_physicalDevice.getHandle(), nullptr, &propertyCount, nullptr) != VK_SUCCESS)
+    if (vkEnumerateDeviceExtensionProperties(m_pPhysicalDevice->getHandle(), nullptr, &propertyCount, nullptr) != VK_SUCCESS)
     {
         m_err = "Could not get Vulkan device extension properties count!";
         return false;
@@ -298,7 +300,7 @@ bool GraphicsDevice::getExtensions(std::vector<const char*>& outExtensions)
 
     properties.resize(propertyCount);
 
-    if (vkEnumerateDeviceExtensionProperties(m_physicalDevice.getHandle(), nullptr, &propertyCount, properties.data()) != VK_SUCCESS)
+    if (vkEnumerateDeviceExtensionProperties(m_pPhysicalDevice->getHandle(), nullptr, &propertyCount, properties.data()) != VK_SUCCESS)
     {
         m_err = "Could not enumerate Vulkan device extension properties!";
         return false;
@@ -333,11 +335,11 @@ bool GraphicsDevice::createDevice()
     // Get the queue family properties of the physical device.
     uint32_t queuePropertyCount = 0;
     std::vector<VkQueueFamilyProperties> queueProperties;
-    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice.getHandle(), &queuePropertyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(m_pPhysicalDevice->getHandle(), &queuePropertyCount, nullptr);
 
     queueProperties.resize(queuePropertyCount);
 
-    vkGetPhysicalDeviceQueueFamilyProperties(m_physicalDevice.getHandle(), &queuePropertyCount, queueProperties.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(m_pPhysicalDevice->getHandle(), &queuePropertyCount, queueProperties.data());
 
     // Determine what families will be dedicated to graphics and present.
     uint32_t i = 0;
@@ -349,7 +351,7 @@ bool GraphicsDevice::createDevice()
         }
 
         VkBool32 surfaceSupported = VK_FALSE;
-        if (vkGetPhysicalDeviceSurfaceSupportKHR(m_physicalDevice.getHandle(), i, m_createInfo.pWindow->getSurface(), &surfaceSupported) != VK_SUCCESS)
+        if (vkGetPhysicalDeviceSurfaceSupportKHR(m_pPhysicalDevice->getHandle(), i, m_createInfo.pWindow->getSurface(), &surfaceSupported) != VK_SUCCESS)
         {
             m_err = "Could not check Vulkan physical device surface support!";
             return false;
@@ -402,7 +404,7 @@ bool GraphicsDevice::createDevice()
     createInfo.ppEnabledExtensionNames = extensions.data();
     createInfo.pEnabledFeatures = &features;
 
-    if (vkCreateDevice(m_physicalDevice.getHandle(), &createInfo, nullptr, &m_device) != VK_SUCCESS)
+    if (vkCreateDevice(m_pPhysicalDevice->getHandle(), &createInfo, nullptr, &m_device) != VK_SUCCESS)
     {
         m_err = "Could not create the Vulkan device!";
         return false;
@@ -412,7 +414,7 @@ bool GraphicsDevice::createDevice()
     vkGetDeviceQueue(m_device, m_graphicsFamilyIndex, 0, &m_graphicsQueue);
     vkGetDeviceQueue(m_device, m_presentFamilyIndex, 0, &m_presentQueue);
 
-    BL_LOG(LogType::eInfo, "Created Vulkan device using {}.", m_physicalDevice.getDeviceName())
+    BL_LOG(LogType::eInfo, "Created Vulkan device using {}.", m_pPhysicalDevice->getDeviceName())
     return true;
 }
 
@@ -437,7 +439,7 @@ bool GraphicsDevice::createAllocator()
 {
     VmaAllocatorCreateInfo createInfo = {};
     createInfo.flags = 0;
-    createInfo.physicalDevice = m_physicalDevice.getHandle();
+    createInfo.physicalDevice = m_pPhysicalDevice->getHandle();
     createInfo.device = m_device;
     createInfo.preferredLargeHeapBlockSize = 0;
     createInfo.pAllocationCallbacks = nullptr;
@@ -450,7 +452,7 @@ bool GraphicsDevice::createAllocator()
 
     if (vmaCreateAllocator(&createInfo, &m_allocator) != VK_SUCCESS)
     {
-        m_err = "could not create the vulkan memory allocator!";
+        m_err = "Could not create the Vulkan Memory Allocator!";
         return false;
     }
 

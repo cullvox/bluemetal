@@ -29,20 +29,29 @@ public:
     /// Default Constructor
     Pipeline();
 
-    /// Constructs the pipeline also calls create.    
+    /// Constructs the pipeline by calling @ref create().    
     Pipeline(const PipelineCreateInfo& createInfo);
 
     /// Default Destructor
     ~Pipeline();
 
-    /// Creates 
+    /// Creates a pipeline object.
     bool create(const PipelineCreateInfo& createInfo);
 
+    /// Destroys a pipeline object.
+    void destroy() noexcept;
+
+    /// Gets the current created status.
+    bool isCreated() const noexcept;
+
+    /// Returns an error in a human readable format if there is one.
+    std::string getError() const noexcept;
+
     /// Gets the raw VkPipelineLayout used to create this pipeline.
-    VkPipelineLayout getLayout();
+    VkPipelineLayout getLayout() const;
 
     /// Gets the raw VkPipeline underlying this object.
-    VkPipeline getHandle();
+    VkPipeline getHandle() const;
 
     /// Returns reflected resource info that this pipeline uses for materials and others. 
     ///
@@ -56,10 +65,11 @@ public:
 
 private:
     void getDescriptorLayouts(DescriptorLayoutCache* descriptorLayoutCache);
-    void createLayout();
-    void createPipeline(const std::vector<Shader*>& shaders);
+    bool createLayout();
+    bool createPipeline(const std::vector<Shader*>& shaders);
     void mergeShaderResources(const std::vector<PipelineResource>& resources);
 
+    std::string                             m_err;
     GraphicsDevice*                         m_pDevice;
     RenderPass*                             m_pRenderPass;
     uint32_t                                m_subpass;
