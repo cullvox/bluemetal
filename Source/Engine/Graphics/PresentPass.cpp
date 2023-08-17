@@ -26,15 +26,14 @@ VkRenderPass PresentPass::getHandle()
     return m_pass;
 }
 
-void PresentPass::resize(VkExtent2D extent)
+bool PresentPass::resize(VkExtent2D extent)
 {
     (void)extent;
     destroyFramebuffers();
-    createFramebuffers();
+    return createFramebuffers();
 }
 
-
-void PresentPass::record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
+bool PresentPass::record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
 {
     std::array<VkClearValue, 2> clearValues = {};
 

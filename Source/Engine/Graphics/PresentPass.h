@@ -13,8 +13,8 @@ public:
     virtual ~PresentPass();
 
     virtual VkRenderPass getHandle() override;
-    virtual void record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;
-    virtual void resize(VkExtent2D extent) override;
+    virtual bool record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;
+    virtual bool resize(VkExtent2D extent) override;
 
 private:
     void createFramebuffers();

@@ -9,16 +9,33 @@ Renderer::Renderer()
 }
 
 Renderer::Renderer(const RendererCreateInfo& createInfo)
-    : m_pDevice(createInfo->pDevice)
-    , m_pSwapchain(createInfo->pSwapchain)
-    , m_currentFrame(0)
 {
+    if (!create(createInfo))
+        throw std::runtime_error(m_err.c_str());
+}
+
+Renderer::~Renderer()
+{
+    destroy();
+}
+
+bool Renderer::create(const RendererCreateInfo& createInfo)
+{
+    m_pDevice = createInfo.pDevice;
+    m_pSwapchain = createInfo.pSwapchain;
+    m_currentFrame = 0;
+
+    m_swapCommandBuffers.reserve(maxFramesInFlight);
+    m_imageAvailableSemaphores.reserve(m_pSwapchain->getImageCount());
+    m_renderFinishedSemaphores.reserve(m_pSwapchain->getImageCount());
+    m_inFlightFences.reserve(m_pSwapchain->getImageCount());
+    
     m_presentPass = std::make_unique<PresentPass>();
 
     createSyncObjects();
 }
 
-Renderer::~Renderer()
+void Renderer::destroy() noexcept
 {
     destroySyncObjects();
 }
@@ -28,12 +45,10 @@ RenderPass* Renderer::getUserInterfacePass()
     return m_presentPass.get();
 }
 
-void Renderer::createSyncObjects()
+bool Renderer::createSyncObjects()
 {
 
-    // allocate the per frame swapping command buffers. 
-    m_swapCommandBuffers.resize(maxFramesInFlight);
-
+    // allocate the per frame swapping command buffers.
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocateInfo.pNext = nullptr;
@@ -43,14 +58,11 @@ void Renderer::createSyncObjects()
 
     if (vkAllocateCommandBuffers(m_pDevice->getHandle(), &allocateInfo, m_swapCommandBuffers.data()) != VK_SUCCESS)
     {
-        throw std::runtime_error("Could not allocate Vulkan command buffers for the renderer!");
+        m_err = "Could not allocate Vulkan command buffers for the renderer!";
+        return false;
     }
 
     // Create the semaphores and fences
-    m_imageAvailableSemaphores.resize(m_pSwapchain->getImageCount());
-    m_renderFinishedSemaphores.resize(m_pSwapchain->getImageCount());
-    m_inFlightFences.resize(m_pSwapchain->getImageCount());
-
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     semaphoreInfo.pNext = nullptr;
@@ -67,7 +79,9 @@ void Renderer::createSyncObjects()
             vkCreateSemaphore(m_pDevice->getHandle(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
             vkCreateFence(m_pDevice->getHandle(), &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
         {
-            throw std::runtime_error("Could not create a Vulkan sync object!");
+            m_err = "Could not create a Vulkan sync object!";
+            destroy();
+            return false;
         }
     }
 }
@@ -84,12 +98,12 @@ void Renderer::destroySyncObjects() noexcept
     vkFreeCommandBuffers(m_pDevice->getHandle(), m_pDevice->getCommandPool(), (uint32_t)m_swapCommandBuffers.size(), m_swapCommandBuffers.data());
 }
 
-void Renderer::resize(VkExtent2D extent)
+bool Renderer::resize(VkExtent2D extent)
 {
-    m_presentPass->resize(extent);
+    return m_geometryPass->resize(extent) && m_presentPass->resize(extent);
 }
 
-void Renderer::render(std::function<void(VkCommandBuffer)> func)
+bool Renderer::render(std::function<void(VkCommandBuffer)> func)
 {
     // If the swapchain is invalid we cannot render anything.
     if (!m_pSwapchain->getHandle()) return;

@@ -40,7 +40,7 @@ GraphicsInstance& GraphicsInstance::operator=(GraphicsInstance&& rhs)
     rhs.m_createDebugUtilsMessengerEXT = nullptr;
     rhs.m_destroyDebugUtilsMessengerEXT = nullptr;
     rhs.m_messenger = VK_NULL_HANDLE;
-    rhs.m_pPhysicalDevices.clear();
+    rhs.m_physicalDevices.clear();
 
     return *this;
 }
@@ -93,8 +93,8 @@ std::vector<GraphicsPhysicalDevice*> GraphicsInstance::getPhysicalDevices() cons
 {
     assert(isCreated() && "Instance must be created before physical devices can be retrieved.");
 
+    // Get the raw pointer values from the unique pointer.
     std::vector<GraphicsPhysicalDevice*> physicalDevices;
-
     std::transform(m_physicalDevices.begin(), m_physicalDevices.end(), std::back_inserter(physicalDevices),
         [](auto& pd){ return pd.get(); });
 

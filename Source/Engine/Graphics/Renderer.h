@@ -42,20 +42,23 @@ public:
     /// Create a renderer instance.
     [[nodiscard]] bool create(const RendererCreateInfo& createInfo);
     
+    /// Destroys this renderer object's internal data.
     void destroy() noexcept;
 
+    
     RenderPass* getGeometryPass();
     RenderPass* getUserInterfacePass();
 
-    void resize(VkExtent2D extent);
-    void render(std::function<void(VkCommandBuffer)> func);
+    [[nodiscard]] bool resize(VkExtent2D extent);
+    [[nodiscard]] bool render(std::function<void(VkCommandBuffer)> func);
 
 private:
-    void createSyncObjects();
+    bool createSyncObjects();
     void destroySyncObjects() noexcept;
 
-    GraphicsDevice&                     m_device;
-    Swapchain&                          m_swapchain;
+    std::string                         m_err;
+    GraphicsDevice*                     m_pDevice;
+    Swapchain*                          m_pSwapchain;
     uint32_t                            m_currentFrame;
     std::vector<VkCommandBuffer>        m_swapCommandBuffers;
     std::vector<VkSemaphore>            m_imageAvailableSemaphores;

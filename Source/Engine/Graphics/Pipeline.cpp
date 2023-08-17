@@ -25,6 +25,8 @@ bool Pipeline::create(const PipelineCreateInfo& createInfo)
     assert(createInfo.pDevice && "PipelineCreateInfo.pDevice must not be nullptr!");
     assert(createInfo.pRenderPass && "PipelineCreateInfo.pRenderPass must not be nullptr!");
     assert(createInfo.pDescriptorLayoutCache && "PipelineCreateInfo.pDescriptorLayoutCache must not be nullptr!");
+    assert(std::all_of(createInfo.shaders.begin(), createInfo.shaders.end(), [](auto shader){ return shader != nullptr; }) 
+                            && "PipelineCreateInfo.shaders must not have a nullptr element!");
 
     m_pDevice = createInfo.pDevice;
     m_pRenderPass = createInfo.pRenderPass;
