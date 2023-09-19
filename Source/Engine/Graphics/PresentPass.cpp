@@ -4,8 +4,7 @@
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_bluemetal.h"
 
-namespace bl
-{
+namespace bl {
 
 PresentPass::PresentPass(GraphicsDevice* pDevice, Swapchain* pSwapchain)
     : m_pDevice(pDevice)
@@ -21,10 +20,7 @@ PresentPass::~PresentPass()
     destroyRenderPass();
 }
 
-VkRenderPass PresentPass::getHandle()
-{
-    return m_pass;
-}
+VkRenderPass PresentPass::getHandle() { return m_pass; }
 
 bool PresentPass::resize(VkExtent2D extent)
 {
@@ -56,9 +52,8 @@ bool PresentPass::record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t inde
     beginInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
-    
-    // if (!m_showImGui) return;
 
+    // if (!m_showImGui) return;
 
     vkCmdEndRenderPass(cmd);
 }
@@ -93,7 +88,6 @@ void PresentPass::createRenderPass()
     subpasses[0].pDepthStencilAttachment = nullptr;
     subpasses[0].preserveAttachmentCount = 0;
     subpasses[0].pPreserveAttachments = nullptr;
-        
 
     VkRenderPassCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -106,11 +100,9 @@ void PresentPass::createRenderPass()
     createInfo.dependencyCount = 0;
     createInfo.pDependencies = nullptr;
 
-    if (vkCreateRenderPass(m_pDevice->getHandle(), &createInfo, nullptr, &m_pass) != VK_SUCCESS)
-    {
+    if (vkCreateRenderPass(m_pDevice->getHandle(), &createInfo, nullptr, &m_pass) != VK_SUCCESS) {
         throw std::runtime_error("Could not create a Vulkan present render pass!");
     }
-
 }
 
 void PresentPass::destroyRenderPass()
@@ -122,7 +114,7 @@ void PresentPass::createFramebuffers()
 {
     // Get the image views from the swapchain.
     std::vector<VkImageView> attachments = m_pSwapchain->getImageViews();
-    
+
     // Get the extent of the swapchain for framebuffer sizes.
     VkExtent2D extent = m_pSwapchain->getExtent();
 
@@ -141,14 +133,14 @@ void PresentPass::createFramebuffers()
 
     // Iterate through all the attachments to create their framebuffer.
     uint32_t i = 0;
-    for (VkImageView attachment : attachments)
-    {
-        
+    for (VkImageView attachment : attachments) {
+
         // Set the attachment and create the framebuffer.
         createInfo.pAttachments = &attachment;
-        
-        if (vkCreateFramebuffer(m_pDevice->getHandle(), &createInfo, nullptr, &m_swapFramebuffers[i]) != VK_SUCCESS)
-        {
+
+        if (vkCreateFramebuffer(
+                m_pDevice->getHandle(), &createInfo, nullptr, &m_swapFramebuffers[i])
+            != VK_SUCCESS) {
             throw std::runtime_error("Could not create a Vulkan framebuffer!");
         }
 
@@ -159,8 +151,7 @@ void PresentPass::createFramebuffers()
 
 void PresentPass::destroyFramebuffers()
 {
-    for (size_t i = 0; i < m_swapFramebuffers.size(); i++)
-    {
+    for (size_t i = 0; i < m_swapFramebuffers.size(); i++) {
         vkDestroyFramebuffer(m_pDevice->getHandle(), m_swapFramebuffers[i], nullptr);
     }
 

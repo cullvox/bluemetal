@@ -52,14 +52,7 @@ public:
     /// Returns true if the device is created.
     bool isCreated() const noexcept;
 
-    /// Returns true if the device was created.
-    ///
-    ///     @param[out] err Human readable expression of what went wrong.
-    ///
-    bool isCreated(std::string& err) const noexcept;
-
-    /// Returns a human readable string describing the latest error.
-    const std::string& getError() const noexcept;
+public:
 
     /// Returns the physical device this device was crated with. 
     GraphicsPhysicalDevice* getPhysicalDevice() const;
@@ -128,17 +121,16 @@ private:
     /// Creates an instance of the Vulkan Memory Allocator (VMA)
     /// @return True if the allocator was created successfully. 
     bool createAllocator();
+    
+    GraphicsDeviceCreateInfo    _createInfo;
+    GraphicsInstance*           _pInstance;
+    GraphicsPhysicalDevice*     _pPhysicalDevice;
 
-    std::string                 m_err;
-    GraphicsDeviceCreateInfo    m_createInfo;
-    GraphicsInstance*           m_pInstance;
-    GraphicsPhysicalDevice*     m_pPhysicalDevice;
-
-    uint32_t                    m_graphicsFamilyIndex, m_presentFamilyIndex;
-    VkDevice                    m_device;
-    VkQueue                     m_graphicsQueue, m_presentQueue;
-    VkCommandPool               m_commandPool;
-    VmaAllocator                m_allocator;
+    uint32_t                    _graphicsFamilyIndex, m_presentFamilyIndex;
+    VkDevice                    _device;
+    VkQueue                     _graphicsQueue, m_presentQueue;
+    VkCommandPool               _commandPool;
+    VmaAllocator                _allocator;
 };
 
 } // namespace bl

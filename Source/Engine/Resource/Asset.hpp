@@ -2,8 +2,7 @@
 
 #include <Core/Precompiled.hpp>
 
-class blAsset
-{
+class blAsset {
 public:
     blAsset() = default;
     virtual ~blAsset() = default;

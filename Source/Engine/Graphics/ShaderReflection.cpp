@@ -1,8 +1,7 @@
 #include "ShaderReflection.h"
 #include "Conversions.h"
 
-namespace bl
-{
+namespace bl {
 
 ShaderReflection::ShaderReflection(const std::vector<uint32_t>& binary)
 {
@@ -11,15 +10,11 @@ ShaderReflection::ShaderReflection(const std::vector<uint32_t>& binary)
     findResources();
 }
 
-ShaderReflection::~ShaderReflection()
-{
-    spvReflectDestroyShaderModule(&m_reflection);
-}
+ShaderReflection::~ShaderReflection() { spvReflectDestroyShaderModule(&m_reflection); }
 
 VkVertexInputBindingDescription ShaderReflection::getVertexBinding()
 {
-    if (m_stage != VK_SHADER_STAGE_VERTEX_BIT)
-    {
+    if (m_stage != VK_SHADER_STAGE_VERTEX_BIT) {
         throw std::runtime_error("Tried to get vertex state of a non vertex shader!");
     }
 
@@ -28,8 +23,7 @@ VkVertexInputBindingDescription ShaderReflection::getVertexBinding()
 
 std::vector<VkVertexInputAttributeDescription> ShaderReflection::getVertexAttributes()
 {
-    if (m_stage != VK_SHADER_STAGE_VERTEX_BIT)
-    {
+    if (m_stage != VK_SHADER_STAGE_VERTEX_BIT) {
         throw std::runtime_error("Tried to get vertex state of a non vertex shader!");
     }
 
@@ -38,8 +32,8 @@ std::vector<VkVertexInputAttributeDescription> ShaderReflection::getVertexAttrib
 
 void ShaderReflection::createReflection(const std::vector<uint32_t>& binary)
 {
-    if (spvReflectCreateShaderModule(binary.size(), binary.data(), &m_reflection) != SPV_REFLECT_RESULT_SUCCESS)
-    {
+    if (spvReflectCreateShaderModule(binary.size(), binary.data(), &m_reflection)
+        != SPV_REFLECT_RESULT_SUCCESS) {
         throw std::runtime_error("Could not create a SPIRV-reflect shader module!");
     }
 
@@ -48,7 +42,8 @@ void ShaderReflection::createReflection(const std::vector<uint32_t>& binary)
 
 void ShaderReflection::findVertexState()
 {
-    if (m_stage != VK_SHADER_STAGE_VERTEX_BIT) return;
+    if (m_stage != VK_SHADER_STAGE_VERTEX_BIT)
+        return;
 
     // these default vertex binding options are fine right now
     m_vertexBinding.binding = 0;
@@ -56,15 +51,13 @@ void ShaderReflection::findVertexState()
     m_vertexBinding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
     // get the vertex inputs
-    for (uint32_t i = 0; i < m_reflection.input_variable_count; i++)
-    {
+    for (uint32_t i = 0; i < m_reflection.input_variable_count; i++) {
         const SpvReflectInterfaceVariable* v = m_reflection.input_variables[i];
-        
+
         // skip built in variables
-        if (v->decoration_flags & SPV_REFLECT_DECORATION_BUILT_IN)
-        {
+        if (v->decoration_flags & SPV_REFLECT_DECORATION_BUILT_IN) {
             continue;
-        } 
+        }
 
         auto format = (VkFormat)v->format;
 
@@ -83,8 +76,7 @@ void ShaderReflection::findVertexState()
 
     // sort the attributes into location order
     std::sort(m_vertexAttributes.begin(), m_vertexAttributes.end(),
-        [](const VkVertexInputAttributeDescription& a, const VkVertexInputAttributeDescription& b)
-        {
+        [](const VkVertexInputAttributeDescription& a, const VkVertexInputAttributeDescription& b) {
             return a.location < b.location;
         });
 }
@@ -99,11 +91,9 @@ void ShaderReflection::findResources()
 
     spvReflectEnumerateDescriptorBindings(&m_reflection, &bindingCount, bindings.data());
 
-    for (const auto* b : bindings)
-    {
+    for (const auto* b : bindings) {
         uint32_t count = 0;
-        for (uint32_t k = 0; k < b->array.dims_count; k++)
-        {
+        for (uint32_t k = 0; k < b->array.dims_count; k++) {
             count *= b->array.dims[k];
         }
 

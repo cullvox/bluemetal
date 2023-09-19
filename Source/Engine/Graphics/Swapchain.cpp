@@ -1,14 +1,10 @@
 #include "Swapchain.h"
 #include "Core/Log.h"
 
-namespace bl
-{
+namespace bl {
 
-Swapchain::Swapchain(
-    GraphicsDevice*                     pDevice, 
-    Window*                             pWindow, 
-    std::optional<VkPresentModeKHR>     presentMode,
-    std::optional<VkSurfaceFormatKHR>   surfaceFormat)
+Swapchain::Swapchain(GraphicsDevice* pDevice, Window* pWindow,
+    std::optional<VkPresentModeKHR> presentMode, std::optional<VkSurfaceFormatKHR> surfaceFormat)
     : m_pPhysicalDevice(pDevice->getPhysicalDevice())
     , m_pDevice(pDevice)
     , m_pWindow(pWindow)
@@ -32,60 +28,35 @@ Swapchain::~Swapchain()
     vkDestroySwapchainKHR(m_pDevice->getHandle(), m_swapchain, nullptr);
 }
 
-VkSwapchainKHR Swapchain::getHandle()
-{
-    return m_swapchain;
-}
+VkSwapchainKHR Swapchain::getHandle() { return m_swapchain; }
 
-VkFormat Swapchain::getFormat() 
-{
-    return m_surfaceFormat.format;
-}
+VkFormat Swapchain::getFormat() { return m_surfaceFormat.format; }
 
-VkExtent2D Swapchain::getExtent() 
-{
-    return m_extent;
-}
+VkExtent2D Swapchain::getExtent() { return m_extent; }
 
-uint32_t Swapchain::getImageCount() 
-{
-    return m_imageCount;
-}
+uint32_t Swapchain::getImageCount() { return m_imageCount; }
 
-VkPresentModeKHR Swapchain::getPresentMode()
-{
-    return m_presentMode;
-}
+VkPresentModeKHR Swapchain::getPresentMode() { return m_presentMode; }
 
-VkSurfaceFormatKHR Swapchain::getSurfaceFormat()
-{
-    return m_surfaceFormat;
-}
+VkSurfaceFormatKHR Swapchain::getSurfaceFormat() { return m_surfaceFormat; }
 
-std::vector<VkImageView> Swapchain::getImageViews() 
-{
-    return m_swapImageViews;
-}
+std::vector<VkImageView> Swapchain::getImageViews() { return m_swapImageViews; }
 
-std::vector<VkImage> Swapchain::getImages() 
-{
-    return m_swapImages;
-}
+std::vector<VkImage> Swapchain::getImages() { return m_swapImages; }
 
-void Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex, bool* pRecreated)
+void Swapchain::acquireNext(
+    VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex, bool* pRecreated)
 {
     *pImageIndex = 0;
     *pRecreated = false;
 
-    VkResult result = vkAcquireNextImageKHR(m_pDevice->getHandle(), m_swapchain, UINT32_MAX, semaphore, fence, pImageIndex);
-    
-    if (result == VK_ERROR_OUT_OF_DATE_KHR)
-    {
+    VkResult result = vkAcquireNextImageKHR(
+        m_pDevice->getHandle(), m_swapchain, UINT32_MAX, semaphore, fence, pImageIndex);
+
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         recreate();
         *pRecreated = true;
-    }
-    else if (result != VK_SUCCESS)
-    {
+    } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Could not acquire the next swapchain image!");
     }
 }
@@ -93,10 +64,10 @@ void Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t* pIma
 void Swapchain::ensureSurfaceSupported()
 {
     VkBool32 supported = false;
-    vkGetPhysicalDeviceSurfaceSupportKHR(m_pPhysicalDevice->getHandle(), m_pDevice->getPresentFamilyIndex(), m_pWindow->getSurface(), &supported);
+    vkGetPhysicalDeviceSurfaceSupportKHR(m_pPhysicalDevice->getHandle(),
+        m_pDevice->getPresentFamilyIndex(), m_pWindow->getSurface(), &supported);
 
-    if (!supported)
-    {
+    if (!supported) {
         throw std::runtime_error("Could not ensure Vulkan surface support on physical device!");
     }
 }
@@ -104,40 +75,45 @@ void Swapchain::ensureSurfaceSupported()
 void Swapchain::chooseImageCount()
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_pPhysicalDevice->getHandle(), m_pWindow->getSurface(), &capabilities) != VK_SUCCESS)
-    {
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+            m_pPhysicalDevice->getHandle(), m_pWindow->getSurface(), &capabilities)
+        != VK_SUCCESS) {
         throw std::runtime_error("Could not get Vulkan surface capabilities!");
     }
 
     // Try to at least get one over the minimum
-    m_imageCount = (capabilities.minImageCount + 1 <= capabilities.maxImageCount) ? capabilities.minImageCount + 1 : capabilities.maxImageCount;
+    m_imageCount = (capabilities.minImageCount + 1 <= capabilities.maxImageCount)
+        ? capabilities.minImageCount + 1
+        : capabilities.maxImageCount;
 }
 
 void Swapchain::chooseFormat(std::optional<VkSurfaceFormatKHR> format)
 {
- 
+
     // Get the surface formats from the physical device.
     std::vector<VkSurfaceFormatKHR> formats = m_pPhysicalDevice->getSurfaceFormats(m_pWindow);
 
     // find the surface format/colorspace to be used
     VkSurfaceFormatKHR toFind = format.value_or(DEFAULT_SURFACE_FORMAT);
 
-    auto pred = [&toFind](const VkSurfaceFormatKHR& sf)
-                { 
-                    return sf.format == toFind.format && sf.colorSpace == toFind.colorSpace; 
-                };
+    auto pred = [&toFind](const VkSurfaceFormatKHR& sf) {
+        return sf.format == toFind.format && sf.colorSpace == toFind.colorSpace;
+    };
 
     auto it = std::find_if(formats.begin(), formats.end(), pred);
 
-    if (it != formats.end())
-    {
+    if (it != formats.end()) {
         m_surfaceFormat = toFind;
         return;
     }
 
     // as fallback use the first format
     m_surfaceFormat = formats.front();
-    BL_LOG(LogType::eWarning, "Could not find Vulkan default surface format: ({}, {}), falling back to: ({}, {}).", string_VkFormat(toFind.format), string_VkColorSpaceKHR(toFind.colorSpace), string_VkFormat(m_surfaceFormat.format), string_VkColorSpaceKHR(m_surfaceFormat.colorSpace));
+    BL_LOG(LogType::eWarning,
+        "Could not find Vulkan default surface format: ({}, {}), falling back to: ({}, {}).",
+        string_VkFormat(toFind.format), string_VkColorSpaceKHR(toFind.colorSpace),
+        string_VkFormat(m_surfaceFormat.format),
+        string_VkColorSpaceKHR(m_surfaceFormat.colorSpace));
 }
 
 void Swapchain::choosePresentMode(std::optional<VkPresentModeKHR> presentMode)
@@ -146,20 +122,22 @@ void Swapchain::choosePresentMode(std::optional<VkPresentModeKHR> presentMode)
     std::vector<VkPresentModeKHR> modes = m_pPhysicalDevice->getPresentModes(m_pWindow);
 
     // Fill up the present meta info.
-    m_isMailboxSupported = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_MAILBOX_KHR) != modes.end();
-    m_isImmediateSupported = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR) != modes.end();
+    m_isMailboxSupported
+        = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_MAILBOX_KHR) != modes.end();
+    m_isImmediateSupported
+        = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR) != modes.end();
 
-    // Try to find the caller's present mode or use the default instead.    
+    // Try to find the caller's present mode or use the default instead.
     auto toFind = presentMode.value_or(DEFAULT_PRESENT_MODE);
     auto it = std::find(modes.begin(), modes.end(), toFind);
 
-    if (it != modes.end())
-    {
+    if (it != modes.end()) {
         m_presentMode = toFind;
         return;
     }
-    
-    BL_LOG(LogType::eWarning, "Present mode {} is unavailable, using VK_PRESENT_MODE_FIFO_KHR.", string_VkPresentModeKHR(DEFAULT_PRESENT_MODE));
+
+    BL_LOG(LogType::eWarning, "Present mode {} is unavailable, using VK_PRESENT_MODE_FIFO_KHR.",
+        string_VkPresentModeKHR(DEFAULT_PRESENT_MODE));
 
     // If our mode wasn't found just use FIFO, as that's always available.
     m_presentMode = VK_PRESENT_MODE_FIFO_KHR;
@@ -169,37 +147,36 @@ void Swapchain::chooseExtent()
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
 
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_pPhysicalDevice->getHandle(), m_pWindow->getSurface(), &capabilities) != VK_SUCCESS)
-    {
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+            m_pPhysicalDevice->getHandle(), m_pWindow->getSurface(), &capabilities)
+        != VK_SUCCESS) {
         throw std::runtime_error("Could not get Vulkan physical device surface capabilities!");
     }
 
-    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max())
-    {
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         m_extent = capabilities.currentExtent;
-    }
-    else
-    {
+    } else {
         Extent2D extent = m_pWindow->getExtent();
-        m_extent = VkExtent2D{
-            std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
-            std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
-        };
+        m_extent = VkExtent2D { std::clamp(extent.width, capabilities.minImageExtent.width,
+                                    capabilities.maxImageExtent.width),
+            std::clamp(extent.height, capabilities.minImageExtent.height,
+                capabilities.maxImageExtent.height) };
     }
 }
 
 void Swapchain::obtainImages()
 {
     uint32_t imageCount = 0;
-    if (vkGetSwapchainImagesKHR(m_pDevice->getHandle(), m_swapchain, &imageCount, nullptr) != VK_SUCCESS)
-    {
+    if (vkGetSwapchainImagesKHR(m_pDevice->getHandle(), m_swapchain, &imageCount, nullptr)
+        != VK_SUCCESS) {
         throw std::runtime_error("Could not get Vulkan swapchain image count!");
     }
 
     m_swapImages.resize(imageCount);
 
-    if (vkGetSwapchainImagesKHR(m_pDevice->getHandle(), m_swapchain, &imageCount, m_swapImages.data()) != VK_SUCCESS)
-    {
+    if (vkGetSwapchainImagesKHR(
+            m_pDevice->getHandle(), m_swapchain, &imageCount, m_swapImages.data())
+        != VK_SUCCESS) {
         throw std::runtime_error("Could not get Vulkan swapchain images!");
     }
 }
@@ -208,14 +185,13 @@ void Swapchain::createImageViews()
 {
     m_swapImageViews.resize(m_imageCount);
 
-    for (uint32_t i = 0; i < m_imageCount; i++)
-    {
+    for (uint32_t i = 0; i < m_imageCount; i++) {
         VkComponentMapping componentMapping = {};
-        componentMapping.r = VK_COMPONENT_SWIZZLE_IDENTITY; 
-        componentMapping.g = VK_COMPONENT_SWIZZLE_IDENTITY; 
-        componentMapping.b = VK_COMPONENT_SWIZZLE_IDENTITY; 
-        componentMapping.a = VK_COMPONENT_SWIZZLE_IDENTITY; 
-        
+        componentMapping.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+        componentMapping.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+        componentMapping.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+        componentMapping.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
         VkImageSubresourceRange subresourceRange = {};
         subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         subresourceRange.baseMipLevel = 0;
@@ -233,8 +209,8 @@ void Swapchain::createImageViews()
         imageViewInfo.components = componentMapping;
         imageViewInfo.subresourceRange = subresourceRange;
 
-        if (vkCreateImageView(m_pDevice->getHandle(), &imageViewInfo, nullptr, &m_swapImageViews[i]) != VK_SUCCESS)
-        {
+        if (vkCreateImageView(m_pDevice->getHandle(), &imageViewInfo, nullptr, &m_swapImageViews[i])
+            != VK_SUCCESS) {
             throw std::runtime_error("Could not create a Vulkan image view for the swapchain!");
         }
     }
@@ -242,16 +218,14 @@ void Swapchain::createImageViews()
 
 void Swapchain::destroyImageViews()
 {
-    for (uint32_t i = 0; i < m_swapImageViews.size(); i++)
-    {
+    for (uint32_t i = 0; i < m_swapImageViews.size(); i++) {
         vkDestroyImageView(m_pDevice->getHandle(), m_swapImageViews[i], nullptr);
     }
 
     m_swapImageViews.clear();
 }
 
-void Swapchain::recreate(
-    std::optional<VkPresentModeKHR> presentMode) 
+void Swapchain::recreate(std::optional<VkPresentModeKHR> presentMode)
 {
     // Wait for the device to finish doing it's things.
     m_pDevice->waitForDevice();
@@ -266,18 +240,14 @@ void Swapchain::recreate(
     chooseExtent();
     choosePresentMode(presentMode);
 
-    if (m_extent.width == 0 || m_extent.height == 0)
-    {
+    if (m_extent.width == 0 || m_extent.height == 0) {
         BL_LOG(LogType::eInfo, "Swapchain recreation requires a window resize greater than 0x0.");
         return;
     }
 
     // swapchains use both graphics and present, provide it the queue families
-    std::vector queueFamilyIndices = 
-    { 
-        m_pDevice->getGraphicsFamilyIndex(), 
-        m_pDevice->getPresentFamilyIndex() 
-    };
+    std::vector queueFamilyIndices
+        = { m_pDevice->getGraphicsFamilyIndex(), m_pDevice->getPresentFamilyIndex() };
 
     // if they are the same we don't want to misreport
     queueFamilyIndices.resize(m_pDevice->areQueuesSame() ? 1 : 2);
@@ -285,8 +255,9 @@ void Swapchain::recreate(
     // do these out of the create info initialization
     // create the swapchain
     auto imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-    auto imageSharingMode = m_pDevice->areQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_EXCLUSIVE;
-    
+    auto imageSharingMode
+        = m_pDevice->areQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_EXCLUSIVE;
+
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.pNext = nullptr;
@@ -307,8 +278,8 @@ void Swapchain::recreate(
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(m_pDevice->getHandle(), &createInfo, nullptr, &m_swapchain) != VK_SUCCESS)
-    {
+    if (vkCreateSwapchainKHR(m_pDevice->getHandle(), &createInfo, nullptr, &m_swapchain)
+        != VK_SUCCESS) {
         throw std::runtime_error("Could not create a Vulkan swapchain!");
     }
 
@@ -316,9 +287,6 @@ void Swapchain::recreate(
     createImageViews();
 }
 
-void Swapchain::recreate()
-{
-    recreate(m_presentMode);
-}
+void Swapchain::recreate() { recreate(m_presentMode); }
 
 } // namespace bl

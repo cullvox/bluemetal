@@ -1,22 +1,17 @@
 #include "Buffer.h"
 
-namespace bl
-{
+namespace bl {
 
-Buffer::Buffer(
-    GraphicsDevice*         pDevice, 
-    VkBufferUsageFlags      usage, 
-    VkMemoryPropertyFlags   memoryProperties, 
-    VkDeviceSize            size, 
-    VmaAllocationInfo*      pInfo, 
-    bool                    mapped)
+Buffer::Buffer(GraphicsDevice* pDevice, VkBufferUsageFlags usage,
+    VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* pInfo,
+    bool mapped)
     : m_pDevice(pDevice)
     , m_size(size)
 {
 
     // Build the buffer create info.
     uint32_t graphicsFamilyIndex = m_pDevice->getGraphicsFamilyIndex();
-    
+
     VkBufferCreateInfo bufferCreateInfo = {};
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferCreateInfo.pNext = nullptr;
@@ -41,30 +36,19 @@ Buffer::Buffer(
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 0.0f;
 
-    if (vmaCreateBuffer(m_pDevice->getAllocator(), &bufferCreateInfo, &allocationCreateInfo, &m_buffer, &m_allocation, pInfo) != VK_SUCCESS)
-    {
+    if (vmaCreateBuffer(m_pDevice->getAllocator(), &bufferCreateInfo, &allocationCreateInfo,
+            &m_buffer, &m_allocation, pInfo)
+        != VK_SUCCESS) {
         throw std::runtime_error("Could not create a vulkan buffer!");
     }
 }
 
-Buffer::~Buffer()
-{
-    vmaDestroyBuffer(m_pDevice->getAllocator(), m_buffer, m_allocation);
-}
+Buffer::~Buffer() { vmaDestroyBuffer(m_pDevice->getAllocator(), m_buffer, m_allocation); }
 
-VmaAllocation Buffer::getAllocation()
-{
-    return m_allocation;
-}
+VmaAllocation Buffer::getAllocation() { return m_allocation; }
 
-VkBuffer Buffer::getBuffer()
-{
-    return m_buffer;
-}
+VkBuffer Buffer::getBuffer() { return m_buffer; }
 
-VkDeviceSize Buffer::getSize()
-{
-    return m_size;
-}
+VkDeviceSize Buffer::getSize() { return m_size; }
 
 } // namespace bl

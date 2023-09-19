@@ -1,72 +1,71 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
 #include "Math/Vector3.h"
 #include "Device.h"
 
-namespace bl
-{
+namespace bl {
 
-///////////////////////////////
-// Classes
-///////////////////////////////
+struct BLUEMETAL_API ImageCreateInfo {
+    GraphicsDevice*     pDevice,       /** @brief pDevice Device used to create the image with. */
+    VkImageType         type,          /** @brief type Vulkan type of image to create. (1D, 2D or 3D and array variants) */
+    VkFormat            format,        /** @brief format Vulkan format to create the image using. */
+    VkExtent3D          extent,        /** @brief extent How large to create the image in pixels. */
+    VkImageUsageFlags   usage,         /** @brief usage Vulkan usage determining where/how this image will work. */
+    VkImageAspectFlags  aspectMask,    /** @brief aspectMask Vulkan aspects the image will use. */
+    uint32_t            mipLevels = 0  /** @brief mipLevels How many levels of mip maps to generate. */
+};
 
-class BLUEMETAL_API Image
-{
+/** @brief Creates a graphics image on the physical device. */
+class BLUEMETAL_API Image {
 public:
 
-    /// Creates a graphics image on the physical device.
-    ///
-    ///     @param pDevice Device used to create the image with.
-    ///     @param type Vulkan type of image to create. (1D, 2D or 3D and array variants)
-    ///     @param format Vulkan format to create the image using.
-    ///     @param extent How large to create the image in pixels.
-    ///     @param usage Vulkan usage determining where/how this image will work.
-    ///     @param aspectMask Vulkan aspects the image will use.
-    ///     @param mipLevels How many levels of mip maps to generate.
-    ///
-    Image(
-        GraphicsDevice*     pDevice, 
-        VkImageType         type, 
-        VkFormat            format, 
-        VkExtent3D          extent,  
-        VkImageUsageFlags   usage, 
-        VkImageAspectFlags  aspectMask,
-        uint32_t            mipLevels = 0);
+    /** @brief Default Constrctor */
+    Image();
 
-    /// Move Constructor    
+    /** @brief Create Constructor */
+    Image(const ImageCreateInfo& createInfo);
+
+    /** @brief Move Constructor */    
     Image(Image&& other);
     
-    // Default Destructor
+    /** @brief Default Destructor */
     ~Image();
 
-    /// Returns the image size in pixels at construction.
-    Extent3D getExtent();
+    /** @brief Creates this image. */
+    bool create(const ImageCreateInfo& createInfo) noexcept;
+
+    /** @brief Destroys this image. */
+    void destroy() noexcept;
+
+    /** @brief Returns true if the image was created. */
+    bool isCreated() const noexcept;
+
+public:
+
+    /** @brief Returns the image size in pixels at construction. */
+    [[nodiscard]] Extent3D getExtent() const noexcept;
     
-    /// Returns the image format at construction.
-    VkFormat getFormat();
+    /** @brief Returns the image format at construction. */
+    [[nodiscard]] VkFormat getFormat() const noexcept;
 
-    /// Returns the image usage at construction.
-    VkImageUsageFlags getUsage();
+    /** @brief Returns the image usage at construction. */
+    [[nodiscard]] VkImageUsageFlags getUsage() const noexcept;
 
-    /// Returns the vulkan image created at construction. 
-    VkImage getHandle();
+    /** @brief Returns the vulkan image created at construction.  */
+    [[nodiscard]] VkImage getHandle() const noexcept;
 
-    /// Returns the default image view created at construction.
-    VkImageView getDefaultView();
+    /** @brief Returns the default image view created at construction. */
+    [[nodiscard]] VkImageView getDefaultView() const noexcept;
 
 private:
-    GraphicsDevice*     m_pDevice;
-    Extent3D            m_extent;
-    VkImageType         m_type;
-    VkFormat            m_format;
-    VkImageUsageFlags   m_usage;
-    VkImage             m_image;
-    VkImageView         m_imageView;
-    VmaAllocation       m_allocation;
+    GraphicsDevice*     _pDevice;
+    Extent3D            _extent;
+    VkImageType         _type;
+    VkFormat            _format;
+    VkImageUsageFlags   _usage;
+    VkImage             _image;
+    VkImageView         _imageView;
+    VmaAllocation       _allocation;
 };
 
 } // namespace bl

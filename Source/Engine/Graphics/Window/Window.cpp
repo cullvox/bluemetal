@@ -1,45 +1,42 @@
 #include "Window.h"
-#include "Core/Log.h"
+#include "Core/Print.h"
 
-namespace bl
-{
+namespace bl {
 
-Window::Window(
-    GraphicsInstance*       pInstance, 
-    VideoMode               videoMode, 
-    const std::string&      title, 
-    std::optional<Display>  display)
-    : m_pInstance(pInstance)
+Window::Window(const WindowCreateInfo& createInfo)
+    : _pInstance(createInfo.pInstance)
 {
-    createWindow(videoMode, title, display);
-    createSurface();
+    if (!create(createInfo))
+        throw std::runtime_error("Window creation filed! Read previous logs to see what wrong.");
 }
 
 Window::~Window()
 {
-    vkDestroySurfaceKHR(m_pInstance->getHandle(), m_surface, nullptr);
-    SDL_DestroyWindow(m_pWindow);
+}
+
+bool Window::create(const WindowCreateInfo& createInfo)
+{
+    return createWindow(createInfo.mode, createInfo.title, createInfo.display) && createSurface();
+}
+
+void Window::destroy()
+{
+    vkDestroySurfaceKHR(_pInstance->getHandle(), _surface, nullptr);
+    SDL_DestroyWindow(_pWindow);
 }
 
 Extent2D Window::getExtent()
 {
     int width = 0, height = 0;
-    SDL_Vulkan_GetDrawableSize(m_pWindow, &width, &height);
+    SDL_Vulkan_GetDrawableSize(_pWindow, &width, &height);
 
     return Extent2D((uint32_t)width, (uint32_t)height);
 }
 
-VkSurfaceKHR Window::getSurface()
-{
-    return m_surface;
-}
+VkSurfaceKHR Window::getSurface() { return _surface; }
+SDL_Window* Window::getHandle() { return _pWindow; }
 
-SDL_Window* Window::getHandle()
-{
-    return m_pWindow;
-}
-
-void Window::createWindow(const VideoMode& videoMode, const std::string& title, std::optional<Display> display)
+bool Window::createWindow(const VideoMode& videoMode, const std::string& title, Display* display)
 {
     // default window flags
     uint32_t flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -47,26 +44,24 @@ void Window::createWindow(const VideoMode& videoMode, const std::string& title, 
     // display in fullscreen if monitor specified
     if (display) flags |= SDL_WINDOW_FULLSCREEN;
 
-    const int x = display.has_value() ? display->getRect().offset.x : SDL_WINDOWPOS_CENTERED;
-    const int y = display.has_value() ? display->getRect().offset.y : SDL_WINDOWPOS_CENTERED;
+    const int x = display ? display->getRect().offset.x : SDL_WINDOWPOS_CENTERED;
+    const int y = display ? display->getRect().offset.y : SDL_WINDOWPOS_CENTERED;
     const int width = videoMode.extent.width;
     const int height = videoMode.extent.height;
 
-    m_pWindow = SDL_CreateWindow(title.c_str(), x, y, width, height, flags);
+    _pWindow = SDL_CreateWindow(title.c_str(), x, y, width, height, flags);
 
-    if (!m_pWindow)
-    {
-        throw std::runtime_error("Could not create an SDL2 window! Error: " + std::string(SDL_GetError()));
+    if (!_pWindow) {
+        blError("Could not create an SDL2 window! {}", SDL_GetError());
     }
 
-    SDL_ShowWindow(m_pWindow);
+    SDL_ShowWindow(_pWindow);
 }
 
-void Window::createSurface()
+bool Window::createSurface()
 {
-    if (SDL_Vulkan_CreateSurface(m_pWindow, m_pInstance->getHandle(), &m_surface) != SDL_TRUE)
-    {
-        BL_LOG(LogType::eFatal, "Could not create a Vulkan surface from an SDL window!");
+    if (SDL_Vulkan_CreateSurface(_pWindow, _pInstance->getHandle(), &_surface) != SDL_TRUE) {
+        blError("Could not create a Vulkan surface from an SDL window!");
     }
 }
 

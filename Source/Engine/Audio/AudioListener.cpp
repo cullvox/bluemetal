@@ -5,8 +5,7 @@
 
 #include "AudioListener.h"
 
-namespace bl
-{
+namespace bl {
 
 ///////////////////////////////
 // Classes
@@ -17,8 +16,6 @@ AudioListener::AudioListener(AudioSystem* pSystem)
 {
 }
 
-AudioListener::~AudioListener()
-{
-}
+AudioListener::~AudioListener() { }
 
 } // namespace bl

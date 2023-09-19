@@ -1,8 +1,7 @@
 #pragma once
 
-template<typename T>
-class blHeirarchy
-{
+template <typename T>
+class blHeirarchy {
 public:
     blHeirarchy() = default;
     blHeirarchy(const blHeirarchy& rhs) = default;
@@ -20,18 +19,18 @@ public:
     blHeirarchy* findInChildren(T data)
     {
         // First search on only this's children
-        for (const blHeirarchy& child : children)
-        {
-            if (child._data == data) return &child;
+        for (const blHeirarchy& child : children) {
+            if (child._data == data)
+                return &child;
         }
 
         // Second search recursively through each child
-        for (const blHeirarchy& child : children)
-        {
+        for (const blHeirarchy& child : children) {
             blHeirarchy* found = child.findInChildren(data);
-            if (found) return found;  
+            if (found)
+                return found;
         }
-        
+
         return nullptr;
     }
 

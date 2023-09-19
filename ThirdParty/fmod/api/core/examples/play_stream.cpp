@@ -11,18 +11,18 @@ small runtime CPU hit.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
 int FMOD_Main()
 {
-    FMOD::System     *system;
-    FMOD::Sound      *sound, *sound_to_play;
-    FMOD::Channel    *channel = 0;
-    FMOD_RESULT       result;
-    void             *extradriverdata = 0;
-    int               numsubsounds;
-    
+    FMOD::System* system;
+    FMOD::Sound *sound, *sound_to_play;
+    FMOD::Channel* channel = 0;
+    FMOD_RESULT result;
+    void* extradriverdata = 0;
+    int numsubsounds;
+
     Common_Init(&extradriverdata);
 
     /*
@@ -45,13 +45,10 @@ int FMOD_Main()
     result = sound->getNumSubSounds(&numsubsounds);
     ERRCHECK(result);
 
-    if (numsubsounds)
-    {
+    if (numsubsounds) {
         sound->getSubSound(0, &sound_to_play);
         ERRCHECK(result);
-    }
-    else
-    {
+    } else {
         sound_to_play = sound;
     }
 
@@ -64,12 +61,10 @@ int FMOD_Main()
     /*
         Main loop.
     */
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             bool paused;
             result = channel->getPaused(&paused);
             ERRCHECK(result);
@@ -83,32 +78,27 @@ int FMOD_Main()
         {
             unsigned int ms = 0;
             unsigned int lenms = 0;
-            bool         playing = false;
-            bool         paused = false;
+            bool playing = false;
+            bool paused = false;
 
-            if (channel)
-            {
+            if (channel) {
                 result = channel->isPlaying(&playing);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE)) {
                     ERRCHECK(result);
                 }
 
                 result = channel->getPaused(&paused);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE)) {
                     ERRCHECK(result);
                 }
 
                 result = channel->getPosition(&ms, FMOD_TIMEUNIT_MS);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE)) {
                     ERRCHECK(result);
                 }
-               
+
                 result = sound_to_play->getLength(&lenms, FMOD_TIMEUNIT_MS);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE)) {
                     ERRCHECK(result);
                 }
             }
@@ -121,7 +111,8 @@ int FMOD_Main()
             Common_Draw("Press %s to toggle pause", Common_BtnStr(BTN_ACTION1));
             Common_Draw("Press %s to quit", Common_BtnStr(BTN_QUIT));
             Common_Draw("");
-            Common_Draw("Time %02d:%02d:%02d/%02d:%02d:%02d : %s", ms / 1000 / 60, ms / 1000 % 60, ms / 10 % 100, lenms / 1000 / 60, lenms / 1000 % 60, lenms / 10 % 100, paused ? "Paused " : playing ? "Playing" : "Stopped");
+            Common_Draw("Time %02d:%02d:%02d/%02d:%02d:%02d : %s", ms / 1000 / 60, ms / 1000 % 60, ms / 10 % 100, lenms / 1000 / 60, lenms / 1000 % 60, lenms / 10 % 100, paused ? "Paused " : playing ? "Playing"
+                                                                                                                                                                                                       : "Stopped");
         }
 
         Common_Sleep(50);
@@ -130,7 +121,7 @@ int FMOD_Main()
     /*
         Shut down
     */
-    result = sound->release();  /* Release the parent, not the sound that was retrieved with getSubSound. */
+    result = sound->release(); /* Release the parent, not the sound that was retrieved with getSubSound. */
     ERRCHECK(result);
     result = system->close();
     ERRCHECK(result);

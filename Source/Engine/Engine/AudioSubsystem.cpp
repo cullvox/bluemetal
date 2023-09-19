@@ -5,8 +5,7 @@
 
 #include "AudioSubsystem.h"
 
-namespace bl
-{
+namespace bl {
 
 ///////////////////////////////
 // Classes
@@ -17,24 +16,13 @@ AudioSubsystem::AudioSubsystem(Engine* engine)
 {
 }
 
-AudioSubsystem::~AudioSubsystem()
-{
-}
+AudioSubsystem::~AudioSubsystem() { }
 
-void AudioSubsystem::init()
-{
-    system = std::make_unique<AudioSystem>();
-}
+void AudioSubsystem::init() { system = std::make_unique<AudioSystem>(); }
 
-void AudioSubsystem::shutdown()
-{
-    system.release();
-}
+void AudioSubsystem::shutdown() { system.release(); }
 
-void AudioSubsystem::update()
-{
-    system->update();
-}
+void AudioSubsystem::update() { system->update(); }
 
 std::unique_ptr<Sound> AudioSubsystem::createSound(std::filesystem::path path)
 {

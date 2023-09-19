@@ -5,14 +5,12 @@
 #include "ImGuiSubsystem.h"
 #include "Engine.h"
 
-namespace bl
-{
+namespace bl {
 
-ImGuiSubsystem::ImGuiSubsystem(
-    Engine* pEngine)
+ImGuiSubsystem::ImGuiSubsystem(Engine* pEngine)
     : m_pEngine(pEngine)
 {
     pEngine->
 }
-    
+
 } // namespace bl

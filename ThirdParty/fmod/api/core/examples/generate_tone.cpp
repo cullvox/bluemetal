@@ -8,19 +8,19 @@ instead of manually connecting and disconnecting DSP units.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
 int FMOD_Main()
 {
-    FMOD::System    *system;
-    FMOD::Channel   *channel = 0;
-    FMOD::DSP       *dsp;
-    FMOD_RESULT      result;
-    void            *extradriverdata = 0;
+    FMOD::System* system;
+    FMOD::Channel* channel = 0;
+    FMOD::DSP* dsp;
+    FMOD_RESULT result;
+    void* extradriverdata = 0;
 
     Common_Init(&extradriverdata);
-    
+
     /*
         Create a System object and initialize.
     */
@@ -41,14 +41,11 @@ int FMOD_Main()
     /*
         Main loop
     */
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
-            if (channel)
-            {
+        if (Common_BtnPress(BTN_ACTION1)) {
+            if (channel) {
                 result = channel->stop();
                 ERRCHECK(result);
             }
@@ -63,10 +60,8 @@ int FMOD_Main()
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION2))
-        {
-            if (channel)
-            {
+        if (Common_BtnPress(BTN_ACTION2)) {
+            if (channel) {
                 result = channel->stop();
                 ERRCHECK(result);
             }
@@ -81,10 +76,8 @@ int FMOD_Main()
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION3))
-        {
-            if (channel)
-            {
+        if (Common_BtnPress(BTN_ACTION3)) {
+            if (channel) {
                 result = channel->stop();
                 ERRCHECK(result);
             }
@@ -99,10 +92,8 @@ int FMOD_Main()
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION4))
-        {
-            if (channel)
-            {
+        if (Common_BtnPress(BTN_ACTION4)) {
+            if (channel) {
                 result = channel->stop();
                 ERRCHECK(result);
             }
@@ -117,42 +108,37 @@ int FMOD_Main()
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_MORE))
-        {
-            if (channel)
-            {
+        if (Common_BtnPress(BTN_MORE)) {
+            if (channel) {
                 result = channel->stop();
                 ERRCHECK(result);
                 channel = 0;
             }
         }
 
-        if (channel)
-        {
-            if (Common_BtnDown(BTN_UP) || Common_BtnDown(BTN_DOWN))
-            {
+        if (channel) {
+            if (Common_BtnDown(BTN_UP) || Common_BtnDown(BTN_DOWN)) {
                 float volume;
-            
+
                 result = channel->getVolume(&volume);
                 ERRCHECK(result);
-            
+
                 volume += (Common_BtnDown(BTN_UP) ? +0.1f : -0.1f);
                 volume = (volume > 1.0f) ? 1.0f : volume;
                 volume = (volume < 0.0f) ? 0.0f : volume;
-           
+
                 result = channel->setVolume(volume);
                 ERRCHECK(result);
             }
 
-            if (Common_BtnDown(BTN_LEFT) || Common_BtnDown(BTN_RIGHT))
-            {
+            if (Common_BtnDown(BTN_LEFT) || Common_BtnDown(BTN_RIGHT)) {
                 float frequency;
-            
+
                 result = channel->getFrequency(&frequency);
                 ERRCHECK(result);
-            
+
                 frequency += (Common_BtnDown(BTN_RIGHT) ? +500.0f : -500.0f);
-            
+
                 result = channel->setFrequency(frequency);
                 ERRCHECK(result);
             }
@@ -165,8 +151,7 @@ int FMOD_Main()
             float frequency = 0.0f, volume = 0.0f;
             bool playing = false;
 
-            if (channel)
-            {
+            if (channel) {
                 result = channel->getFrequency(&frequency);
                 ERRCHECK(result);
                 result = channel->getVolume(&volume);

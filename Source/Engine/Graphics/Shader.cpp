@@ -2,10 +2,10 @@
 #include "Conversions.h"
 #include "Core/Log.h"
 
-namespace bl
-{
+namespace bl {
 
-Shader::Shader(GraphicsDevice* pDevice, VkShaderStageFlagBits stage, const std::vector<uint32_t>& binary)
+Shader::Shader(
+    GraphicsDevice* pDevice, VkShaderStageFlagBits stage, const std::vector<uint32_t>& binary)
     : m_pDevice(pDevice)
     , m_stage(stage)
     , m_binary(binary)
@@ -13,25 +13,13 @@ Shader::Shader(GraphicsDevice* pDevice, VkShaderStageFlagBits stage, const std::
     createModule();
 }
 
-Shader::~Shader()
-{
-    vkDestroyShaderModule(m_pDevice->getHandle(), m_module, nullptr);
-} 
+Shader::~Shader() { vkDestroyShaderModule(m_pDevice->getHandle(), m_module, nullptr); }
 
-VkShaderStageFlagBits Shader::getStage()
-{
-    return m_stage;
-}
+VkShaderStageFlagBits Shader::getStage() { return m_stage; }
 
-VkShaderModule Shader::getHandle()
-{
-    return m_module;
-}
+VkShaderModule Shader::getHandle() { return m_module; }
 
-std::vector<uint32_t> Shader::getBinary()
-{
-    return m_binary;
-}
+std::vector<uint32_t> Shader::getBinary() { return m_binary; }
 
 void Shader::createModule()
 {
@@ -42,8 +30,8 @@ void Shader::createModule()
     createInfo.codeSize = (uint32_t)m_binary.size();
     createInfo.pCode = m_binary.data();
 
-    if (vkCreateShaderModule(m_pDevice->getHandle(), &createInfo, nullptr, &m_module) != VK_SUCCESS)
-    {
+    if (vkCreateShaderModule(m_pDevice->getHandle(), &createInfo, nullptr, &m_module)
+        != VK_SUCCESS) {
         throw std::runtime_error("Could not create Vulkan shader module!");
     }
 }

@@ -1,31 +1,30 @@
+#include "imgui_impl_bluemetal.h"
 #include "imgui.h"
 #include "imgui_impl_sdl2.h"
 #include "imgui_impl_vulkan.h"
-#include "imgui_impl_bluemetal.h"
 
 #include "Core/Log.h"
 
-struct ImGui_ImplBluemetal_Data
-{
-    bl::GraphicsInstance*       pInstance;
+struct ImGui_ImplBluemetal_Data {
+    bl::GraphicsInstance* pInstance;
     bl::GraphicsPhysicalDevice* pPhysicalDevice;
-    bl::GraphicsDevice*         pDevice;
-    bl::Window*                 pWindow;
-    bl::RenderPass*             pRenderPass;
-    VkDescriptorPool            descriptorPool;
+    bl::GraphicsDevice* pDevice;
+    bl::Window* pWindow;
+    bl::RenderPass* pRenderPass;
+    VkDescriptorPool descriptorPool;
 };
 
 static ImGui_ImplBluemetal_Data* pData = nullptr;
 
-//std::shared_ptr<InputSystem> inputSystem;
-//blInputHookCallback _hookCallback;
+// std::shared_ptr<InputSystem> inputSystem;
+// blInputHookCallback _hookCallback;
 
 static void applyStyle()
 {
-    //float SCALE = 2.0f;
-    //ImFontConfig cfg;
-    //cfg.SizePixels = 13 * SCALE;
-    //ImGui::GetIO().Fonts->AddFontDefault(&cfg);
+    // float SCALE = 2.0f;
+    // ImFontConfig cfg;
+    // cfg.SizePixels = 13 * SCALE;
+    // ImGui::GetIO().Fonts->AddFontDefault(&cfg);
 
     ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -66,8 +65,8 @@ static void applyStyle()
     style.Colors[ImGuiCol_TabActive] = ImVec4(0.23f, 0.23f, 0.24f, 1.00f);
     style.Colors[ImGuiCol_TabUnfocused] = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
     style.Colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.13f, 0.14f, 0.15f, 1.00f);
-    //style.Colors[ImGuiCol_DockingPreview] = ImVec4(0.26f, 0.59f, 0.98f, 0.70f);
-    //style.Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+    // style.Colors[ImGuiCol_DockingPreview] = ImVec4(0.26f, 0.59f, 0.98f, 0.70f);
+    // style.Colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
     style.Colors[ImGuiCol_PlotLines] = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
     style.Colors[ImGuiCol_PlotLinesHovered] = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
     style.Colors[ImGuiCol_PlotHistogram] = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
@@ -84,7 +83,8 @@ static void applyStyle()
 bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
 {
     pData = new ImGui_ImplBluemetal_Data();
-    if (!pData) return false;
+    if (!pData)
+        return false;
 
     pData->pInstance = init->pInstance;
     pData->pPhysicalDevice = init->pPhysicalDevice;
@@ -92,20 +92,15 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     pData->pWindow = init->pWindow;
     pData->pRenderPass = init->pRenderPass;
 
-    VkDescriptorPoolSize poolSizes[] =
-    {
-        { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+    VkDescriptorPoolSize poolSizes[] = { { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
         { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
-        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 }, { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
         { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
         { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
-        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 }, { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
-    };
+        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 } };
 
     VkDescriptorPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -114,14 +109,15 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     poolInfo.poolSizeCount = (uint32_t)std::size(poolSizes);
     poolInfo.pPoolSizes = poolSizes;
 
-    if (vkCreateDescriptorPool(pData->pDevice->getHandle(), &poolInfo, nullptr, &pData->descriptorPool) != VK_SUCCESS)
-    {
+    if (vkCreateDescriptorPool(
+            pData->pDevice->getHandle(), &poolInfo, nullptr, &pData->descriptorPool)
+        != VK_SUCCESS) {
         BL_LOG(bl::LogType::eError, "Could not create a vulkan descriptor pool for ImGui!");
         return false;
     }
 
     ImGui::CreateContext();
-    
+
     ImGui_ImplSDL2_InitForVulkan(pData->pWindow->getHandle());
 
     // Initialize ImGui for Vulkan, pass created objects.
@@ -130,7 +126,7 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     initInfo.PhysicalDevice = pData->pPhysicalDevice->getHandle();
     initInfo.Device = pData->pDevice->getHandle();
     initInfo.QueueFamily = pData->pDevice->getGraphicsFamilyIndex();
-    initInfo.Queue =  pData->pDevice->getGraphicsQueue();
+    initInfo.Queue = pData->pDevice->getGraphicsQueue();
     initInfo.PipelineCache = VK_NULL_HANDLE;
     initInfo.DescriptorPool = pData->descriptorPool;
     initInfo.Subpass = 0;
@@ -140,8 +136,7 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     initInfo.Allocator = nullptr;
     initInfo.CheckVkResultFn = nullptr;
 
-    if (!ImGui_ImplVulkan_Init(&initInfo, pData->pRenderPass->getHandle()))
-    {
+    if (!ImGui_ImplVulkan_Init(&initInfo, pData->pRenderPass->getHandle())) {
         throw std::runtime_error("Could not initialize ImGui Vulkan!");
     }
 
@@ -149,15 +144,13 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     ImFontConfig cfg;
     cfg.OversampleH = 3;
 
-    auto io = ImGui::GetIO(); 
+    auto io = ImGui::GetIO();
 
     ImFont* pFont = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Roboto-Regular.ttf", 18.0f);
     io.FontDefault = pFont;
 
-    pData->pDevice->immediateSubmit([&](VkCommandBuffer cmd)
-        {
-            ImGui_ImplVulkan_CreateFontsTexture(cmd);
-        });
+    pData->pDevice->immediateSubmit(
+        [&](VkCommandBuffer cmd) { ImGui_ImplVulkan_CreateFontsTexture(cmd); });
 
     // Clear the font texture data from host memory.
     ImGui_ImplVulkan_DestroyFontUploadObjects();
@@ -187,7 +180,7 @@ void ImGui_ImplBluemetal_BeginFrame()
 {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL2_NewFrame();
-    
+
     ImGui::NewFrame();
 }
 

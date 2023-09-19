@@ -37,7 +37,7 @@ public:
     ~GraphicsSubsystem();
 
     /// Initializes the graphics subsystem with this info.
-    void init(const GraphicsSubsystemInitInfo* pInitInfo);
+    bool init(const GraphicsSubsystemInitInfo* pInitInfo);
     
     /// Shuts down the render subsystem.
     void shutdown();

@@ -37,12 +37,12 @@ For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
 int FMOD_Main()
 {
-    void *extradriverdata = 0;    
+    void* extradriverdata = 0;
     Common_Init(&extradriverdata);
 
     /*
@@ -52,10 +52,9 @@ int FMOD_Main()
     FMOD::System* system;
     result = FMOD::System_Create(&system);
     ERRCHECK(result);
-    
+
     result = system->init(32, FMOD_INIT_NORMAL, extradriverdata);
     ERRCHECK(result);
-        
 
     /*
         Create a new channel group to hold the convolution DSP unit
@@ -64,7 +63,6 @@ int FMOD_Main()
     result = system->createChannelGroup("reverb", &reverbGroup);
     ERRCHECK(result);
 
-    
     /*
         Create a new channel group to hold all the channels and process the dry path
     */
@@ -75,7 +73,7 @@ int FMOD_Main()
     /*
         Create the convultion DSP unit and set it as the tail of the channel group
     */
-    FMOD::DSP* reverbUnit;    
+    FMOD::DSP* reverbUnit;
     result = system->createDSPByType(FMOD_DSP_TYPE_CONVOLUTIONREVERB, &reverbUnit);
     ERRCHECK(result);
     result = reverbGroup->addDSP(FMOD_CHANNELCONTROL_DSP_TAIL, reverbUnit);
@@ -101,12 +99,10 @@ int FMOD_Main()
     result = irSound->getLength(&irSoundLength, FMOD_TIMEUNIT_PCM);
     ERRCHECK(result);
 
-    
-    if (irSoundFormat != FMOD_SOUND_FORMAT_PCM16)
-    {
+    if (irSoundFormat != FMOD_SOUND_FORMAT_PCM16) {
         /*
             For simplicity of the example, if the impulse response is the wrong format just display an error
-        */        
+        */
         Common_Fatal("Impulse Response file is the wrong audio format");
     }
 
@@ -127,7 +123,7 @@ int FMOD_Main()
         Don't pass any dry signal from the reverb unit, instead take the dry part
         of the mix from the main signal path
     */
-    result = reverbUnit->setParameterFloat(FMOD_DSP_CONVOLUTION_REVERB_PARAM_DRY, -80.0f);    
+    result = reverbUnit->setParameterFloat(FMOD_DSP_CONVOLUTION_REVERB_PARAM_DRY, -80.0f);
     ERRCHECK(result);
 
     /*
@@ -137,7 +133,7 @@ int FMOD_Main()
     free(irData);
     result = irSound->release();
     ERRCHECK(result);
-    
+
     /*
         Load up and play a sample clip recorded in an anechoic chamber
     */
@@ -148,7 +144,7 @@ int FMOD_Main()
     FMOD::Channel* channel;
     system->playSound(sound, mainGroup, true, &channel);
     ERRCHECK(result);
-    
+
     /*
         Create a send connection between the channel head and the reverb unit
     */
@@ -162,34 +158,27 @@ int FMOD_Main()
     result = channel->setPaused(false);
     ERRCHECK(result);
 
-
     float wetVolume = 1.0;
     float dryVolume = 1.0;
 
     /*
         Main loop
     */
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_LEFT))
-        {
+        if (Common_BtnPress(BTN_LEFT)) {
             wetVolume = (wetVolume <= 0.0f) ? wetVolume : wetVolume - 0.05f;
         }
-        if (Common_BtnPress(BTN_RIGHT))
-        {
+        if (Common_BtnPress(BTN_RIGHT)) {
             wetVolume = (wetVolume >= 1.0f) ? wetVolume : wetVolume + 0.05f;
-        }        
-        if (Common_BtnPress(BTN_DOWN))
-        {
+        }
+        if (Common_BtnPress(BTN_DOWN)) {
             dryVolume = (dryVolume <= 0.0f) ? dryVolume : dryVolume - 0.05f;
         }
-        if (Common_BtnPress(BTN_UP))
-        {
+        if (Common_BtnPress(BTN_UP)) {
             dryVolume = (dryVolume >= 1.0f) ? dryVolume : dryVolume + 0.05f;
         }
-        
 
         result = system->update();
         ERRCHECK(result);
@@ -198,7 +187,6 @@ int FMOD_Main()
         ERRCHECK(result);
         result = mainGroup->setVolume(dryVolume);
         ERRCHECK(result);
-
 
         Common_Draw("==================================================");
         Common_Draw("Convolution Example.");

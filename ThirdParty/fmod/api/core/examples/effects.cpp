@@ -11,21 +11,21 @@ of the FMOD::ChannelGroup.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
 int FMOD_Main()
 {
-    FMOD::System       *system        = 0;
-    FMOD::Sound        *sound         = 0;
-    FMOD::Channel      *channel       = 0;
-    FMOD::ChannelGroup *mastergroup   = 0; 
-    FMOD::DSP          *dsplowpass    = 0;
-    FMOD::DSP          *dsphighpass   = 0;
-    FMOD::DSP          *dspecho       = 0;
-    FMOD::DSP          *dspflange     = 0;
-    FMOD_RESULT         result;
-    void               *extradriverdata = 0;
+    FMOD::System* system = 0;
+    FMOD::Sound* sound = 0;
+    FMOD::Channel* channel = 0;
+    FMOD::ChannelGroup* mastergroup = 0;
+    FMOD::DSP* dsplowpass = 0;
+    FMOD::DSP* dsphighpass = 0;
+    FMOD::DSP* dspecho = 0;
+    FMOD::DSP* dspflange = 0;
+    FMOD_RESULT result;
+    void* extradriverdata = 0;
 
     Common_Init(&extradriverdata);
 
@@ -87,12 +87,10 @@ int FMOD_Main()
     /*
         Main loop
     */
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_MORE))
-        {
+        if (Common_BtnPress(BTN_MORE)) {
             bool paused;
 
             result = channel->getPaused(&paused);
@@ -104,8 +102,7 @@ int FMOD_Main()
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             bool bypass;
 
             result = dsplowpass->getBypass(&bypass);
@@ -117,8 +114,7 @@ int FMOD_Main()
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION2))
-        {
+        if (Common_BtnPress(BTN_ACTION2)) {
             bool bypass;
 
             result = dsphighpass->getBypass(&bypass);
@@ -130,8 +126,7 @@ int FMOD_Main()
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION3))
-        {
+        if (Common_BtnPress(BTN_ACTION3)) {
             bool bypass;
 
             result = dspecho->getBypass(&bypass);
@@ -143,8 +138,7 @@ int FMOD_Main()
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION4))
-        {
+        if (Common_BtnPress(BTN_ACTION4)) {
             bool bypass;
 
             result = dspflange->getBypass(&bypass);
@@ -166,16 +160,14 @@ int FMOD_Main()
             bool dspecho_bypass;
             bool dspflange_bypass;
 
-            dsplowpass   ->getBypass(&dsplowpass_bypass);
-            dsphighpass  ->getBypass(&dsphighpass_bypass);
-            dspecho      ->getBypass(&dspecho_bypass);
-            dspflange    ->getBypass(&dspflange_bypass);
+            dsplowpass->getBypass(&dsplowpass_bypass);
+            dsphighpass->getBypass(&dsphighpass_bypass);
+            dspecho->getBypass(&dspecho_bypass);
+            dspflange->getBypass(&dspflange_bypass);
 
-            if (channel)
-            {
+            if (channel) {
                 result = channel->getPaused(&paused);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN)) {
                     ERRCHECK(result);
                 }
             }
@@ -192,12 +184,12 @@ int FMOD_Main()
             Common_Draw("Press %s to toggle dspflange effect", Common_BtnStr(BTN_ACTION4));
             Common_Draw("Press %s to quit", Common_BtnStr(BTN_QUIT));
             Common_Draw("");
-            Common_Draw("%s : lowpass[%c] highpass[%c] echo[%c] flange[%c]", 
-                    paused              ? "Paused " : "Playing",
-                    dsplowpass_bypass   ? ' ' : 'x',
-                    dsphighpass_bypass  ? ' ' : 'x',
-                    dspecho_bypass      ? ' ' : 'x',
-                    dspflange_bypass    ? ' ' : 'x');
+            Common_Draw("%s : lowpass[%c] highpass[%c] echo[%c] flange[%c]",
+                paused ? "Paused " : "Playing",
+                dsplowpass_bypass ? ' ' : 'x',
+                dsphighpass_bypass ? ' ' : 'x',
+                dspecho_bypass ? ' ' : 'x',
+                dspflange_bypass ? ' ' : 'x');
         }
 
         Common_Sleep(50);
@@ -214,7 +206,7 @@ int FMOD_Main()
     ERRCHECK(result);
     result = mastergroup->removeDSP(dspflange);
     ERRCHECK(result);
-    
+
     result = dsplowpass->release();
     ERRCHECK(result);
     result = dsphighpass->release();

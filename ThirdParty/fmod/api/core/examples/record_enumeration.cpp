@@ -14,21 +14,20 @@ example for details on this process.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
 static const int MAX_DRIVERS = 16;
 static const int MAX_DRIVERS_IN_VIEW = 3;
 
-struct RECORD_STATE
-{
-    FMOD::Sound *sound;
-    FMOD::Channel *channel;
+struct RECORD_STATE {
+    FMOD::Sound* sound;
+    FMOD::Channel* channel;
 };
 
-FMOD_RESULT F_CALLBACK SystemCallback(FMOD_SYSTEM* /*system*/, FMOD_SYSTEM_CALLBACK_TYPE /*type*/, void *, void *, void *userData)
+FMOD_RESULT F_CALLBACK SystemCallback(FMOD_SYSTEM* /*system*/, FMOD_SYSTEM_CALLBACK_TYPE /*type*/, void*, void*, void* userData)
 {
-    int *recordListChangedCount = (int *)userData;
+    int* recordListChangedCount = (int*)userData;
     *recordListChangedCount = *recordListChangedCount + 1;
 
     return FMOD_OK;
@@ -38,15 +37,15 @@ int FMOD_Main()
 {
     int scroll = 0;
     int cursor = 0;
-    RECORD_STATE record[MAX_DRIVERS] = { };
+    RECORD_STATE record[MAX_DRIVERS] = {};
 
-    void *extraDriverData = NULL;
+    void* extraDriverData = NULL;
     Common_Init(&extraDriverData);
 
     /*
         Create a System object and initialize.
     */
-    FMOD::System *system = NULL;
+    FMOD::System* system = NULL;
     FMOD_RESULT result = FMOD::System_Create(&system);
     ERRCHECK(result);
 
@@ -62,12 +61,11 @@ int FMOD_Main()
 
     result = system->setCallback(&SystemCallback, FMOD_SYSTEM_CALLBACK_RECORDLISTCHANGED);
     ERRCHECK(result);
-    
+
     /*
         Main loop
     */
-    do
-    {
+    do {
         Common_Update();
 
         int numDrivers = 0;
@@ -77,20 +75,15 @@ int FMOD_Main()
 
         numDrivers = Common_Min(numDrivers, MAX_DRIVERS); /* Clamp the reported number of drivers to simplify this example */
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             bool isRecording = false;
             system->isRecording(cursor, &isRecording);
 
-            if (isRecording)
-            {
+            if (isRecording) {
                 system->recordStop(cursor);
-            }
-            else
-            {
+            } else {
                 /* Clean up previous record sound */
-                if (record[cursor].sound)
-                {
+                if (record[cursor].sound) {
                     result = record[cursor].sound->release();
                     ERRCHECK(result);
                 }
@@ -101,52 +94,40 @@ int FMOD_Main()
                 result = system->getRecordDriverInfo(cursor, NULL, 0, NULL, &nativeRate, NULL, &nativeChannels, NULL);
                 ERRCHECK(result);
 
-                FMOD_CREATESOUNDEXINFO exinfo = {0};
-                exinfo.cbsize           = sizeof(FMOD_CREATESOUNDEXINFO);
-                exinfo.numchannels      = nativeChannels;
-                exinfo.format           = FMOD_SOUND_FORMAT_PCM16;
+                FMOD_CREATESOUNDEXINFO exinfo = { 0 };
+                exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
+                exinfo.numchannels = nativeChannels;
+                exinfo.format = FMOD_SOUND_FORMAT_PCM16;
                 exinfo.defaultfrequency = nativeRate;
-                exinfo.length           = nativeRate * sizeof(short) * nativeChannels; /* 1 second buffer, size here doesn't change latency */
-    
+                exinfo.length = nativeRate * sizeof(short) * nativeChannels; /* 1 second buffer, size here doesn't change latency */
+
                 result = system->createSound(0, FMOD_LOOP_NORMAL | FMOD_OPENUSER, &exinfo, &record[cursor].sound);
                 ERRCHECK(result);
 
                 result = system->recordStart(cursor, record[cursor].sound, true);
-                if (result != FMOD_ERR_RECORD_DISCONNECTED)
-                {
+                if (result != FMOD_ERR_RECORD_DISCONNECTED) {
                     ERRCHECK(result);
                 }
             }
-        }
-        else if (Common_BtnPress(BTN_ACTION2))
-        {
+        } else if (Common_BtnPress(BTN_ACTION2)) {
             bool isPlaying = false;
             record[cursor].channel->isPlaying(&isPlaying);
 
-            if (isPlaying)
-            {
+            if (isPlaying) {
                 record[cursor].channel->stop();
-            }
-            else if (record[cursor].sound)
-            {
+            } else if (record[cursor].sound) {
                 result = system->playSound(record[cursor].sound, NULL, false, &record[cursor].channel);
                 ERRCHECK(result);
             }
-        }
-        else if (Common_BtnPress(BTN_UP))
-        {
+        } else if (Common_BtnPress(BTN_UP)) {
             cursor = Common_Max(cursor - 1, 0);
             scroll = Common_Max(scroll - 1, 0);
-        }
-        else if (Common_BtnPress(BTN_DOWN))
-        {
-            if (numDrivers)
-            {
+        } else if (Common_BtnPress(BTN_DOWN)) {
+            if (numDrivers) {
                 cursor = Common_Min(cursor + 1, numDrivers - 1);
             }
 
-            if (numDrivers > MAX_DRIVERS_IN_VIEW)
-            {
+            if (numDrivers > MAX_DRIVERS_IN_VIEW) {
                 scroll = Common_Min(scroll + 1, numDrivers - MAX_DRIVERS_IN_VIEW);
             }
         }
@@ -168,8 +149,7 @@ int FMOD_Main()
         Common_Draw("Press %s start / stop playback", Common_BtnStr(BTN_ACTION2));
         Common_Draw("");
         int numDisplay = Common_Min(numDrivers, MAX_DRIVERS_IN_VIEW);
-        for (int i = scroll; i < scroll + numDisplay; i++)
-        {
+        for (int i = scroll; i < scroll + numDisplay; i++) {
             char name[256];
             int sampleRate;
             int channels;
@@ -194,10 +174,8 @@ int FMOD_Main()
         Common_Sleep(50);
     } while (!Common_BtnPress(BTN_QUIT));
 
-    for (int i = 0; i < MAX_DRIVERS; i++)
-    {
-        if (record[i].sound)
-        {
+    for (int i = 0; i < MAX_DRIVERS; i++) {
+        if (record[i].sound) {
             result = record[i].sound->release();
             ERRCHECK(result);
         }

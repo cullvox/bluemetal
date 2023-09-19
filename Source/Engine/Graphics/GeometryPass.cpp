@@ -2,11 +2,10 @@
 // Headers
 ///////////////////////////////
 
-#include "Core/Log.h"
 #include "GeometryPass.h"
+#include "Core/Log.h"
 
-namespace bl
-{
+namespace bl {
 
 ///////////////////////////////
 // Classes
@@ -16,7 +15,6 @@ GeometryPass::GeometryPass(GraphicsDevice* pDevice, VkExtent2D extent)
     : m_pDevice(pDevice)
     , m_extent(extent)
 {
-
 }
 
 GeometryPass::~GeometryPass()
@@ -29,13 +27,22 @@ GeometryPass::~GeometryPass()
 bool GeometryPass::create(const GeometryPassCreateInfo& createInfo)
 {
     assert(createInfo.pDevice != nullptr && "GeometryPassCreateInfo.pDevice must not be nullptr");
-    assert(createInfo.imageCount > 0 && "GeometryPassCreateInfo.imageCount must be greater than zero!");
-    assert(createInfo.extent.width > 0 && createInfo.extent.height > 0 && "GeometryPassCreateInfo.extent width and height must be greater than zero!");
+    assert(createInfo.imageCount > 0
+        && "GeometryPassCreateInfo.imageCount must be greater than zero!");
+    assert(createInfo.extent.width > 0 && createInfo.extent.height > 0
+        && "GeometryPassCreateInfo.extent width and height must be greater than zero!");
 
     auto physicalDevice = m_pDevice->getPhysicalDevice();
-    m_albedoSpecularFormat = physicalDevice->findSupportedFormat({VK_FORMAT_R8G8B8A8_SRGB, VK_FORMAT_R8G8B8A8_UNORM}, VK_IMAGE_TILING_OPTIMAL, 0);
-    m_positionFormat = physicalDevice->findSupportedFormat({VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, 0);
-    m_normalFormat = physicalDevice->findSupportedFormat({VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, 0);
+    m_albedoSpecularFormat = physicalDevice->findSupportedFormat(
+        { VK_FORMAT_R8G8B8A8_SRGB, VK_FORMAT_R8G8B8A8_UNORM }, VK_IMAGE_TILING_OPTIMAL, 0);
+    m_positionFormat = physicalDevice->findSupportedFormat(
+        { VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16_SFLOAT,
+            VK_FORMAT_R16G16B16A16_SFLOAT },
+        VK_IMAGE_TILING_OPTIMAL, 0);
+    m_normalFormat = physicalDevice->findSupportedFormat(
+        { VK_FORMAT_R32G32B32_SFLOAT, VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16_SFLOAT,
+            VK_FORMAT_R16G16B16A16_SFLOAT },
+        VK_IMAGE_TILING_OPTIMAL, 0);
 
     m_albedoSpecularImages.reserve(createInfo.imageCount);
     m_positionImages.reserve(createInfo.imageCount);
@@ -49,41 +56,24 @@ bool GeometryPass::create(const GeometryPassCreateInfo& createInfo)
 bool GeometryPass::createImages()
 {
 
-    for (uint32_t i = 0; i < m_imageCount; i++)
-    {
-        m_albedoSpecularImages.push_back(
-            std::make_unique<Image>(
-                m_pDevice, 
-                VK_IMAGE_TYPE_2D, 
-                m_albedoSpecularFormat, 
-                VkExtent3D{m_extent.width, m_extent.height, 1}, 
-                VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, 
-                VK_IMAGE_ASPECT_COLOR_BIT, 
-                1));
-        
+    for (uint32_t i = 0; i < m_imageCount; i++) {
+        m_albedoSpecularImages.push_back(std::make_unique<Image>(m_pDevice, VK_IMAGE_TYPE_2D,
+            m_albedoSpecularFormat, VkExtent3D { m_extent.width, m_extent.height, 1 },
+            VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT
+                | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,
+            VK_IMAGE_ASPECT_COLOR_BIT, 1));
+
         m_positionImages.pushB
     }
 
-    m_albedoSpecular =;
-    
-
-
+    m_albedoSpecular = ;
 }
 
-void GeometryPass::destroyImages()
-{
+void GeometryPass::destroyImages() { }
 
-}
+bool GeometryPass::createFramebuffer() { }
 
-bool GeometryPass::createFramebuffer()
-{
-
-}
-
-void GeometryPass::destroyFramebuffer()
-{
-
-}
+void GeometryPass::destroyFramebuffer() { }
 
 bool GeometryPass::createPass()
 {
@@ -115,7 +105,6 @@ bool GeometryPass::createPass()
     subpasses[0].pDepthStencilAttachment = nullptr;
     subpasses[0].preserveAttachmentCount = 0;
     subpasses[0].pPreserveAttachments = nullptr;
-        
 
     VkRenderPassCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -128,16 +117,11 @@ bool GeometryPass::createPass()
     createInfo.dependencyCount = 0;
     createInfo.pDependencies = nullptr;
 
-    if (vkCreateRenderPass(m_pDevice->getHandle(), &createInfo, nullptr, &m_pass) != VK_SUCCESS)
-    {
+    if (vkCreateRenderPass(m_pDevice->getHandle(), &createInfo, nullptr, &m_pass) != VK_SUCCESS) {
         throw std::runtime_error("Could not create a Vulkan present render pass!");
     }
 }
 
-void GeometryPass::destroyPass()
-{
-
-}
-
+void GeometryPass::destroyPass() { }
 
 } // namespace bl

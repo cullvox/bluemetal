@@ -11,27 +11,27 @@ drift in either play or record drivers.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
-#define LATENCY_MS      (50) /* Some devices will require higher latency to avoid glitches */
-#define DRIFT_MS        (1)
-#define DEVICE_INDEX    (0)
+#define LATENCY_MS (50) /* Some devices will require higher latency to avoid glitches */
+#define DRIFT_MS (1)
+#define DEVICE_INDEX (0)
 
 int FMOD_Main()
 {
-    FMOD::Channel *channel = NULL;
+    FMOD::Channel* channel = NULL;
     unsigned int samplesRecorded = 0;
     unsigned int samplesPlayed = 0;
     bool dspEnabled = false;
 
-    void *extraDriverData = NULL;
+    void* extraDriverData = NULL;
     Common_Init(&extraDriverData);
 
     /*
         Create a System object and initialize.
     */
-    FMOD::System *system = NULL;
+    FMOD::System* system = NULL;
     FMOD_RESULT result = FMOD::System_Create(&system);
     ERRCHECK(result);
 
@@ -42,8 +42,7 @@ int FMOD_Main()
     result = system->getRecordNumDrivers(NULL, &numDrivers);
     ERRCHECK(result);
 
-    if (numDrivers == 0)
-    {
+    if (numDrivers == 0) {
         Common_Fatal("No recording devices found/plugged in!  Aborting.");
     }
 
@@ -55,22 +54,22 @@ int FMOD_Main()
     result = system->getRecordDriverInfo(DEVICE_INDEX, NULL, 0, NULL, &nativeRate, NULL, &nativeChannels, NULL);
     ERRCHECK(result);
 
-    unsigned int driftThreshold = (nativeRate * DRIFT_MS) / 1000;       /* The point where we start compensating for drift */
-    unsigned int desiredLatency = (nativeRate * LATENCY_MS) / 1000;     /* User specified latency */
-    unsigned int adjustedLatency = desiredLatency;                      /* User specified latency adjusted for driver update granularity */
-    int actualLatency = desiredLatency;                                 /* Latency measured once playback begins (smoothened for jitter) */
+    unsigned int driftThreshold = (nativeRate * DRIFT_MS) / 1000; /* The point where we start compensating for drift */
+    unsigned int desiredLatency = (nativeRate * LATENCY_MS) / 1000; /* User specified latency */
+    unsigned int adjustedLatency = desiredLatency; /* User specified latency adjusted for driver update granularity */
+    int actualLatency = desiredLatency; /* Latency measured once playback begins (smoothened for jitter) */
 
     /*
         Create user sound to record into, then start recording.
     */
-    FMOD_CREATESOUNDEXINFO exinfo = {0};
-    exinfo.cbsize           = sizeof(FMOD_CREATESOUNDEXINFO);
-    exinfo.numchannels      = nativeChannels;
-    exinfo.format           = FMOD_SOUND_FORMAT_PCM16;
+    FMOD_CREATESOUNDEXINFO exinfo = { 0 };
+    exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
+    exinfo.numchannels = nativeChannels;
+    exinfo.format = FMOD_SOUND_FORMAT_PCM16;
     exinfo.defaultfrequency = nativeRate;
-    exinfo.length           = nativeRate * sizeof(short) * nativeChannels; /* 1 second buffer, size here doesn't change latency */
-    
-    FMOD::Sound *sound = NULL;
+    exinfo.length = nativeRate * sizeof(short) * nativeChannels; /* 1 second buffer, size here doesn't change latency */
+
+    FMOD::Sound* sound = NULL;
     result = system->createSound(0, FMOD_LOOP_NORMAL | FMOD_OPENUSER, &exinfo, &sound);
     ERRCHECK(result);
 
@@ -84,15 +83,13 @@ int FMOD_Main()
     /*
         Main loop
     */
-    do
-    {
+    do {
         Common_Update();
 
         /*
             Add a DSP effect -- just for fun
         */
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             FMOD_REVERB_PROPERTIES propOn = FMOD_PRESET_CONCERTHALL;
             FMOD_REVERB_PROPERTIES propOff = FMOD_PRESET_OFF;
 
@@ -104,14 +101,13 @@ int FMOD_Main()
 
         result = system->update();
         ERRCHECK(result);
-       
+
         /*
             Determine how much has been recorded since we last checked
         */
         unsigned int recordPos = 0;
         result = system->getRecordPosition(DEVICE_INDEX, &recordPos);
-        if (result != FMOD_ERR_RECORD_DISCONNECTED)
-        {
+        if (result != FMOD_ERR_RECORD_DISCONNECTED) {
             ERRCHECK(result);
         }
 
@@ -121,35 +117,30 @@ int FMOD_Main()
         samplesRecorded += recordDelta;
 
         static unsigned int minRecordDelta = (unsigned int)-1;
-        if (recordDelta && (recordDelta < minRecordDelta))
-        {
+        if (recordDelta && (recordDelta < minRecordDelta)) {
             minRecordDelta = recordDelta; /* Smallest driver granularity seen so far */
             adjustedLatency = (recordDelta <= desiredLatency) ? desiredLatency : recordDelta; /* Adjust our latency if driver granularity is high */
         }
-        
+
         /*
             Delay playback until our desired latency is reached.
         */
-        if (!channel && samplesRecorded >= adjustedLatency)
-        {
+        if (!channel && samplesRecorded >= adjustedLatency) {
             result = system->playSound(sound, 0, false, &channel);
             ERRCHECK(result);
         }
 
-        if (channel)
-        {
+        if (channel) {
             /*
                 Stop playback if recording stops.
             */
             bool isRecording = false;
             result = system->isRecording(DEVICE_INDEX, &isRecording);
-            if (result != FMOD_ERR_RECORD_DISCONNECTED)
-            {
+            if (result != FMOD_ERR_RECORD_DISCONNECTED) {
                 ERRCHECK(result);
             }
 
-            if (!isRecording)
-            {
+            if (!isRecording) {
                 result = channel->setPaused(true);
                 ERRCHECK(result);
             }
@@ -165,7 +156,7 @@ int FMOD_Main()
             unsigned int playDelta = (playPos >= lastPlayPos) ? (playPos - lastPlayPos) : (playPos + soundLength - lastPlayPos);
             lastPlayPos = playPos;
             samplesPlayed += playDelta;
-            
+
             /*
                 Compensate for any drift.
             */
@@ -173,13 +164,10 @@ int FMOD_Main()
             actualLatency = (int)((0.97f * actualLatency) + (0.03f * latency));
 
             int playbackRate = nativeRate;
-            if (actualLatency < (int)(adjustedLatency - driftThreshold)) 
-            {
+            if (actualLatency < (int)(adjustedLatency - driftThreshold)) {
                 /* Play position is catching up to the record position, slow playback down by 2% */
-                playbackRate = nativeRate - (nativeRate / 50); 
-            }
-            else if (actualLatency > (int)(adjustedLatency + driftThreshold))
-            {
+                playbackRate = nativeRate - (nativeRate / 50);
+            } else if (actualLatency > (int)(adjustedLatency + driftThreshold)) {
                 /* Play position is falling behind the record position, speed playback up by 2% */
                 playbackRate = nativeRate + (nativeRate / 50);
             }

@@ -3,7 +3,9 @@
 
 namespace MyLibrary {
 
-enum Color { red, green, blue };
+enum Color { red,
+    green,
+    blue };
 
 /**
  * @brief Example class to demonstrate the features of the custom CSS.
@@ -149,9 +151,6 @@ public:
     virtual int virtualfunc() = 0;
 
     static bool staticfunc();
-
-
 };
 
 }
-

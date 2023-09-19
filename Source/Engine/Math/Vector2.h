@@ -57,13 +57,15 @@ struct BLUEMETAL_API Extent2D
     uint32_t height;
 };
 
+using Offset2D = Vector2i;
+
 struct BLUEMETAL_API Rect2D
 {
     Rect2D() = default;
     Rect2D(Vector2i offset, Extent2D extent);
     Rect2D(int32_t offsetX, int32_t offsetY, uint32_t extentX, uint32_t extentY);
 
-    Vector2i offset;
+    Offset2D offset;
     Extent2D extent;
 };
 

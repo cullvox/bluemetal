@@ -1,11 +1,12 @@
 #pragma once
 
+
+#include "Export.h"
+#include "Precompiled.h"
+#include "AudioSubsystem.h"
+#include "GraphicsSubsystem.h"
 #include "Core/Flags.h"
 #include "Noodle/Noodle.h"
-#include "GraphicsSubsystem.h"
-#include "AudioSubsystem.h"
-#include "Precompiled.h"
-#include "Export.h"
 
 namespace bl
 {
@@ -30,10 +31,10 @@ class BLUEMETAL_API Engine
 {
 public:
 
-    /// Constructs the engine building the engine up to a working state.
+    /// Default Constructor.
     Engine();
 
-    /// Destroys the entire engine and shuts everything down.
+    /// Default Destructor.
     ~Engine();
 
     /// Initializes parts of the engine that haven't been initialized yet.
@@ -43,7 +44,7 @@ public:
     ///
     /// Can call multiple times, if a subsystem has already initialzed it will be skipped.
     ///     
-    void init(SubsystemFlags flags, const SubsystemInitInfo* info = nullptr);
+    bool init(SubsystemFlags flags, const SubsystemInitInfo* info = nullptr);
 
     /// Shuts down all subsystems.
     void shutdown();

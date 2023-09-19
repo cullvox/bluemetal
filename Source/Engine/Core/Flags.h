@@ -1,7 +1,6 @@
 #pragma once
 
-namespace bl
-{
+namespace bl {
 
     constexpr int bit(int index)
     {

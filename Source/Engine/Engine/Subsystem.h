@@ -6,14 +6,11 @@ namespace bl
 class Subsystem
 {
 public:
-    Subsystem(Engine& engine);
-    ~Subsystem();
+    Subsystem() = default;
+    ~Subsystem() = default;
 
-    virtual void init();
-    virtual void shutdown();
-
-public:
-
+    virtual void init() = 0;
+    virtual void shutdown() = 0;
 };
 
 } // namespace bl

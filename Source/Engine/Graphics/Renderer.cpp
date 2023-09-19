@@ -1,12 +1,9 @@
 #include "Renderer.h"
 #include "Core/Log.h"
 
-namespace bl
-{
+namespace bl {
 
-Renderer::Renderer()
-{
-}
+Renderer::Renderer() { }
 
 Renderer::Renderer(const RendererCreateInfo& createInfo)
 {
@@ -14,10 +11,7 @@ Renderer::Renderer(const RendererCreateInfo& createInfo)
         throw std::runtime_error(m_err.c_str());
 }
 
-Renderer::~Renderer()
-{
-    destroy();
-}
+Renderer::~Renderer() { destroy(); }
 
 bool Renderer::create(const RendererCreateInfo& createInfo)
 {
@@ -29,21 +23,15 @@ bool Renderer::create(const RendererCreateInfo& createInfo)
     m_imageAvailableSemaphores.reserve(m_pSwapchain->getImageCount());
     m_renderFinishedSemaphores.reserve(m_pSwapchain->getImageCount());
     m_inFlightFences.reserve(m_pSwapchain->getImageCount());
-    
+
     m_presentPass = std::make_unique<PresentPass>();
 
     createSyncObjects();
 }
 
-void Renderer::destroy() noexcept
-{
-    destroySyncObjects();
-}
+void Renderer::destroy() noexcept { destroySyncObjects(); }
 
-RenderPass* Renderer::getUserInterfacePass()
-{
-    return m_presentPass.get();
-}
+RenderPass* Renderer::getUserInterfacePass() { return m_presentPass.get(); }
 
 bool Renderer::createSyncObjects()
 {
@@ -56,9 +44,9 @@ bool Renderer::createSyncObjects()
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocateInfo.commandBufferCount = maxFramesInFlight;
 
-    if (vkAllocateCommandBuffers(m_pDevice->getHandle(), &allocateInfo, m_swapCommandBuffers.data()) != VK_SUCCESS)
-    {
-        m_err = "Could not allocate Vulkan command buffers for the renderer!";
+    if (vkAllocateCommandBuffers(m_pDevice->getHandle(), &allocateInfo, m_swapCommandBuffers.data())
+        != VK_SUCCESS) {
+        blError("Could not allocate Vulkan command buffers for the renderer!");
         return false;
     }
 
@@ -67,20 +55,18 @@ bool Renderer::createSyncObjects()
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     semaphoreInfo.pNext = nullptr;
     semaphoreInfo.flags = 0;
-    
+
     VkFenceCreateInfo fenceInfo = {};
     fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     fenceInfo.pNext = nullptr;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (uint32_t i = 0; i < maxFramesInFlight; i++)
-    {
-        if (vkCreateSemaphore(m_pDevice->getHandle(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS ||
-            vkCreateSemaphore(m_pDevice->getHandle(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS ||
-            vkCreateFence(m_pDevice->getHandle(), &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS)
-        {
-            m_err = "Could not create a Vulkan sync object!";
+    for (uint32_t i = 0; i < maxFramesInFlight; i++) {
+        if (vkCreateSemaphore(m_pDevice->getHandle(), &semaphoreInfo, nullptr, &m_imageAvailableSemaphores[i]) != VK_SUCCESS
+            || vkCreateSemaphore(m_pDevice->getHandle(), &semaphoreInfo, nullptr, &m_renderFinishedSemaphores[i]) != VK_SUCCESS
+            || vkCreateFence(m_pDevice->getHandle(), &fenceInfo, nullptr, &m_inFlightFences[i]) != VK_SUCCESS) {
             destroy();
+            blError("Could not create a Vulkan sync object!");
             return false;
         }
     }
@@ -88,8 +74,7 @@ bool Renderer::createSyncObjects()
 
 void Renderer::destroySyncObjects() noexcept
 {
-    for (uint32_t i = 0; i < maxFramesInFlight; i++)
-    {
+    for (uint32_t i = 0; i < maxFramesInFlight; i++) {
         vkDestroySemaphore(m_pDevice->getHandle(), m_imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(m_pDevice->getHandle(), m_renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(m_pDevice->getHandle(), m_inFlightFences[i], nullptr);
@@ -106,7 +91,8 @@ bool Renderer::resize(VkExtent2D extent)
 bool Renderer::render(std::function<void(VkCommandBuffer)> func)
 {
     // If the swapchain is invalid we cannot render anything.
-    if (!m_pSwapchain->getHandle()) return;
+    if (!m_pSwapchain->getHandle())
+        return;
 
     // Wait for the current image up coming in the chain to finish.
     vkWaitForFences(m_pDevice->getHandle(), 1, &m_inFlightFences[m_currentFrame], VK_TRUE, UINT64_MAX);
@@ -117,44 +103,36 @@ bool Renderer::render(std::function<void(VkCommandBuffer)> func)
 
     m_pSwapchain->acquireNext(m_imageAvailableSemaphores[m_currentFrame], VK_NULL_HANDLE, &imageIndex, &recreated);
 
-    // Resize passes images if the swapchain resized. 
-    if (recreated)
-    {
+    // Resize passes images if the swapchain resized.
+    if (recreated) {
         resize(m_pSwapchain->getExtent());
     }
 
     // Reset the fence for this image so it can signal when it's done.
     vkResetFences(m_pDevice->getHandle(), 1, &m_inFlightFences[m_currentFrame]);
-    
+
     // Record each render pass
     vkResetCommandBuffer(m_swapCommandBuffers[m_currentFrame], 0);
-    
+
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.pNext = nullptr;
     beginInfo.flags = 0;
     beginInfo.pInheritanceInfo = nullptr;
 
-    if (vkBeginCommandBuffer(m_swapCommandBuffers[m_currentFrame], &beginInfo) != VK_SUCCESS)
-    {
+    if (vkBeginCommandBuffer(m_swapCommandBuffers[m_currentFrame], &beginInfo) != VK_SUCCESS) {
         throw std::runtime_error("Could not begin a Vulkan command buffer!");
     }
 
-    VkRect2D renderArea
-    {
-        {0, 0},
-        m_pSwapchain->getExtent()
-    };
+    VkRect2D renderArea { { 0, 0 }, m_pSwapchain->getExtent() };
 
     // Record the render passes.
-    
 
     func(m_swapCommandBuffers[m_currentFrame]);
 
     m_presentPass->record(m_swapCommandBuffers[m_currentFrame], renderArea, imageIndex);
 
-    if (vkEndCommandBuffer(m_swapCommandBuffers[m_currentFrame]) != VK_SUCCESS)
-    {
+    if (vkEndCommandBuffer(m_swapCommandBuffers[m_currentFrame]) != VK_SUCCESS) {
         throw std::runtime_error("Could not end a Vulkan command buffer!");
     }
 
@@ -194,14 +172,11 @@ bool Renderer::render(std::function<void(VkCommandBuffer)> func)
 
     VkResult result = vkQueuePresentKHR(m_pDevice->getPresentQueue(), &presentInfo);
 
-    if (result == VK_ERROR_OUT_OF_DATE_KHR)
-    {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         // Tell the swapchain that the images need to be recreated.
         m_pSwapchain->recreate(m_pSwapchain->getPresentMode());
         resize(m_pSwapchain->getExtent());
-    }
-    else if (result != VK_SUCCESS)
-    {
+    } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Could not queue Vulkan present!");
     }
 

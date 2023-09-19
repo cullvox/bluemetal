@@ -18,140 +18,124 @@ FMOD will fallback to standard 3D panning.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod_studio.hpp"
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
+#include "fmod_studio.hpp"
 #include <math.h>
 
 int FMOD_Main()
 {
     bool isOnGround = false;
     bool useListenerAttenuationPosition = false;
-    
-    void *extraDriverData = NULL;
+
+    void* extraDriverData = NULL;
     Common_Init(&extraDriverData);
 
-    FMOD::Studio::System *system = NULL;
-    ERRCHECK( FMOD::Studio::System::create(&system) );
+    FMOD::Studio::System* system = NULL;
+    ERRCHECK(FMOD::Studio::System::create(&system));
 
     // The example Studio project is authored for 5.1 sound, so set up the system output mode to match
     FMOD::System* coreSystem = NULL;
-    ERRCHECK( system->getCoreSystem(&coreSystem) );
-    ERRCHECK( coreSystem->setSoftwareFormat(0, FMOD_SPEAKERMODE_5POINT1, 0) );
+    ERRCHECK(system->getCoreSystem(&coreSystem));
+    ERRCHECK(coreSystem->setSoftwareFormat(0, FMOD_SPEAKERMODE_5POINT1, 0));
 
     // Attempt to initialize with a compatible object panning output
     FMOD_RESULT result = coreSystem->setOutput(FMOD_OUTPUTTYPE_AUDIO3D);
-    if (result != FMOD_OK)
-    {
+    if (result != FMOD_OK) {
         result = coreSystem->setOutput(FMOD_OUTPUTTYPE_WINSONIC);
-        if (result == FMOD_OK)
-        {
-            ERRCHECK( coreSystem->setSoftwareFormat(0, FMOD_SPEAKERMODE_7POINT1POINT4, 0) );
+        if (result == FMOD_OK) {
+            ERRCHECK(coreSystem->setSoftwareFormat(0, FMOD_SPEAKERMODE_7POINT1POINT4, 0));
         }
     }
 
     int numDrivers = 0;
-    ERRCHECK( coreSystem->getNumDrivers(&numDrivers) );
+    ERRCHECK(coreSystem->getNumDrivers(&numDrivers));
 
-    if (numDrivers == 0)
-    {
-        ERRCHECK( coreSystem->setDSPBufferSize(512, 4) );
-        ERRCHECK( coreSystem->setOutput(FMOD_OUTPUTTYPE_AUTODETECT) );
+    if (numDrivers == 0) {
+        ERRCHECK(coreSystem->setDSPBufferSize(512, 4));
+        ERRCHECK(coreSystem->setOutput(FMOD_OUTPUTTYPE_AUTODETECT));
     }
 
     // Due to a bug in WinSonic on Windows, FMOD initialization may fail on some machines.
     // If you get the error "FMOD error 51 - Error initializing output device", try using
     // a different output type such as FMOD_OUTPUTTYPE_AUTODETECT
-    ERRCHECK( system->initialize(1024, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, extraDriverData) );
-    
+    ERRCHECK(system->initialize(1024, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, extraDriverData));
+
     // Load everything needed for playback
-    FMOD::Studio::Bank *masterBank = NULL;
-    FMOD::Studio::Bank *musicBank = NULL;
-    FMOD::Studio::Bank *stringsBank = NULL;
-    FMOD::Studio::EventDescription *spatializerDescription = NULL;
-    FMOD::Studio::EventInstance *spatializerInstance = NULL;
+    FMOD::Studio::Bank* masterBank = NULL;
+    FMOD::Studio::Bank* musicBank = NULL;
+    FMOD::Studio::Bank* stringsBank = NULL;
+    FMOD::Studio::EventDescription* spatializerDescription = NULL;
+    FMOD::Studio::EventInstance* spatializerInstance = NULL;
     float spatializer;
     float radioFrequency;
 
-    ERRCHECK( system->loadBankFile(Common_MediaPath("Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterBank) );
-    ERRCHECK( system->loadBankFile(Common_MediaPath("Music.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &musicBank) );
-    ERRCHECK( system->loadBankFile(Common_MediaPath("Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &stringsBank) );
-    ERRCHECK( system->getEvent("event:/Music/Radio Station", &spatializerDescription) );
-    ERRCHECK( spatializerDescription->createInstance(&spatializerInstance) );
-    ERRCHECK( spatializerInstance->start() );
+    ERRCHECK(system->loadBankFile(Common_MediaPath("Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterBank));
+    ERRCHECK(system->loadBankFile(Common_MediaPath("Music.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &musicBank));
+    ERRCHECK(system->loadBankFile(Common_MediaPath("Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &stringsBank));
+    ERRCHECK(system->getEvent("event:/Music/Radio Station", &spatializerDescription));
+    ERRCHECK(spatializerDescription->createInstance(&spatializerInstance));
+    ERRCHECK(spatializerInstance->start());
 
-    do
-    {
+    do {
         Common_Update();
 
         ERRCHECK(spatializerInstance->getParameterByName("Freq", NULL, &radioFrequency));
         ERRCHECK(spatializerInstance->getParameterByName("Spatializer", NULL, &spatializer));
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
-            if (radioFrequency == 3.00f)
-            {
+        if (Common_BtnPress(BTN_ACTION1)) {
+            if (radioFrequency == 3.00f) {
                 ERRCHECK(spatializerInstance->setParameterByName("Freq", 0.00f));
-            }
-            else
-            {
+            } else {
                 ERRCHECK(spatializerInstance->setParameterByName("Freq", (radioFrequency + 1.50f)));
             }
         }
 
-        if (Common_BtnPress(BTN_ACTION2))
-        {
-            if (spatializer == 1.00)
-            {
+        if (Common_BtnPress(BTN_ACTION2)) {
+            if (spatializer == 1.00) {
                 ERRCHECK(spatializerInstance->setParameterByName("Spatializer", 0.00f));
-            }
-            else
-            {
+            } else {
                 ERRCHECK(spatializerInstance->setParameterByName("Spatializer", 1.00f));
             }
         }
 
-        if (Common_BtnPress(BTN_ACTION3))
-        {
+        if (Common_BtnPress(BTN_ACTION3)) {
             isOnGround = !isOnGround;
         }
 
-        if (Common_BtnPress(BTN_ACTION4))
-        {
+        if (Common_BtnPress(BTN_ACTION4)) {
             useListenerAttenuationPosition = !useListenerAttenuationPosition;
         }
 
-        FMOD_3D_ATTRIBUTES vec = { };
+        FMOD_3D_ATTRIBUTES vec = {};
         vec.forward.z = 1.0f;
         vec.up.y = 1.0f;
         static float t = 0;
-        vec.position.x = sinf(t) * 3.0f;        /* Rotate sound in a circle */
-        vec.position.z = cosf(t) * 3.0f;        /* Rotate sound in a circle */
+        vec.position.x = sinf(t) * 3.0f; /* Rotate sound in a circle */
+        vec.position.z = cosf(t) * 3.0f; /* Rotate sound in a circle */
         t += 0.03f;
 
-        if (isOnGround)
-        {
-            vec.position.y = 0;                     /* At ground level */
-        }
-        else
-        {
-            vec.position.y = 5.0f;                  /* Up high */
+        if (isOnGround) {
+            vec.position.y = 0; /* At ground level */
+        } else {
+            vec.position.y = 5.0f; /* Up high */
         }
 
-        ERRCHECK( spatializerInstance->set3DAttributes(&vec) );
+        ERRCHECK(spatializerInstance->set3DAttributes(&vec));
 
-        FMOD_3D_ATTRIBUTES listener_vec = { };
+        FMOD_3D_ATTRIBUTES listener_vec = {};
         listener_vec.forward.z = 1.0f;
         listener_vec.up.y = 1.0f;
 
         FMOD_VECTOR listener_attenuationPos = vec.position;
         listener_attenuationPos.z -= -10.0f;
 
-        ERRCHECK( system->setListenerAttributes(0, &listener_vec, useListenerAttenuationPosition ? &listener_attenuationPos : nullptr) );
-        ERRCHECK( system->update() );
+        ERRCHECK(system->setListenerAttributes(0, &listener_vec, useListenerAttenuationPosition ? &listener_attenuationPos : nullptr));
+        ERRCHECK(system->update());
 
-        const char *radioString = (radioFrequency == 0.00f) ? "Rock" : (radioFrequency == 1.50f) ? "Lo-fi" : "Hip hop";
-        const char *spatialString = (spatializer == 0.00f) ? "Standard 3D Spatializer" : "Object Spatializer";
+        const char* radioString = (radioFrequency == 0.00f) ? "Rock" : (radioFrequency == 1.50f) ? "Lo-fi"
+                                                                                                 : "Hip hop";
+        const char* spatialString = (spatializer == 0.00f) ? "Standard 3D Spatializer" : "Object Spatializer";
 
         Common_Draw("==================================================");
         Common_Draw("Object Panning Example.");
@@ -170,10 +154,10 @@ int FMOD_Main()
 
         Common_Sleep(50);
     } while (!Common_BtnPress(BTN_QUIT));
-    
-    ERRCHECK( stringsBank->unload() );
-    ERRCHECK( musicBank->unload() );
-    ERRCHECK( system->release() );
+
+    ERRCHECK(stringsBank->unload());
+    ERRCHECK(musicBank->unload());
+    ERRCHECK(system->release());
 
     Common_Close();
 

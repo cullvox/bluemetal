@@ -87,13 +87,12 @@ private:
         const VkDebugUtilsMessengerCallbackDataEXT*     pCallbackData,
         void*                                           pUserData) noexcept;
     
-    std::string                                             m_err;
-    GraphicsInstanceCreateInfo                              m_createInfo;
-    VkInstance                                              m_instance;
-    PFN_vkCreateDebugUtilsMessengerEXT                      m_createDebugUtilsMessengerEXT;
-    PFN_vkDestroyDebugUtilsMessengerEXT                     m_destroyDebugUtilsMessengerEXT;
-    VkDebugUtilsMessengerEXT                                m_messenger;
-    std::vector<std::unique_ptr<GraphicsPhysicalDevice>>    m_physicalDevices;
+    GraphicsInstanceCreateInfo                              _createInfo;
+    VkInstance                                              _instance;
+    PFN_vkCreateDebugUtilsMessengerEXT                      _createDebugUtilsMessengerEXT;
+    PFN_vkDestroyDebugUtilsMessengerEXT                     _destroyDebugUtilsMessengerEXT;
+    VkDebugUtilsMessengerEXT                                _messenger;
+    std::vector<std::unique_ptr<GraphicsPhysicalDevice>>    _physicalDevices;
 };
 
 } // namespace bl

@@ -1,24 +1,24 @@
 #include "Image.h"
-#include "Core/Log.h"
+#include "Core/Print.h"
 
-namespace bl
-{
+namespace bl {
 
-Image::Image(
-    GraphicsDevice*     pDevice, 
-    VkImageType         type, 
-    VkFormat            format, 
-    VkExtent3D          extent,  
-    VkImageUsageFlags   usage, 
-    VkImageAspectFlags  aspectMask,
-    uint32_t            mipLevels)
+Image::Image(GraphicsDevice* pDevice, VkImageType type, VkFormat format, VkExtent3D extent,
+    VkImageUsageFlags usage, VkImageAspectFlags aspectMask, uint32_t mipLevels)
     : m_pDevice(pDevice)
     , m_extent(extent)
     , m_type(type)
     , m_format(format)
     , m_usage(usage)
 {
-    auto graphicsFamilyIndex = m_pDevice->getGraphicsFamilyIndex();
+    
+}
+
+Image::~Image() { vmaDestroyImage(m_pDevice->getAllocator(), m_image, m_allocation); }
+
+bool Image::create(const ImageCreateInfo& createInfo)
+{
+auto graphicsFamilyIndex = m_pDevice->getGraphicsFamilyIndex();
 
     VkImageCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -47,22 +47,23 @@ Image::Image(
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 1.0f;
 
-    if (vmaCreateImage(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_image, &m_allocation, nullptr) != VK_SUCCESS)
-    {
+    if (vmaCreateImage(m_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &m_image,
+            &m_allocation, nullptr)
+        != VK_SUCCESS) {
         throw std::runtime_error("Could not create a Vulkan image!");
     }
 
     VkComponentMapping componentMapping = {};
-    componentMapping.r = VK_COMPONENT_SWIZZLE_IDENTITY; 
-    componentMapping.g = VK_COMPONENT_SWIZZLE_IDENTITY; 
-    componentMapping.b = VK_COMPONENT_SWIZZLE_IDENTITY; 
-    componentMapping.a = VK_COMPONENT_SWIZZLE_IDENTITY; 
+    componentMapping.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    componentMapping.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    componentMapping.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    componentMapping.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
     VkImageSubresourceRange subresourceRange = {};
-    subresourceRange.aspectMask = aspectMask; 
-    subresourceRange.baseMipLevel = 0; 
-    subresourceRange.levelCount = mipLevels; 
-    subresourceRange.baseArrayLayer = 0; 
+    subresourceRange.aspectMask = aspectMask;
+    subresourceRange.baseMipLevel = 0;
+    subresourceRange.levelCount = mipLevels;
+    subresourceRange.baseArrayLayer = 0;
     subresourceRange.layerCount = 1;
 
     VkImageViewCreateInfo viewCreateInfo = {};
@@ -75,41 +76,20 @@ Image::Image(
     viewCreateInfo.components = componentMapping;
     viewCreateInfo.subresourceRange = subresourceRange;
 
-    if (vkCreateImageView(m_pDevice->getHandle(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS)
-    {
-        throw std::runtime_error("Could not create a Vulkan image view!");
+    if (vkCreateImageView(m_pDevice->getHandle(), &viewCreateInfo, nullptr, &m_imageView) != VK_SUCCESS) {
+        blInfo("Could not create a Vulkan image view!");
+        return false;
     }
-
 }
 
-Image::~Image()
-{
-    vmaDestroyImage(m_pDevice->getAllocator(), m_image, m_allocation);
-}
+Extent3D Image::getExtent() { return m_extent; }
 
-Extent3D Image::getExtent()
-{
-    return m_extent;
-}
+VkFormat Image::getFormat() { return m_format; }
 
-VkFormat Image::getFormat()
-{
-    return m_format;
-}
+VkImageUsageFlags Image::getUsage() { return m_usage; }
 
-VkImageUsageFlags Image::getUsage()
-{
-    return m_usage;
-}
+VkImageView Image::getDefaultView() { return m_imageView; }
 
-VkImageView Image::getDefaultView()
-{
-    return m_imageView;
-}
-
-VkImage Image::getHandle()
-{
-    return m_image;
-}
+VkImage Image::getHandle() { return m_image; }
 
 } // namespace bl

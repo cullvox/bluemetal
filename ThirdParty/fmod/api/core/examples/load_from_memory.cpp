@@ -9,20 +9,20 @@ System::createSound.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
 int FMOD_Main()
 {
-    FMOD::System     *system;
-    FMOD::Sound      *sound1, *sound2, *sound3;
-    FMOD::Channel    *channel = 0;
-    FMOD_RESULT       result;
-    void             *extradriverdata = 0;
-    void             *buff = 0;
-    int               length = 0;
+    FMOD::System* system;
+    FMOD::Sound *sound1, *sound2, *sound3;
+    FMOD::Channel* channel = 0;
+    FMOD_RESULT result;
+    void* extradriverdata = 0;
+    void* buff = 0;
+    int length = 0;
     FMOD_CREATESOUNDEXINFO exinfo;
-    
+
     Common_Init(&extradriverdata);
 
     /*
@@ -33,55 +33,51 @@ int FMOD_Main()
 
     result = system->init(32, FMOD_INIT_NORMAL, extradriverdata);
     ERRCHECK(result);
-    
+
     Common_LoadFileMemory(Common_MediaPath("drumloop.wav"), &buff, &length);
     memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
     exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
     exinfo.length = length;
 
-    result = system->createSound((const char *)buff, FMOD_OPENMEMORY | FMOD_LOOP_OFF, &exinfo, &sound1);
+    result = system->createSound((const char*)buff, FMOD_OPENMEMORY | FMOD_LOOP_OFF, &exinfo, &sound1);
     ERRCHECK(result);
     Common_UnloadFileMemory(buff); // don't need the original memory any more.  Note!  If loading as a stream, the memory must stay active so do not free it!
 
     Common_LoadFileMemory(Common_MediaPath("jaguar.wav"), &buff, &length);
     memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
     exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
-    exinfo.length = length;    
-   
-    result = system->createSound((const char *)buff, FMOD_OPENMEMORY, &exinfo, &sound2);
+    exinfo.length = length;
+
+    result = system->createSound((const char*)buff, FMOD_OPENMEMORY, &exinfo, &sound2);
     ERRCHECK(result);
     Common_UnloadFileMemory(buff); // don't need the original memory any more.  Note!  If loading as a stream, the memory must stay active so do not free it!
-    
+
     Common_LoadFileMemory(Common_MediaPath("swish.wav"), &buff, &length);
     memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
     exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
-    exinfo.length = length;    
+    exinfo.length = length;
 
-    result = system->createSound((const char *)buff, FMOD_OPENMEMORY, &exinfo, &sound3);
+    result = system->createSound((const char*)buff, FMOD_OPENMEMORY, &exinfo, &sound3);
     ERRCHECK(result);
     Common_UnloadFileMemory(buff); // don't need the original memory any more.  Note!  If loading as a stream, the memory must stay active so do not free it!
 
     /*
         Main loop
     */
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             result = system->playSound(sound1, 0, false, &channel);
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION2))
-        {
+        if (Common_BtnPress(BTN_ACTION2)) {
             result = system->playSound(sound2, 0, false, &channel);
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION3))
-        {
+        if (Common_BtnPress(BTN_ACTION3)) {
             result = system->playSound(sound3, 0, false, &channel);
             ERRCHECK(result);
         }
@@ -92,38 +88,32 @@ int FMOD_Main()
         {
             unsigned int ms = 0;
             unsigned int lenms = 0;
-            bool         playing = 0;
-            bool         paused = 0;
-            int          channelsplaying = 0;
+            bool playing = 0;
+            bool paused = 0;
+            int channelsplaying = 0;
 
-            if (channel)
-            {
-                FMOD::Sound *currentsound = 0;
+            if (channel) {
+                FMOD::Sound* currentsound = 0;
 
                 result = channel->isPlaying(&playing);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN)) {
                     ERRCHECK(result);
                 }
 
                 result = channel->getPaused(&paused);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN)) {
                     ERRCHECK(result);
                 }
 
                 result = channel->getPosition(&ms, FMOD_TIMEUNIT_MS);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN)) {
                     ERRCHECK(result);
                 }
-               
+
                 channel->getCurrentSound(&currentsound);
-                if (currentsound)
-                {
+                if (currentsound) {
                     result = currentsound->getLength(&lenms, FMOD_TIMEUNIT_MS);
-                    if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN))
-                    {
+                    if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE) && (result != FMOD_ERR_CHANNEL_STOLEN)) {
                         ERRCHECK(result);
                     }
                 }
@@ -141,7 +131,8 @@ int FMOD_Main()
             Common_Draw("Press %s to play a stereo sound (swish)", Common_BtnStr(BTN_ACTION3));
             Common_Draw("Press %s to quit", Common_BtnStr(BTN_QUIT));
             Common_Draw("");
-            Common_Draw("Time %02d:%02d:%02d/%02d:%02d:%02d : %s", ms / 1000 / 60, ms / 1000 % 60, ms / 10 % 100, lenms / 1000 / 60, lenms / 1000 % 60, lenms / 10 % 100, paused ? "Paused " : playing ? "Playing" : "Stopped");
+            Common_Draw("Time %02d:%02d:%02d/%02d:%02d:%02d : %s", ms / 1000 / 60, ms / 1000 % 60, ms / 10 % 100, lenms / 1000 / 60, lenms / 1000 % 60, lenms / 10 % 100, paused ? "Paused " : playing ? "Playing"
+                                                                                                                                                                                                       : "Stopped");
             Common_Draw("Channels Playing %2d", channelsplaying);
         }
 

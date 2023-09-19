@@ -7,10 +7,7 @@ Noodle Noodle::parse(const std::string& noodle)
     NoodleLexer lexer(noodle);
     NoodleToken token;
 
-    auto next = [&lexer, &token]()
-    {
-        token = lexer.next();
-    };
+    auto next = [&lexer, &token]() { token = lexer.next(); };
 
     // Get the first token from the lexer
     next();
@@ -22,12 +19,10 @@ Noodle Noodle::parse(const std::string& noodle)
     Noodle* current = &root;
 
     // Parse through the file until the file has been completely lexed and parsed
-    while (token.kind() != NoodleTokenKind::eEnd)
-    {
+    while (token.kind() != NoodleTokenKind::eEnd) {
 
         // The first token must be an identifier.
-        if (!token.is(NoodleTokenKind::eIdentifier)) 
-        {
+        if (!token.is(NoodleTokenKind::eIdentifier)) {
             throw NoodleParseException("expected identifier token");
         }
 
@@ -35,176 +30,148 @@ Noodle Noodle::parse(const std::string& noodle)
 
         // After an identifier must come an equals
         next();
-        if (!token.is(NoodleTokenKind::eEqual))
-        {
+        if (!token.is(NoodleTokenKind::eEqual)) {
             throw NoodleParseException("expected equals \'=\' token");
         }
-        
+
         // Must be a left curly, number or a string
         next();
-        switch (token.kind())
-        {
-            case NoodleTokenKind::eLeftCurly:
-            {
-                // Insert a new group noodle
-                // Consecutive noodles will be inside of this group
-                current = &(current->operator[](identifier) = Noodle(identifier, current));
-                next();
-                continue;
-            }
+        switch (token.kind()) {
+        case NoodleTokenKind::eLeftCurly: {
+            // Insert a new group noodle
+            // Consecutive noodles will be inside of this group
+            current = &(current->operator[](identifier) = Noodle(identifier, current));
+            next();
+            continue;
+        }
 
-            case NoodleTokenKind::eInteger:
-            {
-                int i = (int)std::strtol(token.lexeme().data(), nullptr, 10);
-                current->operator[](identifier) = Noodle(identifier, i, current);
+        case NoodleTokenKind::eInteger: {
+            int i = (int)std::strtol(token.lexeme().data(), nullptr, 10);
+            current->operator[](identifier) = Noodle(identifier, i, current);
 
-                next();
+            next();
+            break;
+        }
+
+        case NoodleTokenKind::eFloat: {
+            float f = std::strtof(token.lexeme().data(), nullptr);
+            current->operator[](identifier) = Noodle(identifier, f, current);
+
+            next();
+            break;
+        }
+
+        case NoodleTokenKind::eBoolean: {
+            bool b = (std::string(token.lexeme()) == "true") ? "true" : "false";
+            current->operator[](identifier) = Noodle(identifier, b, current);
+
+            next();
+            break;
+        }
+
+        case NoodleTokenKind::eString: {
+            current->operator[](identifier)
+                = Noodle(identifier, std::string(token.lexeme()), current);
+
+            next();
+            break;
+        }
+
+        case NoodleTokenKind::eLeftBracket: {
+            Noodle* array = &(current->operator[](identifier) = Noodle(identifier, current));
+            array->_type = NoodleType::eArray;
+
+            // Get the first element, it determines the type of the array
+            next();
+
+            // If it's a right bracket the array has no values right now
+            if (token.is(NoodleTokenKind::eRightBracket)) {
                 break;
             }
 
-            case NoodleTokenKind::eFloat:
-            {
-                float f = std::strtof(token.lexeme().data(), nullptr);
-                current->operator[](identifier) = Noodle(identifier, f, current);
-
-                next();
-                break;
+            if (!token.isOneOf(NoodleTokenKind::eInteger, NoodleTokenKind::eFloat,
+                    NoodleTokenKind::eBoolean, NoodleTokenKind::eString)) {
+                throw NoodleParseException(
+                    "expected array type, integer, float, boolean, string or right bracket");
             }
 
-            case NoodleTokenKind::eBoolean:
-            {
-                bool b = (std::string(token.lexeme()) == "true") ? "true" : "false"; 
-                current->operator[](identifier) = Noodle(identifier, b, current);
+            NoodleTokenKind expected = token.kind();
 
-                next();
-                break;
-            }
+            while (true) {
+                // Process the value
+                if (token.kind() != expected) {
+                    throw NoodleParseException("unexpected type change in array");
+                }
 
-            case NoodleTokenKind::eString:
-            {
-                current->operator[](identifier) = Noodle(identifier, std::string(token.lexeme()), current);
-
-                next();
-                break;
-            }
-
-            case NoodleTokenKind::eLeftBracket:
-            {
-                Noodle* array = &(current->operator[](identifier) = Noodle(identifier, current));
-                array->_type = NoodleType::eArray;
-                
-                // Get the first element, it determines the type of the array
-                next();
-
-                // If it's a right bracket the array has no values right now
-                if (token.is(NoodleTokenKind::eRightBracket))
-                {
+                switch (expected) {
+                case NoodleTokenKind::eInteger: {
+                    int i = (int)std::strtol(token.lexeme().data(), nullptr, 10);
+                    array->_array.emplace_back("", i, array);
                     break;
                 }
-
-                if (!token.isOneOf(NoodleTokenKind::eInteger, NoodleTokenKind::eFloat, 
-                                NoodleTokenKind::eBoolean, NoodleTokenKind::eString))
-                {
-                    throw NoodleParseException("expected array type, integer, float, boolean, string or right bracket");
+                case NoodleTokenKind::eFloat: {
+                    float f = std::strtof(token.lexeme().data(), nullptr);
+                    array->_array.emplace_back("", f, array);
+                    break;
+                }
+                case NoodleTokenKind::eBoolean: {
+                    bool b = (std::string(token.lexeme()) == "true") ? "true" : "false";
+                    array->_array.emplace_back("", b, current);
+                    break;
+                }
+                case NoodleTokenKind::eString:
+                    array->_array.emplace_back("", std::string(token.lexeme()), current);
+                    break;
+                default:
+                    break; // These will be caught earlier
                 }
 
-                NoodleTokenKind expected = token.kind();
-
-                while (true)
-                {
-                    // Process the value
-                    if (token.kind() != expected)
-                    {
-                        throw NoodleParseException("unexpected type change in array");
-                    }
-
-                    switch (expected)
-                    {
-                        case NoodleTokenKind::eInteger:
-                        {
-                            int i = (int)std::strtol(token.lexeme().data(), nullptr, 10);
-                            array->_array.emplace_back("", i, array);
-                            break;
-                        }
-                        case NoodleTokenKind::eFloat:
-                        {
-                            float f = std::strtof(token.lexeme().data(), nullptr);
-                            array->_array.emplace_back("", f, array);
-                            break;
-                        }
-                        case NoodleTokenKind::eBoolean:
-                        {
-                            bool b = (std::string(token.lexeme()) == "true") ? "true" : "false"; 
-                            array->_array.emplace_back("", b, current);
-                            break;
-                        }
-                        case NoodleTokenKind::eString:
-                            array->_array.emplace_back("", std::string(token.lexeme()), current); 
-                            break;
-                        default: 
-                            break; // These will be caught earlier
-                    }
-
-                    // Comma is expected or ]
+                // Comma is expected or ]
+                next();
+                if (token.kind() == NoodleTokenKind::eComma) {
                     next();
-                    if (token.kind() == NoodleTokenKind::eComma)
-                    {
-                        next();
-                        continue;
-                    }
-                    else if (token.kind() == NoodleTokenKind::eRightBracket)
-                    {
-                        next();
-                        break;
-                    }
-                    else
-                    {
-                        throw NoodleParseException("expected comma or right bracket in array");
-                    }
+                    continue;
+                } else if (token.kind() == NoodleTokenKind::eRightBracket) {
+                    next();
+                    break;
+                } else {
+                    throw NoodleParseException("expected comma or right bracket in array");
                 }
-                break;
             }
+            break;
+        }
 
-            default:
-                throw NoodleParseException("expected left curly \'{\', integer, float or string token");
+        default:
+            throw NoodleParseException("expected left curly \'{\', integer, float or string token");
         }
 
         // Check if the next value is a comma, if it isn't we expect a right curly
-        if (token.kind() == NoodleTokenKind::eComma)
-        {
+        if (token.kind() == NoodleTokenKind::eComma) {
             next();
 
-            if (token.kind() == NoodleTokenKind::eRightCurly)
-            {
+            if (token.kind() == NoodleTokenKind::eRightCurly) {
                 goto parseCurlyEnds;
             }
 
             continue;
         }
 
-        parseCurlyEnds:
-        
-        if (token.kind() == NoodleTokenKind::eRightCurly)
-        {
+    parseCurlyEnds:
+
+        if (token.kind() == NoodleTokenKind::eRightCurly) {
             // Remove consecutive group endings after the last value
-            do 
-            {
-                if (current->parent())
-                {
+            do {
+                if (current->parent()) {
                     current = current->parent();
                     next();
-                }
-                else
-                {
+                } else {
                     throw NoodleParseException("unexpected right curly \'}\' token");
                 }
-                
-            } while(token.kind() == NoodleTokenKind::eRightCurly);
+
+            } while (token.kind() == NoodleTokenKind::eRightCurly);
 
             continue;
-        }
-        else
-        {
+        } else {
             throw NoodleParseException("expected right curly \'}\' token");
         }
     }
@@ -215,7 +182,7 @@ Noodle Noodle::parse(const std::string& noodle)
 Noodle Noodle::parseFromFile(const std::filesystem::path& path)
 {
     std::ifstream file(path, std::ios::in);
-    
+
     std::stringstream ss;
     ss << file.rdbuf();
 
@@ -232,7 +199,7 @@ Noodle::Noodle(const std::string& groupName, Noodle* parent)
 
 Noodle::Noodle(const std::string& name, int value, Noodle* parent)
     : _type(NoodleType::eInteger)
-    , _name(name) 
+    , _name(name)
     , _parent(parent)
     , _value(value)
 {
@@ -264,8 +231,7 @@ Noodle::Noodle(const std::string& name, const std::string& value, Noodle* parent
 
 NoodleType Noodle::arrayType()
 {
-    if (_type != NoodleType::eArray)
-    {
+    if (_type != NoodleType::eArray) {
         throw NoodleInvalidAccessException("type was not an array");
     }
 
@@ -274,25 +240,24 @@ NoodleType Noodle::arrayType()
 
 size_t Noodle::size()
 {
-    switch(_type)
-    {
-        case NoodleType::eGroup:
-            return _groupChildren.size();
-        case NoodleType::eArray:
-            return _array.size();
-        default:
-            return 0;
+    switch (_type) {
+    case NoodleType::eGroup:
+        return _groupChildren.size();
+    case NoodleType::eArray:
+        return _array.size();
+    default:
+        return 0;
     }
 }
 
-std::string Noodle::dump() 
+std::string Noodle::dump()
 {
     std::stringstream ss;
     recursiveDump(ss, 0);
     return ss.str();
 }
 
-void Noodle::dumpToFile(const std::filesystem::path& path) 
+void Noodle::dumpToFile(const std::filesystem::path& path)
 {
     std::ofstream file(path);
 
@@ -303,37 +268,34 @@ void Noodle::dumpToFile(const std::filesystem::path& path)
 
 std::string Noodle::toString() const
 {
-    switch(_type)
-    {
-        case NoodleType::eGroup:
-            return _name;
-        case NoodleType::eInteger:
-            return std::to_string(std::get<int>(_value));
-        case NoodleType::eFloat:
-            return std::to_string(std::get<float>(_value));
-        case NoodleType::eBoolean:
-            return std::string(std::get<bool>(_value) ? "true" : "false");
-        case NoodleType::eString:
-            return "\"" + std::get<std::string>(_value) + "\"";
-        case NoodleType::eArray:
-        {
-            std::stringstream ss;
-            ss << "[ ";
-            bool isFirst = true;
-            for (const Noodle& noodle : _array)
-            {
-                if (!isFirst)
-                    ss << ", ";
-                else
-                    isFirst = false;
+    switch (_type) {
+    case NoodleType::eGroup:
+        return _name;
+    case NoodleType::eInteger:
+        return std::to_string(std::get<int>(_value));
+    case NoodleType::eFloat:
+        return std::to_string(std::get<float>(_value));
+    case NoodleType::eBoolean:
+        return std::string(std::get<bool>(_value) ? "true" : "false");
+    case NoodleType::eString:
+        return "\"" + std::get<std::string>(_value) + "\"";
+    case NoodleType::eArray: {
+        std::stringstream ss;
+        ss << "[ ";
+        bool isFirst = true;
+        for (const Noodle& noodle : _array) {
+            if (!isFirst)
+                ss << ", ";
+            else
+                isFirst = false;
 
-                ss << noodle;
-            }
-            ss << " ]";
-            return ss.str();
+            ss << noodle;
         }
-        default:
-            return std::string();
+        ss << " ]";
+        return ss.str();
+    }
+    default:
+        return std::string();
     }
 }
 
@@ -367,8 +329,7 @@ Noodle& Noodle::operator=(const std::string& value)
 
 Noodle& Noodle::operator[](const std::string& key)
 {
-    if (_type != NoodleType::eGroup)
-    {
+    if (_type != NoodleType::eGroup) {
         throw NoodleInvalidAccessException("cannot access a group from a non group noodle");
     }
 
@@ -380,8 +341,7 @@ Noodle& Noodle::operator[](const std::string& key)
 
 Noodle& Noodle::operator[](size_t index)
 {
-    if (_type != NoodleType::eArray)
-    {
+    if (_type != NoodleType::eArray) {
         throw NoodleInvalidAccessException("cannot access an array from a non array noodle");
     }
 
@@ -396,35 +356,30 @@ std::ostream& operator<<(std::ostream& os, const Noodle& noodle)
 
 void Noodle::recursiveDump(std::stringstream& ss, int tabs) const
 {
-    auto offset = [&]()
-    {
-        for (int i = 0; i < tabs; i++)
-        {
+    auto offset = [&]() {
+        for (int i = 0; i < tabs; i++) {
             ss << '\t';
         }
     };
 
     offset();
 
-    if (_type == NoodleType::eGroup)
-    {
+    if (_type == NoodleType::eGroup) {
         // Don't output a name or } on the root node
-        if (!isRoot())
-        {
+        if (!isRoot()) {
             tabs++;
             ss << _name << " = {\n";
         }
 
-        for (const auto& pair : _groupChildren)
-        {
+        for (const auto& pair : _groupChildren) {
             const Noodle& noodle = pair.second;
-            
+
             noodle.recursiveDump(ss, tabs);
         }
 
         if (!isRoot())
             tabs--;
-        
+
         offset();
 
         if (!isRoot())

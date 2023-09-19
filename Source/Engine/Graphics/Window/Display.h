@@ -10,25 +10,32 @@ namespace bl
 class BLUEMETAL_API Display
 {
 public:
-    Display(int display);
-    Display(const Display& rhs);
-
-    static std::vector<Display> getDisplays() noexcept;
-
+    /** @brief Returns the index of this window, it's unique so usable in configs. */
     uint32_t getIndex() const noexcept;
+
+    /** @brief Returns a human readable name of this monitor. */
     const std::string& getName() const noexcept;
-    const std::vector<VideoMode>& getVideoModes() const noexcept;
+
+    /** @brief Returns the offset and extent of the display in pixels. */  
     Rect2D getRect() const noexcept;
+
+    /** @brief Returns the main displays at windowed excluding the size of the taskbar. */
     VideoMode getDesktopMode() const noexcept;
 
-private:
-    
+    /** @brief Returns all video modes available on this display. */
+    const std::vector<VideoMode>& getVideoModes() const noexcept;
 
-    uint32_t                m_index;
-    std::string             m_name;
-    std::vector<VideoMode>  m_videoModes;
-    Rect2D                  m_rect;
-    VideoMode               m_desktopMode;
+    /** @brief Returns all displays on the system. */
+    static std::vector<Display*> getDisplays() noexcept;
+
+private:
+    Display(int display);
+    
+    uint32_t                _index;
+    std::string             _name;
+    Rect2D                  _rect;
+    VideoMode               _desktopMode;
+    std::vector<VideoMode>  _videoModes;
 };
 
 } // namespace bl

@@ -20,7 +20,7 @@ option(BLUEMETAL_DEVELOPMENT ON "Enables development mode and splits modules int
 
 
 # spit out the current options
-bl_message("BLUEMETAL_DEVELOPMENT = ${BLUEMETAL_DEVELOPMENT}")
+bl_message("This is a development build.")
 
 if (BLUEMETAL_DEVELOPMENT)
   set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_DEVELOPMENT=1")
@@ -30,20 +30,6 @@ endif()
 #===============================================================================
 # find libraries
 #===============================================================================
-
-# find {fmt}
-
-find_package(fmt REQUIRED)
-bl_message("Found FMT")
-
-# find SDL2
-if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/SDL2/CMakeLists.txt")
-  add_subdirectory("ThirdParty/SDL2")
-  bl_message("Using SDL2 as a recursive submodule, ensure you have the proper libraries installed or SDL might throw at runtime.")
-else()
-  find_package(SDL2 CONFIG REQUIRED)
-  bl_message("Found SDL2 - ${SDL2_INCLUDE_DIR}")
-endif()
 
 # find Vulkan
 find_package(Vulkan REQUIRED)

@@ -10,22 +10,22 @@ while the latter streams the data in chunks as it plays, using far less memory.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 #include <math.h>
 
-FMOD_RESULT F_CALLBACK pcmreadcallback(FMOD_SOUND* /*sound*/, void *data, unsigned int datalen)
+FMOD_RESULT F_CALLBACK pcmreadcallback(FMOD_SOUND* /*sound*/, void* data, unsigned int datalen)
 {
-    static float  t1 = 0, t2 = 0;        // time
-    static float  v1 = 0, v2 = 0;        // velocity
-    signed short *stereo16bitbuffer = (signed short *)data;
+    static float t1 = 0, t2 = 0; // time
+    static float v1 = 0, v2 = 0; // velocity
+    signed short* stereo16bitbuffer = (signed short*)data;
 
-    for (unsigned int count = 0; count < (datalen >> 2); count++)     // >>2 = 16bit stereo (4 bytes per sample)
+    for (unsigned int count = 0; count < (datalen >> 2); count++) // >>2 = 16bit stereo (4 bytes per sample)
     {
-        *stereo16bitbuffer++ = (signed short)(Common_Sin(t1) * 32767.0f);    // left channel
-        *stereo16bitbuffer++ = (signed short)(Common_Sin(t2) * 32767.0f);    // right channel
+        *stereo16bitbuffer++ = (signed short)(Common_Sin(t1) * 32767.0f); // left channel
+        *stereo16bitbuffer++ = (signed short)(Common_Sin(t2) * 32767.0f); // right channel
 
-        t1 += 0.01f   + v1;
+        t1 += 0.01f + v1;
         t2 += 0.0142f + v2;
         v1 += (float)(Common_Sin(t1) * 0.002f);
         v2 += (float)(Common_Sin(t2) * 0.002f);
@@ -44,14 +44,14 @@ FMOD_RESULT F_CALLBACK pcmsetposcallback(FMOD_SOUND* /*sound*/, int /*subsound*/
 
 int FMOD_Main()
 {
-    FMOD::System           *system;
-    FMOD::Sound            *sound;
-    FMOD::Channel          *channel = 0;
-    FMOD_RESULT             result;
-    FMOD_MODE               mode = FMOD_OPENUSER | FMOD_LOOP_NORMAL;
-    FMOD_CREATESOUNDEXINFO  exinfo;
-    void                   *extradriverdata = 0;
-    
+    FMOD::System* system;
+    FMOD::Sound* sound;
+    FMOD::Channel* channel = 0;
+    FMOD_RESULT result;
+    FMOD_MODE mode = FMOD_OPENUSER | FMOD_LOOP_NORMAL;
+    FMOD_CREATESOUNDEXINFO exinfo;
+    void* extradriverdata = 0;
+
     Common_Init(&extradriverdata);
 
     /*
@@ -62,13 +62,11 @@ int FMOD_Main()
 
     result = system->init(32, FMOD_INIT_NORMAL, extradriverdata);
     ERRCHECK(result);
-        
-    do
-    {
+
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             mode |= FMOD_CREATESTREAM;
         }
 
@@ -93,14 +91,14 @@ int FMOD_Main()
         Create and play the sound.
     */
     memset(&exinfo, 0, sizeof(FMOD_CREATESOUNDEXINFO));
-    exinfo.cbsize            = sizeof(FMOD_CREATESOUNDEXINFO);  /* Required. */
-    exinfo.numchannels       = 2;                               /* Number of channels in the sound. */
-    exinfo.defaultfrequency  = 44100;                           /* Default playback rate of sound. */
-    exinfo.decodebuffersize  = 44100;                           /* Chunk size of stream update in samples. This will be the amount of data passed to the user callback. */
-    exinfo.length            = exinfo.defaultfrequency * exinfo.numchannels * sizeof(signed short) * 5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
-    exinfo.format            = FMOD_SOUND_FORMAT_PCM16;         /* Data format of sound. */
-    exinfo.pcmreadcallback   = pcmreadcallback;                 /* User callback for reading. */
-    exinfo.pcmsetposcallback = pcmsetposcallback;               /* User callback for seeking. */
+    exinfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO); /* Required. */
+    exinfo.numchannels = 2; /* Number of channels in the sound. */
+    exinfo.defaultfrequency = 44100; /* Default playback rate of sound. */
+    exinfo.decodebuffersize = 44100; /* Chunk size of stream update in samples. This will be the amount of data passed to the user callback. */
+    exinfo.length = exinfo.defaultfrequency * exinfo.numchannels * sizeof(signed short) * 5; /* Length of PCM data in bytes of whole song (for Sound::getLength) */
+    exinfo.format = FMOD_SOUND_FORMAT_PCM16; /* Data format of sound. */
+    exinfo.pcmreadcallback = pcmreadcallback; /* User callback for reading. */
+    exinfo.pcmsetposcallback = pcmsetposcallback; /* User callback for seeking. */
 
     result = system->createSound(0, mode, &exinfo, &sound);
     ERRCHECK(result);
@@ -111,12 +109,10 @@ int FMOD_Main()
     /*
         Main loop.
     */
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             bool paused;
             result = channel->getPaused(&paused);
             ERRCHECK(result);
@@ -130,32 +126,27 @@ int FMOD_Main()
         {
             unsigned int ms = 0;
             unsigned int lenms = 0;
-            bool         playing = false;
-            bool         paused = false;
+            bool playing = false;
+            bool paused = false;
 
-            if (channel)
-            {
+            if (channel) {
                 result = channel->isPlaying(&playing);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE)) {
                     ERRCHECK(result);
                 }
 
                 result = channel->getPaused(&paused);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE)) {
                     ERRCHECK(result);
                 }
 
                 result = channel->getPosition(&ms, FMOD_TIMEUNIT_MS);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE)) {
                     ERRCHECK(result);
                 }
-               
+
                 result = sound->getLength(&lenms, FMOD_TIMEUNIT_MS);
-                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE))
-                {
+                if ((result != FMOD_OK) && (result != FMOD_ERR_INVALID_HANDLE)) {
                     ERRCHECK(result);
                 }
             }
@@ -168,7 +159,8 @@ int FMOD_Main()
             Common_Draw("Press %s to toggle pause", Common_BtnStr(BTN_ACTION1));
             Common_Draw("Press %s to quit", Common_BtnStr(BTN_QUIT));
             Common_Draw("");
-            Common_Draw("Time %02d:%02d:%02d/%02d:%02d:%02d : %s", ms / 1000 / 60, ms / 1000 % 60, ms / 10 % 100, lenms / 1000 / 60, lenms / 1000 % 60, lenms / 10 % 100, paused ? "Paused " : playing ? "Playing" : "Stopped");
+            Common_Draw("Time %02d:%02d:%02d/%02d:%02d:%02d : %s", ms / 1000 / 60, ms / 1000 % 60, ms / 10 % 100, lenms / 1000 / 60, lenms / 1000 % 60, lenms / 10 % 100, paused ? "Paused " : playing ? "Playing"
+                                                                                                                                                                                                       : "Stopped");
         }
 
         Common_Sleep(50);

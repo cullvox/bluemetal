@@ -7,70 +7,66 @@ This example demonstrates how to control event playback using game parameters.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod_studio.hpp"
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
+#include "fmod_studio.hpp"
 
 int FMOD_Main()
 {
-    void *extraDriverData = NULL;
+    void* extraDriverData = NULL;
     Common_Init(&extraDriverData);
 
     FMOD::Studio::System* system = NULL;
-    ERRCHECK( FMOD::Studio::System::create(&system) );
-    ERRCHECK( system->initialize(1024, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, extraDriverData) );
+    ERRCHECK(FMOD::Studio::System::create(&system));
+    ERRCHECK(system->initialize(1024, FMOD_STUDIO_INIT_NORMAL, FMOD_INIT_NORMAL, extraDriverData));
 
     FMOD::Studio::Bank* masterBank = NULL;
-    ERRCHECK( system->loadBankFile(Common_MediaPath("Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterBank) );
+    ERRCHECK(system->loadBankFile(Common_MediaPath("Master.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &masterBank));
 
     FMOD::Studio::Bank* stringsBank = NULL;
-    ERRCHECK( system->loadBankFile(Common_MediaPath("Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &stringsBank) );
+    ERRCHECK(system->loadBankFile(Common_MediaPath("Master.strings.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &stringsBank));
 
     FMOD::Studio::Bank* sfxBank = NULL;
-    ERRCHECK( system->loadBankFile(Common_MediaPath("SFX.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &sfxBank) );
+    ERRCHECK(system->loadBankFile(Common_MediaPath("SFX.bank"), FMOD_STUDIO_LOAD_BANK_NORMAL, &sfxBank));
 
     FMOD::Studio::EventDescription* eventDescription = NULL;
-    ERRCHECK( system->getEvent("event:/Character/Player Footsteps", &eventDescription) );
+    ERRCHECK(system->getEvent("event:/Character/Player Footsteps", &eventDescription));
 
     // Find the parameter once and then set by handle
     // Or we can just find by name every time but by handle is more efficient if we are setting lots of parameters
     FMOD_STUDIO_PARAMETER_DESCRIPTION paramDesc;
-    ERRCHECK( eventDescription->getParameterDescriptionByName("Surface", &paramDesc) );
+    ERRCHECK(eventDescription->getParameterDescriptionByName("Surface", &paramDesc));
     FMOD_STUDIO_PARAMETER_ID surfaceID = paramDesc.id;
 
     FMOD::Studio::EventInstance* eventInstance = NULL;
-    ERRCHECK( eventDescription->createInstance(&eventInstance) );
+    ERRCHECK(eventDescription->createInstance(&eventInstance));
 
     // Make the event audible to start with
     float surfaceParameterValue = 1.0f;
-    ERRCHECK( eventInstance->setParameterByID(surfaceID, surfaceParameterValue) );
+    ERRCHECK(eventInstance->setParameterByID(surfaceID, surfaceParameterValue));
 
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_MORE))
-        {
-            ERRCHECK( eventInstance->start() );
+        if (Common_BtnPress(BTN_MORE)) {
+            ERRCHECK(eventInstance->start());
         }
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             surfaceParameterValue = Common_Max(paramDesc.minimum, surfaceParameterValue - 1.0f);
-            ERRCHECK( eventInstance->setParameterByID(surfaceID, surfaceParameterValue) );
+            ERRCHECK(eventInstance->setParameterByID(surfaceID, surfaceParameterValue));
         }
 
-        if (Common_BtnPress(BTN_ACTION2))
-        {
+        if (Common_BtnPress(BTN_ACTION2)) {
             surfaceParameterValue = Common_Min(surfaceParameterValue + 1.0f, paramDesc.maximum);
-            ERRCHECK( eventInstance->setParameterByID(surfaceID, surfaceParameterValue) );
+            ERRCHECK(eventInstance->setParameterByID(surfaceID, surfaceParameterValue));
         }
 
-        ERRCHECK( system->update() );
+        ERRCHECK(system->update());
 
         float userValue = 0.0f;
         float finalValue = 0.0f;
-        ERRCHECK( eventInstance->getParameterByID(surfaceID, &userValue, &finalValue) );
+        ERRCHECK(eventInstance->getParameterByID(surfaceID, &userValue, &finalValue));
 
         Common_Draw("==================================================");
         Common_Draw("Event Parameter Example.");
@@ -89,7 +85,7 @@ int FMOD_Main()
         Common_Sleep(50);
     } while (!Common_BtnPress(BTN_QUIT));
 
-    ERRCHECK( system->release() );
+    ERRCHECK(system->release());
 
     Common_Close();
 

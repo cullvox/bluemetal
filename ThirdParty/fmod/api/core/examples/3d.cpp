@@ -7,21 +7,21 @@ This example shows how to basic 3D positioning of sounds.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
-const int   INTERFACE_UPDATETIME = 50;      // 50ms update for interface
-const float DISTANCEFACTOR = 1.0f;          // Units per meter.  I.e feet would = 3.28.  centimeters would = 100.
+const int INTERFACE_UPDATETIME = 50; // 50ms update for interface
+const float DISTANCEFACTOR = 1.0f; // Units per meter.  I.e feet would = 3.28.  centimeters would = 100.
 
 int FMOD_Main()
 {
-    FMOD::System    *system;
-    FMOD::Sound     *sound1, *sound2, *sound3;
-    FMOD::Channel   *channel1 = 0, *channel2 = 0, *channel3 = 0;
-    FMOD_RESULT      result;
-    bool             listenerflag = true;
-    FMOD_VECTOR      listenerpos  = { 0.0f, 0.0f, -1.0f * DISTANCEFACTOR };
-    void            *extradriverdata = 0;
+    FMOD::System* system;
+    FMOD::Sound *sound1, *sound2, *sound3;
+    FMOD::Channel *channel1 = 0, *channel2 = 0, *channel3 = 0;
+    FMOD_RESULT result;
+    bool listenerflag = true;
+    FMOD_VECTOR listenerpos = { 0.0f, 0.0f, -1.0f * DISTANCEFACTOR };
+    void* extradriverdata = 0;
 
     Common_Init(&extradriverdata);
 
@@ -30,10 +30,10 @@ int FMOD_Main()
     */
     result = FMOD::System_Create(&system);
     ERRCHECK(result);
-    
+
     result = system->init(100, FMOD_INIT_NORMAL, extradriverdata);
     ERRCHECK(result);
-    
+
     /*
         Set the distance units. (meters/feet etc).
     */
@@ -65,7 +65,7 @@ int FMOD_Main()
     */
     {
         FMOD_VECTOR pos = { -10.0f * DISTANCEFACTOR, 0.0f, 0.0f };
-        FMOD_VECTOR vel = {  0.0f, 0.0f, 0.0f };
+        FMOD_VECTOR vel = { 0.0f, 0.0f, 0.0f };
 
         result = system->playSound(sound1, 0, true, &channel1);
         ERRCHECK(result);
@@ -90,51 +90,41 @@ int FMOD_Main()
     /*
         Main loop
     */
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             bool paused;
             channel1->getPaused(&paused);
             channel1->setPaused(!paused);
         }
 
-        if (Common_BtnPress(BTN_ACTION2))
-        {
+        if (Common_BtnPress(BTN_ACTION2)) {
             bool paused;
             channel2->getPaused(&paused);
             channel2->setPaused(!paused);
         }
 
-        if (Common_BtnPress(BTN_ACTION3))
-        {
+        if (Common_BtnPress(BTN_ACTION3)) {
             result = system->playSound(sound3, 0, false, &channel3);
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_MORE))
-        {
+        if (Common_BtnPress(BTN_MORE)) {
             listenerflag = !listenerflag;
         }
 
-        if (!listenerflag)
-        {
-            if (Common_BtnDown(BTN_LEFT))
-            {
+        if (!listenerflag) {
+            if (Common_BtnDown(BTN_LEFT)) {
                 listenerpos.x -= 1.0f * DISTANCEFACTOR;
-                if (listenerpos.x < -24 * DISTANCEFACTOR)
-                {
+                if (listenerpos.x < -24 * DISTANCEFACTOR) {
                     listenerpos.x = -24 * DISTANCEFACTOR;
                 }
             }
 
-            if (Common_BtnDown(BTN_RIGHT))
-            {
+            if (Common_BtnDown(BTN_RIGHT)) {
                 listenerpos.x += 1.0f * DISTANCEFACTOR;
-                if (listenerpos.x > 23 * DISTANCEFACTOR)
-                {
+                if (listenerpos.x > 23 * DISTANCEFACTOR) {
                     listenerpos.x = 23 * DISTANCEFACTOR;
                 }
             }
@@ -146,12 +136,11 @@ int FMOD_Main()
         {
             static float t = 0;
             static FMOD_VECTOR lastpos = { 0.0f, 0.0f, 0.0f };
-            FMOD_VECTOR forward        = { 0.0f, 0.0f, 1.0f };
-            FMOD_VECTOR up             = { 0.0f, 1.0f, 0.0f };
+            FMOD_VECTOR forward = { 0.0f, 0.0f, 1.0f };
+            FMOD_VECTOR up = { 0.0f, 1.0f, 0.0f };
             FMOD_VECTOR vel;
 
-            if (listenerflag)
-            {
+            if (listenerflag) {
                 listenerpos.x = (float)sin(t * 0.05f) * 24.0f * DISTANCEFACTOR; // left right pingpong
             }
 
@@ -167,7 +156,7 @@ int FMOD_Main()
             result = system->set3DListenerAttributes(0, &listenerpos, &vel, &forward, &up);
             ERRCHECK(result);
 
-            t += (30 * (1.0f / (float)INTERFACE_UPDATETIME));    // t is just a time value .. it increments in 30m/s steps in this example
+            t += (30 * (1.0f / (float)INTERFACE_UPDATETIME)); // t is just a time value .. it increments in 30m/s steps in this example
         }
 
         result = system->update();

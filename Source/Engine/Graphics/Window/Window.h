@@ -1,32 +1,59 @@
 #pragma once
 
-#include "Precompiled.h"
-#include "Export.h"
-#include "Math/Vector2.h"
-#include "Graphics/Instance.h"
-#include "VideoMode.h"
 #include "Display.h"
+#include "Export.h"
+#include "Graphics/Instance.h"
+#include "Math/Vector2.h"
+#include "Precompiled.h"
+#include "VideoMode.h"
 
-namespace bl
-{
+namespace bl {
 
-class BLUEMETAL_API Window
-{
+struct WindowCreateInfo {
+  GraphicsInstance *pInstance;
+  VideoMode mode;
+  std::string title = "Window";
+  Display* display = nullptr;
+};
+
+class BLUEMETAL_API Window {
 public:
-    Window(GraphicsInstance* pInstance, VideoMode videoMode, const std::string& title = "Window", std::optional<Display> display = std::nullopt);
-    ~Window();
+  /** @brief Default Constructor */
+  Window();
 
-    Extent2D getExtent();
-    SDL_Window* getHandle();
-    VkSurfaceKHR getSurface();
+  /** @brief Create Constructor */
+  Window(const WindowCreateInfo &createInfo);
+
+  /** @brief Move Constructor */
+  Window(Window &&rhs);
+
+  /** @brief Default Destructor */
+  ~Window();
+
+  /** @brief Creates this window. */
+  bool create(const WindowCreateInfo &createInfo);
+
+  /** @brief Destroys this window. */
+  void destroy();
+
+public:
+  /** @brief Gets the current window extent in pixels. */
+  Extent2D getExtent();
+
+  /** @brief Returns the Vulkan surface created with this window. */
+  VkSurfaceKHR getSurface();
+
+  /** @brief Returns the underlying SDL window object. */
+  SDL_Window *getHandle();
 
 private:
-    void createWindow(const VideoMode& videoMode, const std::string& title, std::optional<Display> display);
-    void createSurface();
+  bool createWindow(const VideoMode &videoMode, const std::string &title, Display* display);
+  bool createSurface();
 
-    SDL_Window*         m_pWindow;
-    GraphicsInstance*   m_pInstance;
-    VkSurfaceKHR        m_surface;
+  WindowCreateInfo _createInfo;
+  GraphicsInstance* _pInstance;
+  SDL_Window* _pWindow;
+  VkSurfaceKHR _surface;
 };
 
 } // namespace bl

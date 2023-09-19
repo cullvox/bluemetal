@@ -24,20 +24,20 @@ For more speakers:
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
 int FMOD_Main()
 {
-    FMOD::System        *system;
-    FMOD::Sound         *sound;
-    FMOD::Channel       *channel;
-    FMOD::ChannelGroup  *mastergroup;
-    FMOD::DSP           *dsplowpass, *dsphighpass, *dsphead, *dspchannelmixer;
+    FMOD::System* system;
+    FMOD::Sound* sound;
+    FMOD::Channel* channel;
+    FMOD::ChannelGroup* mastergroup;
+    FMOD::DSP *dsplowpass, *dsphighpass, *dsphead, *dspchannelmixer;
     FMOD::DSPConnection *dsplowpassconnection, *dsphighpassconnection;
-    FMOD_RESULT          result;
-    float                pan = 0.0f;
-    void                *extradriverdata = 0;
+    FMOD_RESULT result;
+    float pan = 0.0f;
+    void* extradriverdata = 0;
 
     Common_Init(&extradriverdata);
 
@@ -67,7 +67,7 @@ int FMOD_Main()
 
     /*
         Create the DSP effects.
-    */  
+    */
     result = system->createDSPByType(FMOD_DSP_TYPE_LOWPASS, &dsplowpass);
     ERRCHECK(result);
 
@@ -93,7 +93,7 @@ int FMOD_Main()
         Wavetable is the drumloop sound, and it feeds its data from right to left.
 
         [DSPHEAD]<------------[DSPCHANNELMIXER]<------------[CHANNEL HEAD]<------------[WAVETABLE - DRUMLOOP.WAV]
-    */  
+    */
     result = system->getMasterChannelGroup(&mastergroup);
     ERRCHECK(result);
 
@@ -121,11 +121,11 @@ int FMOD_Main()
                  \y           
                   [DSPHIGHPASS]
     */
-    result = dsphead->addInput(dsplowpass, &dsplowpassconnection);      /* x = dsplowpassconnection */
+    result = dsphead->addInput(dsplowpass, &dsplowpassconnection); /* x = dsplowpassconnection */
     ERRCHECK(result);
-    result = dsphead->addInput(dsphighpass, &dsphighpassconnection);    /* y = dsphighpassconnection */
+    result = dsphead->addInput(dsphighpass, &dsphighpassconnection); /* y = dsphighpassconnection */
     ERRCHECK(result);
-    
+
     /*
         Now connect the channelmixer to the 2 effects
 
@@ -135,10 +135,10 @@ int FMOD_Main()
                  \y          /
                   [DSPHIGHPASS]
     */
-    result = dsplowpass->addInput(dspchannelmixer);     /* Ignore connection - we dont care about it. */
+    result = dsplowpass->addInput(dspchannelmixer); /* Ignore connection - we dont care about it. */
     ERRCHECK(result);
 
-    result = dsphighpass->addInput(dspchannelmixer);    /* Ignore connection - we dont care about it. */
+    result = dsphighpass->addInput(dspchannelmixer); /* Ignore connection - we dont care about it. */
     ERRCHECK(result);
 
     /*
@@ -152,16 +152,16 @@ int FMOD_Main()
         [DSPHEAD]             [DSPCHANNELMIXER]<------------[CHANNEL HEAD]<------------[WAVETABLE - DRUMLOOP.WAV]
                  \y=0,1      /
                   [DSPHIGHPASS]
-    */    
+    */
     {
-        float lowpassmatrix[2][2]  = { 
-                                        { 1.0f, 0.0f },     // <- output to front left.  Take front left input signal at 1.0.
-                                        { 0.0f, 0.0f }      // <- output to front right.  Silence
-                                     };
-        float highpassmatrix[2][2] = { 
-                                        { 0.0f, 0.0f },     // <- output to front left.  Silence
-                                        { 0.0f, 1.0f }      // <- output to front right.  Take front right input signal at 1.0
-                                     };
+        float lowpassmatrix[2][2] = {
+            { 1.0f, 0.0f }, // <- output to front left.  Take front left input signal at 1.0.
+            { 0.0f, 0.0f } // <- output to front right.  Silence
+        };
+        float highpassmatrix[2][2] = {
+            { 0.0f, 0.0f }, // <- output to front left.  Silence
+            { 0.0f, 1.0f } // <- output to front right.  Take front right input signal at 1.0
+        };
 
         /* 
             Upgrade the signal coming from the channel mixer from mono to stereo.  Otherwise the lowpass and highpass will get mono signals 
@@ -191,8 +191,7 @@ int FMOD_Main()
     /*
         Main loop.
     */
-    do
-    {
+    do {
         bool lowpassbypass, highpassbypass;
 
         Common_Update();
@@ -202,34 +201,30 @@ int FMOD_Main()
         result = dsphighpass->getBypass(&highpassbypass);
         ERRCHECK(result);
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             lowpassbypass = !lowpassbypass;
 
             result = dsplowpass->setBypass(lowpassbypass);
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION2))
-        {
+        if (Common_BtnPress(BTN_ACTION2)) {
             highpassbypass = !highpassbypass;
 
             result = dsphighpass->setBypass(highpassbypass);
             ERRCHECK(result);
         }
 
-        if (Common_BtnDown(BTN_LEFT))
-        {
-            pan = (pan <= -0.9f) ? -1.0f : pan - 0.1f; 
-            
+        if (Common_BtnDown(BTN_LEFT)) {
+            pan = (pan <= -0.9f) ? -1.0f : pan - 0.1f;
+
             result = channel->setPan(pan);
             ERRCHECK(result);
         }
 
-        if (Common_BtnDown(BTN_RIGHT))
-        {
-            pan = (pan >= 0.9f) ? 1.0f : pan + 0.1f; 
-            
+        if (Common_BtnDown(BTN_RIGHT)) {
+            pan = (pan >= 0.9f) ? 1.0f : pan + 0.1f;
+
             result = channel->setPan(pan);
             ERRCHECK(result);
         }

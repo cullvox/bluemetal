@@ -1,31 +1,26 @@
 #pragma once
 
-#include "Core/Precompiled.hpp"
 #include "Core/CallbackList.hpp"
+#include "Core/Precompiled.hpp"
+#include "Input/Export.h"
+#include "Input/InputEvents.hpp"
 #include "Math/Vector2.hpp"
 #include "Math/Vector3.hpp"
-#include "Input/InputEvents.hpp"
-#include "Input/Export.h"
-
 
 #include <SDL.h>
 
 #define BL_INPUT_SYSTEM_MAX_FILTER_EVENTS 16
 
-struct blGenericInputEventFilter
-{
-    blEventTypeFlags                        types;
-    std::array<blGenericEvent, 
-        BL_INPUT_SYSTEM_MAX_FILTER_EVENTS>  events;
+struct blGenericInputEventFilter {
+    blEventTypeFlags types;
+    std::array<blGenericEvent, BL_INPUT_SYSTEM_MAX_FILTER_EVENTS> events;
 };
 
 using blInputHookCallbackFunction = blCallbackList<void(const SDL_Event*)>::Callback;
 using blInputHookCallback = blCallbackList<void(const SDL_Event*)>::Handle;
 
-class BLUEMETAL_INPUT_API blInputSystem
-{
+class BLUEMETAL_INPUT_API blInputSystem {
 public:
-    
     static std::shared_ptr<blInputSystem> getInstance() noexcept;
 
     blInputSystem();

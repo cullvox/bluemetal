@@ -2,8 +2,7 @@
 
 #include "Asset/Asset.hpp"
 
-class blAssetManager 
-{
+class blAssetManager {
 public:
     blAssetManager();
     ~blAssetManager();

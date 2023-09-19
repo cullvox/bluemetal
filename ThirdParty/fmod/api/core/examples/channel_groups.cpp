@@ -8,18 +8,18 @@ affect a group of channels at a time instead of just one.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
 int FMOD_Main()
 {
-    FMOD::System       *system;
-    FMOD::Sound        *sound[6];
-    FMOD::Channel      *channel[6];
+    FMOD::System* system;
+    FMOD::Sound* sound[6];
+    FMOD::Channel* channel[6];
     FMOD::ChannelGroup *groupA, *groupB, *masterGroup;
-    FMOD_RESULT         result;
-    int                 count;
-    void               *extradriverdata = 0;
+    FMOD_RESULT result;
+    int count;
+    void* extradriverdata = 0;
 
     Common_Init(&extradriverdata);
 
@@ -65,17 +65,16 @@ int FMOD_Main()
     /*
         Start all the sounds.
     */
-    for (count = 0; count < 6; count++)
-    {
+    for (count = 0; count < 6; count++) {
         result = system->playSound(sound[count], 0, true, &channel[count]);
         ERRCHECK(result);
-        
+
         result = channel[count]->setChannelGroup((count < 3) ? groupA : groupB);
         ERRCHECK(result);
-        
+
         result = channel[count]->setPaused(false);
         ERRCHECK(result);
-    }   
+    }
 
     /*
         Change the volume of each group, just because we can! (reduce overall noise).
@@ -88,26 +87,22 @@ int FMOD_Main()
     /*
         Main loop.
     */
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+        if (Common_BtnPress(BTN_ACTION1)) {
             bool mute = true;
             groupA->getMute(&mute);
             groupA->setMute(!mute);
         }
 
-        if (Common_BtnPress(BTN_ACTION2))
-        {
+        if (Common_BtnPress(BTN_ACTION2)) {
             bool mute = true;
             groupB->getMute(&mute);
             groupB->setMute(!mute);
         }
 
-        if (Common_BtnPress(BTN_ACTION3))
-        {
+        if (Common_BtnPress(BTN_ACTION3)) {
             bool mute = true;
             masterGroup->getMute(&mute);
             masterGroup->setMute(!mute);
@@ -141,7 +136,6 @@ int FMOD_Main()
         Common_Sleep(50);
     } while (!Common_BtnPress(BTN_QUIT));
 
-
     /*
         A little fade out over 2 seconds.
     */
@@ -149,12 +143,11 @@ int FMOD_Main()
         float pitch = 1.0f;
         float vol = 1.0f;
 
-        for (count = 0; count < 200; count++)
-        {
+        for (count = 0; count < 200; count++) {
             masterGroup->setPitch(pitch);
             masterGroup->setVolume(vol);
 
-            vol   -= (1.0f / 200.0f);
+            vol -= (1.0f / 200.0f);
             pitch -= (0.5f / 200.0f);
 
             result = system->update();
@@ -167,8 +160,7 @@ int FMOD_Main()
     /*
         Shut down.
     */
-    for (count = 0; count < 6; count++)
-    {
+    for (count = 0; count < 6; count++) {
         result = sound[count]->release();
         ERRCHECK(result);
     }

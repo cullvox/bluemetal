@@ -12,10 +12,10 @@ versa.
 For information on using FMOD example code in your own programs, visit
 https://www.fmod.com/legal
 ==============================================================================*/
-#include "fmod.hpp"
 #include "common.h"
+#include "fmod.hpp"
 
-FMOD_RESULT fetchDriver(FMOD::System *system, int *driver)
+FMOD_RESULT fetchDriver(FMOD::System* system, int* driver)
 {
     FMOD_RESULT result;
     int numdrivers;
@@ -24,22 +24,18 @@ FMOD_RESULT fetchDriver(FMOD::System *system, int *driver)
     result = system->getNumDrivers(&numdrivers);
     ERRCHECK(result);
 
-    if (numdrivers == 0)
-    {
+    if (numdrivers == 0) {
         result = system->setOutput(FMOD_OUTPUTTYPE_NOSOUND);
         ERRCHECK(result);
     }
 
-    do
-    {
+    do {
         Common_Update();
 
-        if (Common_BtnPress(BTN_UP) && (selectedindex != 0))
-        {
+        if (Common_BtnPress(BTN_UP) && (selectedindex != 0)) {
             selectedindex--;
         }
-        if (Common_BtnPress(BTN_DOWN) && (selectedindex != (numdrivers - 1)))
-        {
+        if (Common_BtnPress(BTN_DOWN) && (selectedindex != (numdrivers - 1))) {
             selectedindex++;
         }
 
@@ -53,8 +49,7 @@ FMOD_RESULT fetchDriver(FMOD::System *system, int *driver)
         Common_Draw("Use %s and %s to select.", Common_BtnStr(BTN_UP), Common_BtnStr(BTN_DOWN));
         Common_Draw("Press %s to confirm.", Common_BtnStr(BTN_ACTION1));
         Common_Draw("");
-        for (int i = 0; i < numdrivers; i++)
-        {
+        for (int i = 0; i < numdrivers; i++) {
             char name[256];
 
             result = system->getDriverInfo(i, name, sizeof(name), 0, 0, 0, 0);
@@ -73,13 +68,13 @@ FMOD_RESULT fetchDriver(FMOD::System *system, int *driver)
 
 int FMOD_Main()
 {
-    FMOD::System     *systemA, *systemB;
-    FMOD::Sound      *soundA, *soundB;
-    FMOD::Channel    *channelA = 0, *channelB = 0;
-    FMOD_RESULT       result;
-    int               driver;
-    void             *extradriverdata = 0;
-    
+    FMOD::System *systemA, *systemB;
+    FMOD::Sound *soundA, *soundB;
+    FMOD::Channel *channelA = 0, *channelB = 0;
+    FMOD_RESULT result;
+    int driver;
+    void* extradriverdata = 0;
+
     Common_Init(&extradriverdata);
 
     /*
@@ -124,18 +119,15 @@ int FMOD_Main()
     /*
         Main loop
     */
-    do
-    {
+    do {
         Common_Update();
-        
-        if (Common_BtnPress(BTN_ACTION1))
-        {
+
+        if (Common_BtnPress(BTN_ACTION1)) {
             result = systemA->playSound(soundA, 0, 0, &channelA);
             ERRCHECK(result);
         }
 
-        if (Common_BtnPress(BTN_ACTION2))
-        {
+        if (Common_BtnPress(BTN_ACTION2)) {
             result = systemB->playSound(soundB, 0, 0, &channelB);
             ERRCHECK(result);
         }
@@ -166,7 +158,7 @@ int FMOD_Main()
             Common_Draw("Channels playing on A: %d", channelsplayingA);
             Common_Draw("Channels playing on B: %d", channelsplayingB);
         }
-        
+
         Common_Sleep(50);
     } while (!Common_BtnPress(BTN_QUIT));
 
