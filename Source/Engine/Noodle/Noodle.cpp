@@ -7,6 +7,7 @@ Noodle Noodle::parse(const std::string& noodle)
     NoodleLexer lexer(noodle);
     NoodleToken token;
 
+    // Quick helper to go to the next token without any fuss.
     auto next = [&lexer, &token]() { token = lexer.next(); };
 
     // Get the first token from the lexer
@@ -16,7 +17,7 @@ Noodle Noodle::parse(const std::string& noodle)
     std::string value;
 
     Noodle root("");
-    Noodle* current = &root;
+    Noodle* pCurrent = &root;
 
     // Parse through the file until the file has been completely lexed and parsed
     while (token.kind() != NoodleTokenKind::eEnd) {
@@ -40,39 +41,35 @@ Noodle Noodle::parse(const std::string& noodle)
         case NoodleTokenKind::eLeftCurly: {
             // Insert a new group noodle
             // Consecutive noodles will be inside of this group
-            current = &(current->operator[](identifier) = Noodle(identifier, current));
+            auto added = pCurrent->operator[](identifier) = Noodle(identifier, pCurrent)
+            pCurrent = &added;
             next();
             continue;
         }
 
         case NoodleTokenKind::eInteger: {
             int i = (int)std::strtol(token.lexeme().data(), nullptr, 10);
-            current->operator[](identifier) = Noodle(identifier, i, current);
-
+            current->operator[](identifier) = Noodle(identifier, i, pCurrent);
             next();
             break;
         }
 
         case NoodleTokenKind::eFloat: {
             float f = std::strtof(token.lexeme().data(), nullptr);
-            current->operator[](identifier) = Noodle(identifier, f, current);
-
+            current->operator[](identifier) = Noodle(identifier, f, pCurrent);
             next();
             break;
         }
 
         case NoodleTokenKind::eBoolean: {
             bool b = (std::string(token.lexeme()) == "true") ? "true" : "false";
-            current->operator[](identifier) = Noodle(identifier, b, current);
-
+            current->operator[](identifier) = Noodle(identifier, b, pCurrent);
             next();
             break;
         }
 
         case NoodleTokenKind::eString: {
-            current->operator[](identifier)
-                = Noodle(identifier, std::string(token.lexeme()), current);
-
+            current->operator[](identifier) = Noodle(identifier, std::string(token.lexeme()), pCurrent);
             next();
             break;
         }
@@ -80,19 +77,14 @@ Noodle Noodle::parse(const std::string& noodle)
         case NoodleTokenKind::eLeftBracket: {
             Noodle* array = &(current->operator[](identifier) = Noodle(identifier, current));
             array->_type = NoodleType::eArray;
+            next(); // First element determines type of array.
 
-            // Get the first element, it determines the type of the array
-            next();
-
-            // If it's a right bracket the array has no values right now
             if (token.is(NoodleTokenKind::eRightBracket)) {
                 break;
             }
 
-            if (!token.isOneOf(NoodleTokenKind::eInteger, NoodleTokenKind::eFloat,
-                    NoodleTokenKind::eBoolean, NoodleTokenKind::eString)) {
-                throw NoodleParseException(
-                    "expected array type, integer, float, boolean, string or right bracket");
+            if (!token.isOneOf(NoodleTokenKind::eInteger, NoodleTokenKind::eFloat, NoodleTokenKind::eBoolean, NoodleTokenKind::eString)) {
+                throw NoodleParseException("expected array type, integer, float, boolean, string or right bracket");
             }
 
             NoodleTokenKind expected = token.kind();
@@ -299,33 +291,6 @@ std::string Noodle::toString() const
     }
 }
 
-Noodle& Noodle::operator=(int value)
-{
-    _type = NoodleType::eInteger;
-    _value = value;
-    return *this;
-}
-
-Noodle& Noodle::operator=(float value)
-{
-    _type = NoodleType::eFloat;
-    _value = value;
-    return *this;
-}
-
-Noodle& Noodle::operator=(bool value)
-{
-    _type = NoodleType::eBoolean;
-    _value = value;
-    return *this;
-}
-
-Noodle& Noodle::operator=(const std::string& value)
-{
-    _type = NoodleType::eString;
-    _value = value;
-    return *this;
-}
 
 Noodle& Noodle::operator[](const std::string& key)
 {

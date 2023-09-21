@@ -25,21 +25,19 @@ struct BLUEMETAL_API Version
     uint32_t patch;
 };
 
-
-
 const Version engineVersion(VersionRelease::eAlpha, 0, 1, 0);
 const std::string engineName = "Bluemetal Engine";
 
 } // namespace bl
 
-template <> 
+template <>
 struct fmt::formatter<bl::VersionRelease>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
     format_context::iterator format(bl::VersionRelease v, format_context& ctx) const
     {
-        std::string_view val = nullptr;
+        std::string_view val;
         switch(v) {
         case bl::VersionRelease::eAlpha: val = "Alpha";
         case bl::VersionRelease::eBeta: val ="Beta";
@@ -47,7 +45,7 @@ struct fmt::formatter<bl::VersionRelease>
         case bl::VersionRelease::eRelease: val = "Release";
         case bl::VersionRelease::eStaging: val = "Staging";
         case bl::VersionRelease::eSnapshot: val = "Snapshot";
-        case bl::VersionRelease::eUndefined: 
+        case bl::VersionRelease::eUndefined:
         default:
             val = "Undefined";
         return fmt::format_to(ctx.out(), "{}", val);
@@ -55,7 +53,7 @@ struct fmt::formatter<bl::VersionRelease>
   }
 };
 
-template <> 
+template <>
 struct fmt::formatter<bl::Version>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
