@@ -1,131 +1,97 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
-#include "Core/Language.h"
 #include "Graphics/Instance.h"
 #include "Window/Window.h"
 
-namespace bl
-{
-
-///////////////////////////////
-// Classes
-///////////////////////////////
+namespace bl {
 
 struct GraphicsDeviceCreateInfo
 {
-    GraphicsInstance*           pInstance;       /// Graphics instance.
-    GraphicsPhysicalDevice*     pPhysicalDevice; /// Physical GPU the device is storing resources on.
-    Window*                     pWindow;         /// Temporary window only required for creation of the device.
+    GraphicsInstance*           pInstance;       /** @brief Graphics instance. */
+    GraphicsPhysicalDevice*     pPhysicalDevice; /** @brief Physical GPU the device is storing resources on. */
+    Window*                     pWindow;         /** @brief Temporary window only required for creation of the device. */
 };
 
-/// A graphics device used as the basis of many graphics operations.
-class BLUEMETAL_API GraphicsDevice
-{
+/** @brief A graphics device used as the basis of many graphics operations. */
+class BLUEMETAL_API GraphicsDevice {
 public:
 
-    /// Default Constructor
+    /** @brief Default Constructor */
     GraphicsDevice();
 
-    /// Move Constructor 
+    /** @brief Move Constructor */ 
     GraphicsDevice(GraphicsDevice&& rhs);
 
-    /// Constructs a graphics device for underlying graphics operations.
-    GraphicsDevice(const GraphicsDeviceCreateInfo& createInfo);
+    /** @brief Create Constructor */
+    GraphicsDevice(const GraphicsDeviceCreateInfo& info);
     
-    /// Default Destructor
+    /** @brief Default Destructor */
     ~GraphicsDevice();
 
-    /// Creates the Vulkan graphics device and some other utils.
-    ///
-    ///     @param createInfo Other objects/info required to create the device.
-    /// 
-    /// @return True on success. 
-    bool create(const GraphicsDeviceCreateInfo& createInfo);
+    /** @brief Creates the Vulkan graphics device and some other utils. */
+    [[nodiscard]] bool create(const GraphicsDeviceCreateInfo& createInfo);
 
-    /// Deletes the underlying graphics device and it's other objects.
+    /** @brief Deletes the underlying graphics device and it's other objects. */
     void destroy() noexcept;
 
-    /// Returns true if the device is created.
-    bool isCreated() const noexcept;
+    /** @brief Returns true if the device is created. */
+    [[nodiscard]] bool isCreated() const noexcept;
 
 public:
 
-    /// Returns the physical device this device was crated with. 
-    GraphicsPhysicalDevice* getPhysicalDevice() const;
+    /** @brief Returns the physical device this device was crated with. */
+    [[nodiscard]] GraphicsPhysicalDevice* getPhysicalDevice() const noexcept;
 
-    /// Returns the underlying Vulkan device. 
-    VkDevice getHandle() const;
+    /** @brief Returns the underlying Vulkan device. */
+    [[nodiscard]] VkDevice getHandle() const noexcept;
 
-    /// Returns the index used for graphics queue operations. 
-    uint32_t getGraphicsFamilyIndex() const;
+    /** @brief Returns the index used for graphics queue operations. */
+    [[nodiscard]] uint32_t getGraphicsFamilyIndex() const noexcept;
 
-    /// Returns the index used for present queue operations. 
-    uint32_t getPresentFamilyIndex() const;
+    /** @brief Returns the index used for present queue operations. */
+    [[nodiscard]] uint32_t getPresentFamilyIndex() const noexcept;
 
-    /// Returns the Vulkan graphics queue. 
-    VkQueue getGraphicsQueue() const;
+    /** @brief Returns the Vulkan graphics queue. */
+    [[nodiscard]] VkQueue getGraphicsQueue() const noexcept;
 
-    /// Returns the Vulkan present queue.
-    VkQueue getPresentQueue() const;
+    /** @brief Returns the Vulkan present queue. */
+    [[nodiscard]] VkQueue getPresentQueue() const noexcept;
 
-    /// Returns the default Vulkan command pool. 
-    VkCommandPool getCommandPool() const;
+    /** @brief Returns the default Vulkan command pool. */
+    [[nodiscard]] VkCommandPool getCommandPool() const noexcept;
 
-    /// Returns the Vulkan Memory Allocator object. 
-    VmaAllocator getAllocator() const;
+    /** @brief Returns the Vulkan Memory Allocator object. */
+    [[nodiscard]] VmaAllocator getAllocator() const noexcept;
 
-    /// Returns true if the graphics family index and present family index are the same. 
-    bool areQueuesSame() const;
+    /** @brief Returns true if the graphics family index and present family index are the same. *//
+    [[nodiscard]] bool areQueuesSame() const noexcept;
 
-    /// Submits commands to the graphics queue.
-    /// 
-    ///     @param recorder Record your commands to a lambda.
-    /// 
-    /// @return True on successful submission to the graphics queue.
-    ///
-    bool immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder);
+    /** @brief Submits commands to the graphics queue. */
+    [[nodicard]] bool immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder);
     
-    /// Waits for an undefined amount of time for the device to finish whatever it may be doing.
-    void waitForDevice();
+    /** @brief Waits for an undefined amount of time for the device to finish whatever it may be doing. */
+    void waitForDevice() const noexcept;
     
 private:
 
-    /// Gets the device validation layers required to created the device.
-    ///
-    ///     @param[out] layers Layers to add to the device create info.
-    ///
-    /// @return True if the layers were found.
-    ///
+    /** @brief Gets the device validation layers required to created the device. */
     bool getValidationLayers(std::vector<const char*>& layers);
 
-    /// Gets the device's extensions required for the engine.
-    ///
-    ///     @param[out] extensions Extensions to add to the device create info.
-    ///
-    /// @return True if the extensions were found.
-    /// 
+    /** @brief Gets the device's extensions required for the engine. */
     bool getExtensions(std::vector<const char*>& extensions);
     
-    /// Creates the actual Vulkan device.
-    /// @return True if the device was created successfully.
+    /** @brief Creates the Vulkan device. */
     bool createDevice();
 
-    /// Creates a command pool for ease of use later.
-    /// @return True if the command pool was created successfully.
+    /** @brief Creates a command pool for allocating command buffers. */
     bool createCommandPool();
 
-    /// Creates an instance of the Vulkan Memory Allocator (VMA)
-    /// @return True if the allocator was created successfully. 
+    /** @brief Creates an instance of the Vulkan Memory Allocator */
     bool createAllocator();
     
-    GraphicsDeviceCreateInfo    _createInfo;
+    GraphicsDeviceCreateInfo    _info;
     GraphicsInstance*           _pInstance;
     GraphicsPhysicalDevice*     _pPhysicalDevice;
-
     uint32_t                    _graphicsFamilyIndex, m_presentFamilyIndex;
     VkDevice                    _device;
     VkQueue                     _graphicsQueue, m_presentQueue;

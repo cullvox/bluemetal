@@ -1,16 +1,7 @@
-
-///////////////////////////////
-// Headers
-///////////////////////////////
-
 #include "Device.h"
-#include "Core/Log.h"
+#include "Core/Print.h"
 
-///////////////////////////////
-// Disable Warnings
-///////////////////////////////
-
-// disable warnings from vk_mem_alloc warnings on platforms
+// Disable warnings from vk_me_alloc.h warnings on platforms.
 #ifdef BLUEMETAL_COMPILER_GNU
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-variable"
@@ -34,37 +25,33 @@
 
 namespace bl {
 
-///////////////////////////////
-// Classes
-///////////////////////////////
-
 GraphicsDevice::GraphicsDevice() { }
 
 GraphicsDevice::GraphicsDevice(GraphicsDevice&& rhs)
 {
     destroy();
 
-    m_createInfo = std::move(rhs.m_createInfo);
-    m_pInstance = std::move(rhs.m_pInstance);
-    m_pPhysicalDevice = std::move(rhs.m_pPhysicalDevice);
-    m_graphicsFamilyIndex = std::move(rhs.m_graphicsFamilyIndex);
-    m_presentFamilyIndex = std::move(rhs.m_presentFamilyIndex);
-    m_device = std::move(rhs.m_device);
-    m_graphicsQueue = std::move(rhs.m_graphicsQueue);
-    m_presentQueue = std::move(rhs.m_presentQueue);
-    m_commandPool = std::move(rhs.m_commandPool);
-    m_allocator = std::move(rhs.m_allocator);
+    _info = std::move(rhs._info);
+    _pInstance = std::move(rhs._pInstance);
+    _pPhysicalDevice = std::move(rhs._pPhysicalDevice);
+    _graphicsFamilyIndex = std::move(rhs._graphicsFamilyIndex);
+    _presentFamilyIndex = std::move(rhs._presentFamilyIndex);
+    _device = std::move(rhs._device);
+    _graphicsQueue = std::move(rhs._graphicsQueue);
+    _presentQueue = std::move(rhs._presentQueue);
+    _commandPool = std::move(rhs._commandPool);
+    _allocator = std::move(rhs._allocator);
 
-    rhs.m_createInfo = {};
-    rhs.m_pInstance = nullptr;
-    rhs.m_pPhysicalDevice = {};
-    rhs.m_graphicsFamilyIndex = 0;
-    rhs.m_presentFamilyIndex = 0;
-    rhs.m_device = VK_NULL_HANDLE;
-    rhs.m_graphicsQueue = VK_NULL_HANDLE;
-    rhs.m_presentQueue = VK_NULL_HANDLE;
-    rhs.m_commandPool = VK_NULL_HANDLE;
-    rhs.m_allocator = VK_NULL_HANDLE;
+    rhs._info = {};
+    rhs._pInstance = nullptr;
+    rhs._pPhysicalDevice = {};
+    rhs._graphicsFamilyIndex = 0;
+    rhs._presentFamilyIndex = 0;
+    rhs._device = VK_NULL_HANDLE;
+    rhs._graphicsQueue = VK_NULL_HANDLE;
+    rhs._presentQueue = VK_NULL_HANDLE;
+    rhs._commandPool = VK_NULL_HANDLE;
+    rhs._allocator = VK_NULL_HANDLE;
 }
 
 GraphicsDevice::GraphicsDevice(const GraphicsDeviceCreateInfo& createInfo) 
@@ -77,101 +64,99 @@ GraphicsDevice::~GraphicsDevice() { destroy(); }
 
 bool GraphicsDevice::create(const GraphicsDeviceCreateInfo& createInfo)
 {
-    m_createInfo = createInfo;
-    m_pInstance = createInfo.pInstance;
-    m_pPhysicalDevice = createInfo.pPhysicalDevice;
+    _info = createInfo;
+    _pInstance = createInfo.pInstance;
+    _pPhysicalDevice = createInfo.pPhysicalDevice;
 
-    return createDevice() && createCommandPool() && createAllocator();
+    return createDevice()
+        && createCommandPool()
+        && createAllocator();
 }
 
 void GraphicsDevice::destroy() noexcept
 {
     if (!isCreated()) return;
 
-    vmaDestroyAllocator(m_allocator);
-    vkDestroyCommandPool(m_device, m_commandPool, nullptr);
-    vkDestroyDevice(m_device, nullptr);
+    vmaDestroyAllocator(_allocator);
+    vkDestroyCommandPool(_device, _commandPool, nullptr);
+    vkDestroyDevice(_device, nullptr);
+
+    _device = VK_NULL_HANDLE;
+    _commandPool = VK_NULL_HANDLE;
+    _allocator = VK_NULL_HANDLE;
 }
 
-bool GraphicsDevice::isCreated() const noexcept { return m_device != VK_NULL_HANDLE; }
+bool GraphicsDevice::isCreated() const noexcept { return _device != VK_NULL_HANDLE; }
 
 GraphicsPhysicalDevice* GraphicsDevice::getPhysicalDevice() const
 {
     assert(isCreated() && "Device must be created before the physical device can be retrieved.");
-
-    return m_pPhysicalDevice;
+    return _pPhysicalDevice;
 }
 
 uint32_t GraphicsDevice::getGraphicsFamilyIndex() const
 {
     assert(isCreated() && "Device must be created before the graphics family index can be retrieved.");
-
-    return m_graphicsFamilyIndex;
+    return _graphicsFamilyIndex;
 }
 
 uint32_t GraphicsDevice::getPresentFamilyIndex() const
 {
     assert(isCreated() && "Device must be created before the present family index can be retrieved.");
-
-    return m_presentFamilyIndex;
+    return _presentFamilyIndex;
 }
 
 VkDevice GraphicsDevice::getHandle() const
 {
     assert(isCreated() && "Device must be created before the handle can be retrieved.");
-
-    return m_device;
+    return _device;
 }
 
 VkQueue GraphicsDevice::getGraphicsQueue() const
 {
     assert(isCreated() && "Device must be created before the graphics queue can be retrieved.");
-
-    return m_graphicsQueue;
+    return _graphicsQueue;
 }
 
 VkQueue GraphicsDevice::getPresentQueue() const
 {
     assert(isCreated() && "Device must be created before the present queue can be retrieved.");
-
-    return m_presentQueue;
+    return _presentQueue;
 }
 
 VkCommandPool GraphicsDevice::getCommandPool() const
 {
     assert(isCreated() && "Device must be created before the command pool can be retrieved.");
-
-    return m_commandPool;
+    return _commandPool;
 }
 
 VmaAllocator GraphicsDevice::getAllocator() const
 {
     assert(isCreated() && "Device must be created before the allocator can be retrieved.");
-
-    return m_allocator;
+    return _allocator;
 }
 
 bool GraphicsDevice::areQueuesSame() const
 {
     assert(isCreated() && "Device must be created before the queue sameness can be checked.");
-
-    return m_graphicsFamilyIndex == m_presentFamilyIndex;
+    return _graphicsFamilyIndex == _presentFamilyIndex;
 }
 
 bool GraphicsDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder)
 {
+    assert(isCreated() && "Device must be created before submissions.");
 
     // Allocate the command buffer used to record the submission.
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocateInfo.pNext = nullptr;
-    allocateInfo.commandPool = m_commandPool;
+    allocateInfo.commandPool = _commandPool;
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocateInfo.commandBufferCount = 1;
 
     VkCommandBuffer cmd = VK_NULL_HANDLE;
-    if (vkAllocateCommandBuffers(m_device, &allocateInfo, &cmd) != VK_SUCCESS) {
-        blError("Could not allocate a Vulkan command buffer!");
+    if (vkAllocateCommandBuffers(_device, &allocateInfo, &cmd) != VK_SUCCESS) {
+        blError("Could not allocate a temporary VkCommandBuffer!");
         return false;
     }
 
@@ -183,7 +168,7 @@ bool GraphicsDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>&
     beginInfo.pInheritanceInfo = nullptr;
 
     if (vkBeginCommandBuffer(cmd, &beginInfo) != VK_SUCCESS) {
-        blError("Could not begin a temporary command buffer!");
+        blError("Could not begin a temporary VkCommandBuffer!");
         return false;
     }
 
@@ -192,7 +177,7 @@ bool GraphicsDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>&
 
     // End the command buffer.
     if (vkEndCommandBuffer(cmd) != VK_SUCCESS) {
-        blError("Could not end a temporary command buffer!");
+        blError("Could not end a temporary VkCommandBuffer!");
         return false;
     }
 
@@ -208,20 +193,19 @@ bool GraphicsDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>&
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = nullptr;
 
-    if (vkQueueSubmit(m_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
-        blError("Could not submit a temporary command buffer!");
+    if (vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
+        blError("Could not submit a temporary VkCommandBuffer!");
         return false;
     }
 
     return true;
 }
 
-void GraphicsDevice::waitForDevice() { vkDeviceWaitIdle(m_device); }
+void GraphicsDevice::waitForDevice() { vkDeviceWaitIdle(_device); }
 
 bool GraphicsDevice::getValidationLayers(std::vector<const char*>& outLayers)
 {
-
-#ifdef BLUEMETAL_DEVELOPMENT // Disable validation layers on release.
+#ifndef BLUEMETAL_DEVELOPMENT // Disable validation layers on release.
     return {};
 #else // Enable validation layers on debug.
 
@@ -234,15 +218,15 @@ bool GraphicsDevice::getValidationLayers(std::vector<const char*>& outLayers)
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
 
-    if (vkEnumerateDeviceLayerProperties(m_pPhysicalDevice->getHandle(), &propertiesCount, nullptr) != VK_SUCCESS) {
-        blError("Could not get Vulkan device layer properties count!");
+    if (vkEnumerateDeviceLayerProperties(_pPhysicalDevice->getHandle(), &propertiesCount, nullptr) != VK_SUCCESS) {
+        blError("Could not get VkDevice layer properties count!");
         return false;
     }
 
     properties.resize(propertiesCount);
 
-    if (vkEnumerateDeviceLayerProperties(m_pPhysicalDevice->getHandle(), &propertiesCount, properties.data()) != VK_SUCCESS) {
-        blError("Could not enumerate Vulkan device layer properties!");
+    if (vkEnumerateDeviceLayerProperties(_pPhysicalDevice->getHandle(), &propertiesCount, properties.data()) != VK_SUCCESS) {
+        blError("Could not enumerate VkDevice layer properties!");
         return false;
     }
 
@@ -260,7 +244,6 @@ bool GraphicsDevice::getValidationLayers(std::vector<const char*>& outLayers)
     outLayers = layers;
     return true;
 #endif
-
 }
 
 bool GraphicsDevice::getExtensions(std::vector<const char*>& outExtensions)
@@ -272,15 +255,15 @@ bool GraphicsDevice::getExtensions(std::vector<const char*>& outExtensions)
     uint32_t propertyCount = 0;
     std::vector<VkExtensionProperties> properties;
 
-    if (vkEnumerateDeviceExtensionProperties(m_pPhysicalDevice->getHandle(), nullptr, &propertyCount, nullptr) != VK_SUCCESS) {
-        blError("Could not get Vulkan device extension properties count!");
+    if (vkEnumerateDeviceExtensionProperties(_pPhysicalDevice->getHandle(), nullptr, &propertyCount, nullptr) != VK_SUCCESS) {
+        blError("Could not get VkDevice extension properties count!");
         return false;
     }
 
     properties.resize(propertyCount);
 
-    if (vkEnumerateDeviceExtensionProperties(m_pPhysicalDevice->getHandle(), nullptr, &propertyCount, properties.data()) != VK_SUCCESS) {
-        blError("Could not enumerate Vulkan device extension properties!");
+    if (vkEnumerateDeviceExtensionProperties(_pPhysicalDevice->getHandle(), nullptr, &propertyCount, properties.data()) != VK_SUCCESS) {
+        blError("Could not enumerate VkDevice extension properties!");
         return false;
     }
 
@@ -288,7 +271,7 @@ bool GraphicsDevice::getExtensions(std::vector<const char*>& outExtensions)
     for (const char* pName : requiredExtensions) {
         auto func = [pName](const VkExtensionProperties& properties){ return std::strcmp(pName, properties.extensionName) == 0; });
         if (std::find_if(properties.begin(), properties.end(), func) == properties.end()) {
-            blError("could not find required instance extension: {}", pName);
+            blError("Could not find required instance extension: {}", pName);
             return false;
         }
     }
@@ -308,27 +291,27 @@ bool GraphicsDevice::createDevice()
     // Get the queue family properties of the physical device.
     uint32_t queuePropertyCount = 0;
     std::vector<VkQueueFamilyProperties> queueProperties;
-    vkGetPhysicalDeviceQueueFamilyProperties(m_pPhysicalDevice->getHandle(), &queuePropertyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(_pPhysicalDevice->getHandle(), &queuePropertyCount, nullptr);
 
     queueProperties.resize(queuePropertyCount);
 
-    vkGetPhysicalDeviceQueueFamilyProperties(m_pPhysicalDevice->getHandle(), &queuePropertyCount, queueProperties.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(_pPhysicalDevice->getHandle(), &queuePropertyCount, queueProperties.data());
 
     // Determine what families will be dedicated to graphics and present.
     uint32_t i = 0;
     for (const VkQueueFamilyProperties& properties : queueProperties) {
         if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-            m_graphicsFamilyIndex = i;
+            _graphicsFamilyIndex = i;
         }
 
         VkBool32 surfaceSupported = VK_FALSE;
-        if (vkGetPhysicalDeviceSurfaceSupportKHR(m_pPhysicalDevice->getHandle(), i, m_createInfo.pWindow->getSurface(), &surfaceSupported) != VK_SUCCESS) {
-            blError("Could not check Vulkan physical device surface support!");
+        if (vkGetPhysicalDeviceSurfaceSupportKHR(_pPhysicalDevice->getHandle(), i, _info.pWindow->getSurface(), &surfaceSupported) != VK_SUCCESS) {
+            blError("Could not check VkPhysicalDevice surface support!");
             return false;
         }
 
         if (surfaceSupported) {
-            m_presentFamilyIndex = i;
+            _presentFamilyIndex = i;
         }
 
         i++;
@@ -340,7 +323,7 @@ bool GraphicsDevice::createDevice()
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, // sType
             nullptr, // pNext,
             0, // flags
-            m_graphicsFamilyIndex, // queueFamilyIndex
+            _graphicsFamilyIndex, // queueFamilyIndex
             1, // queueCount
             queuePriorities, // pQueuePriorities
         },
@@ -348,7 +331,7 @@ bool GraphicsDevice::createDevice()
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, // sType
             nullptr, // pNext,
             0, // flags
-            m_presentFamilyIndex, // queueFamilyIndex
+            _presentFamilyIndex, // queueFamilyIndex
             1, // queueCount
             queuePriorities, // pQueuePriorities
         }
@@ -372,16 +355,16 @@ bool GraphicsDevice::createDevice()
     createInfo.ppEnabledExtensionNames = extensions.data();
     createInfo.pEnabledFeatures = &features;
 
-    if (vkCreateDevice(m_pPhysicalDevice->getHandle(), &createInfo, nullptr, &m_device) != VK_SUCCESS) {
-        blError("Could not create the Vulkan device!");
+    if (vkCreateDevice(_pPhysicalDevice->getHandle(), &createInfo, nullptr, &_device) != VK_SUCCESS) {
+        blError("Could not create a VkDevice!");
         return false;
     }
 
     // Get the graphics and present queue objects.
-    vkGetDeviceQueue(m_device, m_graphicsFamilyIndex, 0, &m_graphicsQueue);
-    vkGetDeviceQueue(m_device,  m_presentFamilyIndex, 0, &m_presentQueue);
+    vkGetDeviceQueue(_device, _graphicsFamilyIndex, 0, &_graphicsQueue);
+    vkGetDeviceQueue(_device,  _presentFamilyIndex, 0, &_presentQueue);
 
-    blInfo("Created Vulkan device using {}.", m_pPhysicalDevice->getDeviceName());
+    blInfo("Created the VkDevice using: {}", _pPhysicalDevice->getDeviceName());
     return true;
 }
 

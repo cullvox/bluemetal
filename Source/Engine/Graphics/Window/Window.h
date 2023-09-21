@@ -31,24 +31,27 @@ public:
   ~Window();
 
   /** @brief Creates this window. */
-  bool create(const WindowCreateInfo &createInfo);
+  bool create(const WindowCreateInfo &createInfo) noexcept;
 
   /** @brief Destroys this window. */
-  void destroy();
+  void destroy() noexcept;
 
 public:
   /** @brief Gets the current window extent in pixels. */
-  Extent2D getExtent();
+  Extent2D getExtent() const noexcept;
 
   /** @brief Returns the Vulkan surface created with this window. */
-  VkSurfaceKHR getSurface();
+  VkSurfaceKHR getSurface() const noexcept;
 
   /** @brief Returns the underlying SDL window object. */
-  SDL_Window *getHandle();
+  SDL_Window *getHandle() const noexcept;
+
+  /** @brief Changes the title displayed on the top of a windowed window. */
+  void setTitle(const std::string_view& title) noexcept;
 
 private:
-  bool createWindow(const VideoMode &videoMode, const std::string &title, Display* display);
-  bool createSurface();
+  bool createWindow(const VideoMode &videoMode, const std::string &title, Display* display) noexcept;
+  bool createSurface() noexcept;
 
   WindowCreateInfo _createInfo;
   GraphicsInstance* _pInstance;

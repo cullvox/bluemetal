@@ -1,86 +1,71 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
+#include "Export.h"
+#include "Precompiled.h"
 #include "Core/Version.h"
 #include "PhysicalDevice.h"
-#include "Precompiled.h"
-#include "Export.h"
 
-namespace bl
-{
+namespace bl {
 
-struct GraphicsInstanceCreateInfo
-{
-    Version         applicationVersion;
-    std::string     applicationName;
-    bool            enableValidation;
+struct GraphicsInstanceCreateInfo {
+    Version         applicationVersion; /** @brief Version of your application. */
+    std::string     applicationName;    /** @brief Name of your application. */
+    bool            enableValidation;   /** @brief Enables Vulkan validation layer and debug logging. */
 };
 
-class BLUEMETAL_API GraphicsInstance
-{
+/** @brief Used to choose physical device using an instance to create an @ref GraphicsDevice. */
+class BLUEMETAL_API GraphicsInstance {
 public:
-
-    /// Default Constructor
+    /** @brief Default Constructor */
     GraphicsInstance();
 
-    /// Move Constructor 
+    /** @brief Move Constructor  */
     GraphicsInstance(GraphicsInstance&& other);
 
-    /// Create Constructor
-    GraphicsInstance(const GraphicsInstanceCreateInfo& createInfo);
+    /** @brief Create Constructor */
+    GraphicsInstance(const GraphicsInstanceCreateInfo& info);
     
-    /// Default Destructor
+    /** @brief Default Destructor */
     ~GraphicsInstance();
 
-    /// Move Operator
+    /** @brief Move Operator */
     GraphicsInstance& operator=(GraphicsInstance&& rhs);
 
-    /// Creates the instance object.
-    bool create(const GraphicsInstanceCreateInfo& createInfo);
+    /** @brief Creates this instance object. */
+    [[nodiscard]] bool create(const GraphicsInstanceCreateInfo& info) noexcept;
 
-    /// Destroys the instance object.
+    /** @brief Destroys this instance object. */
     void destroy() noexcept;
 
-    /// Returns true if this object was created.
-    bool isCreated() const noexcept;
+    /** @brief Returns true if this object was created. */
+    [[nodiscard]] bool isCreated() const noexcept;
 
-    /// Returns true if this object was created.
-    ///
-    ///     @param[out] error Error string to set if there was an issue.
-    bool isCreated(std::string& error) const noexcept;
-
-    /// Gets the create info used to create this object.
-    ///
-    ///     @param[out] createInfo Create info struct to fill in.
-    ///
-    bool getCreateInfo(GraphicsInstanceCreateInfo& createInfo);
+public:
     
-    /// Gets the underlying VkInstance object.
-    VkInstance getHandle() const;
+    /** @brief Returns the underlying VkInstance object. */
+    [[nodiscard]] VkInstance getHandle() const noexcept;
  
-    /// Gets the possible physical devices to choose from.
-    std::vector<GraphicsPhysicalDevice*> getPhysicalDevices() const;
+    /** @brief Returns the physical devices to choose from. */
+    [[nodiscard]] std::vector<GraphicsPhysicalDevice*> getPhysicalDevices() const noexcept;
 
 private:
  
-    /// Gets a list of extensions used by SDL for window creation. 
-    bool getExtensionsForSDL(std::vector<const char*>& layers);
+    /** @brief Gets a list of extensions used by SDL for window creation.  */
+    [[nodiscard]] bool getExtensionsForSDL(std::vector<const char*>& layers) noexcept;
 
-    /// Gets a list of extensions used by this engine for various usages. 
-    bool getExtensions(std::vector<const char*>& layers);
+    /** @brief Gets a list of extensions used by this engine for various usages.  */
+    [[nodiscard]] bool getExtensions(std::vector<const char*>& layers) noexcept;
 
-    /// Gets a list of validation layers used by this engine. 
-    bool getValidationLayers(std::vector<const char*>& layers);
+    /** @brief Gets a list of validation layers used by this engine.  */
+    [[nodiscard]] bool getValidationLayers(std::vector<const char*>& layers) noexcept;
 
-    /// Creates the underlying VkInstance object.
-    bool createInstance();
+    /** @brief Creates the underlying VkInstance object. */
+    [[nodiscard]] bool createInstance() noexcept;
 
-    /// Creates the array of GraphicsPhysicalDevices from VkPhysicalDevices.
-    bool createPhysicalDevices();
+    /** @brief Creates the array of GraphicsPhysicalDevices from VkPhysicalDevices. */
+    [[nodiscard]] bool createPhysicalDevices() noexcept;
 
+    /** @brief Vulkan debug callback from VkDebugUtilsMessengerEXT. */
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT          severity,
         VkDebugUtilsMessageTypeFlagsEXT                 messageType,

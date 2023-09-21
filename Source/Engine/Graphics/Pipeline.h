@@ -9,58 +9,55 @@
 namespace bl
 {
 
-/// Create info for pipeline objects.
-struct PipelineCreateInfo
-{
-    GraphicsDevice*             pDevice; /// Logical device used to create this pipeline. 
-    DescriptorLayoutCache*      pDescriptorLayoutCache;/// Speed up creation by caching descriptor set layouts.
-    RenderPass*                 pRenderPass; /// The shaders used in this pipeline program.
-    uint32_t                    subpass; /// What pass this pipeline is used in.
-    std::vector<Shader*>        shaders; /// What subpass on the render pass is this used in.
+/** @brief Create info for pipeline objects. */
+struct PipelineCreateInfo {
+    GraphicsDevice*           pDevice;                   /** @brief Logical device used to create this pipeline.  */
+    DescriptorLayoutCache*    pDescriptorLayoutCache;    /** @brief Speed up creation by caching descriptor set layouts. */
+    RenderPass*               pRenderPass;               /** @brief The shaders used in this pipeline program. */
+    uint32_t                  subpass;                   /** @brief What pass this pipeline is used in. */
+    std::vector<Shader*>      shaders;                   /** @brief What subpass on the render pass is this used in. */
 };
 
-/// A program consisting of multiple shaders that run on the GPU.
-///
-///     Underlying is a VkPipeline object that is constructed.
-class BLUEMETAL_API Pipeline
-{
+/** @brief A program consisting of multiple shaders that run on the GPU. */
+class BLUEMETAL_API Pipeline {
 public:
 
-    /// Default Constructor
+    /** @brief Default Constructor */
     Pipeline();
 
-    /// Constructs the pipeline by calling @ref create().    
-    Pipeline(const PipelineCreateInfo& createInfo);
+    /** @brief Move Constructor */
+    Pipeline(Pipeline&& rhs);
 
-    /// Default Destructor
+    /** @brief Constructs the pipeline by calling @ref create().     */
+    Pipeline(const PipelineCreateInfo& info);
+
+    /** @brief Default Destructor */
     ~Pipeline();
 
-    /// Creates a pipeline object.
-    bool create(const PipelineCreateInfo& createInfo);
+    /** @brief Move Operator */
+    Pipeline& operator=(Pipeline&& rhs) noexcept;
 
-    /// Destroys a pipeline object.
+    /** @brief Creates a pipeline object. */
+    bool create(const PipelineCreateInfo& info);
+
+    /** @brief Destroys a pipeline object. */
     void destroy() noexcept;
 
-    /// Gets the current created status.
+    /** @brief Gets the current created status. */
     bool isCreated() const noexcept;
 
-    /// Returns an error in a human readable format if there is one.
-    std::string getError() const noexcept;
+public:
 
-    /// Gets the raw VkPipelineLayout used to create this pipeline.
+    /** @brief Gets the raw VkPipelineLayout used to create this pipeline. */
     VkPipelineLayout getLayout() const;
 
-    /// Gets the raw VkPipeline underlying this object.
+    /** @brief Gets the raw VkPipeline underlying this object. */
     VkPipeline getHandle() const;
 
-    /// Returns reflected resource info that this pipeline uses for materials and others. 
-    ///
-    /// Gets information for materials like descriptor set bindings.
+    /** @brief Returns reflected resource info that this pipeline uses for materials and others. */
     std::vector<PipelineResource> getResources();
 
-    /// Binds this pipeline to a command buffer.
-    ///
-    ///     @param cmd Command buffer to bind on. 
+    /** @brief Binds this pipeline to a command buffer. */
     void bind(VkCommandBuffer cmd);
 
 private:

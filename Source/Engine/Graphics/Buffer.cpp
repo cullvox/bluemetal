@@ -2,22 +2,45 @@
 
 namespace bl {
 
-Buffer::Buffer(GraphicsDevice* pDevice, VkBufferUsageFlags usage,
-    VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* pInfo,
-    bool mapped)
-    : m_pDevice(pDevice)
-    , m_size(size)
+Buffer::Buffer(const BufferCreateInfo& info)
 {
+    if (!create(info)) throw std::runtime_error("Could not create a buffer, check prevous logs!");
+}
+
+Buffer::~Buffer() 
+{ 
+    destroy();
+}
+
+Buffer& Buffer::operator=(Buffer&& rhs) noexcept
+{
+    destroy();
+
+    _pDevice = rhs._pDevice;
+    _size = rhs._size;
+    _buffer = rhs._buffer;
+    _allocation = rhs._allocation;
+
+    rhs._pDevice = {};
+    rhs._size = {};
+    rhs._buffer = {};
+    rhs._allocation = {};
+}
+
+bool Buffer::create(const BufferCreateInfo& info) noexcept
+{
+    _pDevice = info.pDevice;
+    _size = info.size;
 
     // Build the buffer create info.
-    uint32_t graphicsFamilyIndex = m_pDevice->getGraphicsFamilyIndex();
+    uint32_t graphicsFamilyIndex = _pDevice->getGraphicsFamilyIndex();
 
-    VkBufferCreateInfo bufferCreateInfo = {};
+    VkBufferCreateInfo createInfo = {};
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferCreateInfo.pNext = nullptr;
     bufferCreateInfo.flags = 0;
-    bufferCreateInfo.size = size;
-    bufferCreateInfo.usage = (VkBufferUsageFlags)usage;
+    bufferCreateInfo.size = _size;
+    bufferCreateInfo.usage = (VkBufferUsageFlags)info.usage;
     bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     bufferCreateInfo.queueFamilyIndexCount = 1;
     bufferCreateInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
@@ -29,26 +52,40 @@ Buffer::Buffer(GraphicsDevice* pDevice, VkBufferUsageFlags usage,
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.flags = flags;
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-    allocationCreateInfo.requiredFlags = memoryProperties;
+    allocationCreateInfo.requiredFlags = info.memoryProperties;
     allocationCreateInfo.preferredFlags = 0;
     allocationCreateInfo.memoryTypeBits = 0;
     allocationCreateInfo.pool = VK_NULL_HANDLE;
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 0.0f;
 
-    if (vmaCreateBuffer(m_pDevice->getAllocator(), &bufferCreateInfo, &allocationCreateInfo,
-            &m_buffer, &m_allocation, pInfo)
-        != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a vulkan buffer!");
+    if (vmaCreateBuffer(_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &_buffer, &_allocation, pInfo) != VK_SUCCESS) {
+        blError("Could not allocate a vulkan buffer!");
+        return false;
     }
+
+    return true;
 }
 
-Buffer::~Buffer() { vmaDestroyBuffer(m_pDevice->getAllocator(), m_buffer, m_allocation); }
+void Buffer::destroy() noexcept
+{
+    vmaDestroyBuffer(_pDevice->getAllocator(), _buffer, _allocation);
+    _pDevice = nullptr;
+    _size = 0;
+    _buffer = VK_NULL_HANDLE;
+    _allocation = VK_NULL_HANDLE;
+}
+
+bool Buffer::isCreated() const noexcept { return _buffer != VK_NULL_HANDLE; }
 
 VmaAllocation Buffer::getAllocation() { return m_allocation; }
-
 VkBuffer Buffer::getBuffer() { return m_buffer; }
-
 VkDeviceSize Buffer::getSize() { return m_size; }
+
+bool Buffer::copyFrom(const Buffer& copy)
+{
+    // TODO: Implement ME!
+    return false;
+}
 
 } // namespace bl

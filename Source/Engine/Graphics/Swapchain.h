@@ -7,112 +7,120 @@
 namespace bl
 {
 
-/// @brief 
-class BLUEMETAL_API Swapchain
-{
+struct SwapchainCreateInfo {
+    GraphicsDevice*                   pDevice;                      /** @brief Logical device used to create the swapchain. */
+    Window*                           pWindow;                      /** @brief The window this swapchain is swapping onto. */
+    std::optional<VkPresentModeKHR>   presentMode = std::nullopt;   /** @brief Method of presentation onto the screen. */
+    std::optional<VkSurfaceFormatKHR> surfaceFormat = std::nullopt; /** @brief Color and image format used to create swapchain images. */
+};
+
+/** @brief Swap present images for rendering multiple frames at a time. */
+class BLUEMETAL_API Swapchain {
 public:
 
-    /// Default format to look for.
+    /** @brief Default format to look for. */
     static inline constexpr VkFormat DEFAULT_FORMAT = VK_FORMAT_R8G8B8A8_SRGB;
 
-    /// Default color space to look for.
+    /** @brief Default color space to look for. */
     static inline constexpr VkColorSpaceKHR DEFAULT_COLOR_SPACE = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
 
-    /// Default surface format to look for if user left unspecified. Will use index 0 of @ref PhysicalDevice::getSurfaceFormats if this is unavailable.
+    /** @brief Default surface format to look for if user left unspecified. Will use index 0 of @ref PhysicalDevice::getSurfaceFormats if this is unavailable. */
     static inline constexpr VkSurfaceFormatKHR DEFAULT_SURFACE_FORMAT = VkSurfaceFormatKHR{DEFAULT_FORMAT, DEFAULT_COLOR_SPACE};
 
-    /// Default present mode to use if user left unspecified. Will use present mode FIFO if this is unavailable.
+    /** @brief Default present mode to use if user left unspecified. Will use present mode FIFO if this is unavailable. */
     static inline constexpr VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
-    /// Constructs a swapchain object.
-    ///
-    ///     @param pDevice Logical device used to create the swapchain.
-    ///     @param pWindow The window this swapchain is swapping onto.
-    ///     @param presentMode Method of presentation onto the screen.
-    ///     @param surfaceFormat Color and image format used to create swapchain images.
-    ///
-    Swapchain(
-        GraphicsDevice*                     pDevice, 
-        Window*                             pWindow, 
-        std::optional<VkPresentModeKHR>     presentMode = std::nullopt,
-        std::optional<VkSurfaceFormatKHR>   surfaceFormat = std::nullopt);
+    /** @brief Default Constructor */
+    Swapchain();
 
-    /// Default destructor.
+    /** @brief Create Constructor */
+    Swapchain(const SwapchainCreateInfo& info);
+
+    /** @brief Default destructor. */
     ~Swapchain();
 
-    /// Returns the format that the swapchain images are using.
-    VkFormat getFormat();
+    /** @brief Creates this swapchain. */
+    [[nodiscard]] bool create(const SwapchainCreateInfo& info) noexcept;
 
-    /// Returns the pixel extent of the swapchain.
-    VkExtent2D getExtent();
+    /** @brief Destroys this swapchain. */
+    void destroy() noexcept;
 
-    /// Returns the number of images that the swapchain is swapping between.
-    uint32_t getImageCount();
+    /** @brief Returns true if the swapchain was already created. */
+    [[nodiscard]] bool isCreated() const noexcept;
 
-    /// Returns the present mode the swapchain is using.
-    VkPresentModeKHR getPresentMode();
+public:
 
-    /// Returns the surface format the swapchain is using.
-    VkSurfaceFormatKHR getSurfaceFormat();
+    /** @brief Returns the format that the swapchain images are using. */
+    [[noexcept]] VkFormat getFormat() const noexcept;
 
-    /// Returns the handles to images that are being swapped.
-    std::vector<VkImage> getImages();
+    /** @brief Returns the pixel extent of the swapchain. */
+    [[noexcept]] VkExtent2D getExtent() const noexcept;
 
-    /// Returns handles to image views of the swapchain images from @ref getImages.
-    ///
-    /// These images are in the same order from @ref getImages.
-    /// Meaning that an image at index 0 from @ref getImages, to get it's image view
-    /// using @ref getImageViews would also be index 0.
-    std::vector<VkImageView> getImageViews();
+    /** @brief Returns the number of images that the swapchain is swapping between. */
+    [[noexcept]] uint32_t getImageCount() const noexcept;
 
-    /// Returns handles to framebuffers of images that are being swapped.
-    ///
-    /// These framebuffers are in the same order from @ref getImageViews and @getImages.
-    /// Same as @ref getImageViews, the indices match up with one another,
-    /// image 0, image view 0, and framebuffer 0 all relate to each other.
-    std::vector<VkFramebuffer> getFramebuffers();
+    /** @brief Returns the present mode the swapchain is using. */
+    [[noexcept]] VkPresentModeKHR getPresentMode() const noexcept;
 
-    /// Returns the swapchain object.
-    VkSwapchainKHR getHandle();
+    /** @brief Returns the surface format the swapchain is using. */
+    [[noexcept]] VkSurfaceFormatKHR getSurfaceFormat() const noexcept;
 
-    /// Returns true on VK_PRESENT_MODE_MAILBOX being supported on current physical device. 
-    bool isMailboxSupported() { return m_isMailboxSupported; }
+    /** @brief Returns the handles to images that are being swapped. */
+    [[nodiscard]] std::vector<VkImage> getImages() const noexcept;
 
-    /// Returns true on VK_PRESENT_MODE_IMMEDIATE being supported on current physical device.
-    bool isImmediateSupported() { return m_isImmediateSupported; }
+    /** @brief Returns handles to image views of the swapchain images from @ref getImages. */
+    [[nodiscard]] std::vector<VkImageView> getImageViews() const noexcept;
 
-    /// Gets the index to the next image being used in the swapchain.
-    ///
-    ///     @param semaphore Semaphore to signal when the image is usable.
-    ///     @param fence Fence to signal when presenting is complete.
-    ///     @param pImageIndex The next image index being used in @ref getImages(). 
-    ///     @param pRecreated If the swapchain was recreated the render pass might need to recreate images. (e.g. Depth Buffer)
-    ///
-    void acquireNext(
-        VkSemaphore     semaphore, 
-        VkFence         fence, 
-        uint32_t*       pImageIndex, 
-        bool*           pRecreated);
+    /** @brief Returns handles to framebuffers of images that are being swapped from @ref getImageViews. */
+    [[nodiscard]] std::vector<VkFramebuffer> getFramebuffers() const noexcept;
 
-    /// Destroys and recreates the swapchain, changes present mode.
-    ///
-    ///     @param presentMode What present mode the swapchain is using, FIFO is VSync. Use @ref PhysicalDevice::getPresentModes to get them.
-    ///
-    void recreate(
-        std::optional<VkPresentModeKHR> presentMode);
-        
-    /// Destroy and creates the swapchain without changing any parameters.
-    void recreate();
+    /** @brief Returns the swapchain object. */
+    [[nodiscard]] VkSwapchainKHR getHandle() const noexcept;
+
+    /** @brief Returns true on VK_PRESENT_MODE_MAILBOX being supported on current physical device. */
+    [[nodiscard]] bool isMailboxSupported() const noexcept { return m_isMailboxSupported; }
+
+    /** @brief Returns true on VK_PRESENT_MODE_IMMEDIATE being supported on current physical device. */
+    [[nodiscard]] bool isImmediateSupported() const noexcept { return m_isImmediateSupported; }
+
+    /** @brief Gets the index to the next image being used in the swapchain.
+     *
+     *  @param semaphore      Semaphore to signal when the image is usable.
+     *  @param fence          Fence to signal when presenting is complete.
+     *  @param pImageIndex    The next image index being used in @ref getImages(). 
+     *  @param pRecreated     If the swapchain was recreated the render pass might need to recreate some images. (e.g. Depth Buffer)
+     */
+    bool acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& imageIndex, bool& bRecreated) noexcept;
+
+    /** @brief Destroys and recreates the swapchain, changes present mode.
+     *
+     *  @param presentMode What present mode to use when swapping, use @ref PhysicalDevice::getPresentModes to get them.
+     */
+    bool recreate(std::optional<VkPresentModeKHR> presentMode = std::nullopt) noexcept;
 
 private:  
-    void ensureSurfaceSupported();
-    void chooseImageCount();
-    void chooseFormat(std::optional<VkSurfaceFormatKHR> surfaceFormat);
-    void choosePresentMode(std::optional<VkPresentModeKHR> presentMode);
-    void chooseExtent();
-    void obtainImages();
-    void createImageViews();
-    void destroyImageViews();
+
+    /** @brief Returns true if the window's VkSurfaceKHR is supported by the VkPhysicalDevice. */
+    bool ensureSurfaceSupported() noexcept;
+
+    /** @brief Returns true if an image count was chosen successfully. */
+    bool chooseImageCount() noexcept;
+
+    /** @brief Returns true if the surface format was properly found. */
+    bool chooseFormat(std::optional<VkSurfaceFormatKHR> surfaceFormat = std::nullopt) noexcept;
+
+    /** @brief Returns true if the present mode was properly found. */
+    bool choosePresentMode(std::optional<VkPresentModeKHR> presentMode = std::nullopt) noexcept;
+
+    /** @brief Returns true if an extent was found. */
+    bool chooseExtent() noexcept;
+
+    /** @brief Returns true if swapchain images could be obtained. */
+    bool obtainImages() noexcept;
+
+    /** @brief Creates image views for frame buffers. */
+    bool createImageViews() noexcept;
+    bool destroyImageViews() noexcept;
     
     GraphicsPhysicalDevice*         m_pPhysicalDevice;
     GraphicsDevice*                 m_pDevice;

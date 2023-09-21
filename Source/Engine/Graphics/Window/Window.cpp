@@ -12,20 +12,21 @@ Window::Window(const WindowCreateInfo& createInfo)
 
 Window::~Window()
 {
+    destroy();
 }
 
-bool Window::create(const WindowCreateInfo& createInfo)
+bool Window::create(const WindowCreateInfo& createInfo) noexcept
 {
     return createWindow(createInfo.mode, createInfo.title, createInfo.display) && createSurface();
 }
 
-void Window::destroy()
+void Window::destroy() noexcept
 {
     vkDestroySurfaceKHR(_pInstance->getHandle(), _surface, nullptr);
     SDL_DestroyWindow(_pWindow);
 }
 
-Extent2D Window::getExtent()
+Extent2D Window::getExtent() const noexcept
 {
     int width = 0, height = 0;
     SDL_Vulkan_GetDrawableSize(_pWindow, &width, &height);
@@ -33,10 +34,10 @@ Extent2D Window::getExtent()
     return Extent2D((uint32_t)width, (uint32_t)height);
 }
 
-VkSurfaceKHR Window::getSurface() { return _surface; }
-SDL_Window* Window::getHandle() { return _pWindow; }
+VkSurfaceKHR Window::getSurface() const noexcept { return _surface; }
+SDL_Window* Window::getHandle() const noexcept { return _pWindow; }
 
-bool Window::createWindow(const VideoMode& videoMode, const std::string& title, Display* display)
+bool Window::createWindow(const VideoMode& videoMode, const std::string& title, Display* display) noexcept
 {
     // default window flags
     uint32_t flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -53,16 +54,21 @@ bool Window::createWindow(const VideoMode& videoMode, const std::string& title, 
 
     if (!_pWindow) {
         blError("Could not create an SDL2 window! {}", SDL_GetError());
+        return false;
     }
 
     SDL_ShowWindow(_pWindow);
+    return true;
 }
 
-bool Window::createSurface()
+bool Window::createSurface() noexcept
 {
     if (SDL_Vulkan_CreateSurface(_pWindow, _pInstance->getHandle(), &_surface) != SDL_TRUE) {
         blError("Could not create a Vulkan surface from an SDL window!");
+        return false;
     }
+
+    return true;
 }
 
 } // namespace bl

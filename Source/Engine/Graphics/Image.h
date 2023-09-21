@@ -31,6 +31,9 @@ public:
     /** @brief Default Destructor */
     ~Image();
 
+    /** @brief Move Operator */
+    Image& operator=(Image&& rhs) noexcept;
+
     /** @brief Creates this image. */
     bool create(const ImageCreateInfo& createInfo) noexcept;
 

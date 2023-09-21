@@ -36,7 +36,6 @@ bool FrameCounter::endFrame()
         endedSecond = true;
     }
 
-    // Compute the nanoseconds per frame.
     auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(_endOfFrame - _startOfFrame);
 
     // Pop the front if the maximum will be held
