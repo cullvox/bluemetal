@@ -6,7 +6,7 @@
 ![VulkanVer](https://img.shields.io/badge/Vulkan-1.3-red)
 
 
-Bluemetal Engine is a powerful and versatile game engine built using modern C++17/20 features. It incorporates cutting-edge technologies such as Vulkan Renderer, a custom configuration language called Noodle, Dear ImGui for user interface, and open-source libraries like SDL2 and VMA.
+Bluemetal Engine is a game engine built using modern C++17/20 features. It creates a vulkan renderer, a custom configuration language called Noodle, uses Dear ImGui, and open-source libraries like SDL2 and VMA.
 
 ## Features
 
