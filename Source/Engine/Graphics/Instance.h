@@ -20,7 +20,7 @@ public:
     GraphicsInstance();
 
     /** @brief Move Constructor  */
-    GraphicsInstance(GraphicsInstance&& other);
+    GraphicsInstance(GraphicsInstance&& rhs) noexcept;
 
     /** @brief Create Constructor */
     GraphicsInstance(const GraphicsInstanceCreateInfo& info);
@@ -29,7 +29,7 @@ public:
     ~GraphicsInstance();
 
     /** @brief Move Operator */
-    GraphicsInstance& operator=(GraphicsInstance&& rhs);
+    GraphicsInstance& operator=(GraphicsInstance&& rhs) noexcept;
 
     /** @brief Creates this instance object. */
     [[nodiscard]] bool create(const GraphicsInstanceCreateInfo& info) noexcept;

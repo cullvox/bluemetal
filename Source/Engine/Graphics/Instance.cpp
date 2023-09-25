@@ -6,7 +6,7 @@ namespace bl {
 
 GraphicsInstance::GraphicsInstance() { }
 
-GraphicsInstance::GraphicsInstance(GraphicsInstance&& rhs)
+GraphicsInstance::GraphicsInstance(GraphicsInstance&& rhs) noexcept
 {
     destroy();
 
@@ -18,7 +18,7 @@ GraphicsInstance::GraphicsInstance(GraphicsInstance&& rhs)
     _physicalDevices = std::move(rhs._physicalDevices);
 }
 
-GraphicsInstance& GraphicsInstance::operator=(GraphicsInstance&& rhs)
+GraphicsInstance& GraphicsInstance::operator=(GraphicsInstance&& rhs) noexcept
 {
     destroy();
 
@@ -48,7 +48,7 @@ GraphicsInstance::GraphicsInstance(const GraphicsInstanceCreateInfo& createInfo)
 
 GraphicsInstance::~GraphicsInstance() { destroy(); }
 
-bool GraphicsInstance::create(const GraphicsInstanceCreateInfo& createInfo)
+bool GraphicsInstance::create(const GraphicsInstanceCreateInfo& createInfo) noexcept
 {
     _createInfo = createInfo;
 
@@ -69,14 +69,13 @@ void GraphicsInstance::destroy() noexcept
 
 bool GraphicsInstance::isCreated() const noexcept { return _instance != VK_NULL_HANDLE; }
 
-VkInstance GraphicsInstance::getHandle() const
+VkInstance GraphicsInstance::getHandle() const noexcept
 {
     assert(isCreated() && "Instance must be created before a handle can be retrieved.");
-
     return _instance;
 }
 
-std::vector<GraphicsPhysicalDevice*> GraphicsInstance::getPhysicalDevices() const
+std::vector<GraphicsPhysicalDevice*> GraphicsInstance::getPhysicalDevices() const noexcept
 {
     assert(isCreated() && "Instance must be created before physical devices can be retrieved.");
 
@@ -88,7 +87,7 @@ std::vector<GraphicsPhysicalDevice*> GraphicsInstance::getPhysicalDevices() cons
     return physicalDevices;
 }
 
-bool GraphicsInstance::getExtensionsForSDL(std::vector<const char*>& outExtensions)
+bool GraphicsInstance::getExtensionsForSDL(std::vector<const char*>& outExtensions) noexcept
 {
 
     // Create a temporary window to get extensions from SDL.
@@ -124,7 +123,7 @@ bool GraphicsInstance::getExtensionsForSDL(std::vector<const char*>& outExtensio
     return true;
 }
 
-bool GraphicsInstance::getExtensions(std::vector<const char*>& outExtensions)
+bool GraphicsInstance::getExtensions(std::vector<const char*>& outExtensions) noexcept
 {
 
     // our engines required extensions
@@ -170,7 +169,7 @@ bool GraphicsInstance::getExtensions(std::vector<const char*>& outExtensions)
     return true;
 }
 
-bool GraphicsInstance::getValidationLayers(std::vector<const char*>& userLayers)
+bool GraphicsInstance::getValidationLayers(std::vector<const char*>& userLayers) noexcept
 {
     userLayers.clear();
     
@@ -212,7 +211,7 @@ bool GraphicsInstance::getValidationLayers(std::vector<const char*>& userLayers)
 #endif // BLUEMETAL_DEVELOPMENT
 }
 
-bool GraphicsInstance::createInstance()
+bool GraphicsInstance::createInstance() noexcept
 {
     std::vector<const char*> extensions;
     std::vector<const char*> layers;
@@ -292,7 +291,7 @@ bool GraphicsInstance::createInstance()
     return true;
 }
 
-bool GraphicsInstance::createPhysicalDevices()
+bool GraphicsInstance::createPhysicalDevices() noexcept
 {
 
     // Enumerate all Vulkan physical devices.

@@ -3,15 +3,23 @@
 #include "Precompiled.h"
 #include "Export.h"
 
+namespace bl {
+
 /** @brief Different types of noodle that can be expressed. */
 enum class NoodleType {
-    eGroup,
     eInteger,
     eFloat,
     eBoolean,
     eString,
+    eGroup,
     eArray,
 };
+
+/** @brief Any value type that a noodle can be. */
+using NoodleValue = std::variant<int, float, bool, std::string>;
+
+/** @brief Any array type that a noodle can be. */
+using NoodleArray = std::variant<std::vector<int>, std::vector<float>, std::vector<bool>, std::vector<std::string>>;
 
 /** @brief One node of the noodle. */
 class BLUEMETAL_API Noodle {
@@ -47,69 +55,101 @@ public:
     template<typename T>
     Noodle(const std::string& name, const std::vector<T>& value, Noodle* parent = nullptr);
 
+    /** @brief Sets the noodle to a new value. */
+    Noodle& operator=(int value) noexcept;
+    Noodle& operator=(float value) noexcept;
+    Noodle& operator=(bool value) noexcept;
+    Noodle& operator=(const std::string& value) noexcept; 
+
+    /** @brief Returns a noodle of a group using a key. */
+    Noodle& operator[](const std::string& key);
+    const Noodle& operator[](const std::string& key) const;
+
 public:
 
-    [[nodiscard]] bool isGroup() const noexcept;
-    [[nodiscard]] bool isArray() const noexcept;
+    /** @brief Returns true if the noodle is the specified type. */
     [[nodiscard]] bool isInteger() const noexcept;
     [[nodiscard]] bool isFloat() const noexcept;
     [[nodiscard]] bool isBool() const noexcept;
     [[nodiscard]] bool isString() const noexcept;
+    [[nodiscard]] bool isGroup() const noexcept;
+    [[nodiscard]] bool isArray() const noexcept;
 
     /** @brief Returns true if this is the root noodle. */
-    bool isRoot() const noexcept { return _parent == nullptr; }
-
-    /** @brief Gets the type of this noodle. */
-    NoodleType getType() const noexcept { return _type; }
-
-    /** @brief If this noodle is an array it returns the type of the values. */
-    NoodleType getArrayType() const;
-
-    /** @brief Gets the amount of noodles or values this noodle contains. */
-    size_t getSize() const;
+    [[nodiscard]] bool isRoot() const noexcept;
 
     /** @brief Returns the noodle one up the chains. */
-    Noodle* getParent() { return _parent; }
+    [[nodiscard]] Noodle* getParent() const noexcept
 
-    /** @brief Converts this noodle to a string value. */
-    std::string toString() const;
+    /** @brief Gets the type of this noodle. */
+    [[nodiscard]] NoodleType getType() const noexcept
+
+    /** @brief Gets the amount of noodles or values this noodle may contains, 0 if not group/array. */
+    [[nodiscard]] size_t getSize() const noexcept;
+
+    /** @brief Sets the name of this noodle and changes this parent group. */
+    bool setName(const std::string& name) noexcept;
+
+    /** @brief Gets a value and returns true if it was found. */
+    [[nodiscard]] bool get(int& value) const noexcept;
+    [[nodiscard]] bool get(float& value) const noexcept;
+    [[nodiscard]] bool get(bool& value) const noexcept;
+    [[nodiscard]] bool get(std::string& value) const noexcept;
+
+    [[nodiscard]] bool at(size_t index, int&& value) const noexcept;
+    [[nodiscard]] bool at(size_t index, float&& value) const noexcept;
+    [[nodiscard]] bool at(size_t index, bool&& value) const noexcept;
+    [[nodiscard]] bool at(size_t index, std::string&& value) const noexcept;
+
+    /** @brief Returns true if a group contains a value. */
+    [[nodiscard]] bool contains(const std::string& key) const noexcept;
+    
+    /** @brief Converts this noodle's value into a string. */
+    [[nodiscard]] std::string toString() const noexcept;
 
     /** @brief Recursively dumps the noodles into a human readable soup. */
-    std::string dump();
+    [[nodiscard]] std::string dump() const noexcept;
 
     /** @brief Dumps this noodle and it's children into a file. */
-    void dumpToFile(const std::filesystem::path& path);
+    [[nodiscard]] bool dumpToFile(const std::filesystem::path& path) const noexcept;
 
-    /** @brief Returns the value of this noodle, will throw if invalid. */
+public: /* Throw Functions */
+
+    /** @brief Returns a value at an array index, must be an array type. */
     template<typename T>
-    T& get();
+    T& at(size_t index);
 
-    /** @brief Gets a noodle value of this type. */
     template<typename T>
-    Noodle& operator=(T value);
+    T at(size_t index) const;
 
-    /** @brief Returns the child noodle, inserts new. */
-    Noodle& operator[](const std::string& key);
+    /** @brief Returns the value of this noodle. */    
+    [[nodiscard]] int getInt() const;
+    [[nodiscard]] float getFloat() const;
+    [[nodiscard]] bool getBool() const;
+    [[nodiscard]] std::string getString() const;
 
-    /** @brief Returns an indexed noodle of an array, will throw if not an array. */
-    Noodle& operator[](size_t index);
+    /** @brief If this noodle is an array it returns the type of the values. */
+    [[nodiscard]] NoodleType getArrayType() const;
 
-    friend std::ostream& operator<<(std::ostream& os, const Noodle& noodle);
+    friend std::ostream& operator<<(std::ostream& os, const Noodle& noodle) const noexcept;
 
-private:
+private: 
 
-    /** @brief Recursively dump to a string stream. */
+    /** @brief Recursively dump into a string stream. */
     void recursiveDump(std::stringstream& ss, int tabs) const;
 
-    Noodle*                                        _parent;
-    NoodleType                                     _type;
-    std::string                                    _name;
-    std::variant<int, float, bool, std::string>    _value;
-    std::map<std::string, Noodle>                  _groupChildren;
-    NoodleType                                     _arrayType;
-    std::variant<int*, float*, bool*, std::string*> _arr;
+    bool parseInteger()
+    bool processArray();
 
-
+    Noodle*                                    _parent;
+    NoodleType                                 _type;
+    std::string                                _name;
+    NoodleValue                                _value;
+    std::unordered_map<std::string, Noodle>    _groupChildren;
+    NoodleType                                 _arrayType;
+    NoodleArray                                _array;
 };
+
+} // namespace bl
 
 #include "Noodle.inl"

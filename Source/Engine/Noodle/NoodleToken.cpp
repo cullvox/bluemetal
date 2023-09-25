@@ -1,10 +1,11 @@
 #include "NoodleToken.h"
 
-NoodleToken::NoodleToken(
-    NoodleTokenKind kind, const std::string_view lexeme, int linePos, int characterPos)
+namespace bl {
+
+NoodleToken::NoodleToken(NoodleTokenKind kind, const std::string_view lexeme, int row, int col)
     : _kind(kind)
-    , _linePos(linePos)
-    , _characterPos(characterPos)
-    , _lexeme(lexeme)
-{
+    , _row(row)
+    , _col(col)
+    , _lexeme(lexeme) {}
+
 }

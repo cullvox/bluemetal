@@ -3,11 +3,9 @@
 #include "Graphics/RenderPass.h"
 #include "Graphics/Swapchain.h"
 
-namespace bl
-{
+namespace bl {
 
-class BLUEMETAL_API PresentPass : public RenderPass
-{
+class BLUEMETAL_API PresentPass : public RenderPass {
 public:
     PresentPass(GraphicsDevice* pDevice, Swapchain* pSwapchain);
     virtual ~PresentPass();
@@ -22,10 +20,10 @@ private:
     void createRenderPass();
     void destroyRenderPass();
 
-    GraphicsDevice*             m_pDevice;
-    Swapchain*                  m_pSwapchain;	
-    std::vector<VkFramebuffer>  m_swapFramebuffers;
-    VkRenderPass                m_pass;
+    GraphicsDevice*             _pDevice;
+    Swapchain*                  _pSwapchain;	
+    std::vector<VkFramebuffer>  _swapFramebuffers;
+    VkRenderPass                _pass;
 };
 
 } // namespace bl

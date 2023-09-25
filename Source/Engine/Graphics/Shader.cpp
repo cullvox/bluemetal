@@ -16,7 +16,7 @@ Shader::Shader(Shader&& rhs)
     _module = std::move(rhs._module);
 
     rhs._pDevice = nullptr;
-    rhs._stage = 0;
+    rhs._stage = {};
     rhs._binary = {};
     rhs._module = VK_NULL_HANDLE;
 }
@@ -31,7 +31,7 @@ Shader::~Shader()
     destroy();
 }
 
-bool Shader::create(const ShaderCreateInfo& info)
+bool Shader::create(const ShaderCreateInfo& info) noexcept
 {
     _pDevice = info.pDevice;
     _stage = info.stage;
@@ -40,7 +40,7 @@ bool Shader::create(const ShaderCreateInfo& info)
     return createModule();
 }
 
-void Shader::destroy() const noexcept
+void Shader::destroy() noexcept
 {
     if (!isCreated()) return;
     
@@ -52,9 +52,9 @@ bool Shader::isCreated() const noexcept
     return _module == VK_NULL_HANDLE;
 }
 
-VkShaderStageFlagBits Shader::getStage() { return _stage; }
-VkShaderModule Shader::getHandle() { return _module; }
-std::vector<uint32_t> Shader::getBinary() { return _binary; }
+VkShaderStageFlagBits Shader::getStage() const noexcept { return _stage; }
+VkShaderModule Shader::getHandle() const noexcept { return _module; }
+const std::vector<uint32_t>& Shader::getBinary() const noexcept { return _binary; }
 
 bool Shader::createModule() noexcept
 {

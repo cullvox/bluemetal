@@ -2,11 +2,9 @@
 
 #include "Device.h"
 
-namespace bl
-{
+namespace bl {
 
-class BLUEMETAL_API RenderPass
-{
+class BLUEMETAL_API RenderPass {
 public:
     RenderPass() = default;
     virtual ~RenderPass() = default; 

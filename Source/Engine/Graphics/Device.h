@@ -63,11 +63,11 @@ public:
     /** @brief Returns the Vulkan Memory Allocator object. */
     [[nodiscard]] VmaAllocator getAllocator() const noexcept;
 
-    /** @brief Returns true if the graphics family index and present family index are the same. *//
+    /** @brief Returns true if the graphics family index and present family index are the same. */
     [[nodiscard]] bool areQueuesSame() const noexcept;
 
     /** @brief Submits commands to the graphics queue. */
-    [[nodicard]] bool immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder);
+    [[nodiscard]] bool immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder);
     
     /** @brief Waits for an undefined amount of time for the device to finish whatever it may be doing. */
     void waitForDevice() const noexcept;

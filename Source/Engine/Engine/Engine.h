@@ -11,7 +11,7 @@
 namespace bl
 {
 
-enum SubsystemFlagBits
+enum class SubsystemFlagBits
 {
     eSubsystemResourcesBit      = bl::bit(0),
     eSubsystemGraphicsBit       = bl::bit(1),
@@ -32,7 +32,7 @@ class BLUEMETAL_API Engine
 public:
 
     /// Default Constructor.
-    Engine();
+    Engine(int argc, const char** argv);
 
     /// Default Destructor.
     ~Engine();

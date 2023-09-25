@@ -12,66 +12,70 @@ ShaderReflection::ShaderReflection(const std::vector<uint32_t>& binary)
 
 ShaderReflection::~ShaderReflection() { spvReflectDestroyShaderModule(&m_reflection); }
 
-VkVertexInputBindingDescription ShaderReflection::getVertexBinding()
+bool ShaderReflection::getVertexBinding(VkVertexInputBindingDescription& inputBindingDesc)
 {
     if (m_stage != VK_SHADER_STAGE_VERTEX_BIT) {
-        throw std::runtime_error("Tried to get vertex state of a non vertex shader!");
+        blError("Tried to get vertex state of a non vertex shader!");
+        return false;
     }
 
-    return m_vertexBinding;
+    inputBindingDesc = _vertexBinding;
+    return true;
 }
 
-std::vector<VkVertexInputAttributeDescription> ShaderReflection::getVertexAttributes()
+bool ShaderReflection::getVertexAttributes(std::vector<VkVertexInputAttributeDescription>& inputAttributeDesc)
 {
-    if (m_stage != VK_SHADER_STAGE_VERTEX_BIT) {
-        throw std::runtime_error("Tried to get vertex state of a non vertex shader!");
+    if (_stage != VK_SHADER_STAGE_VERTEX_BIT) {
+        blError("Tried to get vertex state of a non vertex shader!");
+        return false;
     }
 
-    return m_vertexAttributes;
+    inputAttributeDesc = _vertexAttributes;
+    return true;
 }
 
-void ShaderReflection::createReflection(const std::vector<uint32_t>& binary)
+bool ShaderReflection::createReflection(const std::vector<uint32_t>& binary) noexcept
 {
-    if (spvReflectCreateShaderModule(binary.size(), binary.data(), &m_reflection)
-        != SPV_REFLECT_RESULT_SUCCESS) {
-        throw std::runtime_error("Could not create a SPIRV-reflect shader module!");
+    if (spvReflectCreateShaderModule(binary.size(), binary.data(), &_reflection) != SPV_REFLECT_RESULT_SUCCESS) {
+        blError("Could not create a SpvReflectShaderModule!");
+        return false;
     }
 
-    m_stage = (VkShaderStageFlagBits)m_reflection.shader_stage;
+    _stage = (VkShaderStageFlagBits)_reflection.shader_stage;
+    return true;
 }
 
 void ShaderReflection::findVertexState()
 {
-    if (m_stage != VK_SHADER_STAGE_VERTEX_BIT)
-        return;
+    if (_stage != VK_SHADER_STAGE_VERTEX_BIT) return;
 
-    // these default vertex binding options are fine right now
-    m_vertexBinding.binding = 0;
-    m_vertexBinding.stride = 0; // computed
-    m_vertexBinding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+    // Set the default vertex binding values.
+    _vertexBinding.binding = 0;
+    _vertexBinding.stride = 0; // computed
+    _vertexBinding.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
-    // get the vertex inputs
-    for (uint32_t i = 0; i < m_reflection.input_variable_count; i++) {
-        const SpvReflectInterfaceVariable* v = m_reflection.input_variables[i];
+    // Get the vertex input variables.
+    for (uint32_t i = 0; i < _reflection.input_variable_count; i++) {
+        const SpvReflectInterfaceVariable* pVar = _reflection.input_variables[i];
 
-        // skip built in variables
-        if (v->decoration_flags & SPV_REFLECT_DECORATION_BUILT_IN) {
+        // Skip built in variables.
+        if (pVar->decoration_flags & SPV_REFLECT_DECORATION_BUILT_IN) {
             continue;
         }
 
-        auto format = (VkFormat)v->format;
+        auto format = (VkFormat)pVar->format;
 
-        // create attrib description
+        // Create the attribute description.
         VkVertexInputAttributeDescription attribute = {};
-        attribute.location = v->location;
+        attribute.location = pVar->location;
         attribute.binding = 0;
-        attribute.format = (VkFormat)v->format;
-        attribute.offset = m_vertexBinding.stride;
+        attribute.format = (VkFormat)pVar->format;
+        attribute.offset = _vertexBinding.stride;
 
-        // compute offset
-        m_vertexBinding.stride += vk::getFormatSize(format);
+        // Compute the offset of this value.
+        _vertexBinding.stride += vk::getFormatSize(format);
 
-        m_vertexAttributes.push_back(attribute);
+        _vertexAttributes.push_back(attribute);
     }
 
     // sort the attributes into location order
@@ -85,11 +89,11 @@ void ShaderReflection::findResources()
 {
     uint32_t bindingCount = 0;
     std::vector<SpvReflectDescriptorBinding*> bindings;
-    spvReflectEnumerateDescriptorBindings(&m_reflection, &bindingCount, nullptr);
+    spvReflectEnumerateDescriptorBindings(&_reflection, &bindingCount, nullptr);
 
     bindings.resize(bindingCount);
 
-    spvReflectEnumerateDescriptorBindings(&m_reflection, &bindingCount, bindings.data());
+    spvReflectEnumerateDescriptorBindings(&_reflection, &bindingCount, bindings.data());
 
     for (const auto* b : bindings) {
         uint32_t count = 0;
@@ -108,7 +112,7 @@ void ShaderReflection::findResources()
         resource.arraySize = count;
         resource.name = std::string(b->name);
 
-        m_resources.emplace_back(resource);
+        _resources.emplace_back(resource);
     }
 }
 

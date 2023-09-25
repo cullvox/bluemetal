@@ -17,13 +17,31 @@ enum class VersionRelease : uint32_t
     eUndefined,
 };
 
-struct BLUEMETAL_API Version
+constexpr std::string to_string(VersionRelease release)
 {
+    switch(release) {
+    case VersionRelease::eAlpha: return "Alpha";
+    case VersionRelease::eBeta: return "Beta";
+    case VersionRelease::eInfiniteDevelopment: return "InfiniteDevelopment";
+    case VersionRelease::eRelease: return "Release";
+    case VersionRelease::eStaging: return "Staging";
+    case VersionRelease::eSnapshot: return "Snapshot";
+    default: 
+    case VersionRelease::eUndefined: return "Undefined";
+    }
+}
+
+struct BLUEMETAL_API Version {
     VersionRelease release;
     uint32_t major;
     uint32_t minor;
     uint32_t patch;
 };
+
+std::string to_string(Version version)
+{
+    return fmt::format("{} {}.{}.{}", bl::to_string(version.release), version.major, version.minor, version.patch);
+}
 
 const Version engineVersion(VersionRelease::eAlpha, 0, 1, 0);
 const std::string engineName = "Bluemetal Engine";
@@ -35,22 +53,10 @@ struct fmt::formatter<bl::VersionRelease>
 {
     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
 
-    format_context::iterator format(bl::VersionRelease v, format_context& ctx) const
+    format_context::iterator format(bl::VersionRelease release, format_context& ctx) const
     {
-        std::string_view val;
-        switch(v) {
-        case bl::VersionRelease::eAlpha: val = "Alpha";
-        case bl::VersionRelease::eBeta: val ="Beta";
-        case bl::VersionRelease::eInfiniteDevelopment: val = "InfiniteDevelopment";
-        case bl::VersionRelease::eRelease: val = "Release";
-        case bl::VersionRelease::eStaging: val = "Staging";
-        case bl::VersionRelease::eSnapshot: val = "Snapshot";
-        case bl::VersionRelease::eUndefined:
-        default:
-            val = "Undefined";
-        return fmt::format_to(ctx.out(), "{}", val);
+        return fmt::format_to(ctx.out(), "{}", bl::to_string(release));
     }
-  }
 };
 
 template <>
@@ -60,7 +66,7 @@ struct fmt::formatter<bl::Version>
 
     format_context::iterator format(const bl::Version& v, format_context& ctx) const
     {
-        return fmt::format_to(ctx.out(), "{} {}.{}.{}", v.release, v.major, v.minor, v.patch);
+        return fmt::format_to(ctx.out(), "{}", to_string(v));
     }
 };
 

@@ -1,5 +1,5 @@
 #include "Swapchain.h"
-#include "Core/Log.h"
+#include "Core/Print.h"
 
 namespace bl {
 
@@ -44,8 +44,7 @@ std::vector<VkImageView> Swapchain::getImageViews() { return _swapImageViews; }
 
 std::vector<VkImage> Swapchain::getImages() { return _swapImages; }
 
-void Swapchain::acquireNext(
-    VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex, bool* pRecreated)
+bool Swapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex, bool* pRecreated)
 {
     *pImageIndex = 0;
     *pRecreated = false;
@@ -54,10 +53,11 @@ void Swapchain::acquireNext(
         _pDevice->getHandle(), _swapchain, UINT32_MAX, semaphore, fence, pImageIndex);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR) {
-        recreate();
         *pRecreated = true;
+        return recreate();
     } else if (result != VK_SUCCESS) {
-        throw std::runtime_error("Could not acquire the next swapchain image!");
+        blError("Could not acquire the next swapchain image!");
+        return false;
     }
 }
 
@@ -75,9 +75,7 @@ void Swapchain::ensureSurfaceSupported()
 void Swapchain::chooseImageCount()
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-            _pPhysicalDevice->getHandle(), _pWindow->getSurface(), &capabilities)
-        != VK_SUCCESS) {
+    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_pPhysicalDevice->getHandle(), _pWindow->getSurface(), &capabilities) != VK_SUCCESS) {
         throw std::runtime_error("Could not get Vulkan surface capabilities!");
     }
 

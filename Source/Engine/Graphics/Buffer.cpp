@@ -1,4 +1,5 @@
 #include "Buffer.h"
+#include "Core/Print.h"
 
 namespace bl {
 
@@ -25,6 +26,8 @@ Buffer& Buffer::operator=(Buffer&& rhs) noexcept
     rhs._size = {};
     rhs._buffer = {};
     rhs._allocation = {};
+
+    return *this;
 }
 
 bool Buffer::create(const BufferCreateInfo& info) noexcept
@@ -36,17 +39,17 @@ bool Buffer::create(const BufferCreateInfo& info) noexcept
     uint32_t graphicsFamilyIndex = _pDevice->getGraphicsFamilyIndex();
 
     VkBufferCreateInfo createInfo = {};
-    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferCreateInfo.pNext = nullptr;
-    bufferCreateInfo.flags = 0;
-    bufferCreateInfo.size = _size;
-    bufferCreateInfo.usage = (VkBufferUsageFlags)info.usage;
-    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    bufferCreateInfo.queueFamilyIndexCount = 1;
-    bufferCreateInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
+    createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    createInfo.pNext = nullptr;
+    createInfo.flags = 0;
+    createInfo.size = _size;
+    createInfo.usage = (VkBufferUsageFlags)info.usage;
+    createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    createInfo.queueFamilyIndexCount = 1;
+    createInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
 
     // If the user wanted a mapped buffer.
-    VmaAllocatorCreateFlags flags = mapped ? VMA_ALLOCATION_CREATE_MAPPED_BIT : 0;
+    VmaAllocatorCreateFlags flags = info.mapped ? VMA_ALLOCATION_CREATE_MAPPED_BIT : 0;
 
     // Allocate the buffer.
     VmaAllocationCreateInfo allocationCreateInfo = {};
@@ -59,7 +62,7 @@ bool Buffer::create(const BufferCreateInfo& info) noexcept
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 0.0f;
 
-    if (vmaCreateBuffer(_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &_buffer, &_allocation, pInfo) != VK_SUCCESS) {
+    if (vmaCreateBuffer(_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &_buffer, &_allocation, info.pAllocationInfo) != VK_SUCCESS) {
         blError("Could not allocate a vulkan buffer!");
         return false;
     }
@@ -78,9 +81,9 @@ void Buffer::destroy() noexcept
 
 bool Buffer::isCreated() const noexcept { return _buffer != VK_NULL_HANDLE; }
 
-VmaAllocation Buffer::getAllocation() { return m_allocation; }
-VkBuffer Buffer::getBuffer() { return m_buffer; }
-VkDeviceSize Buffer::getSize() { return m_size; }
+VmaAllocation Buffer::getAllocation() const noexcept { return _allocation; }
+VkBuffer Buffer::getBuffer() const noexcept { return _buffer; }
+VkDeviceSize Buffer::getSize()  const noexcept{ return _size; }
 
 bool Buffer::copyFrom(const Buffer& copy)
 {

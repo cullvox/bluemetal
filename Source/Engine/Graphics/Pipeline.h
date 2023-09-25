@@ -6,8 +6,7 @@
 #include "RenderPass.h"
 #include "PipelineResource.h"
 
-namespace bl
-{
+namespace bl {
 
 /** @brief Create info for pipeline objects. */
 struct PipelineCreateInfo {
@@ -66,14 +65,13 @@ private:
     bool createPipeline(const std::vector<Shader*>& shaders);
     void mergeShaderResources(const std::vector<PipelineResource>& resources);
 
-    std::string                             m_err;
-    GraphicsDevice*                         m_pDevice;
-    RenderPass*                             m_pRenderPass;
-    uint32_t                                m_subpass;
-    std::map<std::string, PipelineResource> m_resources;
-    std::vector<VkDescriptorSetLayout>      m_setLayouts;
-    VkPipelineLayout                        m_pipelineLayout;
-    VkPipeline                              m_pipeline;
+    GraphicsDevice*                         _pDevice;
+    RenderPass*                             _pRenderPass;
+    uint32_t                                _subpass;
+    std::map<std::string, PipelineResource> _resources;
+    std::vector<VkDescriptorSetLayout>      _setLayouts;
+    VkPipelineLayout                        _pipelineLayout;
+    VkPipeline                              _pipeline;
     
 };
 

@@ -35,6 +35,7 @@
 #include <unordered_set>
 #include <variant>
 #include <map>
+#include <unordered_map>
 #include <filesystem>
 #include <span>
 #include <fstream>

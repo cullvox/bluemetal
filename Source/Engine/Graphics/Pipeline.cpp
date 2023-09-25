@@ -1,5 +1,5 @@
 #include "Pipeline.h"
-#include "Core/Log.h"
+#include "Core/Print.h"
 #include "ShaderReflection.h"
 
 namespace bl {
@@ -8,8 +8,7 @@ Pipeline::Pipeline() { }
 
 Pipeline::Pipeline(const PipelineCreateInfo& createInfo)
 {
-    if (!create(createInfo))
-        throw std::runtime_error(getError());
+    assert(create(createInfo) && "Could not create a pipeline, ")
 }
 
 Pipeline::~Pipeline() { destroy(); }
@@ -18,11 +17,8 @@ bool Pipeline::create(const PipelineCreateInfo& createInfo)
 {
     assert(createInfo.pDevice && "PipelineCreateInfo.pDevice must not be nullptr!");
     assert(createInfo.pRenderPass && "PipelineCreateInfo.pRenderPass must not be nullptr!");
-    assert(createInfo.pDescriptorLayoutCache
-        && "PipelineCreateInfo.pDescriptorLayoutCache must not be nullptr!");
-    assert(std::all_of(createInfo.shaders.begin(), createInfo.shaders.end(), [](auto shader) {
-        return shader != nullptr;
-    }) && "PipelineCreateInfo.shaders must not have a nullptr element!");
+    assert(createInfo.pDescriptorLayoutCache && "PipelineCreateInfo.pDescriptorLayoutCache must not be nullptr!");
+    assert(std::all_of(createInfo.shaders.begin(), createInfo.shaders.end(), [](auto shader){ return shader != nullptr; }) && "PipelineCreateInfo.shaders must not have a nullptr element!");
 
     m_pDevice = createInfo.pDevice;
     m_pRenderPass = createInfo.pRenderPass;
@@ -34,18 +30,14 @@ bool Pipeline::create(const PipelineCreateInfo& createInfo)
 
 void Pipeline::destroy() noexcept
 {
-    if (!isCreated())
-        return;
-    vkDestroyPipeline(m_pDevice->getHandle(), m_pipeline, nullptr);
+    if (!isCreated()) return;
+    vkDestroyPipeline(_pDevice->getHandle(), m_pipeline, nullptr);
 }
 
-bool Pipeline::isCreated() const noexcept { return m_pipeline != VK_NULL_HANDLE; }
+bool Pipeline::isCreated() const noexcept { return _pipeline != VK_NULL_HANDLE; }
 
-std::string Pipeline::getError() const noexcept { return m_err; }
-
-VkPipelineLayout Pipeline::getLayout() const { return m_pipelineLayout; }
-
-VkPipeline Pipeline::getHandle() const { return m_pipeline; }
+VkPipelineLayout Pipeline::getLayout() const { return _pipelineLayout; }
+VkPipeline Pipeline::getHandle() const { return _pipeline; }
 
 void Pipeline::mergeShaderResources(const std::vector<PipelineResource>& shaderResources)
 {
@@ -58,13 +50,13 @@ void Pipeline::mergeShaderResources(const std::vector<PipelineResource>& shaderR
         //    key = std::to_string(resource.stages) + ":" + key;
 
         // try to find the resource in the pipelines resources
-        auto it = m_resources.find(key);
+        auto it = _resources.find(key);
 
         // if the resource is found add this stage to it, else add a new resource
         if (it != m_resources.end())
             it->second.stages |= resource.stages;
         else
-            m_resources.emplace(key, resource);
+            _resources.emplace(key, resource);
     }
 }
 
@@ -92,9 +84,8 @@ bool Pipeline::createLayout()
     createInfo.pushConstantRangeCount = 0;
     createInfo.pPushConstantRanges = nullptr;
 
-    if (vkCreatePipelineLayout(m_pDevice->getHandle(), &createInfo, nullptr, &m_pipelineLayout)
-        != VK_SUCCESS) {
-        m_err = "Could not create the Vulkan pipeline layout!";
+    if (vkCreatePipelineLayout(_pDevice->getHandle(), &createInfo, nullptr, &_pipelineLayout) != VK_SUCCESS) {
+        blError("Could not create the Vulkan pipeline layout!");
         return false;
     }
 
@@ -233,16 +224,14 @@ bool Pipeline::createPipeline(const std::vector<Shader*>& shaders)
     pipelineCreateInfo.pDepthStencilState = VK_NULL_HANDLE;
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
-    pipelineCreateInfo.layout = m_pipelineLayout;
-    pipelineCreateInfo.renderPass = m_pRenderPass->getHandle();
-    pipelineCreateInfo.subpass = m_subpass;
+    pipelineCreateInfo.layout = _pipelineLayout;
+    pipelineCreateInfo.renderPass = _pRenderPass->getHandle();
+    pipelineCreateInfo.subpass = _subpass;
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineCreateInfo.basePipelineIndex = 0;
 
-    if (vkCreateGraphicsPipelines(
-            m_pDevice->getHandle(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline)
-        != VK_SUCCESS) {
-        m_err = "Could not create a Vulkan graphics pipeline!";
+    if (vkCreateGraphicsPipelines(_pDevice->getHandle(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline) != VK_SUCCESS) {
+        blError("Could not create a graphics VkPipeline!");
         return false;
     }
 

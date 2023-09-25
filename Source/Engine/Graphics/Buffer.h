@@ -2,8 +2,7 @@
 
 #include "Device.h"
 
-namespace bl
-{
+namespace bl {
 
 struct BufferCreateInfo {
     GraphicsDevice*         pDevice;                    /** @brief Graphics device to create the buffer on. */
@@ -12,7 +11,7 @@ struct BufferCreateInfo {
     VkDeviceSize            size;                       /** @brief Size of your buffer in bytes. */
     VmaAllocationInfo*      pAllocationInfo = nullptr;  /** @brief Output value, additional allocation info if needed. */
     bool                    mapped = false;             /** @brief Automatically have your buffer mapped to a pointer. */
-}
+};
 
 class BLUEMETAL_API Buffer
 {
