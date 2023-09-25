@@ -9,11 +9,7 @@ Noodle::Noodle(const std::string& name, const std::vector<T>& value, Noodle* par
     , _parent(parent)
 {
     static_assert(bl::is_any<T, int, float, bool, std::string>() && "T must be int, float, bool or std::string!");
-
-    for (const T& v : value)
-    {
-        _array.push_back(Noodle("", v, parent));
-    }
+    _array = value;
 }
 
 template<typename T>
@@ -33,11 +29,11 @@ template<typename T>
 T& Noodle::operator[](size_t index)
 {
     static_assert(bl::is_any<T, int, float, bool, std::string>() && "T must be int, float, bool or std::string!");
-    
+
     if (_type != NoodleType::eArray) {
         throw std::runtime_error("Cannot access an array from a non array noodle!");
     }
-    
+
     std::vector<T>& arr = _array.get<std::vector<T>>();
     return arr[index];
 }
@@ -46,11 +42,11 @@ template<typename T>
 const T& Noodle::operator[](size_t index) const
 {
     static_assert(bl::is_any<T, int, float, bool, std::string>() && "T must be int, float, bool or std::string!");
-    
+
     if (_type != NoodleType::eArray) {
         throw std::runtime_error("Cannot access an array from a non array noodle!");
     }
-    
+
     const std::vector<T>& arr = _array.get<std::vector<T>>();
     return arr[index];
 }

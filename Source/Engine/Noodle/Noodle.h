@@ -59,7 +59,7 @@ public:
     Noodle& operator=(int value) noexcept;
     Noodle& operator=(float value) noexcept;
     Noodle& operator=(bool value) noexcept;
-    Noodle& operator=(const std::string& value) noexcept; 
+    Noodle& operator=(const std::string& value) noexcept;
 
     /** @brief Returns a noodle of a group using a key. */
     Noodle& operator[](const std::string& key);
@@ -79,10 +79,10 @@ public:
     [[nodiscard]] bool isRoot() const noexcept;
 
     /** @brief Returns the noodle one up the chains. */
-    [[nodiscard]] Noodle* getParent() const noexcept
+    [[nodiscard]] Noodle* getParent() const noexcept;
 
     /** @brief Gets the type of this noodle. */
-    [[nodiscard]] NoodleType getType() const noexcept
+    [[nodiscard]] NoodleType getType() const noexcept;
 
     /** @brief Gets the amount of noodles or values this noodle may contains, 0 if not group/array. */
     [[nodiscard]] size_t getSize() const noexcept;
@@ -103,7 +103,7 @@ public:
 
     /** @brief Returns true if a group contains a value. */
     [[nodiscard]] bool contains(const std::string& key) const noexcept;
-    
+
     /** @brief Converts this noodle's value into a string. */
     [[nodiscard]] std::string toString() const noexcept;
 
@@ -122,7 +122,7 @@ public: /* Throw Functions */
     template<typename T>
     T at(size_t index) const;
 
-    /** @brief Returns the value of this noodle. */    
+    /** @brief Returns the value of this noodle. */
     [[nodiscard]] int getInt() const;
     [[nodiscard]] float getFloat() const;
     [[nodiscard]] bool getBool() const;
@@ -131,14 +131,11 @@ public: /* Throw Functions */
     /** @brief If this noodle is an array it returns the type of the values. */
     [[nodiscard]] NoodleType getArrayType() const;
 
-    friend std::ostream& operator<<(std::ostream& os, const Noodle& noodle) const noexcept;
-
-private: 
+private:
 
     /** @brief Recursively dump into a string stream. */
     void recursiveDump(std::stringstream& ss, int tabs) const;
 
-    bool parseInteger()
     bool processArray();
 
     Noodle*                                    _parent;
