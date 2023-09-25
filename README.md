@@ -5,25 +5,24 @@
 ![CppVer](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![VulkanVer](https://img.shields.io/badge/Vulkan-1.3-red)
 
-
-Bluemetal Engine is a powerful and versatile game engine built using modern C++17/20 features. It incorporates cutting-edge technologies such as Vulkan Renderer, a custom configuration language called Noodle, Dear ImGui for user interface, and open-source libraries like SDL2 and VMA.
+bluemetal is a powerful and versatile game engine built using modern C++17/20 features. It incorporates cutting-edge technologies such as Vulkan Renderer, a custom configuration language called Noodle, Dear ImGui for user interface, and open-source libraries like SDL2 and VMA.
 
 ## Features
 
-- **Use of Newer C++17/20 Features:** Bluemetal Engine takes advantage of the latest features provided by C++17/20, offering improved performance, better code organization, and enhanced productivity.
+- **Use of Newer C++17/20 Features:** bluemetal Engine takes advantage of the latest features provided by C++17/20, offering improved performance, better code organization, and enhanced productivity.
 
-- **Vulkan Renderer:** The engine employs the Vulkan API, which provides high-performance graphics rendering capabilities. Vulkan enables efficient utilization of modern hardware, delivering stunning visuals and smooth gameplay.
+- **Vulkan Renderer:** bluemetal uses Vulkan for backend rendering and graphics operations.
 
-- **Dear ImGui:** Bluemetal engine integrates Dear ImGui, a popular and intuitive user interface library. With Dear ImGui, developers can create and customize game tools, debug panels, and other graphical interfaces to enhance their workflow.
+- **Dear ImGui:** bluemetal engine integrates Dear ImGui for some basic development and frontend UI.
 
-- **Open Source Libraries:** Bluemetal Engine leverages open-source libraries like SDL2 (Simple DirectMedia Layer) and VMA (Vulkan Memory Allocator) to streamline development and provide a solid foundation for cross-platform support, input handling, and efficient memory management.
+- **Others Open Source:** Many open source libraries are used in the creation of bluemetal.
 
 #### Warning: Still in development, not production ready.
 
 
 ## Getting Started
 
-Follow these steps to get started with Bluemetal Game Engine:
+Follow these steps to get started with bluemetal:
 
 1. Clone the repository:
 ```
@@ -39,29 +38,22 @@ git clone https://github.com/cullvox/bluemetal.git
    - Navigate to the cloned repository's root directory.
    - Run the build command specific to your platform (e.g., `make`, `msbuild`, `cmake`, etc.).
 
-4. Start developing your game using Bluemetal Game Engine!
+4. Start developing!
 
 ## Contributing
-Contributions to BlueMetal Game Engine are welcome! If you find any issues or have suggestions for improvements, please open an issue in the [Issue Tracker](https://github.com/cadenmiller/bluemetal/issues).
+Contributions to bluemetal are welcome! If you find any issues or have suggestions for improvements, please open an issue in the [Issue Tracker](https://github.com/cadenmiller/bluemetal/issues).
 
 If you wish to contribute code, fork the repository, make your changes, and submit a pull request. Ensure that your code follows the project's coding conventions and includes appropriate tests and documentation.
 
 ## License
 
-Bluemetal Engine is released under the [MIT License](LICENSE). Feel free to use, modify, and distribute the engine according to the terms of the license.
+bluemetal is released under the [MIT License](LICENSE). Feel free to use, modify, and distribute the engine according to the terms of the license.
 
 ## Acknowledgments
 
-Bluemetal Engine would not have been possible without the contributions and support of the following projects:
+Bluemetal Engine uses the following projects:
 
 - [SDL2](https://www.libsdl.org/)
 - [VMA](https://github.com/GPUOpen-LibrariesAndSDKs/VulkanMemoryAllocator)
 - [Dear ImGui](https://github.com/ocornut/imgui)
 - [{FMT}](https://github.com/fmtlib/fmt)
-
-We are grateful for the open-source community's efforts in creating and maintaining these fantastic libraries.
-
----
-
-Thank you for your interest in Bluemetal Engine! This project is mostly a passion project for testing and examining C++ along with Vulkan.
-Should you have any questions or encounter any issues, please don't hesitate to reach out. Happy coding!
