@@ -18,11 +18,8 @@ class Time
 public:
     static float current()
     {
-        using duration = std::chrono::duration<float, std::milli>;
-
         auto now = std::chrono::high_resolution_clock::now();
-
-        duration dt = now - start;
+        std::chrono::duration<float, std::milli> dt = now - start;
         return dt.count();
     }
 

@@ -31,7 +31,7 @@ public:
     FMOD_SOUND* getHandle();
 
 private:
-    AudioSystem*    m_pSystem;
+    AudioSystem*    _system;
     FMOD_SOUND*     m_pSound;
 };
 

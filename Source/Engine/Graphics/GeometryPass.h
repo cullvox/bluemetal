@@ -17,7 +17,7 @@ namespace bl
 
 struct GeometryPassCreateInfo
 {
-    GraphicsDevice* pDevice;
+    GfxDevice* pDevice;
     uint32_t        imageCount;
     VkExtent2D      extent;
 };
@@ -37,10 +37,10 @@ public:
     virtual VkRenderPass getHandle();
 
     /// Resizes images, and framebuffers to match extent.
-    virtual bool resize(VkExtent2D extent);
+    virtual void recreate(VkExtent2D extent);
 
     /// Records this render pass to the framebuffer.
-    virtual bool record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex);
+    virtual void record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex);
 
 private:
     bool createImages();
@@ -50,14 +50,14 @@ private:
     bool createPass();
     void destroyPass();
 
-    GraphicsDevice*                     m_pDevice;
+    GfxDevice*                     m_pDevice;
     VkExtent2D                          m_extent;
     VkFormat                            m_albedoSpecularFormat;
     VkFormat                            m_positionFormat;
     VkFormat                            m_normalFormat;
-    std::vector<std::unique_ptr<Image>> m_albedoSpecularImages;
-    std::vector<std::unique_ptr<Image>> m_positionImages;
-    std::vector<std::unique_ptr<Image>> m_normalImages;
+    std::vector<std::unique_ptr<GfxImage>> m_albedoSpecularImages;
+    std::vector<std::unique_ptr<GfxImage>> m_positionImages;
+    std::vector<std::unique_ptr<GfxImage>> m_normalImages;
     std::vector<VkFramebuffer>          m_geometryFramebuffer;
 };
 

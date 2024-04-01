@@ -1,58 +1,58 @@
 #pragma once
 
 #include "Device.h"
+#include "PipelineResource.h"
 
 namespace bl {
 
-struct ShaderCreateInfo {
-    GraphicsDevice*              pDevice;   /** @brief Graphics device to create this shader on. */
-    VkShaderStageFlagBits        stage;     /** @brief Stage type i.e. Vertex, Fragment. */
-    const std::vector<uint32_t>& binary;    /** @brief Binary SPIR-V data from a shader file or resource. */
-};
-
 /** @brief A single unit of a shader pipeline. */
-class BLUEMETAL_API Shader {
+class BLUEMETAL_API GfxShader 
+{
 public:
 
-    /** @brief Default Constructor */
-    Shader();
+    struct CreateInfo 
+    {
+        std::shared_ptr<GfxDevice>      device;   /** @brief Graphics device to create this shader on. */
+        VkShaderStageFlagBits           stage;     /** @brief Stage type i.e. Vertex, Fragment. */
+        const std::vector<uint32_t>&    binary;    /** @brief Binary SPIR-V data from a shader file or resource. */
+    };
 
-    /** @brief Move Constructor */
-    Shader(Shader&& rhs);
+    /** @brief Constructor */
+    GfxShader(const CreateInfo& info);
 
-    /** @brief Create Constructor */
-    Shader(const ShaderCreateInfo& info);
-
-    /** @brief Default Destructor */
-    ~Shader();
-
-    /** @brief Creates this shader object. */
-    [[nodiscard]] bool create(const ShaderCreateInfo& info) noexcept; 
-
-    /** @brief Destroys this shader object. */
-    void destroy() noexcept;
-
-    /** @brief Returns true if this shader was created. */
-    [[nodiscard]] bool isCreated() const noexcept;
+    /** @brief Destructor */
+    ~GfxShader();
 
 public:
-
-    /** @brief Returns the shader stage created with. */
-    VkShaderStageFlagBits getStage() const noexcept;
 
     /** @brief Returns the underlying shader module handle. */
-    VkShaderModule getHandle() const noexcept;
+    VkShaderModule get() const;
 
-    /** @brief Returns a ref to the original binary used to create this shader. */
-    const std::vector<uint32_t>& getBinary() const noexcept;
+    /** @brief Returns the shader stage created with. */
+    VkShaderStageFlagBits getStage() const;
+
+    /** @brief Returns vertex input bindings. */
+    // VkVertexInputBindingDescription getVertexBinding();
+
+    /** @brief Returns all vertex attribute descriptions from the shader. */
+    // std::vector<VkVertexInputAttributeDescription> getVertexAttributes();
+
+    /** @brief Returns uniforms from the shader. */
+    // std::vector<GfxPipelineResource> getResources();
 
 private:
-    bool createModule() noexcept;
+    void createModule(const std::vector<uint32_t>& binary);
+    // void createReflection(const std::vector<uint32_t>& binary);
+    // void findVertexState();
+    // void findResources();
 
-    GraphicsDevice*         _pDevice;
-    VkShaderStageFlagBits   _stage;
-    std::vector<uint32_t>   _binary;
-    VkShaderModule          _module;
+    std::shared_ptr<GfxDevice>  _device;
+    VkShaderStageFlagBits       _stage;
+    VkShaderModule              _module;
+    // SpvReflectShaderModule                          _reflection;
+    // VkVertexInputBindingDescription                 _vertexBinding;
+    // std::vector<VkVertexInputAttributeDescription>  _vertexAttributes;
+    // std::vector<GfxPipelineResource>                _resources;
 };
 
 } // namespace bl

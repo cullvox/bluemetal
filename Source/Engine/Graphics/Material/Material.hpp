@@ -1,18 +1,27 @@
 #pragma once
 
-#include "Graphics/Pipeline.hpp"
-#include "Graphics/RenderDevice.hpp"
-#include "Material/Export.h"
-#include "Math/Vector4.hpp"
-#include <vulkan/vulkan_handles.hpp>
+#include "Export.h"
+#include "Graphics/Pipeline.h"
+#include "Graphics/RenderDevice.h"
+#include "Math/Vector4.h"
 
-enum class blMaterialPass { eOpaque,
-    eTransparent };
+enum class MaterialPass { 
+    eOpaque,
+    eTransparent
+};
 
-class BLUEMETAL_MATERIAL_API blMaterial {
+class BLUEMETAL_API GfxMaterial 
+{
 public:
-    blMaterial(blRenderDevice& renderDevice, blPipeline& pipeline);
-    ~blMaterial();
+
+    struct CreateInfo 
+    {
+        GfxPipeline& pipeline;
+        MaterialPass pass;
+    };
+
+    GfxMaterial(blRenderDevice& renderDevice, blPipeline& pipeline);
+    ~GfxMaterial();
 
     void setScalarParameter(std::string_view name, float value);
     void setVectorParameter(std::string_view name, blVector4f value);

@@ -26,7 +26,7 @@ public:
     void set3DAttributes(Vector3i position, Vector3i velocity);
 
 private:
-    AudioSystem* m_pSystem;
+    AudioSystem* _system;
 };
 
 } // namespace bl

@@ -19,7 +19,7 @@ struct BLUEMETAL_API DescriptorLayoutInfo
 class DescriptorLayoutCache
 {
 public:
-    DescriptorLayoutCache(GraphicsDevice* pDevice);
+    DescriptorLayoutCache(GfxDevice* pDevice);
     ~DescriptorLayoutCache();
 
     VkDescriptorSetLayout createLayout(const VkDescriptorSetLayoutCreateInfo& createInfo);
@@ -33,7 +33,7 @@ private:
         }
     };
 
-    GraphicsDevice*             m_pDevice;
+    GfxDevice*             m_pDevice;
     std::unordered_map<
         DescriptorLayoutInfo, 
         VkDescriptorSetLayout, 

@@ -9,54 +9,42 @@
 
 namespace bl {
 
-struct WindowCreateInfo {
-  GraphicsInstance *pInstance;
-  VideoMode mode;
-  std::string title = "Window";
-  Display* display = nullptr;
-};
-
-class BLUEMETAL_API Window {
+class BLUEMETAL_API Window 
+{
 public:
-  /** @brief Default Constructor */
-  Window();
 
-  /** @brief Create Constructor */
-  Window(const WindowCreateInfo &createInfo);
+    struct CreateInfo 
+    {
+        std::shared_ptr<GfxInstance> instance;
+        VideoMode mode;
+        std::string title = "Window";
+        std::shared_ptr<Display> display = nullptr;
+    };
 
-  /** @brief Move Constructor */
-  Window(Window &&rhs);
+    Window(const CreateInfo &createInfo);
 
-  /** @brief Default Destructor */
-  ~Window();
-
-  /** @brief Creates this window. */
-  bool create(const WindowCreateInfo &createInfo) noexcept;
-
-  /** @brief Destroys this window. */
-  void destroy() noexcept;
+    ~Window();
 
 public:
-  /** @brief Gets the current window extent in pixels. */
-  Extent2D getExtent() const noexcept;
+    /** @brief Gets the current window extent in pixels. */
+    Extent2D getExtent() const;
 
-  /** @brief Returns the Vulkan surface created with this window. */
-  VkSurfaceKHR getSurface() const noexcept;
+    /** @brief Returns the Vulkan surface created with this window. */
+    VkSurfaceKHR getSurface() const;
 
-  /** @brief Returns the underlying SDL window object. */
-  SDL_Window *getHandle() const noexcept;
+    /** @brief Returns the underlying SDL window object. */
+    SDL_Window* get() const;
 
-  /** @brief Changes the title displayed on the top of a windowed window. */
-  void setTitle(const std::string_view& title) noexcept;
+    /** @brief Changes the title displayed on the top of a windowed window. */
+    void setTitle(const std::string& title);
 
 private:
-  bool createWindow(const VideoMode &videoMode, const std::string &title, Display* display) noexcept;
-  bool createSurface() noexcept;
+    void createWindow(const CreateInfo& createInfo);
+    void createSurface();
 
-  WindowCreateInfo _createInfo;
-  GraphicsInstance* _pInstance;
-  SDL_Window* _pWindow;
-  VkSurfaceKHR _surface;
+    std::shared_ptr<GfxInstance> _instance;
+    SDL_Window* _pWindow;
+    VkSurfaceKHR _surface;
 };
 
 } // namespace bl

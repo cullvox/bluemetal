@@ -7,7 +7,7 @@ namespace bl {
 ///////////////////////////////
 
 Sound::Sound(AudioSystem* pSystem, const std::filesystem::path& soundPath)
-    : m_pSystem(pSystem)
+    : _system(pSystem)
 {
 
     std::string path { soundPath.string() };
@@ -17,7 +17,7 @@ Sound::Sound(AudioSystem* pSystem, const std::filesystem::path& soundPath)
     // exInfo.length = (unsigned int)path.size();
 
     FMOD_RESULT result = FMOD_System_CreateSound(
-        m_pSystem->getHandle(), path.c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &m_pSound);
+        _system->get(), path.c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &m_pSound);
     if (result != FMOD_OK) {
         throw std::runtime_error("Could not create an FMOD Sound!");
     }

@@ -6,12 +6,11 @@
 #include "AudioSubsystem.h"
 #include "GraphicsSubsystem.h"
 #include "Core/Flags.h"
-#include "Noodle/Noodle.h"
 
 namespace bl
 {
 
-enum class SubsystemFlagBits
+enum SubsystemFlagBits
 {
     eSubsystemResourcesBit      = bl::bit(0),
     eSubsystemGraphicsBit       = bl::bit(1),
@@ -32,7 +31,7 @@ class BLUEMETAL_API Engine
 public:
 
     /// Default Constructor.
-    Engine(int argc, const char** argv);
+    Engine();
 
     /// Default Destructor.
     ~Engine();
@@ -44,13 +43,11 @@ public:
     ///
     /// Can call multiple times, if a subsystem has already initialzed it will be skipped.
     ///     
-    bool init(SubsystemFlags flags, const SubsystemInitInfo* info = nullptr);
+    void init(SubsystemFlags flags, const SubsystemInitInfo* info = nullptr);
 
     /// Shuts down all subsystems.
     void shutdown();
 
-    /// Returns a noodle to the config.
-    Noodle& getConfig();
 
     /// Returns the graphics subsystem.
     GraphicsSubsystem* getGraphics();
@@ -63,9 +60,8 @@ public:
     void run();
     
 private:
-    Noodle config;
-    std::unique_ptr<GraphicsSubsystem> graphics;
-    std::unique_ptr<AudioSubsystem> audio;
+    std::shared_ptr<GraphicsSubsystem> graphics;
+    std::shared_ptr<AudioSubsystem> audio;
 
 };
 

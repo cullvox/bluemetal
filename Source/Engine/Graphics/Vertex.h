@@ -13,4 +13,9 @@ struct Vertex
    Vector2f texCoords;
 };
 
+struct VoxelVertex
+{
+   
+}
+
 } // namespace bl

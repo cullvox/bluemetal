@@ -43,6 +43,10 @@ public:
     void shutdown();
     void update();
 
+    std::shared_ptr<AudioSystem> getSystem();
+
+    std::string getDriverName();
+    std::string getOutputDeviceName();
     std::vector<AudioInput*> getInputs();
     std::vector<AudioOutput> getOutputs();
     std::unique_ptr<Sound> createSound(std::filesystem::path path);
@@ -52,7 +56,7 @@ public:
 private:
     Engine* engine;
 
-    std::unique_ptr<AudioSystem> system;
+    std::shared_ptr<AudioSystem> system;
 
 };
 

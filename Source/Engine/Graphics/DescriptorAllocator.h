@@ -8,7 +8,7 @@ namespace bl
 class DescriptorAllocator
 {
 public:
-    DescriptorAllocator(GraphicsDevice* pDevice);
+    DescriptorAllocator(GfxDevice* pDevice);
     ~DescriptorAllocator();
 
     void resetPools();
@@ -34,7 +34,7 @@ public:
 private:
     VkDescriptorPool grabPool();
 
-    GraphicsDevice*                 m_pDevice;
+    GfxDevice*                 m_pDevice;
     VkDescriptorPool                m_currentPool;
     PoolSizes                       m_descriptorSizes;
     std::vector<VkDescriptorPool>   m_usedPools;

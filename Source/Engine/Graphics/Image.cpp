@@ -3,60 +3,43 @@
 
 namespace bl {
 
-Image::Image() { }
-
-Image::Image(const ImageCreateInfo& info)
+GfxImage::GfxImage(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo)
+    : _device(device)
 {
-    assert(create(info) && "Could not create an image, check prevous error logs.");
+    createImage(createInfo);
 }
 
-Image::~Image() { destroy(); }
-
-Image& Image::operator=(Image&& rhs) noexcept
-{
-    destroy();
-    
-    _pDevice = rhs._pDevice;
-    _extent = rhs._extent;
-    _type = rhs._type;
-    _format = rhs._format;
-    _usage = rhs._usage;
-    _image = rhs._image;
-    _imageView = rhs._imageView;
-    _allocation = rhs._allocation;
-
-    rhs._pDevice = {};
-    rhs._extent = {};
-    rhs._type = {};
-    rhs._format = {};
-    rhs._usage = {};
-    rhs._image = {};
-    rhs._imageView = {};
-    rhs._allocation = {};
-
-    return *this;
+GfxImage::~GfxImage() 
+{ 
+    vkDestroyImageView(_device->get(), _imageView, nullptr);
+    vmaDestroyImage(_device->getAllocator(), _image, _allocation);
 }
 
-bool Image::create(const ImageCreateInfo& createInfo) noexcept
+void GfxImage::createImage(const CreateInfo& createInfo)
 {
-    auto graphicsFamilyIndex = m_pDevice->getGraphicsFamilyIndex();
+    _type = createInfo.type;
+    _format = createInfo.format;
+    _extent = createInfo.extent;
+    _usage = createInfo.usage;
 
-    VkImageCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    createInfo.pNext = nullptr;
-    createInfo.flags = {};
-    createInfo.imageType = type;
-    createInfo.format = format;
-    createInfo.extent = extent;
-    createInfo.mipLevels = mipLevels;
-    createInfo.arrayLayers = 1;
-    createInfo.samples = VK_SAMPLE_COUNT_1_BIT;
-    createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    createInfo.usage = usage;
-    createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.queueFamilyIndexCount = 1;
-    createInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
-    createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    auto graphicsFamilyIndex = _device->getGraphicsFamilyIndex();
+
+    VkImageCreateInfo imageCreateInfo = {};
+    imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    imageCreateInfo.pNext = nullptr;
+    imageCreateInfo.flags = {};
+    imageCreateInfo.imageType = _type;
+    imageCreateInfo.format = _format;
+    imageCreateInfo.extent = (VkExtent3D)_extent;
+    imageCreateInfo.mipLevels = createInfo.mipLevels;
+    imageCreateInfo.arrayLayers = 1;
+    imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    imageCreateInfo.usage = _usage;
+    imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    imageCreateInfo.queueFamilyIndexCount = 1;
+    imageCreateInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
+    imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.flags = 0;
@@ -68,9 +51,8 @@ bool Image::create(const ImageCreateInfo& createInfo) noexcept
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 1.0f;
 
-    if (vmaCreateImage(_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &_image, &_allocation, nullptr) != VK_SUCCESS) {
-        blError("Could not create a Vulkan image!");
-        return false;
+    if (vmaCreateImage(_device->getAllocator(), &imageCreateInfo, &allocationCreateInfo, &_image, &_allocation, nullptr) != VK_SUCCESS) {
+        throw std::runtime_error("Could not create a Vulkan image!");
     }
 
     VkComponentMapping componentMapping = {};
@@ -80,9 +62,9 @@ bool Image::create(const ImageCreateInfo& createInfo) noexcept
     componentMapping.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
     VkImageSubresourceRange subresourceRange = {};
-    subresourceRange.aspectMask = aspectMask;
+    subresourceRange.aspectMask = createInfo.aspectMask;
     subresourceRange.baseMipLevel = 0;
-    subresourceRange.levelCount = mipLevels;
+    subresourceRange.levelCount = createInfo.mipLevels;
     subresourceRange.baseArrayLayer = 0;
     subresourceRange.layerCount = 1;
 
@@ -96,24 +78,15 @@ bool Image::create(const ImageCreateInfo& createInfo) noexcept
     viewCreateInfo.components = componentMapping;
     viewCreateInfo.subresourceRange = subresourceRange;
 
-    if (vkCreateImageView(_pDevice->getHandle(), &viewCreateInfo, nullptr, &_imageView) != VK_SUCCESS) {
-        blInfo("Could not create a Vulkan image view!");
-        return false;
+    if (vkCreateImageView(_device->get(), &viewCreateInfo, nullptr, &_imageView) != VK_SUCCESS) {
+        throw std::runtime_error("Could not create a Vulkan image view!");
     }
-
-    return true;
 }
 
-void Image::destroy() noexcept
-{
-    if (_image == VK_NULL_HANDLE) return;
-    vmaDestroyImage(_pDevice->getAllocator(), _image, _allocation);
-}
-
-Extent3D Image::getExtent() const noexcept { return _extent; }
-VkFormat Image::getFormat() const noexcept { return _format; }
-VkImageUsageFlags Image::getUsage() const noexcept { return _usage; }
-VkImageView Image::getDefaultView() const noexcept { return _imageView; }
-VkImage Image::getHandle() const noexcept { return _image; }
+Extent3D GfxImage::getExtent() const { return _extent; }
+VkFormat GfxImage::getFormat() const { return _format; }
+VkImageUsageFlags GfxImage::getUsage() const { return _usage; }
+VkImageView GfxImage::getDefaultView() const { return _imageView; }
+VkImage GfxImage::get() const { return _image; }
 
 } // namespace bl

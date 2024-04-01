@@ -5,20 +5,20 @@
 namespace bl
 {
     
-enum PipelineResourceType
+enum class PipelineResourceType
 {
-    PIPELINE_RESOURCE_TYPE_INPUT,
-    PIPELINE_RESOURCE_TYPE_OUTPUT,
-    PIPELINE_RESOURCE_TYPE_SAMPLER,
-    PIPELINE_RESOURCE_TYPE_COMBINED_IMAGE_SAMPLER,
-    PIPELINE_RESOURCE_TYPE_SAMPLED_IMAGE,
-    PIPELINE_RESOURCE_TYPE_STORAGE_IMAGE,
-    PIPELINE_RESOURCE_TYPE_UNIFORM_TEXEL_BUFFER,
-    PIPELINE_RESOURCE_TYPE_STORAGE_TEXEL_BUFFER,
-    PIPELINE_RESOURCE_TYPE_UNIFORM_BUFFER,
-    PIPELINE_RESOURCE_TYPE_STORAGE_BUFFER,
-    PIPELINE_RESOURCE_TYPE_INPUT_ATTACHMENT,
-    PIPELINE_RESOURCE_TYPE_PUSH_CONSTANT_BUFFER,
+    eInput,
+    eOutput,
+    eSampler,
+    eCombinedImageSampler,
+    eSampledImage,
+    eStorageImage,
+    eUniformTexelBuffer,
+    eStorageTexelBuffer,
+    eUniformBuffer,
+    eStorageBuffer,
+    eInputAttachment,
+    ePushConstantBuffer,
 };
 
 struct PipelineMemberInfo
@@ -31,7 +31,7 @@ struct PipelineMemberInfo
     std::string name;
 };
 
-struct PipelineResource
+struct GfxPipelineResource
 {
     VkShaderStageFlags stages;
     VkDescriptorType type;

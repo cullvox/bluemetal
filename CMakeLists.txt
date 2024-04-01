@@ -32,7 +32,12 @@ endif()
 #===============================================================================
 
 # find Vulkan
-find_package(Vulkan REQUIRED)
+find_package(Vulkan)
+
+if (NOT Vulkan_FOUND)
+  message(FATAL_ERROR "Vulkan SDK was not found!")
+endif()
+
 bl_message("Found Vulkan - ${Vulkan_INCLUDE_DIR}")
 
 

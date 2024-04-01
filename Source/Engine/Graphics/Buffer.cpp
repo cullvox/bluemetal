@@ -3,92 +3,55 @@
 
 namespace bl {
 
-Buffer::Buffer(const BufferCreateInfo& info)
+GfxBuffer::GfxBuffer(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo)
+    : _device(device)
 {
-    if (!create(info)) throw std::runtime_error("Could not create a buffer, check prevous logs!");
+    createBuffer(createInfo);
 }
 
-Buffer::~Buffer() 
+GfxBuffer::~GfxBuffer() 
 { 
-    destroy();
+    vmaDestroyBuffer(_device->getAllocator(), _buffer, _allocation);
 }
 
-Buffer& Buffer::operator=(Buffer&& rhs) noexcept
+void GfxBuffer::createBuffer(const CreateInfo& createInfo)
 {
-    destroy();
-
-    _pDevice = rhs._pDevice;
-    _size = rhs._size;
-    _buffer = rhs._buffer;
-    _allocation = rhs._allocation;
-
-    rhs._pDevice = {};
-    rhs._size = {};
-    rhs._buffer = {};
-    rhs._allocation = {};
-
-    return *this;
-}
-
-bool Buffer::create(const BufferCreateInfo& info) noexcept
-{
-    _pDevice = info.pDevice;
-    _size = info.size;
+    _size = createInfo.size;
 
     // Build the buffer create info.
-    uint32_t graphicsFamilyIndex = _pDevice->getGraphicsFamilyIndex();
+    uint32_t graphicsFamilyIndex = _device->getGraphicsFamilyIndex();
 
-    VkBufferCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    createInfo.pNext = nullptr;
-    createInfo.flags = 0;
-    createInfo.size = _size;
-    createInfo.usage = (VkBufferUsageFlags)info.usage;
-    createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.queueFamilyIndexCount = 1;
-    createInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
+    VkBufferCreateInfo bufferCreateInfo = {};
+    bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+    bufferCreateInfo.pNext = nullptr;
+    bufferCreateInfo.flags = 0;
+    bufferCreateInfo.size = _size;
+    bufferCreateInfo.usage = (VkBufferUsageFlags)createInfo.usage;
+    bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    bufferCreateInfo.queueFamilyIndexCount = 1;
+    bufferCreateInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
 
     // If the user wanted a mapped buffer.
-    VmaAllocatorCreateFlags flags = info.mapped ? VMA_ALLOCATION_CREATE_MAPPED_BIT : 0;
+    VmaAllocatorCreateFlags flags = createInfo.mapped ? VMA_ALLOCATION_CREATE_MAPPED_BIT : 0;
 
     // Allocate the buffer.
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.flags = flags;
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
-    allocationCreateInfo.requiredFlags = info.memoryProperties;
+    allocationCreateInfo.requiredFlags = createInfo.memoryProperties;
     allocationCreateInfo.preferredFlags = 0;
     allocationCreateInfo.memoryTypeBits = 0;
     allocationCreateInfo.pool = VK_NULL_HANDLE;
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 0.0f;
 
-    if (vmaCreateBuffer(_pDevice->getAllocator(), &createInfo, &allocationCreateInfo, &_buffer, &_allocation, info.pAllocationInfo) != VK_SUCCESS) {
-        blError("Could not allocate a vulkan buffer!");
-        return false;
+    if (vmaCreateBuffer(_device->getAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, createInfo.pAllocationInfo) != VK_SUCCESS) {
+        throw std::runtime_error("Could not allocate a vulkan buffer!");
     }
-
-    return true;
 }
 
-void Buffer::destroy() noexcept
-{
-    vmaDestroyBuffer(_pDevice->getAllocator(), _buffer, _allocation);
-    _pDevice = nullptr;
-    _size = 0;
-    _buffer = VK_NULL_HANDLE;
-    _allocation = VK_NULL_HANDLE;
-}
-
-bool Buffer::isCreated() const noexcept { return _buffer != VK_NULL_HANDLE; }
-
-VmaAllocation Buffer::getAllocation() const noexcept { return _allocation; }
-VkBuffer Buffer::getBuffer() const noexcept { return _buffer; }
-VkDeviceSize Buffer::getSize()  const noexcept{ return _size; }
-
-bool Buffer::copyFrom(const Buffer& copy)
-{
-    // TODO: Implement ME!
-    return false;
-}
+VmaAllocation GfxBuffer::getAllocation() const { return _allocation; }
+VkBuffer GfxBuffer::getBuffer() const { return _buffer; }
+VkDeviceSize GfxBuffer::getSize()  const { return _size; }
 
 } // namespace bl

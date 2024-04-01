@@ -4,73 +4,34 @@
 
 namespace bl {
 
-Shader::Shader()
+GfxShader::GfxShader(const CreateInfo& createInfo)
+    : _device(createInfo.device)
+    , _stage(createInfo.stage)
+    , _module(VK_NULL_HANDLE)
 {
+    createModule(createInfo.binary);
 }
 
-Shader::Shader(Shader&& rhs)
-{
-    _pDevice = std::move(rhs._pDevice);
-    _stage = std::move(rhs._stage);
-    _binary = std::move(rhs._binary);
-    _module = std::move(rhs._module);
-
-    rhs._pDevice = nullptr;
-    rhs._stage = {};
-    rhs._binary = {};
-    rhs._module = VK_NULL_HANDLE;
-}
-
-Shader::Shader(const ShaderCreateInfo& info)
-{
-    if (!create(info)) throw std::runtime_error("Could not create a shader, check logs.");
-}
-
-Shader::~Shader() 
+GfxShader::~GfxShader() 
 { 
-    destroy();
+    vkDestroyShaderModule(_device->get(), _module, nullptr); 
 }
 
-bool Shader::create(const ShaderCreateInfo& info) noexcept
+VkShaderModule GfxShader::get() const { return _module; }
+VkShaderStageFlagBits GfxShader::getStage() const { return _stage; }
+
+void GfxShader::createModule(const std::vector<uint32_t>& binary)
 {
-    _pDevice = info.pDevice;
-    _stage = info.stage;
-    _binary = info.binary;
-    
-    return createModule();
-}
+    VkShaderModuleCreateInfo moduleCreateInfo = {};
+    moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    moduleCreateInfo.pNext = nullptr;
+    moduleCreateInfo.flags = 0;
+    moduleCreateInfo.codeSize = (uint32_t)binary.size();
+    moduleCreateInfo.pCode = binary.data();
 
-void Shader::destroy() noexcept
-{
-    if (!isCreated()) return;
-    
-    vkDestroyShaderModule(_pDevice->getHandle(), _module, nullptr); 
-}
-
-bool Shader::isCreated() const noexcept
-{
-    return _module == VK_NULL_HANDLE;
-}
-
-VkShaderStageFlagBits Shader::getStage() const noexcept { return _stage; }
-VkShaderModule Shader::getHandle() const noexcept { return _module; }
-const std::vector<uint32_t>& Shader::getBinary() const noexcept { return _binary; }
-
-bool Shader::createModule() noexcept
-{
-    VkShaderModuleCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    createInfo.pNext = nullptr;
-    createInfo.flags = 0;
-    createInfo.codeSize = (uint32_t)_binary.size();
-    createInfo.pCode = _binary.data();
-
-    if (vkCreateShaderModule(_pDevice->getHandle(), &createInfo, nullptr, &_module) != VK_SUCCESS) {
-        blError("Could not create Vulkan shader module!");
-        return false;
+    if (vkCreateShaderModule(_device->get(), &moduleCreateInfo, nullptr, &_module) != VK_SUCCESS) {
+        throw std::runtime_error("Could not create a Vulkan shader module!");
     }
-
-    return true;
 }
 
 } // namespace bl

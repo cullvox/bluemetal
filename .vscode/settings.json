@@ -99,7 +99,13 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "queue": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "coroutine": "cpp",
+        "expected": "cpp",
+        "stack": "cpp",
+        "valarray": "cpp",
+        "*.rh": "cpp",
+        "csignal": "cpp"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",

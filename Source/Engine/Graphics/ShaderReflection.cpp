@@ -101,7 +101,7 @@ void ShaderReflection::findResources()
             count *= b->array.dims[k];
         }
 
-        PipelineResource resource = {};
+        GfxPipelineResource resource = {};
         resource.stages = m_stage;
         resource.type = (VkDescriptorType)b->descriptor_type;
         // resources.access =

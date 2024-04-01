@@ -3,6 +3,15 @@
 
 namespace bl {
 
+FrameCounter::FrameCounter(int maxFramesCounted)
+    : _maximumHeldFramesPerSecond(maxFramesCounted)
+{
+}
+
+FrameCounter::~FrameCounter()
+{
+}
+
 void FrameCounter::beginFrame()
 {
     _startOfFrame = std::chrono::high_resolution_clock::now();

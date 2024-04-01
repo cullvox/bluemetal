@@ -10,24 +10,24 @@ enum class VersionRelease : uint32_t
 {
     eAlpha,
     eBeta,
-    eInfiniteDevelopment,
+    eDev,
+    eInfDev,
     eRelease,
     eStaging,
     eSnapshot,
-    eUndefined,
 };
 
-constexpr std::string to_string(VersionRelease release)
+static inline constexpr std::string to_string(VersionRelease release)
 {
     switch(release) {
-    case VersionRelease::eAlpha: return "Alpha";
-    case VersionRelease::eBeta: return "Beta";
-    case VersionRelease::eInfiniteDevelopment: return "InfiniteDevelopment";
-    case VersionRelease::eRelease: return "Release";
-    case VersionRelease::eStaging: return "Staging";
-    case VersionRelease::eSnapshot: return "Snapshot";
-    default: 
-    case VersionRelease::eUndefined: return "Undefined";
+    case VersionRelease::eAlpha: return "alpha";
+    case VersionRelease::eBeta: return "beta";
+    case VersionRelease::eDev: return "dev";
+    case VersionRelease::eInfDev: return "infdev";
+    case VersionRelease::eRelease: return "release";
+    case VersionRelease::eStaging: return "staging";
+    case VersionRelease::eSnapshot: return "snapshot";
+    default: return "undefined";
     }
 }
 
@@ -38,7 +38,7 @@ struct BLUEMETAL_API Version {
     uint32_t patch;
 };
 
-std::string to_string(Version version)
+static inline std::string to_string(Version version)
 {
     return fmt::format("{} {}.{}.{}", bl::to_string(version.release), version.major, version.minor, version.patch);
 }

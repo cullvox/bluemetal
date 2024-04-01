@@ -1,15 +1,18 @@
 #pragma once
 
+#include "Platform.h"
+
 namespace bl {
 namespace PathUtils {
 
-#ifdef BLUEMETAL_SYSTEM_WINDOW
+static constexpr const char* GetFilename(const char* path) {
+
+#ifdef BLUEMETAL_SYSTEM_WINDOWS
     const char Slash = '\\';
 #else
     const char Slash = '/';
 #endif
 
-static constexpr const char* GetFilename(const char* path) {
     const char* file = path;
     while (*path) {
         if (*path++ == Slash) {

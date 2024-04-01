@@ -1,118 +1,65 @@
-#include "Pipeline.h"
 #include "Core/Print.h"
-#include "ShaderReflection.h"
+#include "Pipeline.h"
 
 namespace bl {
 
-Pipeline::Pipeline() { }
-
-Pipeline::Pipeline(const PipelineCreateInfo& createInfo)
+Pipeline::Pipeline(const CreateInfo& createInfo)
 {
-    assert(create(createInfo) && "Could not create a pipeline, ")
+    createPipeline(createInfo);
 }
 
-Pipeline::~Pipeline() { destroy(); }
-
-bool Pipeline::create(const PipelineCreateInfo& createInfo)
-{
-    assert(createInfo.pDevice && "PipelineCreateInfo.pDevice must not be nullptr!");
-    assert(createInfo.pRenderPass && "PipelineCreateInfo.pRenderPass must not be nullptr!");
-    assert(createInfo.pDescriptorLayoutCache && "PipelineCreateInfo.pDescriptorLayoutCache must not be nullptr!");
-    assert(std::all_of(createInfo.shaders.begin(), createInfo.shaders.end(), [](auto shader){ return shader != nullptr; }) && "PipelineCreateInfo.shaders must not have a nullptr element!");
-
-    m_pDevice = createInfo.pDevice;
-    m_pRenderPass = createInfo.pRenderPass;
-    m_subpass = createInfo.subpass;
-
-    createLayout();
-    createPipeline(createInfo.shaders);
+Pipeline::~Pipeline() 
+{ 
+    vkDestroyPipeline(_device->get(), _pipeline, nullptr);
 }
 
-void Pipeline::destroy() noexcept
-{
-    if (!isCreated()) return;
-    vkDestroyPipeline(_pDevice->getHandle(), m_pipeline, nullptr);
-}
+VkPipeline Pipeline::get() const { return _pipeline; }
 
-bool Pipeline::isCreated() const noexcept { return _pipeline != VK_NULL_HANDLE; }
+// void Pipeline::mergeShaderResources(const std::vector<GfxPipelineResource>& shaderResources)
+// {
+//     for (auto& resource : shaderResources) {
+//         // shader resources for input and outputs can have the same names, adding the stage name
+//         // makes them unique
+//         auto key = resource.name;
+//         // if (resource.type  == PIPELINE_RESOURCE_TYPE_OUTPUT || resource.type ==
+//         // PIPELINE_RESOURCE_TYPE_INPUT)
+//         //    key = std::to_string(resource.stages) + ":" + key;
+// 
+//         // try to find the resource in the pipelines resources
+//         auto it = _resources.find(key);
+// 
+//         // if the resource is found add this stage to it, else add a new resource
+//         if (it != m_resources.end())
+//             it->second.stages |= resource.stages;
+//         else
+//             _resources.emplace(key, resource);
+//     }
+// }
 
-VkPipelineLayout Pipeline::getLayout() const { return _pipelineLayout; }
-VkPipeline Pipeline::getHandle() const { return _pipeline; }
-
-void Pipeline::mergeShaderResources(const std::vector<PipelineResource>& shaderResources)
-{
-    for (auto& resource : shaderResources) {
-        // shader resources for input and outputs can have the same names, adding the stage name
-        // makes them unique
-        auto key = resource.name;
-        // if (resource.type  == PIPELINE_RESOURCE_TYPE_OUTPUT || resource.type ==
-        // PIPELINE_RESOURCE_TYPE_INPUT)
-        //    key = std::to_string(resource.stages) + ":" + key;
-
-        // try to find the resource in the pipelines resources
-        auto it = _resources.find(key);
-
-        // if the resource is found add this stage to it, else add a new resource
-        if (it != m_resources.end())
-            it->second.stages |= resource.stages;
-        else
-            _resources.emplace(key, resource);
-    }
-}
-
-void Pipeline::getDescriptorLayouts(DescriptorLayoutCache* descriptorLayoutCache)
-{
-
-    // VkDescriptorSetLayoutCreateInfo createInfo = {};
-    // createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    // createInfo.pNext = nullptr;
-    // createInfo.flags = 0;
-    // createInfo.bindingCount = ;
-    // createInfo.pBindings = ;
-
-    // descriptorLayoutCache->createDescriptorLayout()
-}
-
-bool Pipeline::createLayout()
-{
-    VkPipelineLayoutCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    createInfo.pNext = nullptr;
-    createInfo.flags = 0;
-    createInfo.setLayoutCount = (uint32_t)m_setLayouts.size();
-    createInfo.pSetLayouts = m_setLayouts.data();
-    createInfo.pushConstantRangeCount = 0;
-    createInfo.pPushConstantRanges = nullptr;
-
-    if (vkCreatePipelineLayout(_pDevice->getHandle(), &createInfo, nullptr, &_pipelineLayout) != VK_SUCCESS) {
-        blError("Could not create the Vulkan pipeline layout!");
-        return false;
-    }
-
-    return true;
-}
-
-bool Pipeline::createPipeline(const std::vector<Shader*>& shaders)
+bool Pipeline::createPipeline(const CreateInfo& createInfo)
 {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {};
+    shaderStages.resize(createInfo.shaders.size());
 
-    uint32_t i = 0;
-    for (Shader* pShader : shaders) {
+    for (int i = 0; i < createInfo.shaders.size(); i++) {
+        auto shader = createInfo.shaders[i];
         shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStages[i].pNext = nullptr;
         shaderStages[i].flags = 0;
-        shaderStages[i].stage = pShader->getStage();
-        shaderStages[i].module = pShader->getHandle();
+        shaderStages[i].stage = shader->getStage();
+        shaderStages[i].module = shader->get();
         shaderStages[i].pName = "main";
         shaderStages[i].pSpecializationInfo = nullptr;
-
-        i++;
     }
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputState.pNext = nullptr;
     vertexInputState.flags = 0;
+    vertexInputState.vertexBindingDescriptionCount = (uint32_t)createInfo.vertexInputBindings.size();
+    vertexInputState.pVertexBindingDescriptions = createInfo.vertexInputBindings.data();
+    vertexInputState.vertexAttributeDescriptionCount = (uint32_t)createInfo.vertexInputAttribs.size();
+    vertexInputState.pVertexAttributeDescriptions = createInfo.vertexInputAttribs.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
     inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -127,6 +74,7 @@ bool Pipeline::createPipeline(const std::vector<Shader*>& shaders)
     tessellationState.flags = 0;
     tessellationState.patchControlPoints = 0;
 
+    // The viewport state is set to dynamic, it doesn't matter.
     std::array<VkViewport, 1> viewports;
     viewports[0].x = 0.0f;
     viewports[0].y = 0.0f;
@@ -197,7 +145,7 @@ bool Pipeline::createPipeline(const std::vector<Shader*>& shaders)
     colorBlendState.blendConstants[2] = 0.0f;
     colorBlendState.blendConstants[3] = 0.0f;
 
-    std::array dynamicStates {
+    std::array dynamicStates{
         VK_DYNAMIC_STATE_VIEWPORT,
         VK_DYNAMIC_STATE_SCISSOR,
     };
@@ -224,18 +172,15 @@ bool Pipeline::createPipeline(const std::vector<Shader*>& shaders)
     pipelineCreateInfo.pDepthStencilState = VK_NULL_HANDLE;
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
-    pipelineCreateInfo.layout = _pipelineLayout;
-    pipelineCreateInfo.renderPass = _pRenderPass->getHandle();
-    pipelineCreateInfo.subpass = _subpass;
+    pipelineCreateInfo.layout = createInfo.layout;
+    pipelineCreateInfo.renderPass = createInfo.renderPass->get();
+    pipelineCreateInfo.subpass = createInfo.subpass;
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineCreateInfo.basePipelineIndex = 0;
 
-    if (vkCreateGraphicsPipelines(_pDevice->getHandle(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &m_pipeline) != VK_SUCCESS) {
-        blError("Could not create a graphics VkPipeline!");
-        return false;
+    if (vkCreateGraphicsPipelines(_device->get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline) != VK_SUCCESS) {
+        throw std::runtime_error("Could not create a graphics VkPipeline!");
     }
-
-    return true;
 }
 
 } // namespace bl

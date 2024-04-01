@@ -11,7 +11,7 @@ namespace bl {
 // Classes
 ///////////////////////////////
 
-GeometryPass::GeometryPass(GraphicsDevice* pDevice, VkExtent2D extent)
+GeometryPass::GeometryPass(GfxDevice* pDevice, VkExtent2D extent)
     : m_pDevice(pDevice)
     , m_extent(extent)
 {
@@ -57,7 +57,7 @@ bool GeometryPass::createImages()
 {
 
     for (uint32_t i = 0; i < m_imageCount; i++) {
-        m_albedoSpecularImages.push_back(std::make_unique<Image>(m_pDevice, VK_IMAGE_TYPE_2D,
+        m_albedoSpecularImages.push_back(std::make_unique<GfxImage>(m_pDevice, VK_IMAGE_TYPE_2D,
             m_albedoSpecularFormat, VkExtent3D { m_extent.width, m_extent.height, 1 },
             VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT
                 | VK_IMAGE_USAGE_TRANSFER_SRC_BIT,

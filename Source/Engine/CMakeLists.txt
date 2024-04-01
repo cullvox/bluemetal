@@ -7,9 +7,9 @@ list(APPEND Sources
   "Math/Vector4.cpp"
 
   # Noodle
-  "Noodle/Noodle.cpp"
-  "Noodle/NoodleLexer.cpp"
-  "Noodle/NoodleToken.cpp"
+  # "Noodle/Noodle.cpp"
+  # "Noodle/NoodleLexer.cpp"
+  # "Noodle/NoodleToken.cpp"
 
   # Audio
   "Audio/AudioSystem.cpp"
@@ -26,16 +26,16 @@ list(APPEND Sources
   "Graphics/Buffer.cpp"
   "Graphics/Image.cpp"
   "Graphics/Shader.cpp"
-  "Graphics/ShaderReflection.cpp"
-  "Graphics/DescriptorLayoutCache.cpp"
-  "Graphics/DescriptorAllocator.cpp"
+  #"Graphics/ShaderReflection.cpp"
+  #"Graphics/DescriptorLayoutCache.cpp"
+  #"Graphics/DescriptorAllocator.cpp"
   "Graphics/Pipeline.cpp"
   "Graphics/Swapchain.cpp"
   "Graphics/FrameCounter.cpp"
   # "Render/Mesh.cpp"
   "Graphics/PresentPass.cpp"
   "Graphics/Renderer.cpp"
-  "Graphics/GeometryPass.cpp"
+  # "Graphics/GeometryPass.cpp"
 
   # imgui
   "imgui/imgui.cpp"

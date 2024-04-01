@@ -21,11 +21,15 @@ public:
     AudioSystem();
     ~AudioSystem();
 
-    FMOD_SYSTEM* getHandle();
+    FMOD_SYSTEM* get();
+    
+    std::string getDriverName();
+    int getNumChannelsPlaying();
+
     void update();
 
 private:
-    FMOD_SYSTEM* m_pSystem;
+    FMOD_SYSTEM* _system;
     
 };
 

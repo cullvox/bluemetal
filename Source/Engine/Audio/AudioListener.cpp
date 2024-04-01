@@ -12,7 +12,7 @@ namespace bl {
 ///////////////////////////////
 
 AudioListener::AudioListener(AudioSystem* pSystem)
-    : m_pSystem(pSystem)
+    : _system(pSystem)
 {
 }
 

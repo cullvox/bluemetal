@@ -10,11 +10,11 @@
 
 struct ImGui_ImplBluemetal_InitInfo
 {
-    bl::GraphicsInstance*           pInstance;
-    bl::GraphicsPhysicalDevice*     pPhysicalDevice;
-    bl::GraphicsDevice*             pDevice;
-    bl::RenderPass*                 pRenderPass;
-    bl::Window*                     pWindow;
+    std::shared_ptr<bl::GfxInstance>           instance;
+    std::shared_ptr<bl::GfxPhysicalDevice>     physicalDevice;
+    std::shared_ptr<bl::GfxDevice>             device;
+    std::shared_ptr<bl::RenderPass>            renderPass;
+    std::shared_ptr<bl::Window>                window;
 };
 
 IMGUI_IMPL_API bool         ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* info);

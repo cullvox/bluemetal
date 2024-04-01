@@ -7,7 +7,7 @@ namespace bl {
 
 class BLUEMETAL_API FrameCounter {
 public:
-    FrameCounter(int maxFramesCounted);
+    FrameCounter(int maxFramesCounted = 144);
     ~FrameCounter();
 
     void beginFrame();

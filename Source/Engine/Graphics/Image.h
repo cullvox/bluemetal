@@ -5,70 +5,55 @@
 
 namespace bl {
 
-struct BLUEMETAL_API ImageCreateInfo {
-    GraphicsDevice*     pDevice,       /** @brief pDevice Device used to create the image with. */
-    VkImageType         type,          /** @brief type Vulkan type of image to create. (1D, 2D or 3D and array variants) */
-    VkFormat            format,        /** @brief format Vulkan format to create the image using. */
-    VkExtent3D          extent,        /** @brief extent How large to create the image in pixels. */
-    VkImageUsageFlags   usage,         /** @brief usage Vulkan usage determining where/how this image will work. */
-    VkImageAspectFlags  aspectMask,    /** @brief aspectMask Vulkan aspects the image will use. */
-    uint32_t            mipLevels = 0  /** @brief mipLevels How many levels of mip maps to generate. */
-};
 
 /** @brief Creates a graphics image on the physical device. */
-class BLUEMETAL_API Image {
+class BLUEMETAL_API GfxImage {
 public:
 
-    /** @brief Default Constrctor */
-    Image();
+    struct CreateInfo 
+    {
+        VkImageType         type;          /** @brief type Vulkan type of image to create. (1D, 2D or 3D and array variants) */
+        VkFormat            format;        /** @brief format Vulkan format to create the image using. */
+        VkExtent3D          extent;        /** @brief extent How large to create the image in pixels. */
+        VkImageUsageFlags   usage;         /** @brief usage Vulkan usage determining where/how this image will work. */
+        VkImageAspectFlags  aspectMask;    /** @brief aspectMask Vulkan aspects the image will use. */
+        uint32_t            mipLevels = 0; /** @brief mipLevels How many levels of mip maps to generate. */
+    };
 
-    /** @brief Create Constructor */
-    Image(const ImageCreateInfo& createInfo);
+    /** @brief Constructor */
+    GfxImage(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo);
 
-    /** @brief Move Constructor */    
-    Image(Image&& other);
-    
-    /** @brief Default Destructor */
-    ~Image();
-
-    /** @brief Move Operator */
-    Image& operator=(Image&& rhs) noexcept;
-
-    /** @brief Creates this image. */
-    bool create(const ImageCreateInfo& createInfo) noexcept;
-
-    /** @brief Destroys this image. */
-    void destroy() noexcept;
-
-    /** @brief Returns true if the image was created. */
-    bool isCreated() const noexcept;
+    /** @brief Destructor */
+    ~GfxImage();
 
 public:
 
     /** @brief Returns the image size in pixels at construction. */
-    [[nodiscard]] Extent3D getExtent() const noexcept;
+    Extent3D getExtent() const;
     
     /** @brief Returns the image format at construction. */
-    [[nodiscard]] VkFormat getFormat() const noexcept;
+    VkFormat getFormat() const;
 
     /** @brief Returns the image usage at construction. */
-    [[nodiscard]] VkImageUsageFlags getUsage() const noexcept;
+    VkImageUsageFlags getUsage() const;
 
     /** @brief Returns the vulkan image created at construction.  */
-    [[nodiscard]] VkImage getHandle() const noexcept;
+    VkImage get() const;
 
     /** @brief Returns the default image view created at construction. */
-    [[nodiscard]] VkImageView getDefaultView() const noexcept;
+    VkImageView getDefaultView() const;
 
 private:
-    GraphicsDevice*     _pDevice;
-    Extent3D            _extent;
-    VkImageType         _type;
-    VkFormat            _format;
-    VkImageUsageFlags   _usage;
-    VkImage             _image;
-    VkImageView         _imageView;
-    VmaAllocation       _allocation;
+    void createImage(const CreateInfo& createInfo);
+
+    std::shared_ptr<GfxDevice>  _device;
+    Extent3D                    _extent;
+    VkImageType                 _type;
+    VkFormat                    _format;
+    VkImageUsageFlags           _usage;
+    VkImage                     _image;
+    VkImageView                 _imageView;
+    VmaAllocation               _allocation;
 };
 
 } // namespace bl

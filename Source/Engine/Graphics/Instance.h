@@ -7,77 +7,65 @@
 
 namespace bl {
 
-struct GraphicsInstanceCreateInfo {
-    Version         applicationVersion; /** @brief Version of your application. */
-    std::string     applicationName;    /** @brief Name of your application. */
-    bool            enableValidation;   /** @brief Enables Vulkan validation layer and debug logging. */
-};
-
-/** @brief Used to choose physical device using an instance to create an @ref GraphicsDevice. */
-class BLUEMETAL_API GraphicsInstance {
+/** @brief Used to choose physical device using an instance to create an @ref GfxDevice. */
+class BLUEMETAL_API GfxInstance 
+{
 public:
-    /** @brief Default Constructor */
-    GraphicsInstance();
 
-    /** @brief Move Constructor  */
-    GraphicsInstance(GraphicsInstance&& rhs) noexcept;
-
-    /** @brief Create Constructor */
-    GraphicsInstance(const GraphicsInstanceCreateInfo& info);
-    
-    /** @brief Default Destructor */
-    ~GraphicsInstance();
-
-    /** @brief Move Operator */
-    GraphicsInstance& operator=(GraphicsInstance&& rhs) noexcept;
+    struct CreateInfo 
+    {
+        Version             applicationVersion; /** @brief Version of your application. */
+        std::string_view    applicationName;    /** @brief Name of your application. */
+        bool                enableValidation;   /** @brief Enables/disables Vulkan validation layer and debug logging. */
+    };
 
     /** @brief Creates this instance object. */
-    [[nodiscard]] bool create(const GraphicsInstanceCreateInfo& info) noexcept;
+    GfxInstance(const CreateInfo& info);
 
     /** @brief Destroys this instance object. */
-    void destroy() noexcept;
-
-    /** @brief Returns true if this object was created. */
-    [[nodiscard]] bool isCreated() const noexcept;
+    ~GfxInstance();
 
 public:
     
     /** @brief Returns the underlying VkInstance object. */
-    [[nodiscard]] VkInstance getHandle() const noexcept;
+    VkInstance get() const;
+
+    /** @brief Specifies what version of Vulkan we are using. */
+    static constexpr uint32_t getApiVersion() { return VK_API_VERSION_1_2; }
  
     /** @brief Returns the physical devices to choose from. */
-    [[nodiscard]] std::vector<GraphicsPhysicalDevice*> getPhysicalDevices() const noexcept;
+    std::vector<std::shared_ptr<GfxPhysicalDevice>> getPhysicalDevices() const;
 
 private:
  
     /** @brief Gets a list of extensions used by SDL for window creation.  */
-    [[nodiscard]] bool getExtensionsForSDL(std::vector<const char*>& layers) noexcept;
+    std::vector<const char*> getExtensionsForSDL();
 
     /** @brief Gets a list of extensions used by this engine for various usages.  */
-    [[nodiscard]] bool getExtensions(std::vector<const char*>& layers) noexcept;
+    std::vector<const char*> getExtensions();
 
     /** @brief Gets a list of validation layers used by this engine.  */
-    [[nodiscard]] bool getValidationLayers(std::vector<const char*>& layers) noexcept;
+    std::vector<const char*> getValidationLayers();
 
     /** @brief Creates the underlying VkInstance object. */
-    [[nodiscard]] bool createInstance() noexcept;
+    void createInstance(const CreateInfo& createInfo);
 
     /** @brief Creates the array of GraphicsPhysicalDevices from VkPhysicalDevices. */
-    [[nodiscard]] bool createPhysicalDevices() noexcept;
+    void enumeratePhysicalDevices();
 
     /** @brief Vulkan debug callback from VkDebugUtilsMessengerEXT. */
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
         VkDebugUtilsMessageSeverityFlagBitsEXT          severity,
         VkDebugUtilsMessageTypeFlagsEXT                 messageType,
         const VkDebugUtilsMessengerCallbackDataEXT*     pCallbackData,
         void*                                           pUserData) noexcept;
     
-    GraphicsInstanceCreateInfo                              _createInfo;
-    VkInstance                                              _instance;
-    PFN_vkCreateDebugUtilsMessengerEXT                      _createDebugUtilsMessengerEXT;
-    PFN_vkDestroyDebugUtilsMessengerEXT                     _destroyDebugUtilsMessengerEXT;
-    VkDebugUtilsMessengerEXT                                _messenger;
-    std::vector<std::unique_ptr<GraphicsPhysicalDevice>>    _physicalDevices;
+    VkInstance                                      _instance;
+    bool                                            _enableValidation;
+    PFN_vkCreateDebugUtilsMessengerEXT              _createDebugUtilsMessengerEXT;
+    PFN_vkDestroyDebugUtilsMessengerEXT             _destroyDebugUtilsMessengerEXT;
+    VkDebugUtilsMessengerEXT                        _messenger;
+    std::vector<std::shared_ptr<GfxPhysicalDevice>> _physicalDevices;
 };
 
 } // namespace bl

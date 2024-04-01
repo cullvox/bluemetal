@@ -18,11 +18,13 @@ AudioSubsystem::AudioSubsystem(Engine* engine)
 
 AudioSubsystem::~AudioSubsystem() { }
 
-void AudioSubsystem::init() { system = std::make_unique<AudioSystem>(); }
+void AudioSubsystem::init() { system = std::make_shared<AudioSystem>(); }
 
-void AudioSubsystem::shutdown() { system.release(); }
+void AudioSubsystem::shutdown() {  }
 
 void AudioSubsystem::update() { system->update(); }
+
+std::shared_ptr<AudioSystem> AudioSubsystem::getSystem() { return system; }
 
 std::unique_ptr<Sound> AudioSubsystem::createSound(std::filesystem::path path)
 {

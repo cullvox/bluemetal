@@ -36,7 +36,7 @@ public:
     bool isStopped();
 
 private:
-    AudioSystem*    m_pSystem;
+    AudioSystem*    _system;
     Sound*          m_pSound;
     FMOD_CHANNEL*   m_pChannel;
 };

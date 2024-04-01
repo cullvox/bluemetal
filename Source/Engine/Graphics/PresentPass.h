@@ -7,12 +7,21 @@ namespace bl {
 
 class BLUEMETAL_API PresentPass : public RenderPass {
 public:
-    PresentPass(GraphicsDevice* pDevice, Swapchain* pSwapchain);
-    virtual ~PresentPass();
 
-    virtual VkRenderPass getHandle() override;
-    virtual bool record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;
-    virtual bool resize(VkExtent2D extent) override;
+    /** @brief Constructor */
+    PresentPass(std::shared_ptr<GfxDevice> device, std::shared_ptr<GfxSwapchain> swapchain);
+    
+    /** @brief Destructor */
+    ~PresentPass();
+
+    /** @brief Returns the lower level Vulkan render pass. */
+    virtual VkRenderPass get() override;
+
+    /** @brief Records a command to the */
+    virtual void begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;
+
+    virtual void end(VkCommandBuffer cmd) override;
+    virtual void recreate(VkExtent2D extent) override;
 
 private:
     void createFramebuffers();
@@ -20,10 +29,10 @@ private:
     void createRenderPass();
     void destroyRenderPass();
 
-    GraphicsDevice*             _pDevice;
-    Swapchain*                  _pSwapchain;	
-    std::vector<VkFramebuffer>  _swapFramebuffers;
-    VkRenderPass                _pass;
+    std::shared_ptr<GfxDevice>      _device;
+    std::shared_ptr<GfxSwapchain>   _swapchain;	
+    std::vector<VkFramebuffer>      _swapFramebuffers;
+    VkRenderPass                    _pass;
 };
 
 } // namespace bl

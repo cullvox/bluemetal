@@ -1,11 +1,11 @@
 #include "GraphicsSubsystem.h"
-
 #include "Engine.h"
+#include "Core/Print.h"
 
 namespace bl {
 
-GraphicsSubsystem::GraphicsSubsystem(Engine* pEngine)
-    : m_pEngine(pEngine)
+GraphicsSubsystem::GraphicsSubsystem(Engine* engine)
+    : _engine(engine)
 {
 }
 
@@ -17,30 +17,38 @@ bool GraphicsSubsystem::init(const GraphicsSubsystemInitInfo* pInfo)
         blError("Could not initialize SDL 2: {}", SDL_GetError());
     }
 
-    GraphicsInstanceCreateInfo instanceCreateInfo {};
-
-    m_instance = std::make_unique<GraphicsInstance>();
+    GfxInstance::CreateInfo createInfo{
+            bl::engineVersion,
+            "Maginvox",
+            true
+        };
+    _instance = std::make_shared<GfxInstance>(createInfo);
 
     auto displays = Display::getDisplays();
-    m_window = std::make_unique<Window>(m_instance.get(), displays[0].getDesktopMode());
+    Window::CreateInfo windowCreateInfo{_instance, displays[0]->getDesktopMode()};
+    _window = std::make_shared<Window>(windowCreateInfo);
 
-    auto physicalDevices = m_instance->getPhysicalDevices();
-    m_pPhysicalDevice = pInfo && pInfo->physicalDeviceIndex
+    auto physicalDevices = _instance->getPhysicalDevices();
+    _physicalDevice = pInfo && pInfo->physicalDeviceIndex
         ? physicalDevices[pInfo->physicalDeviceIndex.value()]
         : physicalDevices[0];
 
-    GraphicsDeviceCreateInfo deviceCreateInfo {};
-    deviceCreateInfo.pInstance = m_instance.get();
-    deviceCreateInfo.pPhysicalDevice = m_pPhysicalDevice;
-    deviceCreateInfo.pWindow = m_window.get();
+    GfxDevice::CreateInfo deviceCreateInfo = {_instance, _physicalDevice, _window};
+    _device = std::make_shared<GfxDevice>(deviceCreateInfo);
 
-    m_device = std::make_unique<GraphicsDevice>(deviceCreateInfo);
-    m_swapchain = std::make_unique<Swapchain>(m_device.get(), m_window.get());
-    m_renderer = std::make_unique<Renderer>(m_device.get(), m_swapchain.get());
+    GfxSwapchain::CreateInfo swapchainCreateInfo = {_window};
+    _swapchain = std::make_shared<GfxSwapchain>(_device, swapchainCreateInfo);
+
+    Renderer::CreateInfo rendererCreateInfo = {_device, _swapchain};
+    _renderer = std::make_shared<Renderer>(rendererCreateInfo);
 
     return true;
 }
 
-Renderer* GraphicsSubsystem::getRenderer() { return m_renderer.get(); }
+std::shared_ptr<Renderer> GraphicsSubsystem::getRenderer() { return _renderer; }
+std::shared_ptr<GfxInstance> GraphicsSubsystem::getInstance() { return _instance; }
+std::shared_ptr<GfxPhysicalDevice> GraphicsSubsystem::getPhysicalDevice() { return _physicalDevice; }
+std::shared_ptr<Window> GraphicsSubsystem::getWindow() { return _window; }
+std::shared_ptr<GfxDevice> GraphicsSubsystem::getDevice() { return _device; }
 
 } // namespace bl

@@ -41,7 +41,7 @@ size_t DescriptorLayoutInfo::hash() const
     return result;
 }
 
-DescriptorLayoutCache::DescriptorLayoutCache(GraphicsDevice* pDevice)
+DescriptorLayoutCache::DescriptorLayoutCache(GfxDevice* pDevice)
     : m_pDevice(pDevice)
 {
 }

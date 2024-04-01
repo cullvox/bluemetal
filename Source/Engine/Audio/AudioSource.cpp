@@ -5,7 +5,7 @@
 namespace bl {
 
 AudioSource::AudioSource(AudioSystem* pSystem)
-    : m_pSystem(pSystem)
+    : _system(pSystem)
 {
 }
 
@@ -23,7 +23,7 @@ void AudioSource::set3DAttributes(Vector3f position, Vector3f velocity)
 void AudioSource::play(bool repeat)
 {
     if (FMOD_System_PlaySound(
-            m_pSystem->getHandle(), m_pSound->getHandle(), nullptr, false, &m_pChannel)
+            _system->get(), m_pSound->getHandle(), nullptr, false, &m_pChannel)
         != FMOD_OK) {
         throw std::runtime_error("Could not play an FMOD Sound!");
     }

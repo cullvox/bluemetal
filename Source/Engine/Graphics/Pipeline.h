@@ -8,75 +8,45 @@
 
 namespace bl {
 
-/** @brief Create info for pipeline objects. */
-struct PipelineCreateInfo {
-    GraphicsDevice*           pDevice;                   /** @brief Logical device used to create this pipeline.  */
-    DescriptorLayoutCache*    pDescriptorLayoutCache;    /** @brief Speed up creation by caching descriptor set layouts. */
-    RenderPass*               pRenderPass;               /** @brief The shaders used in this pipeline program. */
-    uint32_t                  subpass;                   /** @brief What pass this pipeline is used in. */
-    std::vector<Shader*>      shaders;                   /** @brief What subpass on the render pass is this used in. */
-};
-
-/** @brief A program consisting of multiple shaders that run on the GPU. */
-class BLUEMETAL_API Pipeline {
+/** @brief A program consisting of shaders designed to run on the GPU. */
+class BLUEMETAL_API Pipeline 
+{
 public:
 
-    /** @brief Default Constructor */
-    Pipeline();
+    /** @brief Create info for pipeline objects. */
+    struct CreateInfo 
+    {
+        std::shared_ptr<GfxDevice>              device;                   /** @brief Logical device used to create this pipeline.  */
+        VkPipelineLayout                        layout;
+        std::shared_ptr<RenderPass>             renderPass;               /** @brief The shaders used in this pipeline program. */
+        uint32_t                                subpass;                  /** @brief What subpass this pipeline is used in. */
+        std::vector<VkVertexInputBindingDescription> vertexInputBindings;
+        std::vector<VkVertexInputAttributeDescription> vertexInputAttribs;
+        std::vector<std::shared_ptr<GfxShader>> shaders;                  /** @brief What subpass on the render pass is this used in. */
+    };
 
-    /** @brief Move Constructor */
-    Pipeline(Pipeline&& rhs);
+    /** @brief Constructor */
+    Pipeline(const CreateInfo& info);
 
-    /** @brief Constructs the pipeline by calling @ref create().     */
-    Pipeline(const PipelineCreateInfo& info);
-
-    /** @brief Default Destructor */
+    /** @brief Destructor */
     ~Pipeline();
 
-    /** @brief Move Operator */
-    Pipeline& operator=(Pipeline&& rhs) noexcept;
-
-    /** @brief Creates a pipeline object. */
-    bool create(const PipelineCreateInfo& info);
-
-    /** @brief Destroys a pipeline object. */
-    void destroy() noexcept;
-
-    /** @brief Gets the current created status. */
-    bool isCreated() const noexcept;
-
 public:
 
-    /** @brief Gets the raw VkPipelineLayout used to create this pipeline. */
-    VkPipelineLayout getLayout() const;
-
     /** @brief Gets the raw VkPipeline underlying this object. */
-    VkPipeline getHandle() const;
-
-    /** @brief Returns reflected resource info that this pipeline uses for materials and others. */
-    std::vector<PipelineResource> getResources();
+    VkPipeline get() const;
 
     /** @brief Binds this pipeline to a command buffer. */
     void bind(VkCommandBuffer cmd);
 
 private:
-    void getDescriptorLayouts(DescriptorLayoutCache* descriptorLayoutCache);
-    bool createLayout();
-    bool createPipeline(const std::vector<Shader*>& shaders);
-    void mergeShaderResources(const std::vector<PipelineResource>& resources);
+    bool createPipeline(const CreateInfo& createInfo);
 
-    GraphicsDevice*                         _pDevice;
-    RenderPass*                             _pRenderPass;
-    uint32_t                                _subpass;
-    std::map<std::string, PipelineResource> _resources;
-    std::vector<VkDescriptorSetLayout>      _setLayouts;
-    VkPipelineLayout                        _pipelineLayout;
-    VkPipeline                              _pipeline;
-    
+    GfxDevice*                                  _device;
+    VkPipeline                                  _pipeline;
 };
 
 } // namespace bl
-
 
 /* Getting real with descriptor sets.
 

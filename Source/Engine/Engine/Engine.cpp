@@ -1,6 +1,5 @@
 #include "Engine/Engine.h"
 #include "Core/Print.h"
-#include "Noodle/Noodle.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_bluemetal.h"
@@ -9,33 +8,27 @@
 namespace bl {
 
 Engine::Engine()
-    : graphics(std::make_unique<GraphicsSubsystem>(this))
-    , audio(std::make_unique<AudioSubsystem>(this))
 {
-    blInfo("using bluemetal {}", engineVersion);
-    blInfo(""
     SDL_SetMainReady();
 
-    const std::string defaultConfig =
-#include "default.nwdl"
-        ;
-
     // m_config = Noodle::parseFromFile("Save/Config/config.noodle");
+    audio = std::make_shared<AudioSubsystem>(this);
+    graphics = std::make_shared<GraphicsSubsystem>(this);
 }
 
 Engine::~Engine() { }
 
 void Engine::init(SubsystemFlags flags, const SubsystemInitInfo* pInfo)
 {
-    if (flags & eSubsystemAudioBit) {
+    if (flags & SubsystemFlagBits::eSubsystemAudioBit) {
         audio->init();
     }
 
-    if (flags & eSubsystemGraphicsBit) {
+    if (flags & SubsystemFlagBits::eSubsystemGraphicsBit) {
         graphics->init(pInfo ? pInfo->pGraphicsInit : nullptr);
     }
 
-    if (flags & eSubsystemImGuiBit) { }
+    if (flags & SubsystemFlagBits::eSubsystemImGuiBit) { }
 }
 
 GraphicsSubsystem* Engine::getGraphics() { return graphics.get(); }
