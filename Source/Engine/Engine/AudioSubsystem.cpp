@@ -11,34 +11,31 @@ namespace bl {
 // Classes
 ///////////////////////////////
 
-AudioSubsystem::AudioSubsystem(Engine* engine)
-    : engine(engine)
+AudioSubsystem::AudioSubsystem(Engine& engine)
+    : _engine(engine)
 {
+    _system = std::make_shared<AudioSystem>();
 }
 
 AudioSubsystem::~AudioSubsystem() { }
 
-void AudioSubsystem::init() { system = std::make_shared<AudioSystem>(); }
+void AudioSubsystem::update() { _system->update(); }
 
-void AudioSubsystem::shutdown() {  }
-
-void AudioSubsystem::update() { system->update(); }
-
-std::shared_ptr<AudioSystem> AudioSubsystem::getSystem() { return system; }
+std::shared_ptr<AudioSystem> AudioSubsystem::getSystem() { return _system; }
 
 std::unique_ptr<Sound> AudioSubsystem::createSound(std::filesystem::path path)
 {
-    return std::move(std::make_unique<Sound>(system.get(), path));
+    return std::move(std::make_unique<Sound>(_system.get(), path));
 }
 
 std::unique_ptr<AudioListener> AudioSubsystem::createListener()
 {
-    return std::move(std::make_unique<AudioListener>(system.get()));
+    return std::move(std::make_unique<AudioListener>(_system.get()));
 }
 
 std::unique_ptr<AudioSource> AudioSubsystem::createSource()
 {
-    return std::move(std::make_unique<AudioSource>(system.get()));
+    return std::move(std::make_unique<AudioSource>(_system.get()));
 }
 
 }

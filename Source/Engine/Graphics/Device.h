@@ -9,15 +9,10 @@ namespace bl {
 class BLUEMETAL_API GfxDevice {
 public:
 
-    struct CreateInfo
-    {
-        std::shared_ptr<GfxInstance>           instance;       /** @brief Graphics instance. */
-        std::shared_ptr<GfxPhysicalDevice>     physicalDevice; /** @brief Physical GPU the device is storing resources on. */
-        std::shared_ptr<Window>                window;         /** @brief Temporary window only required for creation of the device. */
-    };
-
     /** @brief Creates the Vulkan graphics device and some other utils. */
-    GfxDevice(const CreateInfo& createInfo);
+    GfxDevice(
+        std::shared_ptr<GfxInstance>        instance,           /** @brief Graphics instance. */
+        std::shared_ptr<GfxPhysicalDevice>  physicalDevice);    /** @brief Temporary window only required for creation of the device. */
     
     /** @brief Destroys the graphics device. */
     ~GfxDevice();
@@ -51,8 +46,8 @@ public:
     /** @brief Returns true if the graphics family index and present family index are the same. */
     bool areQueuesSame() const;
 
-    /** @brief Submits commands to the graphics queue. */
-    bool immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder);
+    /** @brief Submits commands to the graphics queue on the double. */
+    void immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder);
     
     /** @brief Waits for an undefined amount of time for the device to finish whatever it may be doing. */
     void waitForDevice() const;
@@ -66,7 +61,7 @@ private:
     std::vector<const char*> getExtensions();
     
     /** @brief Creates the Vulkan device. */
-    void createDevice(std::shared_ptr<Window> window);
+    void createDevice();
 
     /** @brief Creates a command pool for allocating command buffers. */
     void createCommandPool();

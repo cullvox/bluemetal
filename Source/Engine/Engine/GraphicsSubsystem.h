@@ -29,18 +29,11 @@ struct GraphicsSubsystemInitInfo
 class BLUEMETAL_API GraphicsSubsystem
 {
 public:
-
     /// Engine Constructor
-    GraphicsSubsystem(Engine* pEngine);
+    GraphicsSubsystem(Engine& engine);
 
     /// Default Destructor
     ~GraphicsSubsystem();
-
-    /// Initializes the graphics subsystem with this info.
-    bool init(const GraphicsSubsystemInitInfo* pInitInfo);
-    
-    /// Shuts down the render subsystem.
-    void shutdown();
 
     /// Gets the physical devices that this system supports.
     /// Can be called before selectPhysicalDevices().
@@ -75,7 +68,7 @@ public:
     std::shared_ptr<Renderer> getRenderer();
 
 private:
-    Engine*                                 _engine;
+    Engine&                                 _engine;
     std::shared_ptr<GfxInstance>            _instance;
     std::shared_ptr<GfxPhysicalDevice>      _physicalDevice;
     std::shared_ptr<Window>                 _window;

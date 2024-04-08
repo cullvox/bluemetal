@@ -1,10 +1,6 @@
 set(Sources "")
 
 list(APPEND Sources
-  # Math
-  "Math/Vector2.cpp"
-  "Math/Vector3.cpp"
-  "Math/Vector4.cpp"
 
   # Noodle
   # "Noodle/Noodle.cpp"
@@ -55,7 +51,7 @@ list(APPEND Sources
 add_library(Bluemetal STATIC ${Sources})
 
 target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(Bluemetal ${Vulkan_LIBRARY} spirv-reflect-static SDL2::SDL2 fmt::fmt FMOD)
+target_link_libraries(Bluemetal ${Vulkan_LIBRARY} glm::glm-header-only spirv-reflect-static SDL2::SDL2 fmt::fmt FMOD)
 
 # generate export header
 include(GenerateExportHeader)

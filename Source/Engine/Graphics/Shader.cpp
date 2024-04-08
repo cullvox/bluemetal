@@ -4,8 +4,8 @@
 
 namespace bl {
 
-GfxShader::GfxShader(const CreateInfo& createInfo)
-    : _device(createInfo.device)
+GfxShader::GfxShader(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo)
+    : _device(device)
     , _stage(createInfo.stage)
     , _module(VK_NULL_HANDLE)
 {

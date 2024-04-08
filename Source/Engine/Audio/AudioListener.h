@@ -5,7 +5,6 @@
 // Headers
 ///////////////////////////////
 
-#include "Math/Vector3.h"
 #include "AudioSystem.h"
 #include "Export.h"
 
@@ -23,7 +22,7 @@ public:
     AudioListener(AudioSystem* pSystem);
     ~AudioListener();
 
-    void set3DAttributes(Vector3i position, Vector3i velocity);
+    void set3DAttributes(glm::vec3 position, glm::vec3 velocity);
 
 private:
     AudioSystem* _system;

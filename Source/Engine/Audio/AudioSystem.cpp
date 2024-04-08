@@ -19,10 +19,12 @@ FMOD_SYSTEM* AudioSystem::get() { return _system; }
 
 std::string AudioSystem::getDriverName()
 {
+
+    // Get the current driver we're using and then from that get the name.
     int driver = 0;
     FMOD_System_GetDriver(_system, &driver);
 
-    char name[32] = {0};
+    char name[128] = {0};
     FMOD_System_GetDriverInfo(_system, driver, name, sizeof(name), nullptr, nullptr, nullptr, nullptr);
 
     return std::string(name);

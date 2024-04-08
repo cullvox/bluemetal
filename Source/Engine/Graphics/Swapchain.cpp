@@ -3,13 +3,17 @@
 
 namespace bl {
 
-GfxSwapchain::GfxSwapchain(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo)
+GfxSwapchain::GfxSwapchain(
+    std::shared_ptr<GfxDevice>          device,
+    std::shared_ptr<Window>             window,
+    std::optional<VkPresentModeKHR>     presentMode,
+    std::optional<VkSurfaceFormatKHR>   surfaceFormat)
     : _device(device)
     , _physicalDevice(device->getPhysicalDevice())
-    , _window(createInfo.window)
+    , _window(window)
     , _imageCount(0)
-    , _surfaceFormat(createInfo.surfaceFormat.value_or(DEFAULT_SURFACE_FORMAT))
-    , _presentMode(createInfo.presentMode.value_or(VK_PRESENT_MODE_FIFO_KHR))
+    , _surfaceFormat(surfaceFormat.value_or(DEFAULT_SURFACE_FORMAT))
+    , _presentMode(presentMode.value_or(VK_PRESENT_MODE_FIFO_KHR))
     , _swapchain(VK_NULL_HANDLE)
 {
     ensureSurfaceSupported();
@@ -37,12 +41,10 @@ void GfxSwapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& i
     wasRecreated = false;
 
     VkResult result = vkAcquireNextImageKHR(_device->get(), _swapchain, UINT32_MAX, semaphore, fence, &imageIndex);
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR ||
-        result == VK_SUBOPTIMAL_KHR) {
+    if (result == VK_ERROR_OUT_OF_DATE_KHR) {
         wasRecreated = true;
         recreate();
-    } else if (result != VK_SUCCESS) {
+    } else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
         throw std::runtime_error("Could not acquire the next swapchain image!");
     }
 }
@@ -50,7 +52,7 @@ void GfxSwapchain::acquireNext(VkSemaphore semaphore, VkFence fence, uint32_t& i
 void GfxSwapchain::ensureSurfaceSupported()
 {
     VkBool32 supported = false;
-    vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->get(), _device->getPresentFamilyIndex(), _window->getSurface(), &supported);
+    VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->get(), _device->getPresentFamilyIndex(), _window->getSurface(), &supported))
 
     if (!supported) {
         throw std::runtime_error("Could not ensure Vulkan surface support on physical device!");
@@ -60,9 +62,7 @@ void GfxSwapchain::ensureSurfaceSupported()
 void GfxSwapchain::chooseImageCount()
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->get(), _window->getSurface(), &capabilities) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get Vulkan surface capabilities!");
-    }
+    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->get(), _window->getSurface(), &capabilities))
 
     // Try to at least get one over the minimum
     _imageCount = (capabilities.minImageCount + 1 <= capabilities.maxImageCount)
@@ -123,17 +123,15 @@ void GfxSwapchain::chooseExtent()
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
 
-    if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->get(), _window->getSurface(), &capabilities) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get Vulkan physical device surface capabilities!");
-    }
+    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->get(), _window->getSurface(), &capabilities))
 
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         _extent = capabilities.currentExtent;
     } else {
-        Extent2D extent = _window->getExtent();
+        glm::ivec2 extent = _window->getExtent();
         _extent = VkExtent2D{ 
-            std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
-            std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
+            std::clamp((uint32_t)extent.x, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
+            std::clamp((uint32_t)extent.y, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
         };
     }
 }
@@ -141,15 +139,9 @@ void GfxSwapchain::chooseExtent()
 void GfxSwapchain::obtainImages()
 {
     uint32_t imageCount = 0;
-    if (vkGetSwapchainImagesKHR(_device->get(), _swapchain, &imageCount, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get Vulkan swapchain image count!");
-    }
-
+    VK_CHECK(vkGetSwapchainImagesKHR(_device->get(), _swapchain, &imageCount, nullptr))
     _swapImages.resize(imageCount);
-
-    if (vkGetSwapchainImagesKHR(_device->get(), _swapchain, &imageCount, _swapImages.data()) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get VkSwapchainKHR images!");
-    }
+    VK_CHECK(vkGetSwapchainImagesKHR(_device->get(), _swapchain, &imageCount, _swapImages.data()))
 }
 
 void GfxSwapchain::createImageViews()
@@ -180,18 +172,14 @@ void GfxSwapchain::createImageViews()
         imageViewInfo.components = componentMapping;
         imageViewInfo.subresourceRange = subresourceRange;
 
-        if (vkCreateImageView(_device->get(), &imageViewInfo, nullptr, &_swapImageViews[i]) != VK_SUCCESS) {
-            destroyImageViews();
-            throw std::runtime_error("Could not create a Vulkan image view for the swapchain!");
-        }
+        VK_CHECK(vkCreateImageView(_device->get(), &imageViewInfo, nullptr, &_swapImageViews[i]))
     }
 }
 
 void GfxSwapchain::destroyImageViews()
 {
     for (uint32_t i = 0; i < _swapImageViews.size(); i++) {
-        if (_swapImageViews[i] != VK_NULL_HANDLE)
-            vkDestroyImageView(_device->get(), _swapImageViews[i], nullptr);
+        if (_swapImageViews[i] != VK_NULL_HANDLE) vkDestroyImageView(_device->get(), _swapImageViews[i], nullptr);
     }
 
     _swapImageViews.clear();
@@ -203,8 +191,8 @@ void GfxSwapchain::recreate(std::optional<VkPresentModeKHR> presentMode)
     _device->waitForDevice();
 
     // Destroy the previous swapchain and it's image views.
-    vkDestroySwapchainKHR(_device->get(), _swapchain, nullptr);
     destroyImageViews();
+    vkDestroySwapchainKHR(_device->get(), _swapchain, nullptr);
 
     _swapImageViews.clear();
     _swapImages.clear();
@@ -216,8 +204,7 @@ void GfxSwapchain::recreate(std::optional<VkPresentModeKHR> presentMode)
     choosePresentMode(presentMode);
 
     if (_extent.width == 0 || _extent.height == 0) {
-        blInfo("GfxSwapchain recreation requires a window resize greater than 0x0.");
-        return;
+        blWarning("GfxSwapchain recreation requires a window resize greater than 0x0.");
     }
 
     // Swapchains use both graphics and present, provide it the queue families.
@@ -251,9 +238,7 @@ void GfxSwapchain::recreate(std::optional<VkPresentModeKHR> presentMode)
     createInfo.clipped = VK_TRUE;
     createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(_device->get(), &createInfo, nullptr, &_swapchain) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a VkSwapchain!");
-    }
+    VK_CHECK(vkCreateSwapchainKHR(_device->get(), &createInfo, nullptr, &_swapchain));
 
     obtainImages();
     createImageViews();

@@ -4,8 +4,6 @@
 #include "Core/Precompiled.hpp"
 #include "Input/Export.h"
 #include "Input/InputEvents.hpp"
-#include "Math/Vector2.hpp"
-#include "Math/Vector3.hpp"
 
 #include <SDL.h>
 

@@ -13,7 +13,7 @@ AudioSource::~AudioSource() { }
 
 void AudioSource::setSound(Sound* pSound) { m_pSound = pSound; }
 
-void AudioSource::set3DAttributes(Vector3f position, Vector3f velocity)
+void AudioSource::set3DAttributes(glm::vec3 position, glm::vec3 velocity)
 {
     FMOD_VECTOR pos { position.x, position.y, position.z };
     FMOD_VECTOR vel { velocity.x, velocity.y, velocity.z };

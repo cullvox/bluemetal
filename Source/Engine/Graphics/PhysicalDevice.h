@@ -2,6 +2,7 @@
 
 #include "Precompiled.h"
 #include "Export.h"
+#include "Vulkan.h"
 
 namespace bl
 {

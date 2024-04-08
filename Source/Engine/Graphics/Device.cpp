@@ -25,11 +25,13 @@
 
 namespace bl {
 
-GfxDevice::GfxDevice(const CreateInfo& createInfo)
-    : _instance(createInfo.instance)
-    , _physicalDevice(createInfo.physicalDevice)
+GfxDevice::GfxDevice(
+    std::shared_ptr<GfxInstance>        instance,
+    std::shared_ptr<GfxPhysicalDevice>  physicalDevice)
+    : _instance(instance)
+    , _physicalDevice(physicalDevice)
 {
-    createDevice(createInfo.window);
+    createDevice();
     createCommandPool();
     createAllocator();
 }
@@ -89,7 +91,7 @@ bool GfxDevice::areQueuesSame() const
     return _graphicsFamilyIndex == _presentFamilyIndex;
 }
 
-bool GfxDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder)
+void GfxDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& recorder)
 {
 
     // Allocate the command buffer used to record the submission.
@@ -101,10 +103,7 @@ bool GfxDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& reco
     allocateInfo.commandBufferCount = 1;
 
     VkCommandBuffer cmd = VK_NULL_HANDLE;
-    if (vkAllocateCommandBuffers(_device, &allocateInfo, &cmd) != VK_SUCCESS) {
-        blError("Could not allocate a temporary VkCommandBuffer!");
-        return false;
-    }
+    VK_CHECK(vkAllocateCommandBuffers(_device, &allocateInfo, &cmd))
 
     // Begin the command buffer.
     VkCommandBufferBeginInfo beginInfo = {};
@@ -113,19 +112,10 @@ bool GfxDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& reco
     beginInfo.flags = 0;
     beginInfo.pInheritanceInfo = nullptr;
 
-    if (vkBeginCommandBuffer(cmd, &beginInfo) != VK_SUCCESS) {
-        blError("Could not begin a temporary VkCommandBuffer!");
-        return false;
-    }
-
     // Record the commands onto the buffer.
+    VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
     recorder(cmd);
-
-    // End the command buffer.
-    if (vkEndCommandBuffer(cmd) != VK_SUCCESS) {
-        blError("Could not end a temporary VkCommandBuffer!");
-        return false;
-    }
+    VK_CHECK(vkEndCommandBuffer(cmd))
 
     // Submit the command buffer using the graphics queue.
     VkSubmitInfo submitInfo = {};
@@ -139,12 +129,7 @@ bool GfxDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& reco
     submitInfo.signalSemaphoreCount = 0;
     submitInfo.pSignalSemaphores = nullptr;
 
-    if (vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS) {
-        blError("Could not submit a temporary VkCommandBuffer!");
-        return false;
-    }
-
-    return true;
+    VK_CHECK(vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE))
 }
 
 void GfxDevice::waitForDevice() const 
@@ -163,15 +148,9 @@ std::vector<const char*> GfxDevice::getValidationLayers()
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
 
-    if (vkEnumerateDeviceLayerProperties(_physicalDevice->get(), &propertiesCount, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get VkDevice layer properties count!");
-    }
-
+    VK_CHECK(vkEnumerateDeviceLayerProperties(_physicalDevice->get(), &propertiesCount, nullptr))
     properties.resize(propertiesCount);
-
-    if (vkEnumerateDeviceLayerProperties(_physicalDevice->get(), &propertiesCount, properties.data()) != VK_SUCCESS) {
-        throw std::runtime_error("Could not enumerate VkDevice layer properties!");
-    }
+    VK_CHECK(vkEnumerateDeviceLayerProperties(_physicalDevice->get(), &propertiesCount, properties.data()))
 
     // Ensure that the requested layers are present on the system.
     for (const char* name : layers) {
@@ -197,15 +176,9 @@ std::vector<const char*> GfxDevice::getExtensions()
     uint32_t propertyCount = 0;
     std::vector<VkExtensionProperties> properties;
 
-    if (vkEnumerateDeviceExtensionProperties(_physicalDevice->get(), nullptr, &propertyCount, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get VkDevice extension properties count!");
-    }
-
+    VK_CHECK(vkEnumerateDeviceExtensionProperties(_physicalDevice->get(), nullptr, &propertyCount, nullptr))
     properties.resize(propertyCount);
-
-    if (vkEnumerateDeviceExtensionProperties(_physicalDevice->get(), nullptr, &propertyCount, properties.data()) != VK_SUCCESS) {
-        throw std::runtime_error("Could not enumerate VkDevice extension properties!");
-    }
+    VK_CHECK(vkEnumerateDeviceExtensionProperties(_physicalDevice->get(), nullptr, &propertyCount, properties.data()))
 
     // Ensure the required extensions are available.
     for (const char* pName : requiredExtensions) {
@@ -218,7 +191,7 @@ std::vector<const char*> GfxDevice::getExtensions()
     return std::move(requiredExtensions);
 }
 
-void GfxDevice::createDevice(std::shared_ptr<Window> window)
+void GfxDevice::createDevice()
 {
     std::vector<const char*> extensions = std::move(getExtensions());
     std::vector<const char*> layers = std::move(getValidationLayers());
@@ -227,29 +200,38 @@ void GfxDevice::createDevice(std::shared_ptr<Window> window)
     uint32_t queuePropertyCount = 0;
     std::vector<VkQueueFamilyProperties> queueProperties;
     vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice->get(), &queuePropertyCount, nullptr);
-
     queueProperties.resize(queuePropertyCount);
-
     vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice->get(), &queuePropertyCount, queueProperties.data());
 
     // Determine what families will be dedicated to graphics and present.
     uint32_t i = 0;
-    for (const VkQueueFamilyProperties& properties : queueProperties) {
-        if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-            _graphicsFamilyIndex = i;
+
+    // Use a temporary window and surface for surface support checking.
+    Window::useTemporaryWindow([&](SDL_Window* window){
+
+        // Create a surface from the window.
+        VkSurfaceKHR surface = VK_NULL_HANDLE;
+        if (SDL_Vulkan_CreateSurface(window, _instance->get(), &surface) != SDL_TRUE) {
+            throw std::runtime_error("Could not create temporary surface for queue selection!");
         }
 
-        VkBool32 surfaceSupported = VK_FALSE;
-        if (vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->get(), i, window->getSurface(), &surfaceSupported) != VK_SUCCESS) {
-            throw std::runtime_error("Could not check VkPhysicalDevice surface support!");
-        }
+        // Check for queue usage.
+        for (const VkQueueFamilyProperties& properties : queueProperties) {
+            if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                _graphicsFamilyIndex = i;
+            }
 
-        if (surfaceSupported) {
-            _presentFamilyIndex = i;
-        }
+            VkBool32 surfaceSupported = VK_FALSE;
+            VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->get(), i, surface, &surfaceSupported))
+            
+            if (surfaceSupported) {
+                _presentFamilyIndex = i;
+            }
 
-        i++;
-    }
+            i++;
+        }
+    });
+
 
     const float queuePriorities[] = { 1.0f, 1.0f };
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {
@@ -289,9 +271,7 @@ void GfxDevice::createDevice(std::shared_ptr<Window> window)
     createInfo.ppEnabledExtensionNames = extensions.data();
     createInfo.pEnabledFeatures = &features;
 
-    if (vkCreateDevice(_physicalDevice->get(), &createInfo, nullptr, &_device) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a Vulkan device!");
-    }
+    VK_CHECK(vkCreateDevice(_physicalDevice->get(), &createInfo, nullptr, &_device))
 
     // Get the graphics and present queue objects.
     vkGetDeviceQueue(_device, _graphicsFamilyIndex, 0, &_graphicsQueue);
@@ -308,9 +288,7 @@ void GfxDevice::createCommandPool()
     createInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
     createInfo.queueFamilyIndex = _graphicsFamilyIndex;
 
-    if (vkCreateCommandPool(_device, &createInfo, nullptr, &_commandPool) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a Vulkan command pool!");
-    }
+    VK_CHECK(vkCreateCommandPool(_device, &createInfo, nullptr, &_commandPool))
 }
 
 void GfxDevice::createAllocator()
@@ -328,9 +306,7 @@ void GfxDevice::createAllocator()
     createInfo.vulkanApiVersion = GfxInstance::getApiVersion();
     createInfo.pTypeExternalMemoryHandleTypes = nullptr;
 
-    if (vmaCreateAllocator(&createInfo, &_allocator) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create the Vulkan Memory Allocator!");
-    }
+    VK_CHECK(vmaCreateAllocator(&createInfo, &_allocator))
 }
 
 } // namespace bl

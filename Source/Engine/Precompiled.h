@@ -1,21 +1,5 @@
 #pragma once
 
-#include <vulkan/vulkan.h>
-#include <vulkan/vk_enum_string_helper.h>
-#include <spirv_reflect.h>
-
-#include "Graphics/vk_mem_alloc.h"
-
-#define SDL_MAIN_HANDLED
-#include <SDL.h>
-#include <SDL_pixels.h>
-#include <SDL_vulkan.h>
-
-#include <fmt/format.h>
-#include <fmt/compile.h>
-#include <fmt/color.h>
-#include <fmt/chrono.h>
-
 #include <cstdint>
 #include <cmath>
 #include <cassert>
@@ -39,3 +23,15 @@
 #include <filesystem>
 #include <span>
 #include <fstream>
+
+#include <fmt/format.h>
+#include <fmt/compile.h>
+#include <fmt/color.h>
+#include <fmt/chrono.h>
+
+#include <glm/ext/vector_int2.hpp>
+
+#include <glm/vec2.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>

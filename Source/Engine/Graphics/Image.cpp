@@ -83,7 +83,7 @@ void GfxImage::createImage(const CreateInfo& createInfo)
     }
 }
 
-Extent3D GfxImage::getExtent() const { return _extent; }
+VkExtent3D GfxImage::getExtent() const { return _extent; }
 VkFormat GfxImage::getFormat() const { return _format; }
 VkImageUsageFlags GfxImage::getUsage() const { return _usage; }
 VkImageView GfxImage::getDefaultView() const { return _imageView; }

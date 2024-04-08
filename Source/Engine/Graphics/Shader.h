@@ -12,13 +12,12 @@ public:
 
     struct CreateInfo 
     {
-        std::shared_ptr<GfxDevice>      device;   /** @brief Graphics device to create this shader on. */
         VkShaderStageFlagBits           stage;     /** @brief Stage type i.e. Vertex, Fragment. */
         const std::vector<uint32_t>&    binary;    /** @brief Binary SPIR-V data from a shader file or resource. */
     };
 
     /** @brief Constructor */
-    GfxShader(const CreateInfo& info);
+    GfxShader(std::shared_ptr<GfxDevice> device, const CreateInfo& info);
 
     /** @brief Destructor */
     ~GfxShader();

@@ -1,5 +1,6 @@
 #include "Display.h"
 #include "Core/Print.h"
+#include "Graphics/Sdl.h"
 
 namespace bl {
 
@@ -17,9 +18,9 @@ Display::Display(int display)
         return;
     }
 
-    _rect = Rect2D(
-        Offset2D((int32_t)sdlRect.x, (int32_t)sdlRect.y), 
-        Extent2D((uint32_t)sdlRect.w, (uint32_t)sdlRect.h)
+    _rect = Rect2i(
+        glm::ivec2{sdlRect.x, sdlRect.y}, 
+        glm::ivec2{sdlRect.w, sdlRect.h}
     );
 
     // Get the displays video modes.
@@ -50,23 +51,23 @@ Display::Display(int display)
 
         // add the display mode
         _videoModes.emplace_back(
-            Extent2D((uint32_t)sdlMode.w, (uint32_t)sdlMode.h), // extent
+            glm::ivec2(sdlMode.w, sdlMode.h), // extent
             (uint8_t)pFormat->BitsPerPixel, // bitsPerPixel
             (uint16_t)sdlMode.refresh_rate); // refreshRate
 
         SDL_FreeFormat(pFormat);
     }
 
-    blInfo("Found display: \"{}\" offset {}x{} res {}x{}", _name, _rect.offset.x, _rect.offset.y, _rect.extent.width, _rect.extent.height);
+    blInfo("Found display: \"{}\" offset {}x{} res {}x{}", _name, _rect.offset.x, _rect.offset.y, _rect.extent.x, _rect.extent.y);
 }
 
-uint32_t Display::getIndex() const noexcept { return _index; }
-const std::string& Display::getName() const noexcept { return _name; }
-Rect2D Display::getRect() const noexcept { return _rect; }
-const std::vector<VideoMode>& Display::getVideoModes() const noexcept { return _videoModes; }
-VideoMode Display::getDesktopMode() const noexcept { return _desktopMode; }
+uint32_t Display::getIndex() const { return _index; }
+const std::string& Display::getName() const { return _name; }
+Rect2i Display::getRect() const { return _rect; }
+const std::vector<VideoMode>& Display::getVideoModes() const { return _videoModes; }
+VideoMode Display::getDesktopMode() const { return _desktopMode; }
 
-std::vector<Display*> Display::getDisplays() noexcept
+std::vector<Display*> Display::getDisplays()
 {
     int displayCount = SDL_GetNumVideoDisplays();
 

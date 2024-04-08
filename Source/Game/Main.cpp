@@ -1,5 +1,7 @@
 #include "Core/Time.h"
 #include "Engine/Engine.h"
+#include "Graphics/Shader.h"
+#include "Graphics/Pipeline.h"
 #include "imgui/imgui_impl_bluemetal.h"
 #include "imgui/imgui_impl_sdl2.h"
 
@@ -22,16 +24,13 @@ int main(int argc, const char** argv)
 {
     (void)argc;
     (void)argv;
+    
+    bl::Engine engine{};
 
-    bl::Engine engine;
-
-    engine.init(bl::eSubsystemGraphicsBit | bl::eSubsystemAudioBit | bl::eSubsystemImGuiBit);
-
+    auto graphics = engine.getGraphics();
     auto audio = engine.getAudio();
-    auto audioSystem = audio->getSystem();
-    // auto graphics = engine.getGraphics();
 
-    // auto renderer = graphics->getRenderer();
+    auto renderer = graphics->getRenderer();
 
     auto sound = audio->createSound("Resources/Audio/Music/Aria Math.flac");
     auto listener = audio->createListener();
@@ -43,8 +42,6 @@ int main(int argc, const char** argv)
     // float last = 0.0f;
     // float current = bl::Time::current();
 
-    auto graphics = engine.getGraphics();
-
     ImGui_ImplBluemetal_InitInfo initInfo = {
         graphics->getInstance(),
         graphics->getPhysicalDevice(),
@@ -55,9 +52,17 @@ int main(int argc, const char** argv)
 
     ImGui_ImplBluemetal_Init(&initInfo);
 
+    // bl::GfxShader::CreateInfo shaderCreateInfo{
+    //     VK_SHADER_STAGE_VERTEX_BIT,
+    //     
+// 
+    // };
+    // std::shared_ptr<bl::GfxShader> vertShader = std::make_shared<bl::GfxShader>();
+
     bl::FrameCounter frameCounter;
 
     bool running = true;
+    bool minimized = false;
     while (running) {
         frameCounter.beginFrame();
 
@@ -72,6 +77,17 @@ int main(int argc, const char** argv)
                 case SDL_WINDOWEVENT_CLOSE:
                     running = false;
                     break;
+                
+                case SDL_WINDOWEVENT_MINIMIZED: {
+                    minimized = true;
+                    break;
+                }
+                case SDL_WINDOWEVENT_EXPOSED:
+                case SDL_WINDOWEVENT_RESTORED:
+                case SDL_WINDOWEVENT_MAXIMIZED: {
+                    minimized = false;
+                    break;
+                }
                 }
                 break;
             }
@@ -81,13 +97,15 @@ int main(int argc, const char** argv)
         // current = bl::Time::current();
         // auto dt = current - last;
 
-        bl::Vector3f position { sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
-        bl::Vector3f velocity { cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
+        glm::vec3 position { sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
+        glm::vec3 velocity { cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
 
         source->set3DAttributes(position, velocity);
         audio->update();
 
-        graphics->getRenderer()->render([&frameCounter, &graphics, &audioSystem](VkCommandBuffer cmd){
+        if (!minimized) {
+
+        graphics->getRenderer()->render([&frameCounter, &graphics, &audio](VkCommandBuffer cmd){
             ImGui_ImplBluemetal_BeginFrame();
 
             ImGui::Begin("Debug Info");
@@ -103,8 +121,8 @@ int main(int argc, const char** argv)
             }
 
             if (ImGui::CollapsingHeader("Audio")) {
-                ImGui::Text("Audio Driver: %s", audioSystem->getDriverName().c_str());
-                ImGui::Text("Num Channels: %d", audioSystem->getNumChannelsPlaying());
+                ImGui::Text("Audio Driver: %s", audio->getSystem()->getDriverName().c_str());
+                ImGui::Text("Num Channels: %d", audio->getSystem()->getNumChannelsPlaying());
             }
 
             ImGui::End();
@@ -165,6 +183,8 @@ int main(int argc, const char** argv)
 
             ImGui_ImplBluemetal_EndFrame(cmd);
         });
+
+        }
 
         frameCounter.endFrame();
     }

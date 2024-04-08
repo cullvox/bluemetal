@@ -7,42 +7,45 @@ namespace bl {
 class BLUEMETAL_API GfxBuffer
 {
 public:
-
-    struct CreateInfo 
-    {
-        VkBufferUsageFlags      usage;                      /** @brief Vulkan memory usage, specifing buffer type. */
-        VkMemoryPropertyFlags   memoryProperties;           /** @brief Vulkan memory properies, how this buffer will be used. */
-        VkDeviceSize            size;                       /** @brief Size of your buffer in bytes. */
-        VmaAllocationInfo*      pAllocationInfo = nullptr;  /** @brief Output value, additional allocation info if needed. */
-        bool                    mapped = false;             /** @brief Automatically have your buffer mapped to a pointer. */
-    };
-
     /** @brief Constructor */
-    GfxBuffer(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo);
+    GfxBuffer(
+        std::shared_ptr<GfxDevice>  device, 
+        VkBufferUsageFlags          usage,                      /** @brief Vulkan memory usage, specifing buffer type. */
+        VkMemoryPropertyFlags       memoryProperties,           /** @brief Vulkan memory properies, how this buffer will be used. */
+        VkDeviceSize                size,                       /** @brief Size of your buffer in bytes. */
+        VmaAllocationInfo*          allocationInfo = nullptr);  /** @brief Output value, additional allocation info if needed. */
 
     /** @brief Destructor */
     ~GfxBuffer();
 
 public:
 
+    /** @brief Returns the usage types of the buffer. */
+    VkBufferUsageFlags getUsage() const;
+
+    /** @brief Returns the memory properties the buffer was created with. */
+    VkMemoryPropertyFlags getMemoryProperties() const;
+
     /** @brief Returns the size of the buffer in bytes. */
     VkDeviceSize getSize() const;
-
-    /** @brief Returns the underlying vulkan buffer. */
-    VkBuffer getBuffer() const;
 
     /** @brief Returns the underlying VMA allocation. */
     VmaAllocation getAllocation() const;
 
-    bool upload() const;
+    /** @brief Returns the underlying Vulkan buffer. */
+    VkBuffer getBuffer() const;
 
-    /** @brief Create an exact copy of this buffer.  */
-    GfxBuffer copy();
+    /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
+    void upload(VkBufferCopy copyRegion, void* data);
 
 private:
-    void createBuffer(const CreateInfo& createInfo);
+    void createBuffer(VmaAllocationInfo* allocationInfo);
+    void map(void** mapped);
+    void unmap();
 
     std::shared_ptr<GfxDevice>  _device;
+    VkBufferUsageFlags          _usage;
+    VkMemoryPropertyFlags       _memoryProperties;
     VkDeviceSize                _size;
     VkBuffer                    _buffer;
     VmaAllocation               _allocation;

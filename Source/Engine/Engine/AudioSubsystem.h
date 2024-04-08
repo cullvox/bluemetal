@@ -1,27 +1,14 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
-#include "Math/Vector3.h"
 #include "Audio/AudioSource.h"
 #include "Audio/AudioListener.h"
 
 namespace bl
 {
 
-///////////////////////////////
-// Forward Declarations
-///////////////////////////////
-
 class Engine;
 class AudioOutput;
 class AudioInput;
-
-///////////////////////////////
-// Classes
-///////////////////////////////
 
 struct AudioSubsystemInitInfo
 {
@@ -34,13 +21,11 @@ class AudioSubsystem
 public:
 
     /// Engine Constructor
-    AudioSubsystem(Engine* engine);
+    AudioSubsystem(Engine& engine);
 
     /// Default Destructor
     ~AudioSubsystem();
 
-    void init();
-    void shutdown();
     void update();
 
     std::shared_ptr<AudioSystem> getSystem();
@@ -54,10 +39,8 @@ public:
     std::unique_ptr<AudioSource> createSource();
 
 private:
-    Engine* engine;
-
-    std::shared_ptr<AudioSystem> system;
-
+    Engine& _engine;
+    std::shared_ptr<AudioSystem> _system;
 };
 
 } // namespace bl

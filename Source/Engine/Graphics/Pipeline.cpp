@@ -3,17 +3,18 @@
 
 namespace bl {
 
-Pipeline::Pipeline(const CreateInfo& createInfo)
+GfxPipeline::GfxPipeline(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo)
+    : _device(device)
 {
     createPipeline(createInfo);
 }
 
-Pipeline::~Pipeline() 
+GfxPipeline::~GfxPipeline()
 { 
     vkDestroyPipeline(_device->get(), _pipeline, nullptr);
 }
 
-VkPipeline Pipeline::get() const { return _pipeline; }
+VkPipeline GfxPipeline::get() const { return _pipeline; }
 
 // void Pipeline::mergeShaderResources(const std::vector<GfxPipelineResource>& shaderResources)
 // {
@@ -36,7 +37,7 @@ VkPipeline Pipeline::get() const { return _pipeline; }
 //     }
 // }
 
-bool Pipeline::createPipeline(const CreateInfo& createInfo)
+void GfxPipeline::createPipeline(const CreateInfo& createInfo)
 {
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {};
     shaderStages.resize(createInfo.shaders.size());
@@ -179,7 +180,7 @@ bool Pipeline::createPipeline(const CreateInfo& createInfo)
     pipelineCreateInfo.basePipelineIndex = 0;
 
     if (vkCreateGraphicsPipelines(_device->get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a graphics VkPipeline!");
+        throw std::runtime_error("Could not create a Vulkan pipeline!");
     }
 }
 

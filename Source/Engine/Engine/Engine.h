@@ -10,59 +10,22 @@
 namespace bl
 {
 
-enum SubsystemFlagBits
-{
-    eSubsystemResourcesBit      = bl::bit(0),
-    eSubsystemGraphicsBit       = bl::bit(1),
-    eSubsystemImGuiBit          = bl::bit(2),
-    eSubsystemAudioBit          = bl::bit(3),
-    eSubsystemWorldBit          = bl::bit(4),
-};
-
-using SubsystemFlags = uint32_t;
-
-struct SubsystemInitInfo
-{
-    const GraphicsSubsystemInitInfo* pGraphicsInit;
-};
-
 class BLUEMETAL_API Engine
 {
 public:
 
-    /// Default Constructor.
+    /** @brief Constructor */
     Engine();
 
-    /// Default Destructor.
+    /** @brief Destructor */
     ~Engine();
 
-    /// Initializes parts of the engine that haven't been initialized yet.
-    ///
-    ///     @param flags Specify subsystems to initialize.
-    ///     @param info Customize parts of the engines initialization, so you don't have to later.
-    ///
-    /// Can call multiple times, if a subsystem has already initialzed it will be skipped.
-    ///     
-    void init(SubsystemFlags flags, const SubsystemInitInfo* info = nullptr);
+    std::shared_ptr<GraphicsSubsystem> getGraphics();
+    std::shared_ptr<AudioSubsystem> getAudio();
 
-    /// Shuts down all subsystems.
-    void shutdown();
-
-
-    /// Returns the graphics subsystem.
-    GraphicsSubsystem* getGraphics();
-
-    /// Returns the audio subsystem.
-    AudioSubsystem* getAudio();
-
-
-    /// Begins the engines game loop.
-    void run();
-    
 private:
     std::shared_ptr<GraphicsSubsystem> graphics;
     std::shared_ptr<AudioSubsystem> audio;
-
 };
 
 } // namespace bl

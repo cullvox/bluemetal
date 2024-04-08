@@ -14,13 +14,14 @@ class BLUEMETAL_API Renderer
 public:
     struct CreateInfo 
     {
-        std::shared_ptr<GfxDevice>      device;       /** @brief Graphics device to use when making the renderer. */
-        std::shared_ptr<GfxSwapchain>   swapchain;    /** @brief Swapchain to use when presenting. */
+
     };
 
     /** @brief Create Constructor */
-    Renderer(const CreateInfo& info);
-
+    Renderer(
+        std::shared_ptr<GfxDevice>      device,     /** @brief Graphics device to use when making the renderer. */
+        std::shared_ptr<GfxSwapchain>   swapchain); /** @brief Swapchain to use when presenting. */
+    
     /** @brief Default Destructor */
     ~Renderer();
 

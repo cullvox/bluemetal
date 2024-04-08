@@ -1,16 +1,15 @@
 #pragma once
 
-#include "Math/Vector2.h"
-#include "Math/Vector3.h"
+#include "Precompiled.h"
 
 namespace bl
 {
 
 struct Vertex
 {
-   Vector3f position;
-   Vector3f normal;
-   Vector2f texCoords;
+   glm::vec3 position;
+   glm::vec3 normal;
+   glm::vec2 texCoords;
 };
 
 struct VoxelVertex

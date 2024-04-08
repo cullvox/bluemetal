@@ -1,19 +1,11 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
 #include "fmod.h"
 #include "Precompiled.h"
 #include "Export.h"
 
 namespace bl
 {
-
-///////////////////////////////
-// Classes
-///////////////////////////////
 
 class BLUEMETAL_API AudioSystem
 {

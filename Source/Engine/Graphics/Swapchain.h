@@ -1,13 +1,10 @@
 #pragma once
 
-#include "Math/Vector2.h"
 #include "Window/Window.h"
 #include "Device.h"
 
 namespace bl
 {
-
-
 
 /** @brief Swap present images for rendering multiple frames at a time. */
 class BLUEMETAL_API GfxSwapchain {
@@ -26,15 +23,12 @@ public:
     /** @brief Default present mode to use if user left unspecified. Will use present mode FIFO if this is unavailable. */
     static inline constexpr VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
-    struct CreateInfo 
-    {
-        std::shared_ptr<Window>             window;                       /** @brief The window this swapchain is swapping onto. */
-        std::optional<VkPresentModeKHR>     presentMode = std::nullopt;   /** @brief Method of presentation onto the screen. */
-        std::optional<VkSurfaceFormatKHR>   surfaceFormat = std::nullopt; /** @brief Color and image format used to create swapchain images. */
-    };
-
     /** @brief Constructor */
-    GfxSwapchain(std::shared_ptr<GfxDevice> device, const CreateInfo& info);
+    GfxSwapchain(
+        std::shared_ptr<GfxDevice>          device, 
+        std::shared_ptr<Window>             window,                         /** @brief The window this swapchain is swapping onto. */
+        std::optional<VkPresentModeKHR>     presentMode = std::nullopt,     /** @brief Method of presentation onto the screen. */
+        std::optional<VkSurfaceFormatKHR>   surfaceFormat = std::nullopt);  /** @brief Color and image format used to create swapchain images. */
 
     /** @brief Destructor */
     ~GfxSwapchain();

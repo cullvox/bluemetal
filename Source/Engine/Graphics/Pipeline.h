@@ -9,14 +9,13 @@
 namespace bl {
 
 /** @brief A program consisting of shaders designed to run on the GPU. */
-class BLUEMETAL_API Pipeline 
+class BLUEMETAL_API GfxPipeline 
 {
 public:
 
     /** @brief Create info for pipeline objects. */
     struct CreateInfo 
     {
-        std::shared_ptr<GfxDevice>              device;                   /** @brief Logical device used to create this pipeline.  */
         VkPipelineLayout                        layout;
         std::shared_ptr<RenderPass>             renderPass;               /** @brief The shaders used in this pipeline program. */
         uint32_t                                subpass;                  /** @brief What subpass this pipeline is used in. */
@@ -26,10 +25,10 @@ public:
     };
 
     /** @brief Constructor */
-    Pipeline(const CreateInfo& info);
+    GfxPipeline(std::shared_ptr<GfxDevice> device, const CreateInfo& info);
 
     /** @brief Destructor */
-    ~Pipeline();
+    ~GfxPipeline();
 
 public:
 
@@ -40,10 +39,10 @@ public:
     void bind(VkCommandBuffer cmd);
 
 private:
-    bool createPipeline(const CreateInfo& createInfo);
+    void createPipeline(const CreateInfo& createInfo);
 
-    GfxDevice*                                  _device;
-    VkPipeline                                  _pipeline;
+    std::shared_ptr<GfxDevice>  _device;
+    VkPipeline                  _pipeline;
 };
 
 } // namespace bl

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Math/Vector3.h"
 #include "Device.h"
 
 namespace bl {
@@ -29,7 +28,7 @@ public:
 public:
 
     /** @brief Returns the image size in pixels at construction. */
-    Extent3D getExtent() const;
+    VkExtent3D getExtent() const;
     
     /** @brief Returns the image format at construction. */
     VkFormat getFormat() const;
@@ -47,7 +46,7 @@ private:
     void createImage(const CreateInfo& createInfo);
 
     std::shared_ptr<GfxDevice>  _device;
-    Extent3D                    _extent;
+    VkExtent3D                  _extent;
     VkImageType                 _type;
     VkFormat                    _format;
     VkImageUsageFlags           _usage;

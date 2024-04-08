@@ -1,12 +1,18 @@
 #include "Instance.h"
 #include "Core/Print.h"
 #include "Core/Version.h"
+#include "Sdl.h"
+#include "Window/Window.h"
 
 namespace bl {
 
-GfxInstance::GfxInstance(const CreateInfo& createInfo) 
+GfxInstance::GfxInstance(
+    Version             appVersion,
+    std::string_view    appName,
+    bool                enableValidation)
+    : _enableValidation(enableValidation)
 {
-    createInstance(createInfo);
+    createInstance(appVersion, appName);
     enumeratePhysicalDevices();
 }
 
@@ -34,30 +40,25 @@ std::vector<const char*> GfxInstance::getExtensionsForSDL()
 {
 
     // Create a temporary window to get extensions from SDL.
-    SDL_Window* pTemporaryWindow = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN);
+    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> temporaryWindow{
+        SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN), 
+        [](SDL_Window* window){ SDL_DestroyWindow(window); }};
 
-    if (!pTemporaryWindow) {
+    if (!temporaryWindow) {
         throw std::runtime_error("Could not create a temporary SDL window to get Vulkan instance extensions!");
     }
+
+
 
     // Enumerate the instance extensions from SDL.
     std::vector<const char*> extensions;
     unsigned int extensionsCount = 0;
 
-    if (!SDL_Vulkan_GetInstanceExtensions(pTemporaryWindow, &extensionsCount, nullptr)) {
-        SDL_DestroyWindow(pTemporaryWindow);
-        throw std::runtime_error("Could not get the Vulkan instance extension count from an SDL window!");
-    }
-
-    extensions.resize(extensionsCount);
-
-    if (!SDL_Vulkan_GetInstanceExtensions(pTemporaryWindow, &extensionsCount, extensions.data())) {
-        SDL_DestroyWindow(pTemporaryWindow);
-        throw std::runtime_error("Could not get the Vulkan instance extensions from an SDL window!");
-    }
-
-    // Destroy the temporary window.
-    SDL_DestroyWindow(pTemporaryWindow);
+    Window::useTemporaryWindow([&extensions, &extensionsCount](SDL_Window* window){    
+        SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, nullptr);
+        extensions.resize(extensionsCount);
+        SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, extensions.data());
+    });
 
     return std::move(extensions);
 }
@@ -79,15 +80,9 @@ std::vector<const char*> GfxInstance::getExtensions()
     uint32_t propertiesCount = 0;
     std::vector<VkExtensionProperties> extensionProperties;
 
-    if (vkEnumerateInstanceExtensionProperties(nullptr, &propertiesCount, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get Vulkan instance extensions count!");
-    }
-
+    VK_CHECK(vkEnumerateInstanceExtensionProperties(nullptr, &propertiesCount, nullptr));
     extensionProperties.resize(propertiesCount);
-
-    if (vkEnumerateInstanceExtensionProperties(nullptr, &propertiesCount, extensionProperties.data()) != VK_SUCCESS) {
-        throw std::runtime_error("Could not enumerate Vulkan instance extension properties!");
-    }
+    VK_CHECK(vkEnumerateInstanceExtensionProperties(nullptr, &propertiesCount, extensionProperties.data()));
 
     // Make sure all the extensions wanted are present.
     for (const char* pName : extensions) {
@@ -112,15 +107,9 @@ std::vector<const char*> GfxInstance::getValidationLayers()
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
 
-    if (vkEnumerateInstanceLayerProperties(&propertiesCount, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get Vulkan instance layer properties count!");
-    }
-
+    VK_CHECK(vkEnumerateInstanceLayerProperties(&propertiesCount, nullptr));
     properties.resize(propertiesCount);
-
-    if (vkEnumerateInstanceLayerProperties(&propertiesCount, properties.data()) != VK_SUCCESS) {
-        throw std::runtime_error("Could not enumerate Vulkan instance layer properties!");
-    }
+    VK_CHECK(vkEnumerateInstanceLayerProperties(&propertiesCount, properties.data()));
 
     // Ensure that the requested layers are present on the system.
     for (const char* name : layers) {
@@ -133,7 +122,9 @@ std::vector<const char*> GfxInstance::getValidationLayers()
     return std::move(layers);
 }
 
-void GfxInstance::createInstance(const CreateInfo& createInfo)
+void GfxInstance::createInstance(
+    Version             appVersion,
+    std::string_view    appName)
 {
     const std::vector<const char*> extensions = std::move(getExtensions());
     const std::vector<const char*> layers = std::move(getValidationLayers());
@@ -155,17 +146,11 @@ void GfxInstance::createInstance(const CreateInfo& createInfo)
     VkApplicationInfo applicationInfo = {};
     applicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
     applicationInfo.pNext = nullptr;
-    applicationInfo.pApplicationName = createInfo.applicationName.data();
-    applicationInfo.applicationVersion = VK_MAKE_VERSION(
-        createInfo.applicationVersion.major,
-        createInfo.applicationVersion.minor,
-        createInfo.applicationVersion.patch);
+    applicationInfo.pApplicationName = appName.data();
+    applicationInfo.applicationVersion = VK_MAKE_VERSION(appVersion.major, appVersion.minor, appVersion.patch);
     applicationInfo.pEngineName = engineName.data();
-    applicationInfo.engineVersion = VK_MAKE_VERSION(
-        engineVersion.major, 
-        engineVersion.minor,
-        engineVersion.patch);
-    applicationInfo.apiVersion = VK_API_VERSION_1_2;
+    applicationInfo.engineVersion = VK_MAKE_VERSION(engineVersion.major, engineVersion.minor, engineVersion.patch);
+    applicationInfo.apiVersion = GfxInstance::getApiVersion();
 
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -177,9 +162,7 @@ void GfxInstance::createInstance(const CreateInfo& createInfo)
     instanceCreateInfo.enabledExtensionCount = (uint32_t)extensions.size();
     instanceCreateInfo.ppEnabledExtensionNames = extensions.data();
 
-    if (vkCreateInstance(&instanceCreateInfo, nullptr, &_instance) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create the Vulkan instance!");
-    }
+    VK_CHECK(vkCreateInstance(&instanceCreateInfo, nullptr, &_instance));
 
     // To enable validation the debug utils messenger functions must be loaded in.
     if (_enableValidation) {
@@ -190,9 +173,7 @@ void GfxInstance::createInstance(const CreateInfo& createInfo)
             throw std::runtime_error("Could not get Vulkan debug utils messenger create and destroy pointer functions!");
         }
 
-        if (_createDebugUtilsMessengerEXT(_instance, &debugMessengerCreateInfo, nullptr, &_messenger) != VK_SUCCESS) {
-            throw std::runtime_error("Could not create a Vulkan debug utils messenger!");
-        }
+        VK_CHECK(_createDebugUtilsMessengerEXT(_instance, &debugMessengerCreateInfo, nullptr, &_messenger));
     }
 
     blDebug("Finshed creating the Vulkan instance.");
@@ -205,15 +186,9 @@ void GfxInstance::enumeratePhysicalDevices()
     uint32_t physicalDeviceCount = 0;
     std::vector<VkPhysicalDevice> physicalDevices;
 
-    if (vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get the Vulkan physical device count!");
-    }
-
+    VK_CHECK(vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, nullptr));
     physicalDevices.resize(physicalDeviceCount);
-
-    if (vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices.data()) != VK_SUCCESS) {
-        throw std::runtime_error("Could not enumerate Vulkan physical devices!");
-    }
+    VK_CHECK(vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices.data()))
 
     // Create the bl::PhysicalDevices
     uint32_t i = 0;
@@ -225,13 +200,10 @@ void GfxInstance::enumeratePhysicalDevices()
 
 VKAPI_ATTR VkBool32 VKAPI_CALL GfxInstance::DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT         severity, 
-    VkDebugUtilsMessageTypeFlagsEXT                type,
+    VkDebugUtilsMessageTypeFlagsEXT                /* type */,
     const VkDebugUtilsMessengerCallbackDataEXT*    pCallbackData, 
-    void*                                          pUserData) noexcept
+    void*                                          /* pUserData */) noexcept
 {
-    (void)type;
-    (void)pUserData;
-
     if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
         blError("{}", pCallbackData->pMessage);
     } else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {

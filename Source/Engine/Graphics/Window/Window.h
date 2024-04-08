@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Display.h"
-#include "Export.h"
-#include "Graphics/Instance.h"
-#include "Math/Vector2.h"
 #include "Precompiled.h"
+#include "Export.h"
+#include "Sdl.h"
+#include "Graphics/Instance.h"
+#include "Graphics/Rect.h"
+#include "Display.h"
 #include "VideoMode.h"
 
 namespace bl {
@@ -12,22 +13,19 @@ namespace bl {
 class BLUEMETAL_API Window 
 {
 public:
+    static void useTemporaryWindow(const std::function<void(SDL_Window*)>& func);
 
-    struct CreateInfo 
-    {
-        std::shared_ptr<GfxInstance> instance;
-        VideoMode mode;
-        std::string title = "Window";
-        std::shared_ptr<Display> display = nullptr;
-    };
-
-    Window(const CreateInfo &createInfo);
-
+public:
+    Window(
+        std::shared_ptr<GfxInstance>    instance,
+        const VideoMode&                video,
+        const std::string&              title,
+        std::shared_ptr<Display>        display = nullptr);
     ~Window();
 
 public:
     /** @brief Gets the current window extent in pixels. */
-    Extent2D getExtent() const;
+    glm::ivec2 getExtent() const;
 
     /** @brief Returns the Vulkan surface created with this window. */
     VkSurfaceKHR getSurface() const;
@@ -38,12 +36,16 @@ public:
     /** @brief Changes the title displayed on the top of a windowed window. */
     void setTitle(const std::string& title);
 
+
 private:
-    void createWindow(const CreateInfo& createInfo);
+    void createWindow(
+        const VideoMode&            video,
+        const std::string&          title,
+        std::shared_ptr<Display>&   display);
     void createSurface();
 
     std::shared_ptr<GfxInstance> _instance;
-    SDL_Window* _pWindow;
+    SDL_Window* _window;
     VkSurfaceKHR _surface;
 };
 

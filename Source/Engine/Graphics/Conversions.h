@@ -268,7 +268,7 @@ static inline const char* toUserString(VkFormat format)
         case VK_FORMAT_R64G64B64A64_SFLOAT: return "R64G64B64A64 SFLOAT"; 
         case VK_FORMAT_B10G11R11_UFLOAT_PACK32: return "B10G11R11 UFLOAT PACK32"; 
         case VK_FORMAT_E5B9G9R9_UFLOAT_PACK32: return "E5B9G9R9 UFLOAT PACK32";
-        default: return string_VkFormat(format);
+        default: return "UNDEFINED";
     }
 }
 
@@ -282,7 +282,7 @@ static inline const char* toUserString(VkPresentModeKHR presentMode)
         case VK_PRESENT_MODE_FIFO_RELAXED_KHR: return "FIFO Relaxed";
         case VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR: return "Shared Demand Refresh";
         case VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR: return "Shared Continuous Refresh";
-        default: return string_VkPresentModeKHR(presentMode);
+        default: "UNDEFINED";
     }
 }
 
