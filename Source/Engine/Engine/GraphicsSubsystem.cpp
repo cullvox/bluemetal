@@ -11,7 +11,7 @@ GraphicsSubsystem::GraphicsSubsystem(Engine& engine)
         throw std::runtime_error("Could not initialize SDL2!");
     }
 
-    _instance = std::make_shared<GfxInstance>(bl::engineVersion, "Maginvox", false);
+    _instance = std::make_shared<GfxInstance>(bl::engineVersion, "Maginvox", true);
 
     auto displays = Display::getDisplays();
     _window = std::make_shared<Window>(_instance, displays[0]->getDesktopMode(), "Maginvox");

@@ -164,7 +164,7 @@ std::vector<const char*> GfxDevice::getValidationLayers()
     }
 
     // Found all requested layers layers!
-    return std::move(layers);
+    return layers;
 }
 
 std::vector<const char*> GfxDevice::getExtensions()
@@ -190,16 +190,16 @@ std::vector<const char*> GfxDevice::getExtensions()
         }
     }
 
-    return std::move(requiredExtensions);
+    return requiredExtensions;
 }
 
 void GfxDevice::createDevice()
 {
-    std::vector<const char*> extensions = std::move(getExtensions());
+    std::vector<const char*> extensions = getExtensions();
     std::vector<const char*> layers{};
 
     if (_instance->getEnableValidation())
-        layers = std::move(getValidationLayers());
+        layers = getValidationLayers();
 
     // Get the queue family properties of the physical device.
     uint32_t queuePropertyCount = 0;

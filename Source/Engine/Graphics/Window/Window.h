@@ -2,7 +2,7 @@
 
 #include "Precompiled.h"
 #include "Export.h"
-#include "Sdl.h"
+#include "Graphics/Sdl.h"
 #include "Graphics/Instance.h"
 #include "Graphics/Rect.h"
 #include "Display.h"

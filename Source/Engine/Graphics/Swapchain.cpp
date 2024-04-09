@@ -64,10 +64,17 @@ void GfxSwapchain::chooseImageCount()
     VkSurfaceCapabilitiesKHR capabilities = {};
     VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->get(), _window->getSurface(), &capabilities))
 
-    // Try to at least get one over the minimum
-    _imageCount = (capabilities.minImageCount + 1 <= capabilities.maxImageCount)
-        ? capabilities.minImageCount + 1
-        : capabilities.maxImageCount;
+    const uint32_t DESIRED_IMAGE_COUNT = 3;
+
+    // When it's zero the GPU really doesn't care.
+    if (capabilities.maxImageCount == 0) {
+        if (capabilities.minImageCount > DESIRED_IMAGE_COUNT) _imageCount = capabilities.minImageCount;
+        else _imageCount = DESIRED_IMAGE_COUNT;
+    } else if (capabilities.minImageCount >= DESIRED_IMAGE_COUNT && capabilities.maxImageCount <= DESIRED_IMAGE_COUNT) {
+        _imageCount = DESIRED_IMAGE_COUNT; // we got this.
+    } else {
+        _imageCount = capabilities.minImageCount;
+    }
 }
 
 void GfxSwapchain::chooseFormat(std::optional<VkSurfaceFormatKHR> format)
@@ -138,10 +145,9 @@ void GfxSwapchain::chooseExtent()
 
 void GfxSwapchain::obtainImages()
 {
-    uint32_t imageCount = 0;
-    VK_CHECK(vkGetSwapchainImagesKHR(_device->get(), _swapchain, &imageCount, nullptr))
-    _swapImages.resize(imageCount);
-    VK_CHECK(vkGetSwapchainImagesKHR(_device->get(), _swapchain, &imageCount, _swapImages.data()))
+    VK_CHECK(vkGetSwapchainImagesKHR(_device->get(), _swapchain, &_imageCount, nullptr))
+    _swapImages.resize(_imageCount);
+    VK_CHECK(vkGetSwapchainImagesKHR(_device->get(), _swapchain, &_imageCount, _swapImages.data()))
 }
 
 void GfxSwapchain::createImageViews()

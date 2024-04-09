@@ -124,7 +124,7 @@ int main(int argc, const char** argv)
                 if (ImGui::TreeNode("Physical Devices")) {
                     auto physicalDevices = graphics->getPhysicalDevices();
 
-                    for (int i = 0; i < physicalDevices.size(); i++) {
+                    for (size_t i = 0; i < physicalDevices.size(); i++) {
                         auto& physicalDevice = physicalDevices[i];
 
                         if (ImGui::TreeNode((void*)(intptr_t)i, "%s", physicalDevice->getDeviceName().c_str())) {
@@ -234,7 +234,7 @@ int main(int argc, const char** argv)
         frameCounter.endFrame();
     }
 
-    } catch (std::exception e) {
+    } catch (std::exception& e) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Exception Error", e.what(), nullptr);
         return EXIT_FAILURE;
     }

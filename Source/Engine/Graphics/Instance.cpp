@@ -65,7 +65,7 @@ std::vector<const char*> GfxInstance::getExtensionsForSDL()
         SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, extensions.data());
     });
 
-    return std::move(extensions);
+    return extensions;
 }
 
 std::vector<const char*> GfxInstance::getExtensions()
@@ -97,7 +97,7 @@ std::vector<const char*> GfxInstance::getExtensions()
         }
     }
 
-    return std::move(extensions);
+    return extensions;
 }
 
 std::vector<const char*> GfxInstance::getValidationLayers()
@@ -124,18 +124,18 @@ std::vector<const char*> GfxInstance::getValidationLayers()
         }
     }
 
-    return std::move(layers);
+    return layers;
 }
 
 void GfxInstance::createInstance(
     Version             appVersion,
     std::string_view    appName)
 {
-    std::vector<const char*> extensions = std::move(getExtensions());
+    std::vector<const char*> extensions = getExtensions();
     std::vector<const char*> layers{};
 
     if (_enableValidation)
-        layers = std::move(getValidationLayers());
+        layers = getValidationLayers();
 
 
     VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo = {};

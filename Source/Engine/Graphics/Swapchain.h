@@ -104,8 +104,8 @@ private:
     void createImageViews();
     void destroyImageViews();
     
-    std::shared_ptr<GfxPhysicalDevice>  _physicalDevice;
     std::shared_ptr<GfxDevice>          _device;
+    std::shared_ptr<GfxPhysicalDevice>  _physicalDevice;
     std::shared_ptr<Window>             _window;
     uint32_t                            _imageCount;
     VkSurfaceFormatKHR                  _surfaceFormat;

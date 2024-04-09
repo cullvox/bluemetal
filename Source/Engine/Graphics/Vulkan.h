@@ -1,7 +1,8 @@
 #pragma once
 
+#define VULKAN_
 #include <vulkan/vulkan.h>
-#include <vulkan/vk_enum_string_helper.h>
+#include "vk_enum_string_helper.h"
 #include "vk_mem_alloc.h"
 
 #include "Core/MacroUtils.h"

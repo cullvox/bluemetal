@@ -42,7 +42,7 @@ void GfxPipeline::createPipeline(const CreateInfo& createInfo)
     std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {};
     shaderStages.resize(createInfo.shaders.size());
 
-    for (int i = 0; i < createInfo.shaders.size(); i++) {
+    for (size_t i = 0; i < createInfo.shaders.size(); i++) {
         auto shader = createInfo.shaders[i];
         shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStages[i].pNext = nullptr;

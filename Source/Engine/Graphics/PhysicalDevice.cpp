@@ -70,7 +70,7 @@ std::vector<VkPresentModeKHR> GfxPhysicalDevice::getPresentModes(std::shared_ptr
         throw std::runtime_error("Could not get Vulkan physical device surface present modes!");
     }
 
-    return std::move(presentModes);
+    return presentModes;
 }
 
 std::vector<VkSurfaceFormatKHR> GfxPhysicalDevice::getSurfaceFormats(std::shared_ptr<Window> window) const
@@ -87,7 +87,7 @@ std::vector<VkSurfaceFormatKHR> GfxPhysicalDevice::getSurfaceFormats(std::shared
         throw std::runtime_error("Could not get Vulkan physical device surface formats!");
     }
     
-    return std::move(surfaceFormats);
+    return surfaceFormats;
 }
 
 VkFormat GfxPhysicalDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const

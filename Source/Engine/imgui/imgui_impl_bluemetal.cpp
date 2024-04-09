@@ -127,6 +127,7 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     initInfo.Queue = pData->device->getGraphicsQueue();
     initInfo.PipelineCache = VK_NULL_HANDLE;
     initInfo.DescriptorPool = pData->descriptorPool;
+    initInfo.RenderPass = pData->renderPass->get();
     initInfo.Subpass = 0;
     initInfo.MinImageCount = 3;
     initInfo.ImageCount = 3;
@@ -134,7 +135,7 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     initInfo.Allocator = nullptr;
     initInfo.CheckVkResultFn = nullptr;
 
-    if (!ImGui_ImplVulkan_Init(&initInfo, pData->renderPass->get())) {
+    if (!ImGui_ImplVulkan_Init(&initInfo)) {
         throw std::runtime_error("Could not initialize ImGui Vulkan!");
     }
 
@@ -147,10 +148,10 @@ bool ImGui_ImplBluemetal_Init(ImGui_ImplBluemetal_InitInfo* init)
     ImFont* pFont = io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto-Regular.ttf", 18.0f);
     io.FontDefault = pFont;
 
-    pData->device->immediateSubmit([&](VkCommandBuffer cmd) { ImGui_ImplVulkan_CreateFontsTexture(cmd); });
+    ImGui_ImplVulkan_CreateFontsTexture();
 
     // Clear the font texture data from host memory.
-    ImGui_ImplVulkan_DestroyFontUploadObjects();
+    ImGui_ImplVulkan_DestroyFontsTexture();
 
     //_hookCallback = _inputSystem->addHook([&](const SDL_Event* pEvent) {
     //        ImGui_ImplSDL2_ProcessEvent(pEvent);

@@ -10,8 +10,8 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set_target_properties(
     FMOD
     PROPERTIES
-      IMPORTED_LOCATION       "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/linux/x86_64/libfmod.so.13.16"
-      IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/linux/x86_64/libfmodL.so.13.16"
+      IMPORTED_LOCATION       "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/linux/x86_64/libfmod.so.13.21"
+      IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/linux/x86_64/libfmodL.so.13.21"
       IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
       INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/api/core/inc/")
 
