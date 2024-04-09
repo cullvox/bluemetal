@@ -5,8 +5,10 @@
 ///////////////////////////////
 
 #include "imgui/imgui.h"
-#include "imgui/imgui_impl_bluemetal.h"
+
 #include "Export.h"
+#include "Graphics/Sdl.h"
+#include "Graphics/Vulkan.h"
 
 namespace bl
 {
@@ -24,14 +26,19 @@ class Engine;
 class ImGuiSubsystem
 {
 public:
-    ImGuiSubsystem(Engine* pEngine);
+    ImGuiSubsystem(Engine& engine);
     ~ImGuiSubsystem();
 
-    void init();
-    void shutdown();
+    void process(const SDL_Event& event);
+    void beginFrame();
+    void endFrame(VkCommandBuffer cmd);
 
 private:
-    Engine* m_pEngine;
+    void init();
+    void unload();
+
+    Engine& _engine;
+    VkDescriptorPool _descriptorPool;
 };
 
 } // namespace bl

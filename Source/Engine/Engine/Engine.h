@@ -5,6 +5,7 @@
 #include "Precompiled.h"
 #include "AudioSubsystem.h"
 #include "GraphicsSubsystem.h"
+#include "ImGuiSubsystem.h"
 #include "Core/Flags.h"
 
 namespace bl
@@ -21,10 +22,12 @@ public:
     ~Engine();
 
     std::shared_ptr<GraphicsSubsystem> getGraphics();
+    std::shared_ptr<ImGuiSubsystem> getImGui();
     std::shared_ptr<AudioSubsystem> getAudio();
 
 private:
     std::shared_ptr<GraphicsSubsystem> graphics;
+    std::shared_ptr<ImGuiSubsystem> imgui;
     std::shared_ptr<AudioSubsystem> audio;
 };
 

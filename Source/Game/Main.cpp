@@ -3,8 +3,6 @@
 #include "Graphics/Shader.h"
 #include <Graphics/PhysicalDevice.h>
 #include "Graphics/Pipeline.h"
-#include "imgui/imgui_impl_bluemetal.h"
-#include "imgui/imgui_impl_sdl2.h"
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see
@@ -44,15 +42,7 @@ int main(int argc, const char** argv)
     // float last = 0.0f;
     // float current = bl::Time::current();
 
-    ImGui_ImplBluemetal_InitInfo initInfo = {
-        graphics->getInstance(),
-        graphics->getPhysicalDevice(),
-        graphics->getDevice(),
-        graphics->getRenderer()->getUserInterfacePass(),
-        graphics->getWindow()
-    };
-
-    ImGui_ImplBluemetal_Init(&initInfo);
+    auto imgui = engine.getImGui();
 
 
     // std::shared_ptr<bl::GfxShader> vertShader = std::make_shared<bl::GfxShader>(graphics->getDevice(), VK_SHADER_STAGE_VERTEX_BIT, );
@@ -70,7 +60,7 @@ int main(int argc, const char** argv)
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            ImGui_ImplSDL2_ProcessEvent(&event);
+            imgui->process(event);
 
             switch (event.type) {
             case SDL_WINDOWEVENT:
@@ -104,8 +94,9 @@ int main(int argc, const char** argv)
 
         if (!minimized) {
 
+        
         graphics->getRenderer()->render([&](VkCommandBuffer cmd){
-            ImGui_ImplBluemetal_BeginFrame();
+            imgui->beginFrame();
 
             ImGui::Begin("Debug Info");
 
@@ -226,7 +217,7 @@ int main(int argc, const char** argv)
 
             ImGui::ShowDemoWindow();
 
-            ImGui_ImplBluemetal_EndFrame(cmd);
+            imgui->endFrame(cmd);
         });
 
         }
