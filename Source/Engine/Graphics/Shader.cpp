@@ -4,12 +4,15 @@
 
 namespace bl {
 
-GfxShader::GfxShader(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo)
+GfxShader::GfxShader(
+    std::shared_ptr<GfxDevice>      device,
+    VkShaderStageFlagBits           stage,
+    const std::vector<uint32_t>&    binary)
     : _device(device)
-    , _stage(createInfo.stage)
+    , _stage(stage)
     , _module(VK_NULL_HANDLE)
 {
-    createModule(createInfo.binary);
+    createModule(binary);
 }
 
 GfxShader::~GfxShader() 
@@ -29,9 +32,7 @@ void GfxShader::createModule(const std::vector<uint32_t>& binary)
     moduleCreateInfo.codeSize = (uint32_t)binary.size();
     moduleCreateInfo.pCode = binary.data();
 
-    if (vkCreateShaderModule(_device->get(), &moduleCreateInfo, nullptr, &_module) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a Vulkan shader module!");
-    }
+    VK_CHECK(vkCreateShaderModule(_device->get(), &moduleCreateInfo, nullptr, &_module))
 }
 
 } // namespace bl

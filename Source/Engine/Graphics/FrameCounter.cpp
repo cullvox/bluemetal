@@ -70,8 +70,7 @@ float FrameCounter::getAverageFramesPerSecond(uint32_t seconds)
 
     // Make sure we are getting a proper second count.
     if (seconds > _maximumHeldFramesPerSecond || seconds < 1) {
-        blError(
-            "Attempting to get an average FPS greater than the maximum at {} seconds.", seconds);
+        blError("Attempting to get an average FPS greater than the maximum at {} seconds.", seconds);
     }
 
     // Get the average fps

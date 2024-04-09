@@ -10,14 +10,11 @@ class BLUEMETAL_API GfxShader
 {
 public:
 
-    struct CreateInfo 
-    {
-        VkShaderStageFlagBits           stage;     /** @brief Stage type i.e. Vertex, Fragment. */
-        const std::vector<uint32_t>&    binary;    /** @brief Binary SPIR-V data from a shader file or resource. */
-    };
-
     /** @brief Constructor */
-    GfxShader(std::shared_ptr<GfxDevice> device, const CreateInfo& info);
+    GfxShader(
+        std::shared_ptr<GfxDevice>      device,
+        VkShaderStageFlagBits           stage,     /** @brief Stage type i.e. Vertex, Fragment. */
+        const std::vector<uint32_t>&    binary);   /** @brief Binary SPIR-V data from a shader file or resource. */
 
     /** @brief Destructor */
     ~GfxShader();

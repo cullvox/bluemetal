@@ -26,6 +26,11 @@ GfxInstance::~GfxInstance()
     vkDestroyInstance(_instance, nullptr);
 }
 
+bool GfxInstance::getEnableValidation() const
+{
+    return _enableValidation;
+}
+
 VkInstance GfxInstance::get() const
 {
     return _instance;
@@ -97,7 +102,7 @@ std::vector<const char*> GfxInstance::getExtensions()
 
 std::vector<const char*> GfxInstance::getValidationLayers()
 {
-    
+
     // The engines required validation layers.
     std::vector<const char*> layers = {
         "VK_LAYER_KHRONOS_validation",
@@ -126,8 +131,12 @@ void GfxInstance::createInstance(
     Version             appVersion,
     std::string_view    appName)
 {
-    const std::vector<const char*> extensions = std::move(getExtensions());
-    const std::vector<const char*> layers = std::move(getValidationLayers());
+    std::vector<const char*> extensions = std::move(getExtensions());
+    std::vector<const char*> layers{};
+
+    if (_enableValidation)
+        layers = std::move(getValidationLayers());
+
 
     VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo = {};
     debugMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;

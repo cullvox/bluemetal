@@ -21,7 +21,7 @@ public:
     static inline constexpr VkSurfaceFormatKHR DEFAULT_SURFACE_FORMAT = VkSurfaceFormatKHR{DEFAULT_FORMAT, DEFAULT_COLOR_SPACE};
 
     /** @brief Default present mode to use if user left unspecified. Will use present mode FIFO if this is unavailable. */
-    static inline constexpr VkPresentModeKHR DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
+    static inline constexpr VkPresentModeKHR  DEFAULT_PRESENT_MODE = VK_PRESENT_MODE_MAILBOX_KHR;
 
     /** @brief Constructor */
     GfxSwapchain(

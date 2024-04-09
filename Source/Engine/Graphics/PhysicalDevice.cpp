@@ -48,6 +48,14 @@ uint32_t GfxPhysicalDevice::getIndex() const
     return _index; 
 }
 
+VkPhysicalDeviceType GfxPhysicalDevice::getType() const
+{
+    VkPhysicalDeviceProperties properties = {};
+    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
+
+    return properties.deviceType;
+}
+
 std::vector<VkPresentModeKHR> GfxPhysicalDevice::getPresentModes(std::shared_ptr<Window> window) const
 {
     std::vector<VkPresentModeKHR> presentModes{};

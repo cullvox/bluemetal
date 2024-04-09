@@ -3,7 +3,8 @@
 namespace bl {
 
 class Resource {
-
+public:
+    
 };
 
 }

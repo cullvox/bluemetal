@@ -29,6 +29,9 @@ public:
 
 public:
 
+    /** @brief Returns true if validation layers are enabled. */
+    bool getEnableValidation() const;
+
     /** @brief Returns the physical devices to choose from. */
     std::vector<std::shared_ptr<GfxPhysicalDevice>> getPhysicalDevices() const;
 

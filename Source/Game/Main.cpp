@@ -1,6 +1,7 @@
 #include "Core/Time.h"
 #include "Engine/Engine.h"
 #include "Graphics/Shader.h"
+#include <Graphics/PhysicalDevice.h>
 #include "Graphics/Pipeline.h"
 #include "imgui/imgui_impl_bluemetal.h"
 #include "imgui/imgui_impl_sdl2.h"
@@ -25,14 +26,15 @@ int main(int argc, const char** argv)
     (void)argc;
     (void)argv;
     
+    try {
     bl::Engine engine{};
-
+ 
     auto graphics = engine.getGraphics();
     auto audio = engine.getAudio();
 
     auto renderer = graphics->getRenderer();
 
-    auto sound = audio->createSound("Resources/Audio/Music/Aria Math.flac");
+    auto sound = audio->createSound("Resources/Audio/Music/Mutation.flac");
     auto listener = audio->createListener();
     auto source = audio->createSource();
 
@@ -52,12 +54,11 @@ int main(int argc, const char** argv)
 
     ImGui_ImplBluemetal_Init(&initInfo);
 
-    // bl::GfxShader::CreateInfo shaderCreateInfo{
-    //     VK_SHADER_STAGE_VERTEX_BIT,
-    //     
-// 
-    // };
-    // std::shared_ptr<bl::GfxShader> vertShader = std::make_shared<bl::GfxShader>();
+
+    // std::shared_ptr<bl::GfxShader> vertShader = std::make_shared<bl::GfxShader>(graphics->getDevice(), VK_SHADER_STAGE_VERTEX_BIT, );
+
+    auto window = graphics->getWindow();
+    auto presentModes = graphics->getPhysicalDevice()->getPresentModes(graphics->getWindow());
 
     bl::FrameCounter frameCounter;
 
@@ -82,9 +83,7 @@ int main(int argc, const char** argv)
                     minimized = true;
                     break;
                 }
-                case SDL_WINDOWEVENT_EXPOSED:
-                case SDL_WINDOWEVENT_RESTORED:
-                case SDL_WINDOWEVENT_MAXIMIZED: {
+                case SDL_WINDOWEVENT_RESTORED: {
                     minimized = false;
                     break;
                 }
@@ -105,19 +104,65 @@ int main(int argc, const char** argv)
 
         if (!minimized) {
 
-        graphics->getRenderer()->render([&frameCounter, &graphics, &audio](VkCommandBuffer cmd){
+        graphics->getRenderer()->render([&](VkCommandBuffer cmd){
             ImGui_ImplBluemetal_BeginFrame();
 
             ImGui::Begin("Debug Info");
 
             if (ImGui::CollapsingHeader("Graphics")) {
+
+                
                 ImGui::Text("Graphics Device: %s", graphics->getPhysicalDevice()->getDeviceName().c_str()); 
                 ImGui::Text("Graphics Vendor: %s", graphics->getPhysicalDevice()->getVendorName().c_str()); 
                 ImGui::Text("F/S: %d", frameCounter.getFramesPerSecond()); 
                 ImGui::Text("MS/F: %.2f", frameCounter.getMillisecondsPerFrame()); 
                 ImGui::Text("Average F/S (Over 10 Seconds): %.1f", frameCounter.getAverageFramesPerSecond(10));
                 ImGui::Text("Average MS/F (Over 144 Frames): %.2f", frameCounter.getAverageMillisecondsPerFrame(144)); 
-                // ImGui::Text("Present Mode: %s", string_VkPresentModeKHR(currentPresentMode)); ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
+                ImGui::Text("Present Mode: %s", string_VkPresentModeKHR(graphics->getSwapchain()->getPresentMode())); 
+                // ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
+            
+                if (ImGui::TreeNode("Physical Devices")) {
+                    auto physicalDevices = graphics->getPhysicalDevices();
+
+                    for (int i = 0; i < physicalDevices.size(); i++) {
+                        auto& physicalDevice = physicalDevices[i];
+
+                        if (ImGui::TreeNode((void*)(intptr_t)i, "%s", physicalDevice->getDeviceName().c_str())) {
+                            
+
+                            const char* deviceType = "";
+                            switch (physicalDevice->getType()) {
+                            case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: deviceType = "Integrated"; break;
+                            case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: deviceType = "Discrete"; break;
+                            case VK_PHYSICAL_DEVICE_TYPE_CPU: deviceType = "CPU"; break;
+                            default: deviceType = "Unknown"; break;
+                            }
+
+                            ImGui::SameLine();
+                            ImGui::TextColored(ImVec4{0.2f, 0.8f, 0.4f, 1.0f}, "%s", deviceType);
+
+                            if (physicalDevice == graphics->getPhysicalDevice()) {
+                                ImGui::SameLine();
+                                ImGui::TextColored(ImVec4{0.2f, 0.5f, 0.8f, 1.0f}, "Current");
+                            }
+
+                            if (ImGui::TreeNode("Present Modes")) {
+                                for (VkPresentModeKHR mode : physicalDevice->getPresentModes(window))
+                                    ImGui::Text("%s", string_VkPresentModeKHR(mode));
+
+                                ImGui::TreePop();
+                            }
+
+                            ImGui::TreePop();
+                        }
+                    }
+
+                    ImGui::TreePop();
+                }
+
+
+
+                
             }
 
             if (ImGui::CollapsingHeader("Audio")) {
@@ -188,6 +233,14 @@ int main(int argc, const char** argv)
 
         frameCounter.endFrame();
     }
+
+    } catch (std::exception e) {
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Exception Error", e.what(), nullptr);
+        return EXIT_FAILURE;
+    }
+
+
+    system("pause");
 
     return 0;
 }

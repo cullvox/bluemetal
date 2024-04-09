@@ -40,10 +40,6 @@ public:
     ///
     std::vector<std::shared_ptr<GfxPhysicalDevice>> getPhysicalDevices();
 
-    /// Before the graphics subsystem can be used, a physical device must be selected.
-    /// This step can only be skipped if @ref GraphicsSubsystemInitInfo::physicalDeviceIndex is not nullopt.
-    void selectPhysicalDevice(GfxPhysicalDevice* physicalDevice);
-
     /// Gets the Vulkan instance object.
     ///
     /// This function must not be called before @ref selectPhysicalDevice is called. 
@@ -63,6 +59,8 @@ public:
     ///
     /// This function must not be called before @ref selectPhysicalDevice is called. 
     std::shared_ptr<GfxDevice> getDevice();
+
+    std::shared_ptr<GfxSwapchain> getSwapchain();
 
     /// Gets the renderer object to record draw commands onto.
     std::shared_ptr<Renderer> getRenderer();

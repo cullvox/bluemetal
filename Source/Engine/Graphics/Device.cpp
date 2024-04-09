@@ -130,6 +130,8 @@ void GfxDevice::immediateSubmit(const std::function<void(VkCommandBuffer)>& reco
     submitInfo.pSignalSemaphores = nullptr;
 
     VK_CHECK(vkQueueSubmit(_graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE))
+
+    waitForDevice();
 }
 
 void GfxDevice::waitForDevice() const 
@@ -194,7 +196,10 @@ std::vector<const char*> GfxDevice::getExtensions()
 void GfxDevice::createDevice()
 {
     std::vector<const char*> extensions = std::move(getExtensions());
-    std::vector<const char*> layers = std::move(getValidationLayers());
+    std::vector<const char*> layers{};
+
+    if (_instance->getEnableValidation())
+        layers = std::move(getValidationLayers());
 
     // Get the queue family properties of the physical device.
     uint32_t queuePropertyCount = 0;

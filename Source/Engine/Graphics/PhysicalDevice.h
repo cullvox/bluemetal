@@ -27,6 +27,9 @@ public:
     /** @brief Gets the underlying VkPhysicalDevice object. */ 
     VkPhysicalDevice get() const;
 
+    /** @brief Returns the type of physical devices this is. (Integrated, External... )*/
+    VkPhysicalDeviceType getType() const;
+
     /** @brief Gets the name of the graphics card being used. (Ex. Nvidia RTX 2070) */ 
     std::string getDeviceName() const;
 
