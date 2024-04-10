@@ -100,8 +100,24 @@ int main(int argc, const char** argv)
 
             ImGui::Begin("Debug Info");
 
+
             if (ImGui::CollapsingHeader("Graphics")) {
 
+            ImGui::Text("bluemetal");
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", bl::to_string(bl::engineVersion).c_str());
+
+            ImGui::Text("sdl2");
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION));
+
+            ImGui::Text("vulkan header");
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%d", VK_HEADER_VERSION);
+
+            ImGui::Text("imgui");
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", ImGui::GetVersion());
                 
                 ImGui::Text("Graphics Device: %s", graphics->getPhysicalDevice()->getDeviceName().c_str()); 
                 ImGui::Text("Graphics Vendor: %s", graphics->getPhysicalDevice()->getVendorName().c_str()); 

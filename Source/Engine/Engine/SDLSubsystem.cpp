@@ -8,7 +8,7 @@ SDLSubsystem::SDLSubsystem()
 {
     SDL_SetMainReady();
 
-    if (SDL_Init(SDL_INIT_EVERYTHING) != SDL_TRUE) {
+    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         throw std::runtime_error("Could not initialize SDL!");
     }
 }

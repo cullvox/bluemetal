@@ -14,7 +14,12 @@ namespace bl {
 ImGuiSubsystem::ImGuiSubsystem(Engine& engine)
     : _engine(engine)
 {
-    
+    init();
+}
+
+ImGuiSubsystem::~ImGuiSubsystem()
+{
+    unload();
 }
 
 static void applyStyle()
@@ -76,10 +81,6 @@ static void applyStyle()
     style.Colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
     style.Colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
     style.GrabRounding = style.FrameRounding = 2.3f;
-}
-
-ImGuiSubsystem::~ImGuiSubsystem()
-{
 }
 
 void ImGuiSubsystem::process(const SDL_Event& event)

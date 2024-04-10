@@ -235,6 +235,8 @@ void GfxDevice::createDevice()
 
             i++;
         }
+
+        vkDestroySurfaceKHR(_instance->get(), surface, nullptr);
     });
 
 
