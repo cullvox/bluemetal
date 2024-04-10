@@ -26,7 +26,7 @@ public:
     /** @brief Constructor */
     GfxSwapchain(
         std::shared_ptr<GfxDevice>          device, 
-        std::shared_ptr<Window>             window,                         /** @brief The window this swapchain is swapping onto. */
+        std::shared_ptr<RenderWindow>       window,                         /** @brief The window this swapchain is swapping onto. */
         std::optional<VkPresentModeKHR>     presentMode = std::nullopt,     /** @brief Method of presentation onto the screen. */
         std::optional<VkSurfaceFormatKHR>   surfaceFormat = std::nullopt);  /** @brief Color and image format used to create swapchain images. */
 
@@ -106,7 +106,7 @@ private:
     
     std::shared_ptr<GfxDevice>          _device;
     std::shared_ptr<GfxPhysicalDevice>  _physicalDevice;
-    std::shared_ptr<Window>             _window;
+    std::shared_ptr<RenderWindow>       _window;
     uint32_t                            _imageCount;
     VkSurfaceFormatKHR                  _surfaceFormat;
     VkPresentModeKHR                    _presentMode;

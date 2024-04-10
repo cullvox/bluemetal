@@ -2,24 +2,16 @@
 
 #include "Export.h"
 #include "Graphics/Instance.h"
+#include "Graphics/RenderWindow.h"
 #include "Graphics/Device.h"
 #include "Graphics/Swapchain.h"
 #include "Graphics/FrameCounter.h"
-#include "Graphics/Window/Window.h"
 #include "Graphics/Renderer.h"
 
 namespace bl
 {
 
-///////////////////////////////
-// Forward Declarations
-///////////////////////////////
-
 class Engine;
-
-///////////////////////////////
-// Classes
-///////////////////////////////
 
 struct GraphicsSubsystemInitInfo
 {
@@ -53,7 +45,7 @@ public:
     /// Gets the Window object.
     ///
     /// This function must not be called before @ref selectPhysicalDevice is called. 
-    std::shared_ptr<Window> getWindow();
+    std::shared_ptr<RenderWindow> getWindow();
     
     /// Gets the Vulkan logical device object.
     ///
@@ -69,7 +61,7 @@ private:
     Engine&                                 _engine;
     std::shared_ptr<GfxInstance>            _instance;
     std::shared_ptr<GfxPhysicalDevice>      _physicalDevice;
-    std::shared_ptr<Window>                 _window;
+    std::shared_ptr<RenderWindow>           _window;
     std::shared_ptr<GfxDevice>              _device;
     std::shared_ptr<GfxSwapchain>           _swapchain;
     std::shared_ptr<Renderer>               _renderer;

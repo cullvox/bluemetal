@@ -13,11 +13,13 @@ list(APPEND Sources
   "Audio/AudioSource.cpp"
   "Audio/Sound.cpp"
 
+  "Window/Display.cpp"
+  "Window/Window.cpp"
+
   # Graphics
-  "Graphics/Window/Window.cpp"
-  "Graphics/Window/Display.cpp"
   "Graphics/Instance.cpp"
   "Graphics/PhysicalDevice.cpp"
+  "Graphics/RenderWindow.cpp"
   "Graphics/Device.cpp"
   "Graphics/Buffer.cpp"
   "Graphics/Image.cpp"
@@ -42,6 +44,7 @@ list(APPEND Sources
   "imgui/imgui_impl_sdl2.cpp"
   "imgui/imgui_impl_vulkan.cpp"
 
+  "Engine/SDLSubsystem.cpp"
   "Engine/AudioSubsystem.cpp"
   "Engine/GraphicsSubsystem.cpp"
   "Engine/ImGuiSubsystem.cpp"

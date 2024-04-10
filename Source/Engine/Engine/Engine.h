@@ -3,6 +3,7 @@
 
 #include "Export.h"
 #include "Precompiled.h"
+#include "SDLSubsystem.h"
 #include "AudioSubsystem.h"
 #include "GraphicsSubsystem.h"
 #include "ImGuiSubsystem.h"
@@ -26,6 +27,7 @@ public:
     std::shared_ptr<AudioSubsystem> getAudio();
 
 private:
+    std::shared_ptr<SDLSubsystem> sdl;
     std::shared_ptr<GraphicsSubsystem> graphics;
     std::shared_ptr<ImGuiSubsystem> imgui;
     std::shared_ptr<AudioSubsystem> audio;

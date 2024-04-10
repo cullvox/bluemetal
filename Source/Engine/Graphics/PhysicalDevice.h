@@ -7,7 +7,7 @@
 namespace bl
 {
 
-class Window;
+class RenderWindow;
 
 /** @brief A physical GPU within the system. */
 class BLUEMETAL_API GfxPhysicalDevice
@@ -40,10 +40,10 @@ public:
     uint32_t getIndex() const;
 
     /** @brief Gets the available present modes on the system. */ 
-    std::vector<VkPresentModeKHR> getPresentModes(std::shared_ptr<Window> window) const;
+    std::vector<VkPresentModeKHR> getPresentModes(std::shared_ptr<RenderWindow> window) const;
 
     /** @brief Gets the available surface formats on this physical device.*/
-    std::vector<VkSurfaceFormatKHR> getSurfaceFormats(std::shared_ptr<Window> window) const;
+    std::vector<VkSurfaceFormatKHR> getSurfaceFormats(std::shared_ptr<RenderWindow> window) const;
     
     /** @brief Finds a supported format within a list.
      *

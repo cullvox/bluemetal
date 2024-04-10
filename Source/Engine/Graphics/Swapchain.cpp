@@ -1,11 +1,12 @@
-#include "Swapchain.h"
 #include "Core/Print.h"
+#include "RenderWindow.h"
+#include "Swapchain.h"
 
 namespace bl {
 
 GfxSwapchain::GfxSwapchain(
     std::shared_ptr<GfxDevice>          device,
-    std::shared_ptr<Window>             window,
+    std::shared_ptr<RenderWindow>       window,
     std::optional<VkPresentModeKHR>     presentMode,
     std::optional<VkSurfaceFormatKHR>   surfaceFormat)
     : _device(device)

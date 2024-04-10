@@ -1,6 +1,6 @@
-#include "PhysicalDevice.h"
-#include "Window/Window.h"
 #include "Core/Print.h"
+#include "RenderWindow.h"
+#include "PhysicalDevice.h"
 
 namespace bl {
 
@@ -56,7 +56,7 @@ VkPhysicalDeviceType GfxPhysicalDevice::getType() const
     return properties.deviceType;
 }
 
-std::vector<VkPresentModeKHR> GfxPhysicalDevice::getPresentModes(std::shared_ptr<Window> window) const
+std::vector<VkPresentModeKHR> GfxPhysicalDevice::getPresentModes(std::shared_ptr<RenderWindow> window) const
 {
     std::vector<VkPresentModeKHR> presentModes{};
     uint32_t presentModeCount = 0;
@@ -73,7 +73,7 @@ std::vector<VkPresentModeKHR> GfxPhysicalDevice::getPresentModes(std::shared_ptr
     return presentModes;
 }
 
-std::vector<VkSurfaceFormatKHR> GfxPhysicalDevice::getSurfaceFormats(std::shared_ptr<Window> window) const
+std::vector<VkSurfaceFormatKHR> GfxPhysicalDevice::getSurfaceFormats(std::shared_ptr<RenderWindow> window) const
 {
     std::vector<VkSurfaceFormatKHR> surfaceFormats{};
     uint32_t formatCount = 0;

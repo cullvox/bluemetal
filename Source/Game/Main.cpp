@@ -163,7 +163,7 @@ int main(int argc, const char** argv)
 
             ImGui::End();
 
-            ImGui::Begin("Advanced Configuration");
+            ImGui::Begin("Configuration");
             ImGui::SeparatorText("ImGui Interface");
 
             static float alpha = 1.0f;

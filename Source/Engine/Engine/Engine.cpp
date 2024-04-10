@@ -5,11 +5,10 @@ namespace bl {
 
 Engine::Engine()
 {
-    SDL_SetMainReady();
-
     blInfo("Constructing bluemetal engine {}", bl::to_string(bl::engineVersion));
 
     // m_config = Noodle::parseFromFile("Save/Config/config.noodle");
+    sdl = std::make_shared<SDLSubsystem>();
     audio = std::make_shared<AudioSubsystem>(*this);
     graphics = std::make_shared<GraphicsSubsystem>(*this);
     imgui = std::make_shared<ImGuiSubsystem>(*this);

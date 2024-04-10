@@ -23,7 +23,7 @@ jobs:
     
     - name: Install Libraries
       # Vulkan and {fmt} are up to date for this project on Ubuntu
-      run: sudo apt-get install libvulkan-dev vulkan-tools libfmt-dev
+      run: sudo apt-get install libfmt-dev libvulkan-dev vulkan-tools 
     
     
     - name: Download Recurse
