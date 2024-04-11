@@ -30,6 +30,7 @@ int main(int argc, const char** argv)
     auto graphics = engine.getGraphics();
     auto audio = engine.getAudio();
 
+    auto renderDoc = graphics->getRenderDoc();
     auto renderer = graphics->getRenderer();
 
     auto sound = audio->createSound("Resources/Audio/Music/Mutation.flac");
@@ -45,7 +46,37 @@ int main(int argc, const char** argv)
     auto imgui = engine.getImGui();
 
 
-    // std::shared_ptr<bl::GfxShader> vertShader = std::make_shared<bl::GfxShader>(graphics->getDevice(), VK_SHADER_STAGE_VERTEX_BIT, );
+    auto loadShader = [=](const char* path, VkShaderStageFlagBits stage){
+        std::ifstream file(path, std::ios::ate | std::ios::binary);
+
+        if (!file.is_open()) {
+            throw std::runtime_error("failed to open file!");
+        }
+
+        size_t fileSize = (size_t) file.tellg();
+        std::vector<char> buffer(fileSize);
+
+        file.seekg(0);
+        file.read(buffer.data(), fileSize);
+        file.close();
+
+        return std::make_shared<bl::GfxShader>(graphics->getDevice(), stage, buffer);
+    };
+
+    auto vert = loadShader("Resources/Shaders/Default.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
+    auto frag = loadShader("Resources/Shaders/Default.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
+
+    auto layout = graphics->getPipelineLayoutCache()->acquire({}, {});
+
+    bl::GfxPipeline::CreateInfo pipelineCreateInfo{};
+    pipelineCreateInfo.layout = layout;
+    pipelineCreateInfo.renderPass = renderer->getUserInterfacePass();
+    pipelineCreateInfo.subpass = 0;
+    pipelineCreateInfo.vertexInputBindings = {};
+    pipelineCreateInfo.vertexInputAttribs = {};
+    pipelineCreateInfo.shaders = {vert, frag};
+
+    auto pipeline = std::make_shared<bl::GfxPipeline>(graphics->getDevice(), pipelineCreateInfo);
 
     auto window = graphics->getWindow();
     auto presentModes = graphics->getPhysicalDevice()->getPresentModes(graphics->getWindow());
@@ -68,7 +99,6 @@ int main(int argc, const char** argv)
                 case SDL_WINDOWEVENT_CLOSE:
                     running = false;
                     break;
-                
                 case SDL_WINDOWEVENT_MINIMIZED: {
                     minimized = true;
                     break;
@@ -79,7 +109,15 @@ int main(int argc, const char** argv)
                 }
                 }
                 break;
+                case SDL_KEYDOWN: {
+                switch (event.key.keysym.sym) {
+                    case SDLK_F12:
+                        renderDoc->beginCapture();
+                    }
+                    break;
+                }
             }
+
         }
 
         // last = current;
@@ -96,12 +134,29 @@ int main(int argc, const char** argv)
 
         
         graphics->getRenderer()->render([&](VkCommandBuffer cmd){
+            
+            auto extent = window->getExtent();
+
+            VkViewport vp{};
+            vp.x = 0.0f;
+            vp.y = 0.0f;
+            vp.width = (float)extent.x;
+            vp.height = (float)extent.y;
+            vp.minDepth = 0.0f;
+            vp.maxDepth = 1.0f;
+            vkCmdSetViewport(cmd, 0, 1, &vp);
+
+            VkRect2D scissor{};
+            scissor.offset = {0, 0};
+            scissor.extent = {(uint32_t)extent.x, (uint32_t)extent.y};
+            vkCmdSetScissor(cmd, 0, 1, &scissor);
+
+            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->get());
+            vkCmdDraw(cmd, 3, 1, 0, 0);
+
             imgui->beginFrame();
 
             ImGui::Begin("Debug Info");
-
-
-            if (ImGui::CollapsingHeader("Graphics")) {
 
             ImGui::Text("bluemetal");
             ImGui::SameLine();
@@ -109,7 +164,7 @@ int main(int argc, const char** argv)
 
             ImGui::Text("sdl2");
             ImGui::SameLine();
-            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION));
+            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION));
 
             ImGui::Text("vulkan header");
             ImGui::SameLine();
@@ -118,7 +173,9 @@ int main(int argc, const char** argv)
             ImGui::Text("imgui");
             ImGui::SameLine();
             ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", ImGui::GetVersion());
-                
+
+            if (ImGui::CollapsingHeader("Graphics")) {
+
                 ImGui::Text("Graphics Device: %s", graphics->getPhysicalDevice()->getDeviceName().c_str()); 
                 ImGui::Text("Graphics Vendor: %s", graphics->getPhysicalDevice()->getVendorName().c_str()); 
                 ImGui::Text("F/S: %d", frameCounter.getFramesPerSecond()); 
@@ -127,7 +184,7 @@ int main(int argc, const char** argv)
                 ImGui::Text("Average MS/F (Over 144 Frames): %.2f", frameCounter.getAverageMillisecondsPerFrame(144)); 
                 ImGui::Text("Present Mode: %s", string_VkPresentModeKHR(graphics->getSwapchain()->getPresentMode())); 
                 // ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
-            
+
                 if (ImGui::TreeNode("Physical Devices")) {
                     auto physicalDevices = graphics->getPhysicalDevices();
 
@@ -166,10 +223,6 @@ int main(int argc, const char** argv)
 
                     ImGui::TreePop();
                 }
-
-
-
-                
             }
 
             if (ImGui::CollapsingHeader("Audio")) {

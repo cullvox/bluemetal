@@ -10,7 +10,7 @@ Engine::Engine()
     // m_config = Noodle::parseFromFile("Save/Config/config.noodle");
     sdl = std::make_shared<SDLSubsystem>();
     audio = std::make_shared<AudioSubsystem>(*this);
-    graphics = std::make_shared<GraphicsSubsystem>(*this);
+    graphics = std::make_shared<GraphicsSubsystem>(*this, true);
     imgui = std::make_shared<ImGuiSubsystem>(*this);
 }
 

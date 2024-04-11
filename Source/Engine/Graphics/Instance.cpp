@@ -44,17 +44,6 @@ std::vector<std::shared_ptr<GfxPhysicalDevice>> GfxInstance::getPhysicalDevices(
 std::vector<const char*> GfxInstance::getExtensionsForSDL()
 {
 
-    // Create a temporary window to get extensions from SDL.
-    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> temporaryWindow{
-        SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN), 
-        [](SDL_Window* window){ SDL_DestroyWindow(window); }};
-
-    if (!temporaryWindow) {
-        throw std::runtime_error("Could not create a temporary SDL window to get Vulkan instance extensions!");
-    }
-
-
-
     // Enumerate the instance extensions from SDL.
     std::vector<const char*> extensions;
     unsigned int extensionsCount = 0;

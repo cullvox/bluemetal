@@ -1,0 +1,70 @@
+#pragma once
+
+#include "Precompiled.h"
+#include "Core/MacroUtils.h"
+#include "Vulkan.h"
+#include "Device.h"
+
+namespace bl 
+{
+
+// VkDescriptorSetLayout objects will have the same underlying pointer value when shared, so they can just be hashed as intptrs
+// VkPushConstantRanges can be hash joined.
+
+struct PipelineLayoutInfo 
+{
+    std::vector<VkDescriptorSetLayout> setLayouts;
+    std::vector<VkPushConstantRange> ranges;
+
+    bool operator==(const PipelineLayoutInfo& rhs) const noexcept
+    {
+        if (setLayouts != rhs.setLayouts) return false;
+
+        for (int i = 0; i < rhs.ranges.size(); i++) {
+            if (ranges[i].stageFlags != rhs.ranges[i].stageFlags) return false;
+            if (ranges[i].offset != rhs.ranges[i].offset) return false;
+            if (ranges[i].size != rhs.ranges[i].size) return false;
+        }
+
+        return true;
+    }
+};
+
+struct PipelineLayoutInfoHash
+{
+    std::size_t operator()(const PipelineLayoutInfo& info) const noexcept
+    {
+        std::size_t seed = 0;
+
+        for (auto sl : info.setLayouts)
+        {
+            BL_HASH_COMBINE(seed, sl);
+        }
+
+        for (const auto& pcr : info.ranges) 
+        {
+            BL_HASH_COMBINE(seed, pcr.stageFlags);
+            BL_HASH_COMBINE(seed, pcr.offset);
+            BL_HASH_COMBINE(seed, pcr.size);
+        }
+
+        return seed;
+    }
+};
+
+class PipelineLayoutCache
+{
+public:
+    PipelineLayoutCache(std::shared_ptr<GfxDevice> device);
+    ~PipelineLayoutCache();
+
+    VkPipelineLayout acquire(
+        std::vector<VkDescriptorSetLayout>  setLayouts, 
+        std::vector<VkPushConstantRange>    ranges);
+
+private:
+    std::shared_ptr<GfxDevice> _device;
+    std::unordered_map<PipelineLayoutInfo, VkPipelineLayout, PipelineLayoutInfoHash> _cache;
+};
+
+} // namespace bl

@@ -2,11 +2,11 @@
 
 #include "Device.h"
 #include "Shader.h"
-#include "DescriptorLayoutCache.h"
 #include "RenderPass.h"
 #include "PipelineResource.h"
 
-namespace bl {
+namespace bl 
+{
 
 /** @brief A program consisting of shaders designed to run on the GPU. */
 class BLUEMETAL_API GfxPipeline 

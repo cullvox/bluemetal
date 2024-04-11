@@ -51,9 +51,7 @@ void GfxImage::createImage(const CreateInfo& createInfo)
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 1.0f;
 
-    if (vmaCreateImage(_device->getAllocator(), &imageCreateInfo, &allocationCreateInfo, &_image, &_allocation, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a Vulkan image!");
-    }
+    VK_CHECK(vmaCreateImage(_device->getAllocator(), &imageCreateInfo, &allocationCreateInfo, &_image, &_allocation, nullptr))
 
     VkComponentMapping componentMapping = {};
     componentMapping.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -78,9 +76,7 @@ void GfxImage::createImage(const CreateInfo& createInfo)
     viewCreateInfo.components = componentMapping;
     viewCreateInfo.subresourceRange = subresourceRange;
 
-    if (vkCreateImageView(_device->get(), &viewCreateInfo, nullptr, &_imageView) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a Vulkan image view!");
-    }
+    VK_CHECK(vkCreateImageView(_device->get(), &viewCreateInfo, nullptr, &_imageView))
 }
 
 VkExtent3D GfxImage::getExtent() const { return _extent; }

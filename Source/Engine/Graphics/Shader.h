@@ -12,9 +12,9 @@ public:
 
     /** @brief Constructor */
     GfxShader(
-        std::shared_ptr<GfxDevice>      device,
-        VkShaderStageFlagBits           stage,     /** @brief Stage type i.e. Vertex, Fragment. */
-        const std::vector<uint32_t>&    binary);   /** @brief Binary SPIR-V data from a shader file or resource. */
+        std::shared_ptr<GfxDevice>  device,
+        VkShaderStageFlagBits       stage,     /** @brief Stage type i.e. Vertex, Fragment. */
+        const std::vector<char>&    binary);   /** @brief Binary SPIR-V data from a shader file or resource. */
 
     /** @brief Destructor */
     ~GfxShader();
@@ -37,7 +37,7 @@ public:
     // std::vector<GfxPipelineResource> getResources();
 
 private:
-    void createModule(const std::vector<uint32_t>& binary);
+    void createModule(const std::vector<char>& binary);
     // void createReflection(const std::vector<uint32_t>& binary);
     // void findVertexState();
     // void findResources();

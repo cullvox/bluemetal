@@ -17,6 +17,7 @@ list(APPEND Sources
   "Window/Window.cpp"
 
   # Graphics
+  "Graphics/RenderDoc.cpp"
   "Graphics/Instance.cpp"
   "Graphics/PhysicalDevice.cpp"
   "Graphics/RenderWindow.cpp"
@@ -25,7 +26,8 @@ list(APPEND Sources
   "Graphics/Image.cpp"
   "Graphics/Shader.cpp"
   #"Graphics/ShaderReflection.cpp"
-  #"Graphics/DescriptorLayoutCache.cpp"
+  "Graphics/DescriptorSetLayoutCache.cpp"
+  "Graphics/PipelineLayoutCache.cpp"
   #"Graphics/DescriptorAllocator.cpp"
   "Graphics/Pipeline.cpp"
   "Graphics/Swapchain.cpp"

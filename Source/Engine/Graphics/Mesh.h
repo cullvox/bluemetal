@@ -18,9 +18,9 @@ public:
     void setIndices(const std::vector<uint32_t>& indices);
 
 private:
-    std::shared_ptr<Device> _device;
-    std::unique_ptr<Buffer> _vertexBuffer;
-    std::unique_ptr<Buffer> _indexBuffer;
+    std::shared_ptr<GfxDevice> _device;
+    std::unique_ptr<GfxBuffer> _vertexBuffer;
+    std::unique_ptr<GfxBuffer> _indexBuffer;
 };
 
 #include "Mesh.inl"

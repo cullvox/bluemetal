@@ -16,7 +16,7 @@ void Mesh::setIndices(const std::vector<uint32_t>& indices)
     memcpy(allocInfo.pMappedData, indices.data(), ibSize);
 
     // copy staging buffer to a buffer on device
-    _indexBuffer = std::make_unique<blBuffer>(_device,
+    _indexBuffer = std::make_unique<GfxBuffer>(_device,
         VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, ibSize);
 

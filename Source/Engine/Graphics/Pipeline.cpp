@@ -39,19 +39,21 @@ VkPipeline GfxPipeline::get() const { return _pipeline; }
 
 void GfxPipeline::createPipeline(const CreateInfo& createInfo)
 {
-    std::vector<VkPipelineShaderStageCreateInfo> shaderStages = {};
-    shaderStages.resize(createInfo.shaders.size());
+    std::vector<VkPipelineShaderStageCreateInfo> stages{};
+    stages.reserve(createInfo.shaders.size());
 
-    for (size_t i = 0; i < createInfo.shaders.size(); i++) {
-        auto shader = createInfo.shaders[i];
-        shaderStages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        shaderStages[i].pNext = nullptr;
-        shaderStages[i].flags = 0;
-        shaderStages[i].stage = shader->getStage();
-        shaderStages[i].module = shader->get();
-        shaderStages[i].pName = "main";
-        shaderStages[i].pSpecializationInfo = nullptr;
-    }
+    std::transform(createInfo.shaders.begin(), createInfo.shaders.end(), std::back_inserter(stages), 
+        [](auto&& shader){
+            VkPipelineShaderStageCreateInfo createInfo{};
+            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            createInfo.pNext = nullptr;
+            createInfo.flags = 0;
+            createInfo.stage = shader->getStage();
+            createInfo.module = shader->get();
+            createInfo.pName = "main";
+            createInfo.pSpecializationInfo = nullptr;
+            return createInfo;
+        });
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -67,7 +69,7 @@ void GfxPipeline::createPipeline(const CreateInfo& createInfo)
     inputAssemblyState.pNext = nullptr;
     inputAssemblyState.flags = 0;
     inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    inputAssemblyState.primitiveRestartEnable = VK_TRUE;
+    inputAssemblyState.primitiveRestartEnable = VK_FALSE;
 
     VkPipelineTessellationStateCreateInfo tessellationState = {};
     tessellationState.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
@@ -132,12 +134,13 @@ void GfxPipeline::createPipeline(const CreateInfo& createInfo)
     attachments[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
     attachments[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
     attachments[0].alphaBlendOp = VK_BLEND_OP_ADD;
+    attachments[0].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 
     VkPipelineColorBlendStateCreateInfo colorBlendState = {};
     colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlendState.pNext = nullptr;
     colorBlendState.flags = 0;
-    colorBlendState.logicOpEnable = VK_TRUE;
+    colorBlendState.logicOpEnable = VK_FALSE;
     colorBlendState.logicOp = VK_LOGIC_OP_COPY;
     colorBlendState.attachmentCount = (uint32_t)attachments.size();
     colorBlendState.pAttachments = attachments.data();
@@ -162,8 +165,8 @@ void GfxPipeline::createPipeline(const CreateInfo& createInfo)
     pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineCreateInfo.pNext = nullptr;
     pipelineCreateInfo.flags = 0;
-    pipelineCreateInfo.stageCount = (uint32_t)shaderStages.size();
-    pipelineCreateInfo.pStages = shaderStages.data();
+    pipelineCreateInfo.stageCount = (uint32_t)stages.size();
+    pipelineCreateInfo.pStages = stages.data();
     pipelineCreateInfo.pVertexInputState = &vertexInputState;
     pipelineCreateInfo.pInputAssemblyState = &inputAssemblyState;
     pipelineCreateInfo.pTessellationState = &tessellationState;
@@ -179,9 +182,7 @@ void GfxPipeline::createPipeline(const CreateInfo& createInfo)
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
     pipelineCreateInfo.basePipelineIndex = 0;
 
-    if (vkCreateGraphicsPipelines(_device->get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a Vulkan pipeline!");
-    }
+    VK_CHECK(vkCreateGraphicsPipelines(_device->get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline))
 }
 
 } // namespace bl
