@@ -3,6 +3,8 @@
 #include "Graphics/Shader.h"
 #include <Graphics/PhysicalDevice.h>
 #include "Graphics/Pipeline.h"
+#include "Graphics/Vertex.h"
+#include "Graphics/Mesh.h"
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see
@@ -66,18 +68,75 @@ int main(int argc, const char** argv)
     auto vert = loadShader("Resources/Shaders/Default.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
     auto frag = loadShader("Resources/Shaders/Default.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
 
-    auto layout = graphics->getPipelineLayoutCache()->acquire({}, {});
+    auto descriptorCache = graphics->getDescriptorCache();
+    auto layoutCache = graphics->getPipelineLayoutCache();
+
+    std::vector<VkDescriptorSetLayoutBinding> bindings = {
+        VkDescriptorSetLayoutBinding{
+            0,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            1,
+            VK_SHADER_STAGE_VERTEX_BIT,
+            nullptr
+        }
+    };
+
+    VkDescriptorSetLayout bufferSetLayout = descriptorCache->acquire(bindings);
+    auto layout = graphics->getPipelineLayoutCache()->acquire({bufferSetLayout, bufferSetLayout}, {});
+
+    std::vector<bl::Vertex> cubeVertices{
+        // front
+        { {-1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {-1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        // back
+        { {-1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {1.0f,  1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {-1.0f,  1.0f, -1.f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+    };
+
+    std::vector<uint32_t> cubeIndices{
+        // front
+		0, 1, 2,
+		2, 3, 0,
+		// right
+		1, 5, 6,
+		6, 2, 1,
+		// back
+		7, 6, 5,
+		5, 4, 7,
+		// left
+		4, 0, 3,
+		3, 7, 4,
+		// bottom
+		4, 5, 1,
+		1, 0, 4,
+		// top
+		3, 2, 6,
+		6, 7, 3
+    };
+
+    auto mesh = std::make_shared<bl::Mesh>(graphics->getDevice(), cubeVertices, cubeIndices);
+
+    VkVertexInputBindingDescription vertexInputBinding{0, sizeof(bl::Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
+
+    std::vector<VkVertexInputAttributeDescription> attributes = {
+        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},
+        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, 12},
+        {2, 0, VK_FORMAT_R32G32_SFLOAT, 24},
+    };
 
     bl::GfxPipeline::CreateInfo pipelineCreateInfo{};
     pipelineCreateInfo.layout = layout;
     pipelineCreateInfo.renderPass = renderer->getUserInterfacePass();
     pipelineCreateInfo.subpass = 0;
-    pipelineCreateInfo.vertexInputBindings = {};
-    pipelineCreateInfo.vertexInputAttribs = {};
+    pipelineCreateInfo.vertexInputBindings = {vertexInputBinding};
+    pipelineCreateInfo.vertexInputAttribs = attributes;
     pipelineCreateInfo.shaders = {vert, frag};
 
     auto pipeline = std::make_shared<bl::GfxPipeline>(graphics->getDevice(), pipelineCreateInfo);
-
     auto window = graphics->getWindow();
     auto presentModes = graphics->getPhysicalDevice()->getPresentModes(graphics->getWindow());
 
@@ -150,6 +209,8 @@ int main(int argc, const char** argv)
             scissor.offset = {0, 0};
             scissor.extent = {(uint32_t)extent.x, (uint32_t)extent.y};
             vkCmdSetScissor(cmd, 0, 1, &scissor);
+
+            vkCmdBindVertexBuffers(cmd, 0, 1, &)
 
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->get());
             vkCmdDraw(cmd, 3, 1, 0, 0);
@@ -228,58 +289,6 @@ int main(int argc, const char** argv)
             if (ImGui::CollapsingHeader("Audio")) {
                 ImGui::Text("Audio Driver: %s", audio->getSystem()->getDriverName().c_str());
                 ImGui::Text("Num Channels: %d", audio->getSystem()->getNumChannelsPlaying());
-            }
-
-            ImGui::End();
-
-            ImGui::Begin("Configuration");
-            ImGui::SeparatorText("ImGui Interface");
-
-            static float alpha = 1.0f;
-            if (ImGui::SliderFloat("UI Alpha Transparency", &alpha, 0.1f, 1.0f)) {
-                ImGui::GetStyle().Alpha = alpha;
-            }
-
-            ImGui::SeparatorText("Graphics");
-
-
-            // if (ImGui::CollapsingHeader("Physical Device"))
-            // {
-            //     for (size_t i = 0; i < physicalDevices)
-            // }
-
-            if (ImGui::CollapsingHeader("Surface Formats")) {
-
-                // static int surfaceFormatSelected = 0;
-                // for (size_t i = 0; i < surfaceFormats.size(); i++)
-                // {
-                //     HelpMarker("Changes to this value will require a restart to change.");
-                //     std::string name = fmt::format("({}, {})", string_VkFormat(surfaceFormats[i].format),
-                //     string_VkColorSpaceKHR(surfaceFormats[i].colorSpace)); if
-                //     (ImGui::RadioButton(name.c_str(), &surfaceFormatSelected, i))
-                //     {
-                //        //Engine::get().getConfig()["render"]["presentMode"] = (int)i;
-                //     }
-                // }
-            }
-
-            if (ImGui::CollapsingHeader("Present Modes"))
-            {
-                // static int selectedPresentMode = 0;
-                // for (size_t i = 0; i < presentModes.size(); i++)
-                // {
-                //     std::string name = fmt::format("({})", string_VkPresentModeKHR(presentModes[i]));
-                //     if (ImGui::RadioButton(name.c_str(), &selectedPresentMode, i))
-                //     {
-                //         // static int value = 0;
-                //         // value = i;
-                //         // _postRenderCommands.push([&](){
-                //         //     m_swapchain->recreate(presentModes[value],
-                //         // _swapchain->getSurfaceFormat();
-                //         //     m_renderer->resize(m_swapchain->getExtent());
-                //         // });
-                //     }
-                // }
             }
 
             ImGui::End();

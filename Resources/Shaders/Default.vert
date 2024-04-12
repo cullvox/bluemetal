@@ -1,20 +1,23 @@
 #version 450
 
-layout(location = 0) out vec3 fragColor;
+layout(location=0) in vec3 inPosition;
+layout(location=1) in vec3 inNormal;
+layout(location=2) in vec2 inTextureCoords;
 
-vec2 positions[3] = vec2[](
-    vec2(0.0, -0.5),
-    vec2(0.5, 0.5),
-    vec2(-0.5, 0.5)
-);
+layout(set=0, binding=0) uniform GlobalUBO {
+    float time;
+    float dt;
+    ivec2 resolution;
+    ivec2 mouse;
 
-vec3 colors[3] = vec3[](
-    vec3(1.0, 0.0, 0.0),
-    vec3(0.0, 1.0, 0.0),
-    vec3(0.0, 0.0, 1.0)
-);
+    mat4 view;
+    mat4 projection;
+} global;
+
+layout(set=1, binding=0) uniform ObjectUBO {
+    mat4 model;
+} object;
 
 void main() {
-    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
-    fragColor = colors[gl_VertexIndex];
+    gl_Position = global.projection * global.view * object.model * vec4(inPosition, 1.0);
 }

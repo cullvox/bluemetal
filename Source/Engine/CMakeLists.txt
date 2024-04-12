@@ -32,7 +32,7 @@ list(APPEND Sources
   "Graphics/Pipeline.cpp"
   "Graphics/Swapchain.cpp"
   "Graphics/FrameCounter.cpp"
-  # "Render/Mesh.cpp"
+  "Graphics/Mesh.cpp"
   "Graphics/PresentPass.cpp"
   "Graphics/Renderer.cpp"
   # "Graphics/GeometryPass.cpp"

@@ -37,6 +37,7 @@ public:
 
     /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
     void upload(VkBufferCopy copyRegion, void* data);
+    void upload(void* data);
 
 private:
     void createBuffer(VmaAllocationInfo* allocationInfo);

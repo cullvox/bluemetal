@@ -94,5 +94,11 @@ void GfxBuffer::upload(VkBufferCopy copyRegion, void* srcData)
     intermediateBuffer.unmap();
 }
 
+void GfxBuffer::upload(void* srcData)
+{
+    VkBufferCopy region{0, 0, getSize()};
+    upload(region, srcData);
+}
+
 
 } // namespace bl
