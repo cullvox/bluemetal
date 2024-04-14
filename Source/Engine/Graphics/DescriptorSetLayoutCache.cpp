@@ -36,7 +36,7 @@ VkDescriptorSetLayout DescriptorSetLayoutCache::acquire(std::vector<VkDescriptor
         VkDescriptorSetLayoutCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         createInfo.pNext = nullptr;
-        createInfo.flags = 0;
+        createInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR;
         createInfo.bindingCount = (uint32_t)b.size();
         createInfo.pBindings = b.data();
 

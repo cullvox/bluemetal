@@ -5,6 +5,7 @@ namespace bl {
 
 GfxPipeline::GfxPipeline(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo)
     : _device(device)
+    , _layout(createInfo.layout)
 {
     createPipeline(createInfo);
 }

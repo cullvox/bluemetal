@@ -262,7 +262,7 @@ int main(int argc, const char** argv)
             bufferInfo.buffer = objectBuffer->getBuffer();
             bufferInfo.range = objectBuffer->getSize();
 
-            vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getLayout(), 0, 1, &descWrite);
+            vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getLayout(), 1, 1, &descWrite);
 
             mesh->bind(cmd);
 

@@ -4,6 +4,7 @@
 // Headers
 ///////////////////////////////
 
+#define IMGUI_IMPL_VULKAN_NO_PROTOTYPES
 #include "imgui/imgui.h"
 
 #include "Export.h"

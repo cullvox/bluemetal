@@ -125,6 +125,11 @@ void ImGuiSubsystem::init()
 
     ImGui::CreateContext();
 
+    VkInstance inst = instance->get();
+    ImGui_ImplVulkan_LoadFunctions([](const char *function_name, void *vulkan_instance) {
+        return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance *>(vulkan_instance)), function_name);
+    }, &inst);
+
     ImGui_ImplSDL2_InitForVulkan(window->get());
 
     // Initialize ImGui for Vulkan, pass created objects.
