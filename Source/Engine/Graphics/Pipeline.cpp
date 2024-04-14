@@ -15,6 +15,7 @@ GfxPipeline::~GfxPipeline()
 }
 
 VkPipeline GfxPipeline::get() const { return _pipeline; }
+VkPipelineLayout GfxPipeline::getLayout() const { return _layout; }
 
 // void Pipeline::mergeShaderResources(const std::vector<GfxPipelineResource>& shaderResources)
 // {

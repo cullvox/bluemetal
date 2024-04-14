@@ -25,7 +25,7 @@ RenderDoc::RenderDoc()
         if (ret != 1) throw std::runtime_error("Could not initialize RenderDoc!");
     }
 #else
-    #error "DEFINE ME!"
+    
 #endif
 
 }

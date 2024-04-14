@@ -969,7 +969,7 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
 {
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     ImGui_ImplVulkan_InitInfo* v = &bd->VulkanInitInfo;
-    VkResult err;
+    VkResult err = VK_ERROR_UNKNOWN;
 
     if (!bd->FontSampler)
     {

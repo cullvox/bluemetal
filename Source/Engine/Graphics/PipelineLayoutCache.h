@@ -20,7 +20,7 @@ struct PipelineLayoutInfo
     {
         if (setLayouts != rhs.setLayouts) return false;
 
-        for (int i = 0; i < rhs.ranges.size(); i++) {
+        for (size_t i = 0; i < rhs.ranges.size(); i++) {
             if (ranges[i].stageFlags != rhs.ranges[i].stageFlags) return false;
             if (ranges[i].offset != rhs.ranges[i].offset) return false;
             if (ranges[i].size != rhs.ranges[i].size) return false;

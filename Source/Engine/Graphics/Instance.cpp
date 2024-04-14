@@ -1,7 +1,6 @@
 #include "Instance.h"
 #include "Core/Print.h"
 #include "Core/Version.h"
-#include "Sdl.h"
 #include "Window/Window.h"
 
 namespace bl {
@@ -24,6 +23,7 @@ GfxInstance::~GfxInstance()
         _destroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);
     
     vkDestroyInstance(_instance, nullptr);
+    volkFinalize();
 }
 
 bool GfxInstance::getEnableValidation() const
@@ -120,6 +120,8 @@ void GfxInstance::createInstance(
     Version             appVersion,
     std::string_view    appName)
 {
+    volkInitialize();
+
     std::vector<const char*> extensions = getExtensions();
     std::vector<const char*> layers{};
 
@@ -174,6 +176,7 @@ void GfxInstance::createInstance(
         VK_CHECK(_createDebugUtilsMessengerEXT(_instance, &debugMessengerCreateInfo, nullptr, &_messenger));
     }
 
+    volkLoadInstance(_instance);
     blDebug("Finshed creating the Vulkan instance.");
 }
 

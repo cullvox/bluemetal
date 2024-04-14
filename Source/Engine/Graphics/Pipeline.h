@@ -35,6 +35,8 @@ public:
     /** @brief Gets the raw VkPipeline underlying this object. */
     VkPipeline get() const;
 
+    VkPipelineLayout getLayout() const;
+
     /** @brief Binds this pipeline to a command buffer. */
     void bind(VkCommandBuffer cmd);
 
@@ -42,6 +44,7 @@ private:
     void createPipeline(const CreateInfo& createInfo);
 
     std::shared_ptr<GfxDevice>  _device;
+    VkPipelineLayout            _layout;
     VkPipeline                  _pipeline;
 };
 

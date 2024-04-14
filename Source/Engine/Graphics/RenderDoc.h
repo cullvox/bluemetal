@@ -17,7 +17,7 @@ public:
 
 private:
     bool    _isCapturing;
-    RENDERDOC_API_1_1_2 *rdoc_api = NULL;
+    RENDERDOC_API_1_1_2 *rdoc_api = nullptr;
 };
 
 } // namespace bl

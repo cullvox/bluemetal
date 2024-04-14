@@ -5,11 +5,11 @@
 namespace bl
 {
 
-class DescriptorAllocator
+class DescriptorSetAllocator
 {
 public:
-    DescriptorAllocator(GfxDevice* pDevice);
-    ~DescriptorAllocator();
+    DescriptorSetAllocator(std::shared_ptr<GfxDevice> device);
+    ~DescriptorSetAllocator();
 
     void resetPools();
     VkDescriptorSet allocate(VkDescriptorSetLayout layout);
@@ -34,11 +34,11 @@ public:
 private:
     VkDescriptorPool grabPool();
 
-    GfxDevice*                 m_pDevice;
-    VkDescriptorPool                m_currentPool;
-    PoolSizes                       m_descriptorSizes;
-    std::vector<VkDescriptorPool>   m_usedPools;
-    std::vector<VkDescriptorPool>   m_freePools;
+    GfxDevice*                      _device;
+    VkDescriptorPool                _currentPool;
+    PoolSizes                       _descriptorSizes;
+    std::vector<VkDescriptorPool>   _usedPools;
+    std::vector<VkDescriptorPool>   _freePools;
 };
 
 } // namespace bl

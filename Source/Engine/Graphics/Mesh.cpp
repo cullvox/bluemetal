@@ -15,7 +15,9 @@ void Mesh::setIndices(const std::vector<uint32_t>& indices)
 void Mesh::bind(VkCommandBuffer cmd)
 {
     VkDeviceSize offset = 0;
-    vkCmdBindVertexBuffers(cmd, 0, 1, &_vertexBuffer->getBuffer(), &offset);
+    VkBuffer buffer = _vertexBuffer->getBuffer();
+    vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &offset);
+    vkCmdBindIndexBuffer(cmd, _indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 }
 
 } // namespace bl

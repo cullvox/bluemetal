@@ -1,10 +1,11 @@
 #include "Core/Time.h"
 #include "Engine/Engine.h"
 #include "Graphics/Shader.h"
-#include <Graphics/PhysicalDevice.h>
+#include "Graphics/PhysicalDevice.h"
 #include "Graphics/Pipeline.h"
 #include "Graphics/Vertex.h"
 #include "Graphics/Mesh.h"
+#include "Material/UniformData.h"
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see
@@ -140,7 +141,13 @@ int main(int argc, const char** argv)
     auto window = graphics->getWindow();
     auto presentModes = graphics->getPhysicalDevice()->getPresentModes(graphics->getWindow());
 
+    
+    auto globalBuffer = std::make_shared<bl::GfxBuffer>(graphics->getDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, sizeof(bl::GlobalUBO));
+    auto objectBuffer = std::make_shared<bl::GfxBuffer>(graphics->getDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, sizeof(bl::ObjectUBO));
+
     bl::FrameCounter frameCounter;
+
+    glm::vec3 cameraPos { 0.0f, 0.0f, -10.f};
 
     bool running = true;
     bool minimized = false;
@@ -179,6 +186,27 @@ int main(int argc, const char** argv)
 
         }
 
+
+
+        bl::GlobalUBO globalUBO = {
+            0.0f,
+            0.0f,
+            window->getExtent(),
+            {},
+
+            glm::translate(glm::identity<glm::mat4>(), cameraPos),
+            glm::perspectiveFov(70.0f, (float)window->getExtent().x, (float)window->getExtent().y, 0.01f, 100.0f)
+        };
+
+        globalBuffer->upload((void*)&globalUBO);
+
+
+        bl::ObjectUBO objectUBO = {
+            glm::identity<glm::mat4>()
+        };
+
+        objectBuffer->upload((void*)&objectUBO);
+
         // last = current;
         // current = bl::Time::current();
         // auto dt = current - last;
@@ -210,7 +238,33 @@ int main(int argc, const char** argv)
             scissor.extent = {(uint32_t)extent.x, (uint32_t)extent.y};
             vkCmdSetScissor(cmd, 0, 1, &scissor);
 
-            vkCmdBindVertexBuffers(cmd, 0, 1, &)
+            VkDescriptorBufferInfo bufferInfo {
+                globalBuffer->getBuffer(),
+                0,
+                globalBuffer->getSize()
+            };
+
+            VkWriteDescriptorSet descWrite {
+                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                nullptr,
+                VK_NULL_HANDLE,
+                0,
+                0,
+                1,
+                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+                nullptr,
+                &bufferInfo,
+                nullptr
+            };
+
+            vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getLayout(), 0, 1, &descWrite);
+
+            bufferInfo.buffer = objectBuffer->getBuffer();
+            bufferInfo.range = objectBuffer->getSize();
+
+            vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getLayout(), 0, 1, &descWrite);
+
+            mesh->bind(cmd);
 
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->get());
             vkCmdDraw(cmd, 3, 1, 0, 0);

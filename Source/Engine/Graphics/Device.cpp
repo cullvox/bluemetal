@@ -172,6 +172,7 @@ std::vector<const char*> GfxDevice::getExtensions()
     // The engines required device extensions.
     std::vector requiredExtensions = { 
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME
     };
 
     // Get vulkan device extensions on this system.
@@ -284,6 +285,7 @@ void GfxDevice::createDevice()
     vkGetDeviceQueue(_device, _graphicsFamilyIndex, 0, &_graphicsQueue);
     vkGetDeviceQueue(_device,  _presentFamilyIndex, 0, &_presentQueue);
 
+    volkLoadDevice(_device);
     blInfo("Created the Vulkan device using: {}", _physicalDevice->getDeviceName());
 }
 
@@ -300,6 +302,10 @@ void GfxDevice::createCommandPool()
 
 void GfxDevice::createAllocator()
 {
+    VmaVulkanFunctions functions = {};
+    functions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+    functions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;
+
     VmaAllocatorCreateInfo createInfo = {};
     createInfo.flags = 0;
     createInfo.physicalDevice = _physicalDevice->get();
@@ -308,7 +314,7 @@ void GfxDevice::createAllocator()
     createInfo.pAllocationCallbacks = nullptr;
     createInfo.pDeviceMemoryCallbacks = nullptr;
     createInfo.pHeapSizeLimit = nullptr;
-    createInfo.pVulkanFunctions = nullptr;
+    createInfo.pVulkanFunctions = &functions;
     createInfo.instance = _instance->get();
     createInfo.vulkanApiVersion = GfxInstance::getApiVersion();
     createInfo.pTypeExternalMemoryHandleTypes = nullptr;

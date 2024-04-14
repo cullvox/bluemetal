@@ -2,6 +2,9 @@
 
 #include "Precompiled.h"
 
+namespace bl 
+{
+
 struct GlobalUBO // Slot 0, Binding 0
 {
     float time;
@@ -26,3 +29,4 @@ struct ObjectUBO // Slot 2, Binding 0
     glm::mat4 model;
 };
 
+} // namespace bl
