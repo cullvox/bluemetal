@@ -1,5 +1,15 @@
 #pragma once
 
-class Material {
+
+
+class Material 
+{
+public:
+    Material();
+    ~Material();
+
+private:
+    VkDescriptorSetLayout _descriptorLayout;
+
 
 };

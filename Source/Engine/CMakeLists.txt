@@ -39,6 +39,8 @@ list(APPEND Sources
   "Graphics/Renderer.cpp"
   # "Graphics/GeometryPass.cpp"
 
+  "World/RenderActor.cpp"
+
   # imgui
   "imgui/imgui.cpp"
   "imgui/imgui_demo.cpp"

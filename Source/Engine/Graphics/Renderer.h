@@ -6,6 +6,7 @@
 #include "Swapchain.h"
 #include "GeometryPass.h"
 #include "PresentPass.h"
+#include "GraphicsLimits.h"
 
 namespace bl {
 
@@ -35,8 +36,6 @@ public:
     void render(std::function<void(VkCommandBuffer)> func);
 
 private:
-    static const inline uint32_t maxFramesInFlight = 2;
-
     void createSyncObjects();
     void destroySyncObjects();
 

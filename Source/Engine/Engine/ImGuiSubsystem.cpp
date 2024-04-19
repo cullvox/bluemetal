@@ -119,9 +119,7 @@ void ImGuiSubsystem::init()
     poolInfo.poolSizeCount = (uint32_t)std::size(poolSizes);
     poolInfo.pPoolSizes = poolSizes;
 
-    if (vkCreateDescriptorPool(device->get(), &poolInfo, nullptr, &_descriptorPool) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a vulkan descriptor pool for ImGui!");
-    }
+    VK_CHECK(vkCreateDescriptorPool(device->get(), &poolInfo, nullptr, &_descriptorPool))
 
     ImGui::CreateContext();
 

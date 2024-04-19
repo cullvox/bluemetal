@@ -38,7 +38,7 @@ void Renderer::createSyncObjects()
     allocateInfo.pNext = nullptr;
     allocateInfo.commandPool = _device->getCommandPool();
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocateInfo.commandBufferCount = maxFramesInFlight;
+    allocateInfo.commandBufferCount = GfxLimits::maxFramesInFlight;
 
     if (vkAllocateCommandBuffers(_device->get(), &allocateInfo, _swapCommandBuffers.data()) != VK_SUCCESS) {
         throw std::runtime_error("Could not allocate Vulkan command buffers for the renderer!");
@@ -55,7 +55,7 @@ void Renderer::createSyncObjects()
     fenceInfo.pNext = nullptr;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (uint32_t i = 0; i < maxFramesInFlight; i++) {
+    for (uint32_t i = 0; i < GfxLimits::maxFramesInFlight; i++) {
         VK_CHECK(vkCreateSemaphore(_device->get(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]))
         VK_CHECK(vkCreateSemaphore(_device->get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
         VK_CHECK(vkCreateFence(_device->get(), &fenceInfo, nullptr, &_inFlightFences[i]))
@@ -64,7 +64,7 @@ void Renderer::createSyncObjects()
 
 void Renderer::destroySyncObjects()
 {
-    for (uint32_t i = 0; i < maxFramesInFlight; i++) {
+    for (uint32_t i = 0; i < GfxLimits::maxFramesInFlight; i++) {
         vkDestroySemaphore(_device->get(), _imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(_device->get(), _renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(_device->get(), _inFlightFences[i], nullptr);
@@ -166,7 +166,7 @@ void Renderer::render(std::function<void(VkCommandBuffer)> func)
     }
 
     // Set the next frames index.
-    _currentFrame = (_currentFrame + 1) % maxFramesInFlight;
+    _currentFrame = (_currentFrame + 1) % GfxLimits::maxFramesInFlight;
 }
 
 } // namespace bl

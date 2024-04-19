@@ -1,20 +1,22 @@
 #pragma once
 
-#include "Graphics/Device.h"
+#include "Precompiled.h"
 
 namespace bl
 {
-
-static inline uint32_t maxSystems = 128;
 
 class System
 {
 public:
     System() = default;
-    virtual ~System() = default;
+    ~System() = default;
 
-    void onUpdate(float deltaTime) {}
-    void onRender(VkCommandBuffer cmd) {}
+    virtual void update(float deltaTime) {}
+    virtual void entityRegistered(Entity e) {}
+    virtual void entityUnregistered(Entity e) {}
+
+protected:
+    std::bitset<WorldLimits::maxEntityCount> _registered;
 };
 
 } // namespace bl

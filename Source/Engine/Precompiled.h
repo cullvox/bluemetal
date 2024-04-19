@@ -7,6 +7,7 @@
 #include <stdexcept>
 #include <memory>
 #include <chrono>
+#include <bitset>
 #include <vector>
 #include <array>
 #include <string>

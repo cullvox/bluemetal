@@ -281,11 +281,14 @@ void GfxDevice::createDevice()
 
     VK_CHECK(vkCreateDevice(_physicalDevice->get(), &createInfo, nullptr, &_device))
 
+    // Load the next set of vulkan functions based on the device.
+    volkLoadDevice(_device);
+
     // Get the graphics and present queue objects.
     vkGetDeviceQueue(_device, _graphicsFamilyIndex, 0, &_graphicsQueue);
     vkGetDeviceQueue(_device,  _presentFamilyIndex, 0, &_presentQueue);
 
-    volkLoadDevice(_device);
+    
     blInfo("Created the Vulkan device using: {}", _physicalDevice->getDeviceName());
 }
 

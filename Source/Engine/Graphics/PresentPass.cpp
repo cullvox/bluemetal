@@ -99,9 +99,7 @@ void PresentPass::createRenderPass()
     createInfo.dependencyCount = 0;
     createInfo.pDependencies = nullptr;
 
-    if (vkCreateRenderPass(_device->get(), &createInfo, nullptr, &_pass) != VK_SUCCESS) {
-        throw std::runtime_error("Could not create a Vulkan present render pass!");
-    }
+    VK_CHECK(vkCreateRenderPass(_device->get(), &createInfo, nullptr, &_pass))
 }
 
 void PresentPass::destroyRenderPass()
@@ -136,10 +134,7 @@ void PresentPass::createFramebuffers()
 
         // Set the attachment and create the framebuffer.
         createInfo.pAttachments = &attachment;
-
-        if (vkCreateFramebuffer(_device->get(), &createInfo, nullptr, &_swapFramebuffers[i]) != VK_SUCCESS) {
-            throw std::runtime_error("Could not create a Vulkan framebuffer!");
-        }
+        VK_CHECK(vkCreateFramebuffer(_device->get(), &createInfo, nullptr, &_swapFramebuffers[i]))
 
         // Iterate the index for the next framebuffer in m_swapFramebuffers.
         i++;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Precompiled.h"
-#include "Core/MacroUtils.h"
+#include "Core/Hash.h"
 #include "Vulkan.h"
 #include "Device.h"
 
@@ -38,14 +38,14 @@ struct PipelineLayoutInfoHash
 
         for (auto sl : info.setLayouts)
         {
-            BL_HASH_COMBINE(seed, sl);
+            seed = hash_combine(seed, sl);
         }
 
         for (const auto& pcr : info.ranges) 
         {
-            BL_HASH_COMBINE(seed, pcr.stageFlags);
-            BL_HASH_COMBINE(seed, pcr.offset);
-            BL_HASH_COMBINE(seed, pcr.size);
+            seed = hash_combine(seed, pcr.stageFlags);
+            seed = hash_combine(seed, pcr.offset);
+            seed = hash_combine(seed, pcr.size);
         }
 
         return seed;

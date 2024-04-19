@@ -7,6 +7,9 @@
 #include "Graphics/Mesh.h"
 #include "Material/UniformData.h"
 
+#include "Components/Transform.h"
+#include "Components/RenderObject.h"
+
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see
 // docs/FONTS.md)
@@ -147,6 +150,8 @@ int main(int argc, const char** argv)
 
     bl::FrameCounter frameCounter;
 
+    entt::registry registry;
+
     glm::vec3 cameraPos { 0.0f, 0.0f, -10.f};
 
     bool running = true;
@@ -165,28 +170,25 @@ int main(int argc, const char** argv)
                 case SDL_WINDOWEVENT_CLOSE:
                     running = false;
                     break;
-                case SDL_WINDOWEVENT_MINIMIZED: {
+                case SDL_WINDOWEVENT_MINIMIZED:
                     minimized = true;
                     break;
-                }
-                case SDL_WINDOWEVENT_RESTORED: {
+                case SDL_WINDOWEVENT_RESTORED:
                     minimized = false;
                     break;
                 }
-                }
                 break;
-                case SDL_KEYDOWN: {
+            case SDL_KEYDOWN:
                 switch (event.key.keysym.sym) {
-                    case SDLK_F12:
-                        renderDoc->beginCapture();
-                    }
+                case SDLK_F12:
+                    renderDoc->beginCapture();
                     break;
                 }
+                break;
             }
-
         }
 
-
+        
 
         bl::GlobalUBO globalUBO = {
             0.0f,
