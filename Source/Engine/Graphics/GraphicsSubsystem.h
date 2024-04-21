@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Export.h"
+
+#include "Engine/Subsystem.h"
 #include "Graphics/RenderDoc.h"
 #include "Graphics/Instance.h"
 #include "Graphics/RenderWindow.h"
@@ -16,16 +18,11 @@ namespace bl
 
 class Engine;
 
-struct GraphicsSubsystemInitInfo
-{
-    std::optional<uint32_t> physicalDeviceIndex;
-};
-
-class BLUEMETAL_API GraphicsSubsystem
+class GraphicsSubsystem
 {
 public:
     /// Engine Constructor
-    GraphicsSubsystem(Engine& engine, bool enableRenderDoc);
+    GraphicsSubsystem(Engine& engine);
 
     /// Default Destructor
     ~GraphicsSubsystem();
@@ -60,7 +57,7 @@ public:
     std::shared_ptr<DescriptorSetLayoutCache> getDescriptorCache();
     std::shared_ptr<PipelineLayoutCache> getPipelineLayoutCache();
 
-    std::shared_ptr<GfxSwapchain> getSwapchain();
+    std::shared_ptr<Swapchain> getSwapchain();
 
     /// Gets the renderer object to record draw commands onto.
     std::shared_ptr<Renderer> getRenderer();
@@ -74,7 +71,7 @@ private:
     std::shared_ptr<GfxDevice>                  _device;
     std::shared_ptr<DescriptorSetLayoutCache>   _descriptorCache;
     std::shared_ptr<PipelineLayoutCache>        _pipelineLayoutCache;
-    std::shared_ptr<GfxSwapchain>               _swapchain;
+    std::shared_ptr<Swapchain>               _swapchain;
     std::shared_ptr<Renderer>                   _renderer;
     FrameCounter                                _frameCounter;
     std::queue<std::function<void()>>           _postRenderCommands;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Precompiled.h"
 #include "Window/Window.h"
+#include "Swapchain.h"
 
 namespace bl {
 
@@ -19,13 +19,15 @@ public:
 
 public:
     /** @brief Returns the Vulkan surface created with this window. */
-    VkSurfaceKHR getSurface() const;
+    VkSurfaceKHR GetSurface() const;
 
 private:
-    void createSurface();
+    void CreateSurface();
+    void CreateSwapchain();
 
-    std::shared_ptr<GfxInstance> _instance;
+    Instance& _instance;
     VkSurfaceKHR _surface;
+    Swapchain _swapchain;
 };
 
 } // namespace bl

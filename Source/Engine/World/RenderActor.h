@@ -7,11 +7,6 @@
 namespace bl
 {
 
-struct ActorUBO
-{
-    glm::mat4 mat;
-};
-
 class RenderActor : public Actor
 {
 public:
@@ -25,7 +20,10 @@ public:
     virtual void OnRender(RenderData& rd);
 
 private:
-    std::array<GfxLimits::maxFramesInFlight, VkDescriptorSet> _perFrameSets;
+    void UpdateObjectUBO(int currentFrame);
+    
+    ObjectUBO _objectData;
+    std::array<VkDescriptorSet, GfxLimits::maxFramesInFlight> _perFrameSets;
     std::unique_ptr<GfxBuffer> _objectDUBO;
 };
 

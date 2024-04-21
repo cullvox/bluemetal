@@ -5,7 +5,7 @@
 
 namespace bl {
 
-PresentPass::PresentPass(std::shared_ptr<GfxDevice> device, std::shared_ptr<GfxSwapchain> swapchain)
+PresentPass::PresentPass(std::shared_ptr<GfxDevice> device, std::shared_ptr<Swapchain> swapchain)
     : _device(device)
     , _swapchain(swapchain)
 {

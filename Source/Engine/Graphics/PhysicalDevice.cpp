@@ -2,29 +2,28 @@
 #include "RenderWindow.h"
 #include "PhysicalDevice.h"
 
-namespace bl {
+namespace bl 
+{
 
-GfxPhysicalDevice::GfxPhysicalDevice(VkPhysicalDevice physicalDevice, uint32_t index)
+PhysicalDevice::PhysicalDevice(VkPhysicalDevice physicalDevice)
     : _physicalDevice(physicalDevice)
-    , _index(index)
+{
+    VkPhysicalDeviceProperties properties = {};
+    vkGetPhysicalDeviceProperties(_physicalDevice, &_properties);
+}
+
+PhysicalDevice::~PhysicalDevice()
 {
 }
 
-GfxPhysicalDevice::~GfxPhysicalDevice()
-{
-}
-
-VkPhysicalDevice GfxPhysicalDevice::get() const
+VkPhysicalDevice PhysicalDevice::Get() const
 {
     return _physicalDevice; 
 }
 
-std::string GfxPhysicalDevice::getVendorName() const
+std::string PhysicalDevice::GetVendorName() const
 {
-    VkPhysicalDeviceProperties properties = {};
-    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
-
-    switch (properties.vendorID) {
+    switch (_properties.vendorID) {
     case 0x1002: return "AMD";
     case 0x1010: return "ImgTec";
     case 0x10DE: return "NVIDIA";
@@ -35,62 +34,41 @@ std::string GfxPhysicalDevice::getVendorName() const
     }
 }
 
-std::string GfxPhysicalDevice::getDeviceName() const
+std::string PhysicalDevice::GetDeviceName() const
 {
-    VkPhysicalDeviceProperties properties = {};
-    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
-
-    return std::string(properties.deviceName);
+    return std::string(_properties.deviceName);
 }
 
-uint32_t GfxPhysicalDevice::getIndex() const
-{ 
-    return _index; 
-}
-
-VkPhysicalDeviceType GfxPhysicalDevice::getType() const
+VkPhysicalDeviceType PhysicalDevice::GetType() const
 {
-    VkPhysicalDeviceProperties properties = {};
-    vkGetPhysicalDeviceProperties(_physicalDevice, &properties);
-
-    return properties.deviceType;
+    return _properties.deviceType;
 }
 
-std::vector<VkPresentModeKHR> GfxPhysicalDevice::getPresentModes(std::shared_ptr<RenderWindow> window) const
+std::vector<VkPresentModeKHR> PhysicalDevice::GetPresentModes(Window& window) const
 {
     std::vector<VkPresentModeKHR> presentModes{};
     uint32_t presentModeCount = 0;
-    if (vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window->getSurface(), &presentModeCount, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get Vulkan physical device surface present mode count!");
-    }
 
+    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window.GetSurface(), &presentModeCount, nullptr))
     presentModes.resize(presentModeCount);
-
-    if (vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window->getSurface(), &presentModeCount, presentModes.data())) {
-        throw std::runtime_error("Could not get Vulkan physical device surface present modes!");
-    }
+    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window.GetSurface(), &presentModeCount, presentModes.data()))
 
     return presentModes;
 }
 
-std::vector<VkSurfaceFormatKHR> GfxPhysicalDevice::getSurfaceFormats(std::shared_ptr<RenderWindow> window) const
+std::vector<VkSurfaceFormatKHR> PhysicalDevice::getSurfaceFormats(Window& window) const
 {
     std::vector<VkSurfaceFormatKHR> surfaceFormats{};
     uint32_t formatCount = 0;
-    if (vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->getSurface(), &formatCount, nullptr) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get Vulkan physical device surface formats!");
-    }
 
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->getSurface(), &formatCount, nullptr))
     surfaceFormats.resize(formatCount);
-
-    if (vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->getSurface(), &formatCount, surfaceFormats.data()) != VK_SUCCESS) {
-        throw std::runtime_error("Could not get Vulkan physical device surface formats!");
-    }
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->getSurface(), &formatCount, surfaceFormats.data()))
     
     return surfaceFormats;
 }
 
-VkFormat GfxPhysicalDevice::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
+VkFormat PhysicalDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
     for (VkFormat format : candidates) {
         VkFormatProperties properties = {};
@@ -103,8 +81,7 @@ VkFormat GfxPhysicalDevice::findSupportedFormat(const std::vector<VkFormat>& can
         }
     }
 
-    blError("Could not find any valid format!");
-    return VK_FORMAT_UNDEFINED;
+    throw std::runtime_error("Could not find a valid format!");
 }
 
 } // namespace bl

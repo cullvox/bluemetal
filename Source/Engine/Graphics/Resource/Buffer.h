@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Device.h"
+#include "Graphics/Device.h"
 
 namespace bl {
 
@@ -9,7 +9,7 @@ class BLUEMETAL_API GfxBuffer
 public:
     /** @brief Constructor */
     GfxBuffer(
-        std::shared_ptr<GfxDevice>  device, 
+        Device& device, 
         VkBufferUsageFlags          usage,                      /** @brief Vulkan memory usage, specifing buffer type. */
         VkMemoryPropertyFlags       memoryProperties,           /** @brief Vulkan memory properies, how this buffer will be used. */
         VkDeviceSize                size,                       /** @brief Size of your buffer in bytes. */

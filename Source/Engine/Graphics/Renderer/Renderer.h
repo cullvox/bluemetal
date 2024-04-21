@@ -13,15 +13,11 @@ namespace bl {
 class BLUEMETAL_API Renderer
 {
 public:
-    struct CreateInfo 
-    {
-
-    };
 
     /** @brief Create Constructor */
     Renderer(
-        std::shared_ptr<GfxDevice>      device,     /** @brief Graphics device to use when making the renderer. */
-        std::shared_ptr<GfxSwapchain>   swapchain); /** @brief Swapchain to use when presenting. */
+        std::shared_ptr<GfxDevice> device,     /** @brief Graphics device to use when making the renderer. */
+        std::shared_ptr<Swapchain> swapchain); /** @brief Swapchain to use when presenting. */
     
     /** @brief Default Destructor */
     ~Renderer();
@@ -40,7 +36,7 @@ private:
     void destroySyncObjects();
 
     std::shared_ptr<GfxDevice>          _device;
-    std::shared_ptr<GfxSwapchain>       _swapchain;
+    std::shared_ptr<Swapchain>          _swapchain;
     uint32_t                            _currentFrame;
     std::vector<VkCommandBuffer>        _swapCommandBuffers;
     std::vector<VkSemaphore>            _imageAvailableSemaphores;

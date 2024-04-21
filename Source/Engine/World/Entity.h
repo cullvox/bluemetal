@@ -34,12 +34,12 @@ public:
     virtual void OnUpdate(float dt) {}
     virtual void OnRender(RenderData& rd) {}
 
-    virtual SerializeData SerializeState() {}
+    virtual void SerializeState(SerializeData&) {}
     virtual void DeserializeState(const DeserializeData& sd) {}
 
 private:
     std::string _name;
     uint64_t _uid;
-}
+};
 
 } // namespace bl

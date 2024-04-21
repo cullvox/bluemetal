@@ -11,9 +11,9 @@ public:
     DescriptorSetAllocator(std::shared_ptr<GfxDevice> device);
     ~DescriptorSetAllocator();
 
-    void resetPools();
-    VkDescriptorSet allocate(VkDescriptorSetLayout layout);
-
+    void ResetPools();
+    VkDescriptorSet AllocateSet(VkDescriptorSetLayout layout);
+    
     struct PoolSizes
     {
         std::vector<std::pair<VkDescriptorType, float>> sizes =
@@ -31,10 +31,12 @@ public:
             { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 0.5f }
         };
     };
-private:
-    VkDescriptorPool grabPool();
 
-    GfxDevice*                      _device;
+private:
+    VkDescriptorPool GrabPool();
+    VkDescriptorPool CreatePool();
+
+    std::shared_ptr<GfxDevice>      _device;
     VkDescriptorPool                _currentPool;
     PoolSizes                       _descriptorSizes;
     std::vector<VkDescriptorPool>   _usedPools;

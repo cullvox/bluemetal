@@ -9,7 +9,7 @@ class BLUEMETAL_API PresentPass : public RenderPass {
 public:
 
     /** @brief Constructor */
-    PresentPass(std::shared_ptr<GfxDevice> device, std::shared_ptr<GfxSwapchain> swapchain);
+    PresentPass(std::shared_ptr<GfxDevice> device, std::shared_ptr<Swapchain> swapchain);
     
     /** @brief Destructor */
     ~PresentPass();
@@ -30,7 +30,7 @@ private:
     void destroyRenderPass();
 
     std::shared_ptr<GfxDevice>      _device;
-    std::shared_ptr<GfxSwapchain>   _swapchain;	
+    std::shared_ptr<Swapchain>   _swapchain;	
     std::vector<VkFramebuffer>      _swapFramebuffers;
     VkRenderPass                    _pass;
 };

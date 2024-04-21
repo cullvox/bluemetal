@@ -3,7 +3,7 @@
 
 namespace bl {
 
-void Window::useTemporaryWindow(const std::function<void(SDL_Window*)>& func)
+void Window::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func)
 {
     std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> temporaryWindow{
         SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN), 
@@ -16,12 +16,10 @@ void Window::useTemporaryWindow(const std::function<void(SDL_Window*)>& func)
     func(temporaryWindow.get());
 }
 
-Window::Window(
-    const VideoMode&                video,
-    const std::string&              title,
-    std::shared_ptr<Display>        display)
+Window::Window(const VideoMode& video, const std::string& title, std::shared_ptr<Display> display)
 {
-    createWindow(video, title, display);
+    CreateWindow(video, title, display);
+    CreateSurface();
 }
 
 Window::~Window()
@@ -37,9 +35,12 @@ glm::ivec2 Window::getExtent() const
     return glm::ivec2{width, height};
 }
 
-SDL_Window* Window::get() const { return _window; }
+SDL_Window* Window::Get() const 
+{ 
+    return _window; 
+}
 
-void Window::createWindow(
+void Window::CreateWindow(
     const VideoMode&            video,
     const std::string&          title,
     std::shared_ptr<Display>&   display)

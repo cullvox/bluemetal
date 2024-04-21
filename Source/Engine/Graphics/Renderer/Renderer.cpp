@@ -6,12 +6,12 @@ namespace bl {
 
 Renderer::Renderer(
     std::shared_ptr<GfxDevice>      device,
-    std::shared_ptr<GfxSwapchain>   swapchain)
+    std::shared_ptr<Swapchain>   swapchain)
     : _device(device)
     , _swapchain(swapchain)
     , _currentFrame(0)
 {
-    _swapCommandBuffers.resize(maxFramesInFlight);
+    _swapCommandBuffers.resize(GfxLimits::maxFramesInFlight);
     _imageAvailableSemaphores.resize(_swapchain->getImageCount());
     _renderFinishedSemaphores.resize(_swapchain->getImageCount());
     _inFlightFences.resize(_swapchain->getImageCount());
@@ -40,9 +40,7 @@ void Renderer::createSyncObjects()
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
     allocateInfo.commandBufferCount = GfxLimits::maxFramesInFlight;
 
-    if (vkAllocateCommandBuffers(_device->get(), &allocateInfo, _swapCommandBuffers.data()) != VK_SUCCESS) {
-        throw std::runtime_error("Could not allocate Vulkan command buffers for the renderer!");
-    }
+    VK_CHECK(vkAllocateCommandBuffers(_device->get(), &allocateInfo, _swapCommandBuffers.data()))
 
     // Create the semaphores and fences
     VkSemaphoreCreateInfo semaphoreInfo = {};
@@ -140,30 +138,7 @@ void Renderer::render(std::function<void(VkCommandBuffer)> func)
 
     VK_CHECK(vkQueueSubmit(_device->getGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
 
-    // Queue the frame to be presented.
-    std::array swapchains = { _swapchain->get() };
-    std::array imageIndices = { imageIndex };
 
-    VkPresentInfoKHR presentInfo = {};
-    presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.pNext = nullptr;
-    presentInfo.waitSemaphoreCount = (uint32_t)signalSemaphores.size();
-    presentInfo.pWaitSemaphores = signalSemaphores.data();
-    presentInfo.swapchainCount = (uint32_t)swapchains.size();
-    presentInfo.pSwapchains = swapchains.data();
-    presentInfo.pImageIndices = imageIndices.data();
-    presentInfo.pResults = nullptr;
-
-    VkResult result = vkQueuePresentKHR(_device->getPresentQueue(), &presentInfo);
-
-    if (result == VK_ERROR_OUT_OF_DATE_KHR ||
-        result == VK_SUBOPTIMAL_KHR) {
-        // Tell the swapchain that the images need to be recreated.
-        _swapchain->recreate(_swapchain->getPresentMode());
-        resize(_swapchain->getExtent());
-    } else if (result != VK_SUCCESS) {
-        throw std::runtime_error("Could not queue Vulkan present!");
-    }
 
     // Set the next frames index.
     _currentFrame = (_currentFrame + 1) % GfxLimits::maxFramesInFlight;

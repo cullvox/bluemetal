@@ -7,8 +7,7 @@
 #include "Graphics/Mesh.h"
 #include "Material/UniformData.h"
 
-#include "Components/Transform.h"
-#include "Components/RenderObject.h"
+#include "Math/Transform.h"
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see
@@ -149,9 +148,6 @@ int main(int argc, const char** argv)
     auto objectBuffer = std::make_shared<bl::GfxBuffer>(graphics->getDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, sizeof(bl::ObjectUBO));
 
     bl::FrameCounter frameCounter;
-
-    entt::registry registry;
-
     glm::vec3 cameraPos { 0.0f, 0.0f, -10.f};
 
     bool running = true;

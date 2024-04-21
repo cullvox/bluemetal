@@ -11,9 +11,13 @@ struct Transform
     glm::quat rotation;
     glm::vec3 scale;
 
-    glm::mat4 getMatrix() 
+    glm::mat4 GetMatrix() 
     {
-        return glm::identity<glm::mat4>();
+        glm::mat4 mat;
+        mat = glm::translate(mat, position);
+        mat = glm::scale(mat, scale);
+        mat *= rotation;
+        return mat;
     }
 };
 
