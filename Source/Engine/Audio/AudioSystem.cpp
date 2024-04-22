@@ -1,47 +1,64 @@
+#include "Engine/Engine.h"
 #include "AudioSystem.h"
+#include "Sound.h"
 
-namespace bl {
-
-AudioSystem::AudioSystem()
+namespace bl 
 {
-    if (FMOD_System_Create(&_system, FMOD_VERSION) != FMOD_OK) {
-        throw std::runtime_error("Could not create an FMOD System!");
-    }
 
-    if (FMOD_System_Init(_system, 128, FMOD_INIT_NORMAL, nullptr) != FMOD_OK) {
-        throw std::runtime_error("Could not init FMOD System!");
-    }
+AudioSystem::AudioSystem(Engine& engine)
+    : _engine(engine)
+{
+    FMOD_CHECK(FMOD::System_Create(&_system, FMOD_VERSION))
+    FMOD_CHECK(_system->init(128, FMOD_INIT_NORMAL, nullptr))
 }
 
-AudioSystem::~AudioSystem() { FMOD_System_Close(_system); }
+AudioSystem::~AudioSystem() 
+{ 
+    _system->close(); 
+}
 
-FMOD_SYSTEM* AudioSystem::get() { return _system; }
+FMOD::System* AudioSystem::Get() 
+{ 
+    return _system; 
+}
 
-std::string AudioSystem::getDriverName()
+void AudioSystem::Update()
 {
+    FMOD_CHECK(_system->update())
+}
 
-    // Get the current driver we're using and then from that get the name.
-    int driver = 0;
-    FMOD_System_GetDriver(_system, &driver);
-
+std::string AudioSystem::GetDriverName()
+{
+    int driverId = 0;
     char name[128] = {0};
-    FMOD_System_GetDriverInfo(_system, driver, name, sizeof(name), nullptr, nullptr, nullptr, nullptr);
+    FMOD_CHECK(_system->getDriver(&driverId))
+    FMOD_CHECK(_system->getDriverInfo(driverId, name, sizeof(name), nullptr, nullptr, nullptr, nullptr))
 
     return std::string(name);
 }
 
-int AudioSystem::getNumChannelsPlaying()
+int AudioSystem::GetNumChannelsPlaying()
 {
     int count = 0;
-    FMOD_System_GetChannelsPlaying(_system, &count, nullptr);
+    FMOD_CHECK(_system->getChannelsPlaying(&count))
     return count;
 }
 
-void AudioSystem::update()
+std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path)
 {
-    if (FMOD_System_Update(_system) != FMOD_OK) {
-        throw std::runtime_error("Could not update FMOD System!");
+    if (type == "sound")
+    {
+        return std::make_unique<Sound>(*this, path);
     }
+    else
+    {
+        throw std::runtime_error("Trying to create a resource this builder wasn't specified to!");
+    }
+}
+
+ResourceRef<Sound> AudioSystem::CreateSound(std::filesystem::path path)
+{
+    // return  
 }
 
 } // namespace bl

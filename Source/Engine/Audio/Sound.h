@@ -1,38 +1,25 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
-#include "fmod.h"
+#include "Resource/Resource.h"
 #include "AudioSystem.h"
 
-#include "Resource/Resource.h"
 
 namespace bl
 {
 
-///////////////////////////////
-// Forward Declarations
-///////////////////////////////
-
 class AudioSystem;
 
-///////////////////////////////
-// Classes
-///////////////////////////////
-
-class BLUEMETAL_API Sound
+class Sound : public Resource
 {
 public:
-    Sound(AudioSystem* pSystem, const std::filesystem::path& file);
+    Sound(AudioSystem& system, const std::filesystem::path& file);
     ~Sound();
 
-    FMOD_SOUND* getHandle();
+    FMOD::Sound* Get();
 
 private:
-    AudioSystem*    _system;
-    FMOD_SOUND*     m_pSound;
+    AudioSystem& _system;
+    FMOD_SOUND* _sound;
 };
 
 } // namespace bl

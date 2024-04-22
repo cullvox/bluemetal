@@ -1,41 +1,39 @@
 #pragma once
 
-#include <cstdint>
-#include <cmath>
 #include <cassert>
+#include <cmath>
+#include <cstdint>
 
-#include <stdexcept>
-#include <memory>
-#include <chrono>
-#include <bitset>
-#include <vector>
 #include <array>
-#include <string>
-#include <string_view>
-#include <optional>
+#include <bitset>
+#include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <functional>
+#include <list>
+#include <map>
+#include <memory>
+#include <optional>
 #include <optional>
 #include <queue>
-#include <list>
+#include <span>
+#include <stdexcept>
+#include <string_view>
+#include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <variant>
-#include <map>
-#include <unordered_map>
-#include <filesystem>
-#include <span>
-#include <fstream>
+#include <vector>
 
-#include <fmt/format.h>
-#include <fmt/compile.h>
-#include <fmt/color.h>
 #include <fmt/chrono.h>
+#include <fmt/color.h>
+#include <fmt/compile.h>
+#include <fmt/format.h>
 
+#include <glm/ext/quaternion_float.hpp>
 #include <glm/ext/vector_int2.hpp>
-
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/ext/quaternion_float.hpp>
-
-#include <glm/gtc/matrix_transform.hpp>

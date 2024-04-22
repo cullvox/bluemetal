@@ -8,7 +8,14 @@ namespace bl
 enum class ResourceLoadOp
 {
     eFile, /** @brief This resource can be loaded in and out at runtime as needed. */
+    eRuntime, /** @brief Will delete the resource after it's unloaded. */
     eNoUnload, /** @brief Will not unload even if there are no references. */
+};
+
+enum class ResourceState
+{
+    eLoaded,
+    eUnloaded,
 };
 
 class Resource : public ReferenceCounted
@@ -17,32 +24,30 @@ public:
     Resource() = default;
     ~Resource() = default;
 
-    std::string GetName();
-    uint64_t GetVersion();
-    ResourceLoadOp GetLoadOp();
+    std::string GetName() const;
+    uint64_t GetVersion() const;
+    ResourceLoadOp GetLoadOp() const;
+    ResourceState GetState() const;
     
     virtual void Load() = 0;
     virtual void Unload() = 0;
 
+protected:
+    friend class ResourceManager;
+
+    void SetName(const std::string& name);
+    void SetVersion(uint64_t version);
+    void SetLoadOp(ResourceLoadOp op);
+    void SetState(ResourceState state);
+
 private:
-    std::string _name; /** @brief Name of the resource as described in the manifest, is unique. */
+    std::string _name; /** @brief Usually a path to the resource in the filesystem. Name of the resource as described in the manifest, must be unique. */
     uint64_t _version; /** @brief Version of this resource, can change between versions of end software with patches. */
     ResourceLoadOp _loadOp;
+    ResourceState _state;
 };
 
 template<typename T>
-class ResourceReference
-{
-public:
-    static_assert(std::is_base_of_v<Resource, T>);
+using ResourceRef = ReferenceCounter<T>; /** @brief Rename the reference counter to something a little more useful. */
 
-    ResourceReference(T& resource);
-    ~ResourceRefrence();
-
-private:
-
-
-    T& _resource;
-}
-
-}
+} // namespace bl
