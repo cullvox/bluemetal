@@ -14,7 +14,7 @@ public:
     static inline constexpr VkFormat defaultPresentFormat = VK_FORMAT_R8G8B8A8_SRGB; /** @brief Default format to look for. */
     static inline constexpr VkColorSpaceKHR defaultPresentColorspace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; /** @brief Default color space to look for. */
     static inline constexpr VkSurfaceFormatKHR defaultSurfaceFormat = VkSurfaceFormatKHR{defaultPresentFormat, defaultPresentColorspace};
-    static inline constexpr VkPresentModeKHR  defaultPresentMode = VK_PRESENT_MODE_MAILBOX_KHR; /** @brief Desired present mode to use in swapchain. Will use present mode FIFO if this is unavailable.*/
+    static inline constexpr VkPresentModeKHR defaultPresentMode = VK_PRESENT_MODE_MAILBOX_KHR; /** @brief Desired present mode to use in swapchain. Will use present mode FIFO if this is unavailable.*/
 };
 
 } // namespace bl

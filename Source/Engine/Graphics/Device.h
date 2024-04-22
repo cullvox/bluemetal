@@ -6,7 +6,8 @@
 namespace bl {
 
 /** @brief A graphics device used as the basis of many graphics operations. */
-class Device {
+class Device 
+{
 public:
     Device(Instance& instance, PhysicalDevice& physicalDevice); /** @brief Creates the Vulkan graphics device and some other utils. */
     ~Device(); /** @brief Destructor. */
@@ -22,15 +23,14 @@ public:
     VmaAllocator GetAllocator() const; /** @brief Returns the Vulkan Memory Allocator object. */
     void ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder); /** @brief Submits commands to the graphics queue on the double. */
     void WaitForDevice() const; /** @brief Waits for an undefined amount of time for the device to finish whatever it may be doing. */
-    
+
 private:
     std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
     std::vector<const char*> GetExtensions(); /** @brief Gets the device's extensions required for the engine. */
-     
     void CreateDevice(); /** @brief Creates the Vulkan device. */
     void CreateCommandPool(); /** @brief Creates a command pool for allocating command buffers. */
     void CreateAllocator(); /** @brief Creates an instance of the Vulkan Memory Allocator */
-    
+
     Instance& _instance;
     PhysicalDevice& _physicalDevice;
     uint32_t _graphicsFamilyIndex, _presentFamilyIndex;

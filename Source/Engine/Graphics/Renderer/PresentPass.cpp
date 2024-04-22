@@ -19,15 +19,15 @@ PresentPass::~PresentPass()
     destroyRenderPass();
 }
 
-VkRenderPass PresentPass::get() { return _pass; }
+VkRenderPass PresentPass::Get() { return _pass; }
 
-void PresentPass::recreate(VkExtent2D)
+void PresentPass::Recreate(VkExtent2D)
 {
     destroyFramebuffers();
     createFramebuffers();
 }
 
-void PresentPass::begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
+void PresentPass::Begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
 {
     std::array<VkClearValue, 2> clearValues = {};
 
@@ -52,12 +52,12 @@ void PresentPass::begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index
     vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void PresentPass::end(VkCommandBuffer cmd)
+void PresentPass::End(VkCommandBuffer cmd)
 {
     vkCmdEndRenderPass(cmd);
 }
 
-void PresentPass::createRenderPass()
+void PresentPass::CreateRenderPass()
 {
     std::array<VkAttachmentDescription, 1> attachments = {};
     attachments[0].flags = 0;

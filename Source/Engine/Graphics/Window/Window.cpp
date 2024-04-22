@@ -40,29 +40,25 @@ SDL_Window* Window::Get() const
     return _window; 
 }
 
-void Window::CreateWindow(
-    const VideoMode&            video,
-    const std::string&          title,
-    std::shared_ptr<Display>&   display)
+void Window::CreateWindow(const VideoMode& video, const std::string& title, std::shared_ptr<Display>& display)
 {
-    // The default window flags for the engine.
-    uint32_t flags = 
-        SDL_WINDOW_VULKAN | 
-        SDL_WINDOW_MAXIMIZED | 
-        SDL_WINDOW_RESIZABLE | 
-        SDL_WINDOW_ALLOW_HIGHDPI;
+    auto flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+    auto x = SDL_WINDOWPOS_CENTERED;
+    auto y = SDL_WINDOWPOS_CENTERED;
+    auto width = video.extent.x;
+    auto height = video.extent.y;
 
-    // Display in fullscreen if a window was specified.
-    if (display) flags |= SDL_WINDOW_FULLSCREEN;
-
-    const int x = display ? display->getRect().offset.x : SDL_WINDOWPOS_CENTERED;
-    const int y = display ? display->getRect().offset.y : SDL_WINDOWPOS_CENTERED;
-    const int width = video.extent.x;
-    const int height = video.extent.y;
+    // When a display is selected that means fullscreen is going to be enabled.
+    if (display)
+    {
+        flags |= SDL_WINDOW_FULLSCREEN;
+        x = display->getRect().offset.x;
+        y = display->getRect().offset.y;
+    }
 
     _window = SDL_CreateWindow(title.c_str(), x, y, width, height, flags);
-
-    if (!_window) {
+    if (!_window) 
+    {
         throw std::runtime_error("Could not create an SDL2 window!");
     }
 

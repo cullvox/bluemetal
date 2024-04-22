@@ -14,8 +14,7 @@ public:
     /** @brief Destructor */
     ~PresentPass();
 
-    /** @brief Returns the lower level Vulkan render pass. */
-    virtual VkRenderPass get() override;
+    virtual VkRenderPass Get() override; /** @brief Returns the lower level Vulkan render pass. */
 
     /** @brief Records a command to the */
     virtual void begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;
