@@ -1,55 +1,36 @@
 #pragma once
 
 #include "Graphics/Device.h"
+#include "Describable.h"
 
-namespace bl {
+namespace bl 
+{
 
-class BLUEMETAL_API GfxBuffer
+class Buffer : public Describable
 {
 public:
-    /** @brief Constructor */
-    GfxBuffer(
-        Device& device, 
-        VkBufferUsageFlags          usage,                      /** @brief Vulkan memory usage, specifing buffer type. */
-        VkMemoryPropertyFlags       memoryProperties,           /** @brief Vulkan memory properies, how this buffer will be used. */
-        VkDeviceSize                size,                       /** @brief Size of your buffer in bytes. */
-        VmaAllocationInfo*          allocationInfo = nullptr);  /** @brief Output value, additional allocation info if needed. */
+    Buffer(Device& device, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* allocationInfo = nullptr); /** @brief Constructor */
+    ~Buffer(); /** @brief Destructor */
 
-    /** @brief Destructor */
-    ~GfxBuffer();
-
-public:
-
-    /** @brief Returns the usage types of the buffer. */
-    VkBufferUsageFlags getUsage() const;
-
-    /** @brief Returns the memory properties the buffer was created with. */
-    VkMemoryPropertyFlags getMemoryProperties() const;
-
-    /** @brief Returns the size of the buffer in bytes. */
-    VkDeviceSize getSize() const;
-
-    /** @brief Returns the underlying VMA allocation. */
-    VmaAllocation getAllocation() const;
-
-    /** @brief Returns the underlying Vulkan buffer. */
-    VkBuffer getBuffer() const;
-
-    /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
-    void upload(VkBufferCopy copyRegion, void* data);
-    void upload(void* data);
+    VkBufferUsageFlags GetUsage() const; /** @brief Returns the usage types of the buffer. */
+    VkMemoryPropertyFlags GetMemoryProperties() const; /** @brief Returns the memory properties the buffer was created with. */
+    VkDeviceSize GetSize() const; /** @brief Returns the size of the buffer in bytes. */
+    VmaAllocation GetAllocation() const; /** @brief Returns the underlying VMA allocation. */
+    VkBuffer GetBuffer() const; /** @brief Returns the underlying Vulkan buffer. */
+    void Upload(VkBufferCopy copyRegion, void* data); /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
+    void Upload(void* data); /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
 
 private:
-    void createBuffer(VmaAllocationInfo* allocationInfo);
-    void map(void** mapped);
-    void unmap();
+    void CreateBuffer(VmaAllocationInfo* allocationInfo);
+    void Map(void** mapped);
+    void Unmap();
 
-    std::shared_ptr<GfxDevice>  _device;
-    VkBufferUsageFlags          _usage;
-    VkMemoryPropertyFlags       _memoryProperties;
-    VkDeviceSize                _size;
-    VkBuffer                    _buffer;
-    VmaAllocation               _allocation;
+    Device& _device;
+    VkBufferUsageFlags _usage;
+    VkMemoryPropertyFlags _memoryProperties;
+    VkDeviceSize _size;
+    VkBuffer _buffer;
+    VmaAllocation _allocation;
 };
 
 } // namespace bl

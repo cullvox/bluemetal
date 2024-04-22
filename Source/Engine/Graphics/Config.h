@@ -9,7 +9,7 @@ class GraphicsConfig
 {
 public:
     static inline constexpr uint32_t apiVersion = VK_API_VERSION_1_3; /** @brief Specifies what version of Vulkan we are using. */
-    static inline constexpr uint32_t numFramesInFlight = 2; /** @brief The maximum amount of frames we are allowed to render at a given time. */
+    static inline constexpr uint32_t numFramesInFlight = 2; /** @brief The number of frames the engine will process at a time. */
     static inline constexpr uint32_t desiredImageCount = 3; /** @brief Number of images the swapchain will swap through. */
     static inline constexpr VkFormat defaultPresentFormat = VK_FORMAT_R8G8B8A8_SRGB; /** @brief Default format to look for. */
     static inline constexpr VkColorSpaceKHR defaultPresentColorspace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; /** @brief Default color space to look for. */

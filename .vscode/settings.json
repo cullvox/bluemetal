@@ -117,7 +117,8 @@
         "__verbose_abort": "cpp",
         "*.ipp": "cpp",
         "hash_set": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "__memory": "cpp"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
