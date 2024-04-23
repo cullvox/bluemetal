@@ -22,19 +22,43 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     _renderer = std::make_shared<Renderer>(_device, _swapchain);
 }
 
-GraphicsSubsystem::~GraphicsSubsystem() 
+GraphicsSystem::~GraphicsSystem() 
 {
 }
 
-std::shared_ptr<RenderDoc> GraphicsSubsystem::getRenderDoc() { return _renderDoc; }
-std::shared_ptr<Renderer> GraphicsSubsystem::getRenderer() { return _renderer; }
-std::shared_ptr<GfxInstance> GraphicsSubsystem::getInstance() { return _instance; }
-std::vector<std::shared_ptr<GfxPhysicalDevice>> GraphicsSubsystem::getPhysicalDevices() { return _instance->getPhysicalDevices(); }
-std::shared_ptr<GfxPhysicalDevice> GraphicsSubsystem::getPhysicalDevice() { return _physicalDevice; }
-std::shared_ptr<RenderWindow> GraphicsSubsystem::getWindow() { return _window; }
-std::shared_ptr<Swapchain> GraphicsSubsystem::getSwapchain() { return _swapchain; }
-std::shared_ptr<GfxDevice> GraphicsSubsystem::getDevice() { return _device; }
-std::shared_ptr<DescriptorSetLayoutCache> GraphicsSubsystem::getDescriptorCache() { return _descriptorCache; }
-std::shared_ptr<PipelineLayoutCache> GraphicsSubsystem::getPipelineLayoutCache() { return _pipelineLayoutCache; }
+Renderer& GraphicsSystems::getRenderer() 
+{ 
+    return _renderer; 
+}
+
+Instance& GraphicsSystems::getInstance() 
+{ 
+    return _instance; 
+}
+
+PhysicalDevice& GraphicsSystems::getPhysicalDevice() 
+{ 
+    return _physicalDevice; 
+}
+
+RenderWindow& GraphicsSystems::getWindow() 
+{ 
+    return _window; 
+}
+
+Device& GraphicsSystems::getDevice() 
+{ 
+    return _device; 
+}
+
+DescriptorSetLayoutCache& GraphicsSystems::getDescriptorCache() 
+{ 
+    return _descriptorCache; 
+}
+
+PipelineLayoutCache& GraphicsSystems::getPipelineLayoutCache() 
+{ 
+    return _pipelineLayoutCache; 
+}
 
 } // namespace bl
