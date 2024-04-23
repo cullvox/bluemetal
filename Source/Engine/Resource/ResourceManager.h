@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Precompiled.h"
+#include "Resource.h"
 
 namespace bl
 {
@@ -16,7 +17,7 @@ public:
     ResourceManager();
     ~ResourceManager();
 
-    void RegisterBuilder(const std::string& type, std::shared_ptr<ResourceBuilder> builder); /** @brief  */
+    void RegisterBuilder(std::vector<std::string> types, std::shared_ptr<ResourceBuilder> builder); /** @brief  */
     void LoadFromManifest(const std::filesystem::path& manifest);
     template<typename T> ResourceRef<T> Load(const std::string& name); /** @brief Loads any resource that isn't currently loaded into memory, just returns it if it already exists. */
     void UnloadUnreferenced(); /** @brief Cleans up memory by unloading resources that aren't currently needed. Abides by a ResourceLoadOp. */

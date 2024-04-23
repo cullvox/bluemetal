@@ -1,30 +1,32 @@
+#include "Graphics/Config.h"
 #include "PresentPass.h"
-#include "Engine/Engine.h"
 
-#include "imgui/imgui.h"
-
-namespace bl {
+namespace bl 
+{
 
 PresentPass::PresentPass(std::shared_ptr<GfxDevice> device, std::shared_ptr<Swapchain> swapchain)
     : _device(device)
     , _swapchain(swapchain)
 {
-    createRenderPass();
-    createFramebuffers();
+    CreateRenderPass();
+    CreateFramebuffers();
 }
 
 PresentPass::~PresentPass()
 {
-    destroyFramebuffers();
-    destroyRenderPass();
+    DestroyFramebuffers();
+    DestroyRenderPass();
 }
 
-VkRenderPass PresentPass::Get() { return _pass; }
+VkRenderPass PresentPass::Get() 
+{ 
+    return _pass;
+}
 
 void PresentPass::Recreate(VkExtent2D)
 {
-    destroyFramebuffers();
-    createFramebuffers();
+    DestroyFramebuffers();
+    CreateFramebuffers();
 }
 
 void PresentPass::Begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
@@ -61,7 +63,7 @@ void PresentPass::CreateRenderPass()
 {
     std::array<VkAttachmentDescription, 1> attachments = {};
     attachments[0].flags = 0;
-    attachments[0].format = _swapchain->getFormat();
+    attachments[0].format = _swapchain.GetFormat();
     attachments[0].samples = VK_SAMPLE_COUNT_1_BIT;
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -74,7 +76,10 @@ void PresentPass::CreateRenderPass()
     presentAttachmentReference.attachment = 0;
     presentAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-    std::array colorAttachments = { presentAttachmentReference };
+    std::array colorAttachments =
+    { 
+        presentAttachmentReference
+    };
 
     std::array<VkSubpassDescription, 1> subpasses = {};
     subpasses[0].flags = {};
@@ -102,52 +107,46 @@ void PresentPass::CreateRenderPass()
     VK_CHECK(vkCreateRenderPass(_device->get(), &createInfo, nullptr, &_pass))
 }
 
-void PresentPass::destroyRenderPass()
+void PresentPass::DestroyRenderPass()
 {
-    vkDestroyRenderPass(_device->get(), _pass, nullptr);
+    vkDestroyRenderPass(_device.Get(), _pass, nullptr);
 }
 
-void PresentPass::createFramebuffers()
+void PresentPass::CreateFramebuffers()
 {
-    // Get the image views from the swapchain.
-    std::vector<VkImageView> attachments = _swapchain->getImageViews();
+    auto extent = _swapchain.GetExtent();
+    auto swapImageViews = _swapchain.GetImageViews();
+    
+    _framebuffers.resize(GraphicsConfig::numFramesInFlight);
 
-    // Get the extent of the swapchain for framebuffer sizes.
-    VkExtent2D extent = _swapchain->getExtent();
+    for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++) 
+    {
+        VkImageView attachment = swapImageViews[i];
 
-    _swapFramebuffers.resize(attachments.size());
-
-    // Create some basic info for the loop and fill in the value needed in the loop.
-    VkFramebufferCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    createInfo.pNext = nullptr;
-    createInfo.flags = 0;
-    createInfo.renderPass = _pass;
-    createInfo.attachmentCount = 1;
-    createInfo.width = extent.width;
-    createInfo.height = extent.height;
-    createInfo.layers = 1;
-
-    // Iterate through all the attachments to create their framebuffer.
-    uint32_t i = 0;
-    for (VkImageView attachment : attachments) {
-
-        // Set the attachment and create the framebuffer.
+        VkFramebufferCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+        createInfo.pNext = nullptr;
+        createInfo.flags = 0;
+        createInfo.renderPass = _pass;
+        createInfo.attachmentCount = 1;
         createInfo.pAttachments = &attachment;
-        VK_CHECK(vkCreateFramebuffer(_device->get(), &createInfo, nullptr, &_swapFramebuffers[i]))
-
-        // Iterate the index for the next framebuffer in m_swapFramebuffers.
+        createInfo.width = extent.width;
+        createInfo.height = extent.height;
+        createInfo.layers = 1;
+        
+        VK_CHECK(vkCreateFramebuffer(_device->get(), &createInfo, nullptr, &_framebuffers[i]))
         i++;
     }
 }
 
-void PresentPass::destroyFramebuffers()
+void PresentPass::DestroyFramebuffers()
 {
-    for (size_t i = 0; i < _swapFramebuffers.size(); i++) {
-        vkDestroyFramebuffer(_device->get(), _swapFramebuffers[i], nullptr);
+    for (VkFramebuffer fb : _framebuffers) 
+    {
+        vkDestroyFramebuffer(_device->get(), fb, nullptr);
     }
 
-    _swapFramebuffers.clear();
+    _framebuffers.clear();
 }
 
 } // namespace bl

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Precompiled.h"
-#include "Export.h"
+#include "Core/NonCopyable.h"
 #include "Engine/SDLSubsystem.h"
 #include "Math/Rect.h"
 #include "Display.h"
@@ -25,9 +25,9 @@ public:
     void SetVideoMode(const VideoMode& mode); 
 
 private:
-    void CreateWindow(const VideoMode& video, const std::string& title, std::shared_ptr<Display>& display);
-    
     static void OnResize(); // Callback for window resizing from the input system.
+
+    void CreateWindow(const VideoMode& video, const std::string& title, std::shared_ptr<Display>& display);
 
     SDL_Window* _window;
 };

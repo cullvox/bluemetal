@@ -14,6 +14,7 @@ public:
     int GetReferenceCount();
 
 protected:
+    template<typename T>
     friend class ReferenceCounter;
 
     void IncreaseRefs() { _count++; }

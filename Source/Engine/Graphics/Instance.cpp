@@ -36,6 +36,27 @@ const std::vector<PhysicalDevice>& Instance::GetPhysicalDevices() const
     return _physicalDevices;
 }
 
+PhysicalDevice& Instance::ChoosePhysicalDevice() const
+{
+    auto physicalDevices = GetPhysicalDevices();
+
+    auto it = std::find_if(physicalDevices.begin(), physicalDevices.end(), 
+                [](auto&& pd)
+                { 
+                    return pd.GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; 
+                });
+                    
+    if (it != physicalDevices.end())
+    { 
+        return *it;
+    }
+    else
+    {
+        blWarning("Using index zero physical device, user does not have a discrete card!");
+        return physicalDevices[0];
+    } 
+}
+
 std::vector<const char*> Instance::GetExtensionsForSDL()
 {
 

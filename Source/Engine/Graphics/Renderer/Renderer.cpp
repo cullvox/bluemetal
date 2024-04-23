@@ -5,10 +5,11 @@ namespace bl {
 
 
 Renderer::Renderer(
-    std::shared_ptr<GfxDevice>      device,
-    std::shared_ptr<Swapchain>   swapchain)
+    Device& device,
+    Swapchain& swapchain)
     : _device(device)
     , _swapchain(swapchain)
+    , _presentPass(device, swapchain)
     , _currentFrame(0)
 {
     _swapCommandBuffers.resize(GfxLimits::maxFramesInFlight);
@@ -16,23 +17,22 @@ Renderer::Renderer(
     _renderFinishedSemaphores.resize(_swapchain->getImageCount());
     _inFlightFences.resize(_swapchain->getImageCount());
 
-    _presentPass = std::make_shared<PresentPass>(_device, _swapchain);
-
-    createSyncObjects();
+    CreateSyncObjects();
 }
 
 Renderer::~Renderer() 
 {
-    _device->waitForDevice();
-
-    destroySyncObjects();
+    _device.WaitForDevice();
+    DestroySyncObjects();
 }
 
-std::shared_ptr<RenderPass> Renderer::getUserInterfacePass() { return _presentPass; }
+std::shared_ptr<RenderPass> Renderer::GetUserInterfacePass() 
+{ 
+    return _presentPass; 
+}
 
-void Renderer::createSyncObjects()
+void Renderer::CreateSyncObjects()
 {
-    // Allocate the per frame swapping command buffers.
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     allocateInfo.pNext = nullptr;
@@ -42,7 +42,6 @@ void Renderer::createSyncObjects()
 
     VK_CHECK(vkAllocateCommandBuffers(_device->get(), &allocateInfo, _swapCommandBuffers.data()))
 
-    // Create the semaphores and fences
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     semaphoreInfo.pNext = nullptr;
@@ -60,7 +59,7 @@ void Renderer::createSyncObjects()
     }
 }
 
-void Renderer::destroySyncObjects()
+void Renderer::DestroySyncObjects()
 {
     for (uint32_t i = 0; i < GfxLimits::maxFramesInFlight; i++) {
         vkDestroySemaphore(_device->get(), _imageAvailableSemaphores[i], nullptr);
@@ -71,37 +70,35 @@ void Renderer::destroySyncObjects()
     vkFreeCommandBuffers(_device->get(), _device->getCommandPool(), (uint32_t)_swapCommandBuffers.size(), _swapCommandBuffers.data());
 }
 
-void Renderer::resize(VkExtent2D extent)
+void Renderer::Recreate(VkExtent2D extent)
 {
     // _geometryPass->recreate(extent);
-    _presentPass->recreate(extent);
+    _presentPass->Recreate(extent);
 }
 
-void Renderer::render(std::function<void(VkCommandBuffer)> func)
+void Renderer::Render(std::function<void(VkCommandBuffer)> func)
 {
-    // If the swapchain is invalid we cannot render anything.
-    if (!_swapchain->get())
+    if (!_swapchain.Get()) // Swapchain must be valid.
         return;
 
     // Wait for the current image up coming in the chain to finish.
-    VK_CHECK(vkWaitForFences(_device->get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
+    VK_CHECK(vkWaitForFences(_device.Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
 
     // Acquire the next image in the swapchain.
     uint32_t imageIndex = 0;
     bool recreated = false;
-    _swapchain->acquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, imageIndex, recreated);
+    _swapchain.AcquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, imageIndex, recreated);
 
     // Resize passes images if the swapchain resized.
     if (recreated) {
-        resize(_swapchain->getExtent());
+        Resize(_swapchain.GetExtent());
         return; // skip this frame!
     }
 
     // Reset the fence for this image so it can signal when it's done.
-    VK_CHECK(vkResetFences(_device->get(), 1, &_inFlightFences[_currentFrame]))
+    VK_CHECK(vkResetFences(_device.Get(), 1, &_inFlightFences[_currentFrame]))
 
-    // Record each render pass
-    auto cmd = _swapCommandBuffers[_currentFrame];
+    auto cmd = _commandBuffers[_currentFrame];
     VK_CHECK(vkResetCommandBuffer(cmd, 0))
 
     VkCommandBufferBeginInfo beginInfo = {};
@@ -110,8 +107,8 @@ void Renderer::render(std::function<void(VkCommandBuffer)> func)
     beginInfo.flags = 0;
     beginInfo.pInheritanceInfo = nullptr;
 
-    // Record the render passes.
-    VkRect2D renderArea { { 0, 0 }, _swapchain->getExtent() };
+    VkRect2D renderArea{ { 0, 0 }, _swapchain.GetExtent() };
+
     VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo))
     _presentPass->begin(cmd, renderArea, imageIndex);
     func(cmd);
@@ -122,8 +119,7 @@ void Renderer::render(std::function<void(VkCommandBuffer)> func)
     std::array waitSemaphores = { _imageAvailableSemaphores[_currentFrame] };
     std::array signalSemaphores = { _renderFinishedSemaphores[_currentFrame] };
     std::array commandBuffers = { _swapCommandBuffers[_currentFrame] };
-
-    VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+    std::array waitStages = { (VkPipelineStageFlags)VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -136,12 +132,11 @@ void Renderer::render(std::function<void(VkCommandBuffer)> func)
     submitInfo.signalSemaphoreCount = (uint32_t)signalSemaphores.size();
     submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-    VK_CHECK(vkQueueSubmit(_device->getGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
+    VK_CHECK(vkQueueSubmit(_device.GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
 
+    _swapchain.QueuePresent(_renderFinishedSemaphores[_currentFrame]);
 
-
-    // Set the next frames index.
-    _currentFrame = (_currentFrame + 1) % GfxLimits::maxFramesInFlight;
+    _currentFrame = (_currentFrame + 1) % GraphicsConfig::numFramesInFlight;
 }
 
 } // namespace bl

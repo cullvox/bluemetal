@@ -9,8 +9,8 @@ list(APPEND Sources
 
   # Audio
   "Audio/AudioSystem.cpp"
-  "Audio/AudioListener.cpp"
-  "Audio/AudioSource.cpp"
+  "Audio/Source.cpp"
+  "Audio/Listener.cpp"
   "Audio/Sound.cpp"
 
   "Graphics/Window/Display.cpp"

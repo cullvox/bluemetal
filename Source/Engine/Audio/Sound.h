@@ -19,7 +19,7 @@ public:
 
 private:
     AudioSystem& _system;
-    FMOD_SOUND* _sound;
+    FMOD::Sound* _sound;
 };
 
 } // namespace bl

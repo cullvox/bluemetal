@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Precompiled.h"
 #include "Core/ReferenceCounted.h"
 
 namespace bl 

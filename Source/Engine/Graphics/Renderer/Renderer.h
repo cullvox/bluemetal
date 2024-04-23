@@ -17,15 +17,16 @@ public:
     ~Renderer(); /** @brief Destructor */
 
     void Recreate();
+    void Render(std::function<void(VkCommandBuffer)> func);
 
 private:
-    void createSyncObjects();
-    void destroySyncObjects();
+    void CreateSyncObjects();
+    void DestroySyncObjects();
 
     Device& _device;
-    Swapchain& _swapchain;
+    Swapchain _swapchain;
     uint32_t _currentFrame;
-    std::vector<VkCommandBuffer> _swapCommandBuffers;
+    std::vector<VkCommandBuffer> _commandBuffers;
     std::vector<VkSemaphore> _imageAvailableSemaphores;
     std::vector<VkSemaphore> _renderFinishedSemaphores;
     std::vector<VkFence> _inFlightFences;

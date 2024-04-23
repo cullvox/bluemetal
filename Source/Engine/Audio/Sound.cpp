@@ -1,30 +1,22 @@
 #include "Sound.h"
 
-namespace bl {
-
-///////////////////////////////
-// Classes
-///////////////////////////////
-
-Sound::Sound(AudioSystem* pSystem, const std::filesystem::path& soundPath)
-    : _system(pSystem)
+namespace bl 
 {
 
-    std::string path { soundPath.string() };
-
-    // FMOD_CREATESOUNDEXINFO exInfo = {};
-    // exInfo.cbsize = sizeof(FMOD_CREATESOUNDEXINFO);
-    // exInfo.length = (unsigned int)path.size();
-
-    FMOD_RESULT result = FMOD_System_CreateSound(
-        _system->get(), path.c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &m_pSound);
-    if (result != FMOD_OK) {
-        throw std::runtime_error("Could not create an FMOD Sound!");
-    }
+Sound::Sound(AudioSystem& system, const std::filesystem::path& soundPath)
+    : _system(system)
+{
+    FMOD_CHECK(_system.Get()->createSound(soundPath.c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &_sound))
 }
 
-Sound::~Sound() { FMOD_Sound_Release(m_pSound); }
-
-FMOD_SOUND* Sound::getHandle() { return m_pSound; }
-
+Sound::~Sound() 
+{ 
+    _sound->release();
 }
+
+FMOD::Sound* Sound::Get() 
+{ 
+    return _sound; 
+}
+
+} // namespace bl

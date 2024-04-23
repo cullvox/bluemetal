@@ -37,6 +37,12 @@ public:
     virtual void SerializeState(SerializeData&) {}
     virtual void DeserializeState(const DeserializeData& sd) {}
 
+protected:
+    friend class Entity;
+
+    void SetName(const std::string& name);
+    void SetUID(uint64_t uid);
+
 private:
     std::string _name;
     uint64_t _uid;

@@ -3,35 +3,30 @@
 #include "Graphics/RenderPass.h"
 #include "Graphics/Swapchain.h"
 
-namespace bl {
+namespace bl 
+{
 
-class BLUEMETAL_API PresentPass : public RenderPass {
+class PresentPass : public RenderPass 
+{
 public:
-
-    /** @brief Constructor */
-    PresentPass(std::shared_ptr<GfxDevice> device, std::shared_ptr<Swapchain> swapchain);
-    
-    /** @brief Destructor */
-    ~PresentPass();
+    PresentPass(Device& device, Swapchain& swapchain); /** @brief Constructor */
+    ~PresentPass(); /** @brief Destructor */
 
     virtual VkRenderPass Get() override; /** @brief Returns the lower level Vulkan render pass. */
-
-    /** @brief Records a command to the */
-    virtual void begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;
-
-    virtual void end(VkCommandBuffer cmd) override;
-    virtual void recreate(VkExtent2D extent) override;
+    virtual void Begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;
+    virtual void End(VkCommandBuffer cmd) override;
+    virtual void Recreate(VkExtent2D extent) override;
 
 private:
-    void createFramebuffers();
-    void destroyFramebuffers();
-    void createRenderPass();
-    void destroyRenderPass();
+    void CreateFramebuffers();
+    void DestroyFramebuffers();
+    void CreateRenderPass();
+    void DestroyRenderPass();
 
-    std::shared_ptr<GfxDevice>      _device;
-    std::shared_ptr<Swapchain>   _swapchain;	
-    std::vector<VkFramebuffer>      _swapFramebuffers;
-    VkRenderPass                    _pass;
+    std::shared_ptr<GfxDevice> _device;
+    std::shared_ptr<Swapchain> _swapchain;	
+    std::vector<VkFramebuffer> _framebuffers;
+    VkRenderPass _pass;
 };
 
 } // namespace bl

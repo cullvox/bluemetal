@@ -6,13 +6,10 @@
 namespace bl
 {
 
-/** @brief An actor is an entity that physically exists in the world. */
-class Actor : public Entity
+class Actor : public Entity /** @brief An actor is an entity that physically exists in the world. */
 {
 public:
-    Actor(
-        const std::string& name,
-        uint64_t uid);
+    Actor(const std::string& name, uint64_t uid);
     ~Actor();
 
     Transform& GetTransform();
