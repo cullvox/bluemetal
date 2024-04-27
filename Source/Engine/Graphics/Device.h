@@ -9,16 +9,17 @@ namespace bl {
 class Device 
 {
 public:
-    Device(Instance& instance, PhysicalDevice& physicalDevice); /** @brief Creates the Vulkan graphics device and some other utils. */
+    Device(Instance* instance, PhysicalDevice* physicalDevice); /** @brief Creates the Vulkan graphics device and some other utils. */
     ~Device(); /** @brief Destructor. */
 
-    VkDevice Get() const; /** @brief Returns the underlying Vulkan device. */
-    PhysicalDevice& GetPhysicalDevice() const; /** @brief Returns the physical device this device was crated with. */
+    Instance* GetInstance() const; /** @brief Returns the instance that this device was created with. */
+    PhysicalDevice* GetPhysicalDevice() const; /** @brief Returns the physical device this device was crated with. */
     uint32_t GetGraphicsFamilyIndex() const; /** @brief Returns the index used for graphics queue operations. */
     uint32_t GetPresentFamilyIndex() const; /** @brief Returns the index used for present queue operations. */
     bool GetAreQueuesSame() const; /** @brief Returns true if the graphics family index and present family index are the same. */
     VkQueue GetGraphicsQueue() const; /** @brief Returns the Vulkan graphics queue. */
     VkQueue GetPresentQueue() const; /** @brief Returns the Vulkan present queue. */
+    VkDevice Get() const; /** @brief Returns the underlying Vulkan device. */
     VkCommandPool GetCommandPool() const; /** @brief Returns the default Vulkan command pool. */
     VmaAllocator GetAllocator() const; /** @brief Returns the Vulkan Memory Allocator object. */
     void ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder); /** @brief Submits commands to the graphics queue on the double. */
@@ -31,8 +32,8 @@ private:
     void CreateCommandPool(); /** @brief Creates a command pool for allocating command buffers. */
     void CreateAllocator(); /** @brief Creates an instance of the Vulkan Memory Allocator */
 
-    Instance& _instance;
-    PhysicalDevice& _physicalDevice;
+    Instance* _instance;
+    PhysicalDevice* _physicalDevice;
     uint32_t _graphicsFamilyIndex, _presentFamilyIndex;
     VkDevice _device;
     VkQueue _graphicsQueue, _presentQueue;

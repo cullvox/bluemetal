@@ -26,15 +26,49 @@ GraphicsSubsystem::~GraphicsSubsystem()
 {
 }
 
-std::shared_ptr<RenderDoc> GraphicsSubsystem::getRenderDoc() { return _renderDoc; }
-std::shared_ptr<Renderer> GraphicsSubsystem::getRenderer() { return _renderer; }
-std::shared_ptr<GfxInstance> GraphicsSubsystem::getInstance() { return _instance; }
-std::vector<std::shared_ptr<GfxPhysicalDevice>> GraphicsSubsystem::getPhysicalDevices() { return _instance->getPhysicalDevices(); }
-std::shared_ptr<GfxPhysicalDevice> GraphicsSubsystem::getPhysicalDevice() { return _physicalDevice; }
-std::shared_ptr<RenderWindow> GraphicsSubsystem::getWindow() { return _window; }
-std::shared_ptr<Swapchain> GraphicsSubsystem::getSwapchain() { return _swapchain; }
-std::shared_ptr<GfxDevice> GraphicsSubsystem::getDevice() { return _device; }
-std::shared_ptr<DescriptorSetLayoutCache> GraphicsSubsystem::getDescriptorCache() { return _descriptorCache; }
-std::shared_ptr<PipelineLayoutCache> GraphicsSubsystem::getPipelineLayoutCache() { return _pipelineLayoutCache; }
+Instance& GraphicsSubsystem::GetInstance() 
+{ 
+    return _instance; 
+}
+
+PhysicalDevice& GraphicsSubsystem::GetPhysicalDevice() 
+{ 
+    return _physicalDevice; 
+}
+
+RenderWindow& GraphicsSubsystem::GetWindow() 
+{ 
+    return _window; 
+}
+
+Device& GraphicsSubsystem::GetDevice() 
+{ 
+    return _device; 
+}
+
+Renderer& GraphicsSubsystem::GetRenderer() 
+{ 
+    return _renderer; 
+}
+
+DescriptorSetLayoutCache& GraphicsSubsystem::GetDescriptorCache() 
+{ 
+    return _descriptorCache; 
+}
+
+PipelineLayoutCache& GraphicsSubsystem::GetPipelineLayoutCache() 
+{ 
+    return _pipelineLayoutCache; 
+}
+
+std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path)
+{
+    if (type == "shader")
+    {
+
+        path.get_extension
+
+    }
+}
 
 } // namespace bl

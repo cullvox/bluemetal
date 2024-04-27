@@ -43,12 +43,12 @@ Device::~Device() {
     vkDestroyDevice(_device, nullptr);
 }
 
-VkDevice Device::Get() const
+Instance* Device::GetInstance() const
 {
-    return _device;
+    return _instance;
 }
 
-PhysicalDevice& Device::GetPhysicalDevice() const
+PhysicalDevice* Device::GetPhysicalDevice() const
 {
     return _physicalDevice;
 }
@@ -76,6 +76,11 @@ VkQueue Device::GetGraphicsQueue() const
 VkQueue Device::GetPresentQueue() const
 {
     return _presentQueue;
+}
+
+VkDevice Device::Get() const
+{
+    return _device;
 }
 
 VkCommandPool Device::GetCommandPool() const
@@ -146,9 +151,9 @@ std::vector<const char*> Device::GetValidationLayers()
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
 
-    VK_CHECK(vkEnumerateDeviceLayerProperties(_physicalDevice.Get(), &propertiesCount, nullptr))
+    VK_CHECK(vkEnumerateDeviceLayerProperties(_physicalDevice->Get(), &propertiesCount, nullptr))
     properties.resize(propertiesCount);
-    VK_CHECK(vkEnumerateDeviceLayerProperties(_physicalDevice.Get(), &propertiesCount, properties.data()))
+    VK_CHECK(vkEnumerateDeviceLayerProperties(_physicalDevice->Get(), &propertiesCount, properties.data()))
 
     // Ensure that the requested layers are present on the system.
     for (const char* name : layers) {
@@ -174,9 +179,9 @@ std::vector<const char*> Device::GetExtensions()
     uint32_t propertyCount = 0;
     std::vector<VkExtensionProperties> properties;
 
-    VK_CHECK(vkEnumerateDeviceExtensionProperties(_physicalDevice.Get(), nullptr, &propertyCount, nullptr))
+    VK_CHECK(vkEnumerateDeviceExtensionProperties(_physicalDevice->Get(), nullptr, &propertyCount, nullptr))
     properties.resize(propertyCount);
-    VK_CHECK(vkEnumerateDeviceExtensionProperties(_physicalDevice.Get(), nullptr, &propertyCount, properties.data()))
+    VK_CHECK(vkEnumerateDeviceExtensionProperties(_physicalDevice->Get(), nullptr, &propertyCount, properties.data()))
 
     // Ensure the required extensions are available.
     for (const char* pName : requiredExtensions) {
@@ -196,47 +201,42 @@ void Device::CreateDevice()
     std::vector<const char*> extensions = GetExtensions();
     std::vector<const char*> layers{};
 
-    if (_instance.GetValidationEnabled())
+    if (_instance->GetValidationEnabled())
         layers = GetValidationLayers();
 
     // Get the queue family properties of the physical device.
     uint32_t queuePropertyCount = 0;
     std::vector<VkQueueFamilyProperties> queueProperties;
-    vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice.Get(), &queuePropertyCount, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice->Get(), &queuePropertyCount, nullptr);
     queueProperties.resize(queuePropertyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice.Get(), &queuePropertyCount, queueProperties.data());
+    vkGetPhysicalDeviceQueueFamilyProperties(_physicalDevice->Get(), &queuePropertyCount, queueProperties.data());
 
     // Determine what families will be dedicated to graphics and present.
     uint32_t i = 0;
 
     // Use a temporary window and surface for surface support checking.
-    Window::UseTemporaryWindow([&](SDL_Window* window){
-
-        // Create a surface from the window.
-        VkSurfaceKHR surface = VK_NULL_HANDLE;
-        if (SDL_Vulkan_CreateSurface(window, _instance.Get(), &surface) != SDL_TRUE) {
-            throw std::runtime_error("Could not create temporary surface for queue selection!");
-        }
+    Window::UseTemporarySurface([&](VkSurfaceKHR surface)
+    {
 
         // Check for queue usage.
-        for (const VkQueueFamilyProperties& properties : queueProperties) {
-            if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        for (const VkQueueFamilyProperties& properties : queueProperties) 
+        {
+            if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) 
+            {
                 _graphicsFamilyIndex = i;
             }
 
             VkBool32 surfaceSupported = VK_FALSE;
-            VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice.Get(), i, surface, &surfaceSupported))
+            VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->Get(), i, surface, &surfaceSupported))
             
-            if (surfaceSupported) {
+            if (surfaceSupported) 
+            {
                 _presentFamilyIndex = i;
             }
 
             i++;
         }
-
-        vkDestroySurfaceKHR(_instance.Get(), surface, nullptr);
     });
-
 
     const float queuePriorities[] = { 1.0f, 1.0f };
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {
@@ -262,7 +262,6 @@ void Device::CreateDevice()
     // In the event that we use compute, this needs to be upgraded.
     queueCreateInfos.resize(GetAreQueuesSame() ? 1 : 2);
 
-    // Create the device.
     const VkPhysicalDeviceFeatures features {};
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -276,16 +275,15 @@ void Device::CreateDevice()
     createInfo.ppEnabledExtensionNames = extensions.data();
     createInfo.pEnabledFeatures = &features;
 
-    VK_CHECK(vkCreateDevice(_physicalDevice.Get(), &createInfo, nullptr, &_device))
+    VK_CHECK(vkCreateDevice(_physicalDevice->Get(), &createInfo, nullptr, &_device))
 
-    // Load the next set of vulkan functions based on the device.
-    volkLoadDevice(_device);
+    volkLoadDevice(_device);  // Load the next set of vulkan functions based on the device.
 
     // Get the graphics and present queue objects.
     vkGetDeviceQueue(_device, _graphicsFamilyIndex, 0, &_graphicsQueue);
     vkGetDeviceQueue(_device,  _presentFamilyIndex, 0, &_presentQueue);
 
-    blInfo("Created the Vulkan device using: {}", _physicalDevice.GetDeviceName());
+    blInfo("Created the Vulkan device using: {}", _physicalDevice->GetDeviceName());
 }
 
 void Device::CreateCommandPool()
@@ -307,14 +305,14 @@ void Device::CreateAllocator()
 
     VmaAllocatorCreateInfo createInfo = {};
     createInfo.flags = 0;
-    createInfo.physicalDevice = _physicalDevice.Get();
+    createInfo.physicalDevice = _physicalDevice->Get();
     createInfo.device = _device;
     createInfo.preferredLargeHeapBlockSize = 0;
     createInfo.pAllocationCallbacks = nullptr;
     createInfo.pDeviceMemoryCallbacks = nullptr;
     createInfo.pHeapSizeLimit = nullptr;
     createInfo.pVulkanFunctions = &functions;
-    createInfo.instance = _instance.Get();
+    createInfo.instance = _instance->Get();
     createInfo.vulkanApiVersion = GraphicsConfig::apiVersion;
     createInfo.pTypeExternalMemoryHandleTypes = nullptr;
 

@@ -202,9 +202,9 @@ void Swapchain::ChooseExtent()
 
 void Swapchain::ObtainImages()
 {
-    VK_CHECK(vkGetSwapchainImagesKHR(_device.Get(), _swapchain, &_imageCount, nullptr))
+    VK_CHECK(vkGetSwapchainImagesKHR(_device->Get(), _swapchain, &_imageCount, nullptr))
     _swapImages.resize(_imageCount);
-    VK_CHECK(vkGetSwapchainImagesKHR(_device.Get(), _swapchain, &_imageCount, _swapImages.data()))
+    VK_CHECK(vkGetSwapchainImagesKHR(_device->Get(), _swapchain, &_imageCount, _swapImages.data()))
 }
 
 void Swapchain::CreateImageViews()
@@ -249,13 +249,9 @@ void Swapchain::DestroyImageViews()
 
 void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optional<VkSurfaceFormatKHR> surfaceFormat)
 {
-    // Since recreating the swapchain is a big operation, just wait for any processes to sync.
-    _device.WaitForDevice();
+    _device->WaitForDevice(); // Since recreating the swapchain is a big operation, just wait for any processes to sync.
 
-    // Any previous images don't matter to us anymore, we're going to obtain them again later.
-    DestroyImageViews();
-
-    // Choose swapchain creation options. 
+    DestroyImageViews(); // Images will be recreated later.
     ChooseImageCount();
     ChooseExtent();
 
@@ -270,12 +266,12 @@ void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optio
         ChooseFormat();
 
     // The swapchain will use both graphics and present, provide it the proper queue families.
-    std::vector queueFamilyIndices = { _device.GetGraphicsFamilyIndex(), _device->getPresentFamilyIndex() };
+    std::vector queueFamilyIndices = { _device->GetGraphicsFamilyIndex(), _device->getPresentFamilyIndex() };
 
     // If they are the same index then we don't want to misreport.
-    queueFamilyIndices.resize(_device.GetAreQueuesSame() ? 1 : 2);
+    queueFamilyIndices.resize(_device->GetAreQueuesSame() ? 1 : 2);
 
-    auto imageSharingMode = _device.GetAreQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
+    auto imageSharingMode = _device->GetAreQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
     auto format = surfaceFormat.value_or(_surfaceFormat);
     auto present = presentMode.value_or(_presentMode); 
 

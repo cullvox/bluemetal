@@ -6,6 +6,7 @@
 
 #include "Resource/ResourceManager.h"
 
+#include "Core/Json.h"
 #include "SDLSubsystem.h"
 #include "Audio/AudioSystem.h"
 #include "Graphics/GraphicsSystem.h"
@@ -21,16 +22,17 @@ public:
     Engine(); /** @brief Constructor */
     ~Engine(); /** @brief Destructor */
 
-    std::shared_ptr<GraphicsSubsystem> getGraphics();
-    std::shared_ptr<ImGuiSubsystem> getImGui();
-    std::shared_ptr<AudioSystem> getAudio();
+    std::shared_ptr<GraphicsSystem> GetGraphics();
+    std::shared_ptr<ImGuiSystem> GetImGui();
+    std::shared_ptr<AudioSystem> GetAudio();
 
 private:
-    std::shared_ptr<ResourceManager> resourceManager;
-    std::shared_ptr<SDLSubsystem> sdl;
-    std::shared_ptr<GraphicsSubsystem> graphics;
-    std::shared_ptr<ImGuiSubsystem> imgui;
-    std::shared_ptr<AudioSystem> audio;
+    nlohmann::json _config;
+    SDLInitializer _sdl;
+    std::shared_ptr<ResourceManager> _resourceManager;
+    std::shared_ptr<GraphicsSystem> _graphics;
+    std::shared_ptr<ImGuiSubsystem> _imgui;
+    std::shared_ptr<AudioSystem> _audio;
 };
 
 } // namespace bl

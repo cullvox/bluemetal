@@ -29,7 +29,7 @@ public:
     uint64_t GetVersion() const;
     ResourceLoadOp GetLoadOp() const;
     ResourceState GetState() const;
-    
+
     virtual void Load() = 0;
     virtual void Unload() = 0;
 

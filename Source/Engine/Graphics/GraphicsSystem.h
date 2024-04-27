@@ -3,7 +3,6 @@
 #include "Export.h"
 
 #include "Resource/ResourceManager.h"
-#include "Graphics/RenderDoc.h"
 #include "Graphics/Instance.h"
 #include "Graphics/RenderWindow.h"
 #include "Graphics/Device.h"
@@ -21,27 +20,30 @@ class Engine;
 class GraphicsSystem : public NonCopyable, public ResourceBuilder
 {
 public:
-    GraphicsSystem(Engine& engine); /** @brief Constructor. */
+    GraphicsSystem(Engine* engine); /** @brief Constructor. */
     ~GraphicsSystem(); /** @brief Destructor */
 
-    Window& GetWindow();
-    Instance& GetInstance();
-    PhysicalDevice& GetPhysicalDevice();
-    Device& GetDevice();
-    DescriptorSetLayoutCache& GetDescriptorCache();
-    PipelineLayoutCache& GetPipelineLayoutCache();
-    Renderer& GetRenderer();
+    Instance* GetInstance();
+    PhysicalDevice* GetPhysicalDevice();
+    Device* GetDevice();
+    DescriptorSetLayoutCache* GetDescriptorCache();
+    PipelineLayoutCache* GetPipelineLayoutCache();
+    std::vector<PhysicalDevice*> GetPhysicalDevices();
+    std::vector<Display*> GetDisplays();
+    std::shared_ptr<RenderWindow> CreateWindow();
+
+    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path);
 
 private:
-    Engine& _engine;
-    Instance _instance;
-    PhysicalDevice& _physicalDevice;
-    Device _device;
-    Window _window;
+    Engine* _engine;
+    std::unique_ptr<Instance> _instance;
+    PhysicalDevice* _physicalDevice;
+    std::unique_ptr<Device> _device;
+
     DescriptorSetLayoutCache _descriptorCache;
     PipelineLayoutCache _pipelineLayoutCache;
-    Swapchain _swapchain;
-    Renderer _renderer;
+
+    std::vector<std::unique_ptr<Display>> _displays;
 };
 
 } // namespace bl

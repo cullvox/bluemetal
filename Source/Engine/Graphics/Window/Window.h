@@ -3,33 +3,34 @@
 #include "Precompiled.h"
 #include "Core/NonCopyable.h"
 #include "Engine/SDLSubsystem.h"
-#include "Math/Rect.h"
 #include "Display.h"
 #include "VideoMode.h"
 
 namespace bl 
 {
 
+class Device;
+class Swapchain;
+
 class Window : public NonCopyable
 {
 public:
-    static void UseTemporaryWindow(const std::function<void(SDL_Window*)>& func);
-
-public:
-    Window(const VideoMode& video, const std::string& title, std::shared_ptr<Display> display = nullptr);
+    Window(Device* device);
     ~Window();
 
-    SDL_Window* Get() const; /** @brief Returns the underlying SDL window object. */
-    VideoMode GetVideoMode() const; /** @brief Returns the current video mode. */
+    VideoMode GetCurrentVideoMode() const; /** @brief Returns the current video mode. */
     void SetTitle(const std::string& title); /** @brief Changes the title displayed on the top of a windowed window. */
-    void SetVideoMode(const VideoMode& mode); 
+    void SetVideoMode(const VideoMode& mode);
+
+public:
+    static void UseTemporaryWindow(const std::function<void(SDL_Window*)>& func); /** @brief Creates a temporary window that can be used for various non-display purposes. */
+    static void UseTemporarySurface(Instance* instance, const std::function<void(VkSurfaceKHR)>& func); /** @brief Creates a temporary surface for instance/device creation usage. */
+    static std::vector<const char*> GetSurfaceExtensions(Instance* instance); /** @brief Returns the surface extensions required for this device. */
 
 private:
-    static void OnResize(); // Callback for window resizing from the input system.
-
-    void CreateWindow(const VideoMode& video, const std::string& title, std::shared_ptr<Display>& display);
-
     SDL_Window* _window;
+    VkSurfaceKHR _surface;
+    std::unique_ptr<Swapchain> _swapchain;
 };
 
 } // namespace bl

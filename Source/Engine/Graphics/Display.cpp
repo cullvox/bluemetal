@@ -1,19 +1,17 @@
 #include "Display.h"
 #include "Core/Print.h"
-#include "Engine/SDLSubsystem.h"
+#include "Engine/SDLInitializer.h"
 
 namespace bl {
 
 Display::Display(int display)
     : _index(display)
 {
-
-    // Get the display's name.
     _name = std::string(SDL_GetDisplayName(display));
 
-    // Get the displays rect.
     SDL_Rect sdlRect {};
-    if (SDL_GetDisplayUsableBounds(display, &sdlRect) < 0) {
+    if (SDL_GetDisplayUsableBounds(display, &sdlRect) < 0) 
+    {
         blError("Could not get a rect on display #{}!", display);
         return;
     }

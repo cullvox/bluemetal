@@ -7,11 +7,11 @@
 namespace bl 
 {
 
-class SDLSubsystem 
+class SDLInitializer 
 {
 public:
-    SDLSubsystem();
-    ~SDLSubsystem();
+    SDLInitializer();
+    ~SDLInitializer();
 };
 
 } /* namespace bl*/

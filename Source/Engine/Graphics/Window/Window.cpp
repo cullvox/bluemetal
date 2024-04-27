@@ -1,19 +1,43 @@
-#include "Window.h"
 #include "Core/Print.h"
+#include "Graphics/Vulkan.h"
+#include "Window.h"
 
-namespace bl {
-
-void Window::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func)
+namespace bl 
 {
-    std::unique_ptr<SDL_Window, void(*)(SDL_Window*)> temporaryWindow{
-        SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN), 
-        [](SDL_Window* window){ SDL_DestroyWindow(window); }};
 
-    if (!temporaryWindow) {
+void Window::UseTemporaryWindow(std::functional<void(SDL_Window*)> func)
+{
+    SDL_Window temporaryWindow = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN);
+
+    if (!temporaryWindow) 
+    {
         throw std::runtime_error("Could not create a temporary SDL window to get Vulkan instance extensions!");
     }
 
-    func(temporaryWindow.get());
+    func(temporaryWindow);
+    SDL_DestroyWindow(temporaryWindow);
+}
+
+void Window::UseTemporarySurface(Instance* instance, const std::function<void(VkSurfaceKHR)>& func)
+{
+    UseTemporaryWindow([&](SDL_Window* window){
+            VkSurfaceKHR temporarySurface = VK_NULL_HANDLE;
+            SDL_Vulkan_CreateSurface(window, instance->Get(), &temporarySurface);
+            func(temporarySurface);
+            vkDestroySurfaceKHR(instance->Get(), temporarySurface, nullptr);
+        });
+}
+
+std::vector<const char*> Window::GetSurfaceExtensions(Instance* instance)
+{
+    std::vector<const char*> extensions = {};
+    UseTemporaryWindow([&](SDL_Window* window){
+            unsigned int extensionsCount = 0;
+            SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, nullptr);
+            extensions.resize(extensionsCount);
+            SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, extensions.data());
+        });
+    return extensions;
 }
 
 Window::Window(const VideoMode& video, const std::string& title, std::shared_ptr<Display> display)

@@ -1,14 +1,17 @@
 #pragma once
 
 #include "Precompiled.h"
+#include "Core/Json.h"
 #include "Resource.h"
+
+using 
 
 namespace bl
 {
 
 class ResourceBuilder
 {
-    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path) = 0;
+    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& additionalData) = 0;
 };
 
 class ResourceManager
@@ -17,7 +20,7 @@ public:
     ResourceManager();
     ~ResourceManager();
 
-    void RegisterBuilder(std::vector<std::string> types, std::shared_ptr<ResourceBuilder> builder); /** @brief  */
+    void RegisterBuilder(std::vector<std::string> types, std::shared_ptr<ResourceBuilder> builder); /** @brief Registers a builder object to create resource references. */
     void LoadFromManifest(const std::filesystem::path& manifest);
     template<typename T> ResourceRef<T> Load(const std::string& name); /** @brief Loads any resource that isn't currently loaded into memory, just returns it if it already exists. */
     void UnloadUnreferenced(); /** @brief Cleans up memory by unloading resources that aren't currently needed. Abides by a ResourceLoadOp. */

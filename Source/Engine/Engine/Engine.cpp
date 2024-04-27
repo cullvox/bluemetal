@@ -1,23 +1,38 @@
 #include "Engine/Engine.h"
 #include "Core/Print.h"
 
-namespace bl {
+namespace bl 
+{
 
 Engine::Engine()
+    : _config(std::ifstream{"Config/Config.json"})
+    , _sdl()
 {
     blInfo("Constructing bluemetal engine {}", bl::to_string(bl::engineVersion));
 
-    // m_config = Noodle::parseFromFile("Save/Config/config.noodle");
-    sdl = std::make_shared<SDLSubsystem>();
-    audio = std::make_shared<AudioSubsystem>(*this);
-    graphics = std::make_shared<GraphicsSubsystem>(*this, true);
-    imgui = std::make_shared<ImGuiSubsystem>(*this);
+    _resourceManager = std::make_shared<ResourceManager>();
+    _graphics = std::make_shared<GraphicsSystem>();
+    _imgui = std::make_shared<ImGuiSubsystem>();
+    _audio = std::make_shared<AudioSystem>();
 }
 
-Engine::~Engine() { }
+Engine::~Engine() 
+{
+}
 
-std::shared_ptr<GraphicsSubsystem> Engine::getGraphics() { return graphics; }
-std::shared_ptr<AudioSubsystem> Engine::getAudio() { return audio; }
-std::shared_ptr<ImGuiSubsystem> Engine::getImGui() { return imgui; }
+std::shared_ptr<GraphicsSystem> Engine::GetGraphics() 
+{
+    return graphics;
+}
+
+std::shared_ptr<AudioSystem> Engine::GetAudio() 
+{
+    return audio;
+}
+
+std::shared_ptr<ImGuiSystem> Engine::GetImGui() 
+{
+    return imgui;
+}
 
 } // namespace bl

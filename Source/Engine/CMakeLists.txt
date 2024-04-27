@@ -13,11 +13,9 @@ list(APPEND Sources
   "Audio/Listener.cpp"
   "Audio/Sound.cpp"
 
-  "Graphics/Window/Display.cpp"
-  "Graphics/Window/Window.cpp"
-
-  # Graphics
   "Graphics/volk.cpp"
+  "Graphics/Display.cpp"
+  "Graphics/Window/Window.cpp"
   # "Graphics/RenderDoc.cpp"
   "Graphics/Instance.cpp"
   "Graphics/PhysicalDevice.cpp"
@@ -37,7 +35,7 @@ list(APPEND Sources
   "Graphics/Mesh.cpp"
   "Graphics/Renderer/PresentPass.cpp"
   "Graphics/Renderer/Renderer.cpp"
-  "Graphics/GraphicsSubsystem.cpp"
+  "Graphics/GraphicsSystem.cpp"
   # "Graphics/GeometryPass.cpp"
 
   "World/RenderActor.cpp"
@@ -51,9 +49,7 @@ list(APPEND Sources
   "imgui/imgui_impl_sdl2.cpp"
   "imgui/imgui_impl_vulkan.cpp"
 
-  "Engine/SDLSubsystem.cpp"
-  "Engine/AudioSubsystem.cpp"
-
+  "Engine/SDLInitializer.cpp"
   "Engine/ImGuiSubsystem.cpp"
   "Engine/Engine.cpp"
   )
