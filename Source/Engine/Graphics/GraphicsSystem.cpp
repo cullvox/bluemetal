@@ -22,7 +22,7 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     _renderer = std::make_shared<Renderer>(_device, _swapchain);
 }
 
-GraphicsSubsystem::~GraphicsSubsystem() 
+GraphicsSystem::~GraphicsSystem() 
 {
 }
 
