@@ -1,13 +1,14 @@
 #include "Core/Print.h"
 #include "Graphics/Vulkan.h"
+#include "Graphics/Instance.h"
 #include "Window.h"
 
 namespace bl 
 {
 
-void Window::UseTemporaryWindow(std::functional<void(SDL_Window*)> func)
+void Window::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func)
 {
-    SDL_Window temporaryWindow = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN);
+    SDL_Window* temporaryWindow = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN);
 
     if (!temporaryWindow) 
     {
@@ -40,7 +41,7 @@ std::vector<const char*> Window::GetSurfaceExtensions(Instance* instance)
     return extensions;
 }
 
-Window::Window(const VideoMode& video, const std::string& title, std::shared_ptr<Display> display)
+Window::Window(Device* device, const std::string& title, std::optional<VideoMode> mode)
 {
     CreateWindow(video, title, display);
     CreateSurface();
@@ -51,12 +52,11 @@ Window::~Window()
     SDL_DestroyWindow(_window);
 }
 
-glm::ivec2 Window::getExtent() const
+VkExtent2D Window::GetExtent() const
 {
-    int width = 0, height = 0;
-    SDL_Vulkan_GetDrawableSize(_window, &width, &height);
-
-    return glm::ivec2{width, height};
+    int w = 0, h = 0;
+    SDL_Vulkan_GetDrawableSize(_window, &w, &h);
+    return VkExtent2D{(uint32_t)w, (uint32_t)h};
 }
 
 SDL_Window* Window::Get() const 
@@ -64,23 +64,28 @@ SDL_Window* Window::Get() const
     return _window; 
 }
 
-void Window::CreateWindow(const VideoMode& video, const std::string& title, std::shared_ptr<Display>& display)
+void Window::CreateWindow(Device* device, const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
 {
     auto flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
+    
+    if (fullscreen)
+        flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    
     auto x = SDL_WINDOWPOS_CENTERED;
     auto y = SDL_WINDOWPOS_CENTERED;
-    auto width = video.extent.x;
-    auto height = video.extent.y;
+    auto w = 1080;
+    auto h = 720;
 
-    // When a display is selected that means fullscreen is going to be enabled.
-    if (display)
+    if (videoMode)
     {
-        flags |= SDL_WINDOW_FULLSCREEN;
-        x = display->getRect().offset.x;
-        y = display->getRect().offset.y;
+        auto mode = videoMode.value();
+        x = mode.rect.offset.x;
+        y = mode.rect.offset.y;
+        w = mode.rect.extent.width;
+        h = mode.rect.extent.height;
     }
 
-    _window = SDL_CreateWindow(title.c_str(), x, y, width, height, flags);
+    _window = SDL_CreateWindow(title.c_str(), x, y, w, h, flags);
     if (!_window) 
     {
         throw std::runtime_error("Could not create an SDL2 window!");

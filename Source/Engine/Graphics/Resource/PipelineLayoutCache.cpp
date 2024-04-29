@@ -3,7 +3,7 @@
 namespace bl 
 {
 
-PipelineLayoutCache::PipelineLayoutCache(std::shared_ptr<GfxDevice> device)
+PipelineLayoutCache::PipelineLayoutCache(Device* device)
     : _device(device)
 {
 }

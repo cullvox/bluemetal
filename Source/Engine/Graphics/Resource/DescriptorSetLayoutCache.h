@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Hash.h"
-#include "Device.h"
+#include "Graphics/Device.h"
 #include "ShaderReflection.h"
 
 namespace bl

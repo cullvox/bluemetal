@@ -4,14 +4,12 @@
 #include "Core/Json.h"
 #include "Resource.h"
 
-using 
-
 namespace bl
 {
 
 class ResourceBuilder
 {
-    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& additionalData) = 0;
+    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& data) = 0;
 };
 
 class ResourceManager

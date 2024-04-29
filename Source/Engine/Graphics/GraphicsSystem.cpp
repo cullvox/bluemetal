@@ -61,6 +61,23 @@ PipelineLayoutCache& GraphicsSubsystem::GetPipelineLayoutCache()
     return _pipelineLayoutCache; 
 }
 
+std::vector<Display*> GrahphicsSystem::GetDisplays()
+{
+    int displayCount = SDL_GetNumVideoDisplays();
+
+    static std::vector<Display*> displays = [displayCount](){
+        std::vector<Display*> temp;
+
+        for (int i = 0; i < displayCount; i++)
+            temp.push_back(new Display(i));
+
+        return temp;
+    }();
+
+    return displays;
+}
+}
+
 std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path)
 {
     if (type == "shader")

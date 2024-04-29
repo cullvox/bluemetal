@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Graphics/GraphicsLimits.h"
-#include "Graphics/Buffer.h"
+#include "Graphics/Config.h"
+#include "Graphics/Resource/Buffer.h"
 #include "Actor.h"
 
 namespace bl
@@ -10,21 +10,17 @@ namespace bl
 class RenderActor : public Actor
 {
 public:
-    RenderActor(
-        const std::string& name,
-        uint64_t uid,
-        std::shared_ptr<GfxDevice> device);
+    RenderActor(const std::string& name, uint64_t uid, std::shared_ptr<GfxDevice> device);
     ~RenderActor();
 
-    /** @brief Updates the per object descriptor set and binds. */
-    virtual void OnRender(RenderData& rd);
+    virtual void OnRender(RenderData& rd); /** @brief Updates the per object descriptor set and binds. */
 
 private:
     void UpdateObjectUBO(int currentFrame);
     
     ObjectUBO _objectData;
-    std::array<VkDescriptorSet, GfxLimits::maxFramesInFlight> _perFrameSets;
-    std::unique_ptr<GfxBuffer> _objectDUBO;
+    std::array<VkDescriptorSet, GraphicsConfig::maxFramesInFlight> _perFrameSets;
+    std::unique_ptr<Buffer> _objectDUBO;
 };
 
 } // namespace bl

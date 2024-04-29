@@ -8,7 +8,7 @@ namespace bl
 PhysicalDevice::PhysicalDevice(VkPhysicalDevice physicalDevice)
     : _physicalDevice(physicalDevice)
 {
-    VkPhysicalDeviceProperties properties = {};
+    VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(_physicalDevice, &_properties);
 }
 
@@ -71,12 +71,13 @@ std::vector<VkSurfaceFormatKHR> PhysicalDevice::getSurfaceFormats(Window& window
 VkFormat PhysicalDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
     for (VkFormat format : candidates) {
-        VkFormatProperties properties = {};
+        VkFormatProperties properties{};
         vkGetPhysicalDeviceFormatProperties(_physicalDevice, format, &properties);
 
         if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features) {
             return format;
-        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features) {
+        }
+        else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features) {
             return format;
         }
     }

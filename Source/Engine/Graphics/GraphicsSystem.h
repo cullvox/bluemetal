@@ -4,13 +4,12 @@
 
 #include "Resource/ResourceManager.h"
 #include "Graphics/Instance.h"
-#include "Graphics/Window/Window.h"
 #include "Graphics/Device.h"
-#include "Graphics/DescriptorSetLayoutCache.h"
-#include "Graphics/PipelineLayoutCache.h"
-#include "Graphics/Swapchain.h"
-#include "Graphics/FrameCounter.h"
-#include "Graphics/Renderer.h"
+#include "Graphics/Window/Window.h"
+#include "Graphics/Window/Swapchain.h"
+#include "Graphics/Resource/DescriptorSetLayoutCache.h"
+#include "Graphics/Resource/PipelineLayoutCache.h"
+#include "Graphics/Renderer/Renderer.h"
 
 namespace bl
 {
@@ -30,7 +29,7 @@ public:
     PipelineLayoutCache* GetPipelineLayoutCache();
     std::vector<PhysicalDevice*> GetPhysicalDevices();
     std::vector<Display*> GetDisplays();
-    std::shared_ptr<RenderWindow> CreateWindow();
+    std::unique_ptr<RenderWindow> CreateWindow();
 
     virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path);
 

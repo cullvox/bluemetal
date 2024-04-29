@@ -6,53 +6,38 @@ namespace bl {
 
 
 /** @brief Creates a graphics image on the physical device. */
-class BLUEMETAL_API GfxImage {
+class Image 
+{
 public:
+    Image(Device* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, uint32_t mipLevels = 0); /** @brief Constructor */
+    Image(Image& copy); /** @brief Copy constructor */
+    Image(Image&& move); /** @brief Move constructor */
+    ~Image(); /** @brief Destructor */
 
-    struct CreateInfo 
-    {
-        VkImageType         type;          /** @brief type Vulkan type of image to create. (1D, 2D or 3D and array variants) */
-        VkFormat            format;        /** @brief format Vulkan format to create the image using. */
-        VkExtent3D          extent;        /** @brief extent How large to create the image in pixels. */
-        VkImageUsageFlags   usage;         /** @brief usage Vulkan usage determining where/how this image will work. */
-        VkImageAspectFlags  aspectMask;    /** @brief aspectMask Vulkan aspects the image will use. */
-        uint32_t            mipLevels = 0; /** @brief mipLevels How many levels of mip maps to generate. */
-    };
+    Image& operator=(Image& rhs); /** @brief Assign copy  */ 
+    Image& operator=(Image&& rhs); /** @brief Assign move */
 
-    /** @brief Constructor */
-    GfxImage(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo);
-
-    /** @brief Destructor */
-    ~GfxImage();
-
-public:
-
-    /** @brief Returns the image size in pixels at construction. */
-    VkExtent3D getExtent() const;
-    
-    /** @brief Returns the image format at construction. */
-    VkFormat getFormat() const;
-
-    /** @brief Returns the image usage at construction. */
-    VkImageUsageFlags getUsage() const;
-
-    /** @brief Returns the vulkan image created at construction.  */
-    VkImage get() const;
-
-    /** @brief Returns the default image view created at construction. */
-    VkImageView getDefaultView() const;
+    VkImageType GetType() const; /** @brief Returns the image type. */
+    VkExtent3D GetExtent() const; /** @brief Returns the image size in pixels at construction. */
+    VkFormat GetFormat() const; /** @brief Returns the image format at construction. */
+    VkImageUsageFlags GetUsage() const; /** @brief Returns the image usage at construction. */
+    VkImage Get() const; /** @brief Returns the vulkan image created at construction.  */
+    VkImageView GetView() const; /** @brief Returns the default image view created at construction. */
 
 private:
-    void createImage(const CreateInfo& createInfo);
+    void CreateImage();
+    void Copy(Image& other);
 
-    std::shared_ptr<GfxDevice>  _device;
-    VkExtent3D                  _extent;
-    VkImageType                 _type;
-    VkFormat                    _format;
-    VkImageUsageFlags           _usage;
-    VkImage                     _image;
-    VkImageView                 _imageView;
-    VmaAllocation               _allocation;
+    Device* _device;
+    VkExtent3D _extent;
+    VkImageType _type;
+    VkFormat _format;
+    VkImageUsageFlags _usage;
+    VkImageAspectFlags _aspectMask;
+    uint32_t _mipLevels;
+    VkImage _image;
+    VkImageView _imageView;
+    VmaAllocation _allocation;
 };
 
 } // namespace bl

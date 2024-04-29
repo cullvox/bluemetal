@@ -2,83 +2,56 @@
 #include "Core/Print.h"
 #include "Engine/SDLInitializer.h"
 
-namespace bl {
+namespace bl 
+{
 
 Display::Display(int display)
-    : _index(display)
+    : _display(display)
 {
-    _name = std::string(SDL_GetDisplayName(display));
-
-    SDL_Rect sdlRect {};
-    if (SDL_GetDisplayUsableBounds(display, &sdlRect) < 0) 
-    {
-        blError("Could not get a rect on display #{}!", display);
-        return;
-    }
-
-    _rect = Rect2i(
-        glm::ivec2{sdlRect.x, sdlRect.y}, 
-        glm::ivec2{sdlRect.w, sdlRect.h}
-    );
-
-    // Get the displays video modes.
-    int modeCount = SDL_GetNumDisplayModes(display);
-    if (modeCount < 1) {
-        blError("Could not get video modes for display #{}", display);
-        return;
-    }
-
-    // desktop mode
-    _desktopMode = VideoMode(_rect.extent, 0, 0);
-
-    SDL_DisplayMode sdlMode = {};
-    SDL_PixelFormat* pFormat = {};
-    for (int modeIndex = 0; modeIndex < modeCount; modeIndex++) {
-        // get the display mode
-        if (SDL_GetDisplayMode(display, modeIndex, &sdlMode) < 0) {
-            blWarning("Could not get display mode #{} for display #{}!", modeIndex, display);
-            continue; // skip adding this display mode because it's invalid
-        }
-
-        // get the pixel format's information
-        pFormat = SDL_AllocFormat(sdlMode.format);
-        if (!pFormat) {
-            blWarning("Could not allocate SDL Pixel Format for display #{}!", display);
-            continue;
-        }
-
-        // add the display mode
-        _videoModes.emplace_back(
-            glm::ivec2(sdlMode.w, sdlMode.h), // extent
-            (uint8_t)pFormat->BitsPerPixel, // bitsPerPixel
-            (uint16_t)sdlMode.refresh_rate); // refreshRate
-
-        SDL_FreeFormat(pFormat);
-    }
-
-    blInfo("Found display: \"{}\" offset {}x{} res {}x{}", _name, _rect.offset.x, _rect.offset.y, _rect.extent.x, _rect.extent.y);
 }
 
-uint32_t Display::getIndex() const { return _index; }
-const std::string& Display::getName() const { return _name; }
-Rect2i Display::getRect() const { return _rect; }
-const std::vector<VideoMode>& Display::getVideoModes() const { return _videoModes; }
-VideoMode Display::getDesktopMode() const { return _desktopMode; }
+Display::~Display() = default;
 
-std::vector<Display*> Display::getDisplays()
+int Display::Get() const 
+{ 
+    return _display;
+}
+
+std::string Display::GetName() const 
+{ 
+    return SDL_GetDisplayName(_display); 
+}
+
+VkRect2D Display::GetRect() const 
+{ 
+    SDL_Rect rect{};
+    SDL_CHECK(SDL_GetDisplayUsableBounds(_display, &rect))
+    
+    return VkRect2D{{rect.x, rect.y}, {(uint32_t)rect.w, (uint32_t)rect.h}};
+}
+
+std::vector<VideoMode> Display::GetVideoModes() const 
+{ 
+    auto num = SDL_GetNumDisplayModes(_display);
+    auto offset = GetOffset();
+
+    std::vector<VideoMode> modes{};
+    SDL_DisplayMode mode{};
+    for (int i = 0; i < num; i++) 
+    {
+        SDL_CHECK(SDL_GetDisplayMode(_display, i, &mode))
+        modes.emplace_back(VkRect2D{offset, {(uint32_t)mode.w, (uint32_t)mode.h}}, mode.refresh_rate);
+    }
+
+    return modes;
+}
+
+VideoMode Display::GetDesktopMode() const 
 {
-    int displayCount = SDL_GetNumVideoDisplays();
+    SDL_DisplayMode mode{};
+    SDL_CHECK(SDL_GetDesktopDisplayMode(_display, &mode))
 
-    static std::vector<Display*> displays = [displayCount]() {
-        std::vector<Display*> temp;
-
-        for (int i = 0; i < displayCount; i++)
-            temp.push_back(new Display(i));
-
-        return temp;
-    }();
-
-    return displays;
+    return VideoMode{{GetOffset(), {(uint32_t)mode.w, (uint32_t)mode.h}}, mode.refresh_rate};
 }
 
 } // namespace bl

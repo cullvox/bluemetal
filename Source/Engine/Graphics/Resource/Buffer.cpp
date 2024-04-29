@@ -1,32 +1,27 @@
 #include "Buffer.h"
 #include "Core/Print.h"
 
-namespace bl {
+namespace bl 
+{
 
-GfxBuffer::GfxBuffer(
-    std::shared_ptr<GfxDevice>  device,
-    VkBufferUsageFlags          usage,
-    VkMemoryPropertyFlags       memoryProperties,
-    VkDeviceSize                size,
-    VmaAllocationInfo*          allocationInfo)
+Buffer::Buffer(Device* device, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* allocationInfo)
     : _device(device)
     , _usage(usage)
     , _memoryProperties(memoryProperties)
     , _size(size)
 {
-    createBuffer(allocationInfo);
+    CreateBuffer(allocationInfo);
 }
 
-GfxBuffer::~GfxBuffer() 
+Buffer::~Buffer() 
 { 
-    vmaDestroyBuffer(_device->getAllocator(), _buffer, _allocation);
+    vmaDestroyBuffer(_device->GetAllocator(), _buffer, _allocation);
 }
 
-void GfxBuffer::createBuffer(VmaAllocationInfo* allocationInfo)
+void Buffer::CreateBuffer(VmaAllocationInfo* allocationInfo)
 {
-
     // Build the buffer create info.
-    uint32_t graphicsFamilyIndex = _device->getGraphicsFamilyIndex();
+    uint32_t graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
 
     VkBufferCreateInfo bufferCreateInfo = {};
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -51,34 +46,45 @@ void GfxBuffer::createBuffer(VmaAllocationInfo* allocationInfo)
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 0.0f;
 
-    VK_CHECK(vmaCreateBuffer(_device->getAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, allocationInfo))
+    VK_CHECK(vmaCreateBuffer(_device->GetAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, allocationInfo))
 }
 
-void GfxBuffer::map(void** mapped)
+void Buffer::Map(void** mapped)
 {
-    VK_CHECK(vmaMapMemory(_device->getAllocator(), _allocation, mapped))
+    VK_CHECK(vmaMapMemory(_device->GetAllocator(), _allocation, mapped))
 }
 
-void GfxBuffer::unmap()
+void Buffer::Unmap()
 {
-    vmaUnmapMemory(_device->getAllocator(), _allocation);
+    vmaUnmapMemory(_device->GetAllocator(), _allocation);
 }
 
-VmaAllocation GfxBuffer::getAllocation() const { return _allocation; }
-VkBuffer GfxBuffer::getBuffer() const { return _buffer; }
-VkDeviceSize GfxBuffer::getSize()  const { return _size; }
+VmaAllocation Buffer::GetAllocation() const 
+{ 
+    return _allocation; 
+}
 
-void GfxBuffer::upload(VkBufferCopy copyRegion, void* srcData)
+VkBuffer Buffer::Get() const 
+{ 
+    return _buffer; 
+}
+
+VkDeviceSize Buffer::GetSize() const 
+{ 
+    return _size; 
+}
+
+void Buffer::Upload(VkBufferCopy copyRegion, void* srcData)
 {
     // Build a host visible intermediate buffer for a quick transfer.
-    GfxBuffer intermediateBuffer{
+    Buffer intermediateBuffer{
         _device, 
         VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, 
         copyRegion.size};
 
     void* mapped = nullptr;
-    intermediateBuffer.map(&mapped);
+    intermediateBuffer.Map(&mapped);
 
     std::memcpy(mapped, srcData, copyRegion.srcOffset + copyRegion.size);
 
@@ -87,17 +93,17 @@ void GfxBuffer::upload(VkBufferCopy copyRegion, void* srcData)
     // And srcOffset is set to zero to negate this.
     copyRegion.srcOffset = 0; 
 
-    _device->immediateSubmit([&](VkCommandBuffer cmd){ 
-        vkCmdCopyBuffer(cmd, intermediateBuffer.getBuffer(), _buffer, 1, &copyRegion); 
+    _device->ImmediateSubmit([&](VkCommandBuffer cmd){ 
+        vkCmdCopyBuffer(cmd, intermediateBuffer.Get(), _buffer, 1, &copyRegion); 
     });
 
-    intermediateBuffer.unmap();
+    intermediateBuffer.Unmap();
 }
 
-void GfxBuffer::upload(void* srcData)
+void Buffer::Upload(void* srcData)
 {
-    VkBufferCopy region{0, 0, getSize()};
-    upload(region, srcData);
+    VkBufferCopy region{0, 0, GetSize()};
+    Upload(region, srcData);
 }
 
 

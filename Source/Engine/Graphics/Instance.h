@@ -19,8 +19,8 @@ public:
 
     VkInstance Get() const; /** @brief Returns the underlying VkInstance object. */
     bool GetValidationEnabled() const; /** @brief Returns true if validation layers are enabled. */
-    const std::vector<PhysicalDevice>& GetPhysicalDevices() const; /** @brief Returns the physical devices to choose from. */    
-    PhysicalDevice& ChoosePhysicalDevice() const; /** @brief Magically chooses a physical device that might be a good choice to use for device creation. */
+    std::vector<PhysicalDevice*> GetPhysicalDevices() const; /** @brief Returns the physical devices to choose from. */    
+    PhysicalDevice* ChoosePhysicalDevice() const; /** @brief Magically chooses a physical device that might be a good choice to use for device creation. */
 
 private:
     static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData); /** @brief Vulkan debug callback from VkDebugUtilsMessengerEXT. */
@@ -35,7 +35,7 @@ private:
     PFN_vkCreateDebugUtilsMessengerEXT _createDebugUtilsMessengerEXT;
     PFN_vkDestroyDebugUtilsMessengerEXT _destroyDebugUtilsMessengerEXT;
     VkDebugUtilsMessengerEXT _messenger;
-    std::vector<PhysicalDevice> _physicalDevices;
+    std::vector<std::unique_ptr<PhysicalDevice>> _physicalDevices;
 };
 
 } // namespace bl

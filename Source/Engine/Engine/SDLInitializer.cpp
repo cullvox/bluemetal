@@ -1,5 +1,7 @@
 #include "SDLInitializer.h"
 
+#include "Precompiled.h"
+
 namespace bl 
 {
 

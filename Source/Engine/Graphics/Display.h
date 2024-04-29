@@ -11,12 +11,19 @@ namespace bl
 class Display
 {
 public:
-    std::string GetName() = 0; /** @brief Returns a human readable name of this monitor. */
-    VkRect2D GetRect() = 0; /** @brief Returns the offset and extent of the display in pixels. */
-    VideoMode GetDesktopMode() = 0; /** @brief Returns the main displays at windowed excluding the size of the taskbar. */
-    std::vector<VideoMode> GetVideoModes() = 0; /** @brief Returns all video modes available on this display. */
-    uint32_t GetID() = 0; /** @brief Returns the a unique index for this display, used for config settings. */
+    Display(int display);
+    ~Display();
 
+    int Get() const; /** @brief Returns the a unique index for this display, used for config settings. */
+    std::string GetName() const; /** @brief Returns a human readable name of this monitor. */
+    VkOffset2D GetOffset() const; /** @brief Returns the offset of the pixel start of the display. */
+    VkExtent2D GetExtent() const; /** @brief Returns the pixel size of the display. */
+    VkRect2D GetRect() const; /** @brief Returns the offset and extent of the display in pixels. */
+    VideoMode GetDesktopMode() const; /** @brief Returns the main displays at windowed excluding the size of the taskbar. */
+    std::vector<VideoMode> GetVideoModes() const; /** @brief Returns all video modes available on this display. */
+
+private:
+    int _display;
 };
 
 } // namespace bl

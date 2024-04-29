@@ -28,7 +28,7 @@
 namespace bl 
 {
 
-Device::Device(Instance& instance, PhysicalDevice& physicalDevice)
+Device::Device(Instance* instance, PhysicalDevice* physicalDevice)
     : _instance(instance)
     , _physicalDevice(physicalDevice)
 {
@@ -215,7 +215,7 @@ void Device::CreateDevice()
     uint32_t i = 0;
 
     // Use a temporary window and surface for surface support checking.
-    Window::UseTemporarySurface([&](VkSurfaceKHR surface)
+    Window::UseTemporarySurface(_instance, [&](VkSurfaceKHR surface)
     {
 
         // Check for queue usage.

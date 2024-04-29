@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Device.h"
-#include "Buffer.h"
+#include "Graphics/Resource/Buffer.h"
 
 namespace bl
 {
@@ -10,7 +10,7 @@ class BLUEMETAL_API Mesh
 {
 public:
     template<typename TVertex>
-    Mesh(std::shared_ptr<GfxDevice> device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices);
+    Mesh(Device* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices);
 
     template<typename TVertex>
     void setVertices(const std::vector<TVertex>& vertices);
@@ -19,9 +19,9 @@ public:
     void bind(VkCommandBuffer cmd);
 
 private:
-    std::shared_ptr<GfxDevice> _device;
-    std::unique_ptr<GfxBuffer> _vertexBuffer;
-    std::unique_ptr<GfxBuffer> _indexBuffer;
+    Device* _device;
+    std::unique_ptr<Buffer> _vertexBuffer;
+    std::unique_ptr<Buffer> _indexBuffer;
 };
 
 } // namespace bl

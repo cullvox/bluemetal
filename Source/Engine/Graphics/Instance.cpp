@@ -31,19 +31,22 @@ bool Instance::GetValidationEnabled() const
     return _enableValidation;
 }
 
-const std::vector<PhysicalDevice>& Instance::GetPhysicalDevices() const
+std::vector<PhysicalDevice*> Instance::GetPhysicalDevices() const
 {
-    return _physicalDevices;
+    std::vector<PhysicalDevice*> out;
+    std::transform(_physicalDevices.begin(), _physicalDevices.end(), 
+        std::back_inserter(out), [](auto&& pd){ return pd.get(); });
+
+    return out;
 }
 
-PhysicalDevice& Instance::ChoosePhysicalDevice() const
+PhysicalDevice* Instance::ChoosePhysicalDevice() const
 {
     auto physicalDevices = GetPhysicalDevices();
-
     auto it = std::find_if(physicalDevices.begin(), physicalDevices.end(), 
                 [](auto&& pd)
                 { 
-                    return pd.GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; 
+                    return pd->GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; 
                 });
                     
     if (it != physicalDevices.end())
@@ -191,8 +194,10 @@ void Instance::EnumeratePhysicalDevices()
     physicalDevices.resize(physicalDeviceCount);
     VK_CHECK(vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, physicalDevices.data()))
 
+    _physicalDevices.reserve(physicalDeviceCount);
+
     for (VkPhysicalDevice pd : physicalDevices)
-        _physicalDevices.emplace_back(pd);
+        _physicalDevices.emplace_back(std::make_unique<PhysicalDevice>(pd));
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL Instance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)

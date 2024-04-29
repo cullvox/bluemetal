@@ -1,21 +1,71 @@
 #include "Image.h"
 #include "Core/Print.h"
 
-namespace bl {
-
-GfxImage::GfxImage(std::shared_ptr<GfxDevice> device, const CreateInfo& createInfo)
-    : _device(device)
+namespace bl 
 {
-    createImage(createInfo);
+
+Image::Image(Device* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, uint32_t mipLevels)
+    : _device(device)
+    , _type(type)
+    , _extent(extent)
+    , _format(format)
+    , _usage(usage)
+    , _aspectMask(aspectMask)
+    , _mipLevels(mipLevels)
+{
+    CreateImage(createInfo);
 }
 
-GfxImage::~GfxImage() 
+Image::Image(Image& rhs)
+    : _device(rhs.device)
+    , _type(rhs.type)
+    , _extent(rhs.extent)
+    , _format(rhs.format)
+    , _usage(rhs.usage)
+    , _aspectMask(rhs.aspectMask)
+    , _mipLevels(rhs.mipLevels)
+{
+    CreateImage();
+
+}
+
+Image::Image(Image&& move)
+{
+
+}
+
+Image::~Image() 
 { 
     vkDestroyImageView(_device->get(), _imageView, nullptr);
     vmaDestroyImage(_device->getAllocator(), _image, _allocation);
 }
 
-void GfxImage::createImage(const CreateInfo& createInfo)
+VkExtent3D Image::GetExtent() const 
+{ 
+    return _extent; 
+}
+
+VkFormat Image::GetFormat() const 
+{ 
+    return _format;
+}
+
+VkImageUsageFlags Image::GetUsage() const 
+{ 
+    return _usage;
+}
+
+VkImageView Image::GetView() const 
+{
+    return _imageView;
+}
+
+VkImage Image::Get() const 
+{ 
+    return _image;
+}
+
+void Image::CreateImage(const CreateInfo& createInfo)
 {
     _type = createInfo.type;
     _format = createInfo.format;
@@ -30,8 +80,8 @@ void GfxImage::createImage(const CreateInfo& createInfo)
     imageCreateInfo.flags = {};
     imageCreateInfo.imageType = _type;
     imageCreateInfo.format = _format;
-    imageCreateInfo.extent = (VkExtent3D)_extent;
-    imageCreateInfo.mipLevels = createInfo.mipLevels;
+    imageCreateInfo.extent = _extent;
+    imageCreateInfo.mipLevels = _mipLevels;
     imageCreateInfo.arrayLayers = 1;
     imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
@@ -60,9 +110,9 @@ void GfxImage::createImage(const CreateInfo& createInfo)
     componentMapping.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
     VkImageSubresourceRange subresourceRange = {};
-    subresourceRange.aspectMask = createInfo.aspectMask;
+    subresourceRange.aspectMask = _aspectMask;
     subresourceRange.baseMipLevel = 0;
-    subresourceRange.levelCount = createInfo.mipLevels;
+    subresourceRange.levelCount = _mipLevels;
     subresourceRange.baseArrayLayer = 0;
     subresourceRange.layerCount = 1;
 
@@ -79,10 +129,11 @@ void GfxImage::createImage(const CreateInfo& createInfo)
     VK_CHECK(vkCreateImageView(_device->get(), &viewCreateInfo, nullptr, &_imageView))
 }
 
-VkExtent3D GfxImage::getExtent() const { return _extent; }
-VkFormat GfxImage::getFormat() const { return _format; }
-VkImageUsageFlags GfxImage::getUsage() const { return _usage; }
-VkImageView GfxImage::getDefaultView() const { return _imageView; }
-VkImage GfxImage::get() const { return _image; }
+void Image::Copy(Image& other)
+{
+    _device->ImmediateSubmit([](VkCommandBuffer cmd){
+        vmaCopy
+    });
+}
 
 } // namespace bl

@@ -7,7 +7,7 @@
 #include "Resource/ResourceManager.h"
 
 #include "Core/Json.h"
-#include "SDLSubsystem.h"
+#include "SDLInitializer.h"
 #include "Audio/AudioSystem.h"
 #include "Graphics/GraphicsSystem.h"
 #include "ImGuiSubsystem.h"

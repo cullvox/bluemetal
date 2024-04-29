@@ -2,8 +2,8 @@
 
 #include "Precompiled.h"
 #include "Core/Hash.h"
-#include "Vulkan.h"
-#include "Device.h"
+#include "Graphics/Vulkan.h"
+#include "Graphics/Device.h"
 
 namespace bl 
 {
@@ -55,15 +55,13 @@ struct PipelineLayoutInfoHash
 class PipelineLayoutCache
 {
 public:
-    PipelineLayoutCache(std::shared_ptr<GfxDevice> device);
+    PipelineLayoutCache(Device* device);
     ~PipelineLayoutCache();
 
-    VkPipelineLayout acquire(
-        std::vector<VkDescriptorSetLayout>  setLayouts, 
-        std::vector<VkPushConstantRange>    ranges);
+    VkPipelineLayout acquire(std::vector<VkDescriptorSetLayout> setLayouts, std::vector<VkPushConstantRange> ranges);
 
 private:
-    std::shared_ptr<GfxDevice> _device;
+    Device* _device;
     std::unordered_map<PipelineLayoutInfo, VkPipelineLayout, PipelineLayoutInfoHash> _cache;
 };
 

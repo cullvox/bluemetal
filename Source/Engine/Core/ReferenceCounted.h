@@ -49,7 +49,7 @@ public:
     ReferenceCounter& operator=(ReferenceCounter& rhs)
     {
         _value->DecreaseRefs();
-        _value = copy._value;
+        _value = rhs._value;
         _value->IncreaseRefs(); 
     }
 

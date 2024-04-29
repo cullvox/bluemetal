@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Graphics/RenderPass.h"
-#include "Graphics/Swapchain.h"
+#include "Graphics/Renderer/RenderPass.h"
+#include "Graphics/Window/Swapchain.h"
 
 namespace bl 
 {

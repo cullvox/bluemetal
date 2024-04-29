@@ -2,7 +2,7 @@
 
 #include "Precompiled.h"
 #include "Export.h"
-#include "PipelineResource.h"
+// #include "PipelineResource.h"
 
 namespace bl
 {
