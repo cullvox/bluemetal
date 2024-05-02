@@ -8,16 +8,16 @@ void Mesh::setIndices(const std::vector<uint32_t>& indices)
     size_t ibSize = sizeof(uint32_t) * indices.size();
 
     // copy staging buffer to a buffer on device
-    _indexBuffer = std::make_unique<GfxBuffer>(_device, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, ibSize);
-    _indexBuffer->upload((void*)indices.data());
+    _indexBuffer = std::make_unique<Buffer>(_device, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, ibSize);
+    _indexBuffer->Upload((void*)indices.data());
 }
 
 void Mesh::bind(VkCommandBuffer cmd)
 {
     VkDeviceSize offset = 0;
-    VkBuffer buffer = _vertexBuffer->getBuffer();
+    VkBuffer buffer = _vertexBuffer->Get();
     vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &offset);
-    vkCmdBindIndexBuffer(cmd, _indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(cmd, _indexBuffer->Get(), 0, VK_INDEX_TYPE_UINT32);
 }
 
 } // namespace bl

@@ -1,11 +1,9 @@
 #pragma once
 
-#include "Device.h"
-#include "Image.h"
-#include "Pipeline.h"
-#include "Swapchain.h"
-#include "PresentPass.h"
 #include "Config.h"
+#include "Device.h"
+#include "Window.h"
+#include "PresentPass.h"
 
 namespace bl {
 
@@ -15,7 +13,9 @@ public:
     Renderer(Device* device, Window* window); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
+    Window* GetWindow();
     void Recreate();
+    RenderPass* GetUIPass();
     void Render(std::function<void(VkCommandBuffer)> func);
 
 private:
@@ -23,6 +23,8 @@ private:
     void DestroySyncObjects();
 
     Device* _device;
+    Window* _window;
+    Swapchain* _swapchain;
     std::vector<VkCommandBuffer> _commandBuffers;
     std::vector<VkSemaphore> _imageAvailableSemaphores;
     std::vector<VkSemaphore> _renderFinishedSemaphores;

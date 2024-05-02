@@ -150,7 +150,7 @@ void Swapchain::ChooseFormat()
 
     // Look for the desired surface format.
     if (std::any_of(formats.begin(), formats.end(), 
-        [](auto& sf) {
+        [](auto sf) {
             return sf == GraphicsConfig::defaultSurfaceFormat;
         })) 
     {

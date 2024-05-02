@@ -4,7 +4,7 @@
 namespace bl 
 {
 
-PresentPass::PresentPass(Device* device, std::shared_ptr<Swapchain> swapchain)
+PresentPass::PresentPass(Device* device, Swapchain* swapchain)
     : _device(device)
     , _swapchain(swapchain)
 {
@@ -46,7 +46,7 @@ void PresentPass::Begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index
     beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     beginInfo.pNext = nullptr;
     beginInfo.renderPass = _pass;
-    beginInfo.framebuffer = _swapFramebuffers[index];
+    beginInfo.framebuffer = _framebuffers[index];
     beginInfo.renderArea = renderArea;
     beginInfo.clearValueCount = (uint32_t)clearValues.size();
     beginInfo.pClearValues = clearValues.data();

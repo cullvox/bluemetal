@@ -2,8 +2,8 @@
 
 #include "Device.h"
 
-namespace bl {
-
+namespace bl 
+{
 
 /** @brief Creates a graphics image on the physical device. */
 class Image 

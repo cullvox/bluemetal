@@ -33,6 +33,9 @@ private:
     std::unique_ptr<GraphicsSystem> _graphics;
     std::unique_ptr<ImGuiSystem> _imgui;
     std::unique_ptr<AudioSystem> _audio;
+
+    std::unique_ptr<Window> _window;
+    std::unique_ptr<Renderer> _renderer;
 };
 
 } // namespace bl

@@ -5,14 +5,15 @@ namespace bl
 {
 
 Engine::Engine()
-    : _config(std::ifstream{"Config/Config.json"})
-    , _sdl()
+    : _sdl()
 {
     blInfo("Constructing bluemetal engine {}", bl::to_string(bl::engineVersion));
 
     _resourceManager = std::make_unique<ResourceManager>(this);
     _graphics = std::make_unique<GraphicsSystem>(this);
-    _imgui = std::make_unique<ImGuiSubsystem>(this);
+    _window = _graphics->CreateWindow();
+    _renderer = _graphics->CreateRenderer(_window);
+    _imgui = std::make_unique<ImGuiSystem>(this);
     _audio = std::make_unique<AudioSystem>(this);
 }
 

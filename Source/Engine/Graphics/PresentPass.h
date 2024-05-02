@@ -25,8 +25,8 @@ private:
 
     Device* _device;
     Swapchain* _swapchain;	
-    std::vector<VkFramebuffer> _framebuffers;
     VkRenderPass _pass;
+    std::vector<VkFramebuffer> _framebuffers;
 };
 
 } // namespace bl

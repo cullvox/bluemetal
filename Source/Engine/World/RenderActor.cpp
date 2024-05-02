@@ -4,31 +4,28 @@
 namespace bl
 {
 
-RenderActor::RenderActor(
-    const std::string&          name,
-    uint64_t                    uid,
-    std::shared_ptr<GfxDevice>  device)
+RenderActor::RenderActor(const std::string& name, uint64_t uid, Device* device)
     : Actor(name, uid)
 {
 
     // Build the dynamic uniform buffer object.
-    _objectDUBO = std::make_unique<GfxBuffer>(
+    _objectDUBO = std::make_unique<Buffer>(
         device, 
         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-        sizeof(ObjectUBO) * GfxLimits::maxFramesInFlight);
+        sizeof(ObjectUBO) * GraphicsConfig::numFramesInFlight);
 
     // Allocate the object descriptor sets.
 
 
     // Update the descriptor sets.
-    std::array<VkDescriptorBufferInfo, GfxLimits::maxFramesInFlight> bufferInfos{};
-    std::array<VkWriteDescriptorSet, GfxLimits::maxFramesInFlight> descWrites{};
+    std::array<VkDescriptorBufferInfo, GraphicsConfig::numFramesInFlight> bufferInfos{};
+    std::array<VkWriteDescriptorSet, GraphicsConfig::numFramesInFlight> descWrites{};
 
-    for (uint32_t i = 0; i < GfxLimits::maxFramesInFlight; i++)
+    for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++)
     {
         bufferInfos[i] = VkDescriptorBufferInfo{
-            _objectDUBO->getBuffer(),
+            _objectDUBO->Get(),
             sizeof(ObjectUBO) * i,
             sizeof(ObjectUBO)
         };
@@ -47,7 +44,7 @@ RenderActor::RenderActor(
         };
     }
 
-    vkUpdateDescriptorSets(device->get(), GfxLimits::maxFramesInFlight, descWrites.data(), 0, nullptr);
+    vkUpdateDescriptorSets(device->Get(), GraphicsConfig::numFramesInFlight, descWrites.data(), 0, nullptr);
 }
 
 void RenderActor::UpdateObjectUBO(int currentFrame)
@@ -62,7 +59,7 @@ void RenderActor::UpdateObjectUBO(int currentFrame)
         sizeof(ObjectUBO)
     };
 
-    _objectDUBO->upload(copy, &_objectData);
+    _objectDUBO->Upload(copy, &_objectData);
 }
 
 } // namespace bl

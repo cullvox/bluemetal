@@ -25,7 +25,7 @@ public:
     std::string GetDriverName();
     int GetNumChannelsPlaying();
 
-    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path);
+    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& data);
 
     ResourceRef<Sound> CreateSound(std::filesystem::path path);
 

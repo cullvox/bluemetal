@@ -19,7 +19,7 @@ class Engine;
 class ImGuiSystem
 {
 public:
-    ImGuiSystem(Engine* engine);
+    ImGuiSystem(Engine* engine, Renderer* renderer);
     ~ImGuiSystem();
 
     void Process(const SDL_Event& event);
@@ -31,6 +31,7 @@ private:
     void Unload();
 
     Engine* _engine;
+    Renderer* _renderer;
     VkDescriptorPool _descriptorPool;
 };
 

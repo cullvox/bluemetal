@@ -88,15 +88,15 @@ void ImGuiSystem::Process(const SDL_Event& event)
     ImGui_ImplSDL2_ProcessEvent(&event);
 }
 
-void ImGuiSystem::Init()
+void ImGuiSystem::Init(Renderer* renderer)
 {
 
     auto graphics = _engine->GetGraphics();
     auto device = graphics->GetDevice();
     auto instance = graphics->GetInstance();
     auto physicalDevice = graphics->GetPhysicalDevice();
-    auto window = graphics->GetWindow();
-    auto renderPass = graphics->GetRenderer()->getUserInterfacePass();
+    auto window = renderer->GetWindow();
+    auto renderPass = renderer->GetUIPass();
 
     VkDescriptorPoolSize poolSizes[] = { 
         { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },

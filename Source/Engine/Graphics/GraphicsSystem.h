@@ -28,9 +28,10 @@ public:
     std::vector<PhysicalDevice*> GetPhysicalDevices();
     std::vector<Display*> GetDisplays();
     
-    std::unique_ptr<Window> CreateWindow();
+    std::unique_ptr<Window> CreateWindow(const std::string& title, std::optional<VideoMode> videoMode = std::nullopt, bool fullscreen = true);
+    std::unique_ptr<Renderer> CreateRenderer(Window* window);
 
-    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path);
+    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& data);
 
 private:
     Engine* _engine;

@@ -30,7 +30,7 @@
 #include <fmt/compile.h>
 #include <fmt/format.h>
 
-#include <glm/ext/quaternion_float.hpp>
+// #include <glm/ext/quaternion_float.hpp>
 #include <glm/ext/vector_int2.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/mat4x4.hpp>

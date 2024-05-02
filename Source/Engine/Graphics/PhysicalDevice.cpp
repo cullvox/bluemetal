@@ -8,7 +8,6 @@ namespace bl
 PhysicalDevice::PhysicalDevice(VkPhysicalDevice physicalDevice)
     : _physicalDevice(physicalDevice)
 {
-    VkPhysicalDeviceProperties properties{};
     vkGetPhysicalDeviceProperties(_physicalDevice, &_properties);
 }
 

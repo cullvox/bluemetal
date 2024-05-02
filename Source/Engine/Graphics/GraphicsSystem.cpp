@@ -76,7 +76,17 @@ std::vector<Display*> GrahphicsSystem::GetDisplays()
 
     return displays;
 }
+
+std::unique_ptr<Window> GraphicsSystem::CreateWindow(const std::string& title, std::optional<VideoMode> videoMode = std::nullopt, bool fullscreen = true)
+{
+    return std::make_unique<Window>(_device.get(), title, videoMode, fullscreen);
 }
+
+std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(Window* window)
+{
+    return std::make_unique<Renderer>(_device.get(), window);
+}
+
 
 std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path)
 {

@@ -38,8 +38,6 @@ public:
     virtual void DeserializeState(const DeserializeData& sd) {}
 
 protected:
-    friend class Entity;
-
     void SetName(const std::string& name);
     void SetUID(uint64_t uid);
 
