@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Precompiled.h"
+#include "Vulkan.h"
 
 namespace bl
 {

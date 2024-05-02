@@ -3,7 +3,7 @@
 namespace bl 
 {
 
-DescriptorSetLayoutCache::DescriptorSetLayoutCache(std::shared_ptr<GfxDevice> device)
+DescriptorSetLayoutCache::DescriptorSetLayoutCache(Device* device)
     : _device(device)
 {
 }
@@ -11,7 +11,7 @@ DescriptorSetLayoutCache::DescriptorSetLayoutCache(std::shared_ptr<GfxDevice> de
 DescriptorSetLayoutCache::~DescriptorSetLayoutCache()
 {
     for (auto& pair : _cache)
-        vkDestroyDescriptorSetLayout(_device->get(), pair.second, nullptr);
+        vkDestroyDescriptorSetLayout(_device->Get(), pair.second, nullptr);
 }
 
 VkDescriptorSetLayout DescriptorSetLayoutCache::acquire(std::vector<VkDescriptorSetLayoutBinding> b)
@@ -41,7 +41,7 @@ VkDescriptorSetLayout DescriptorSetLayoutCache::acquire(std::vector<VkDescriptor
         createInfo.pBindings = b.data();
 
         VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-        VK_CHECK(vkCreateDescriptorSetLayout(_device->get(), &createInfo, nullptr, &layout))
+        VK_CHECK(vkCreateDescriptorSetLayout(_device->Get(), &createInfo, nullptr, &layout))
 
         // add layout to cache
         _cache[bindings] = layout;

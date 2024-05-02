@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Device.h"
-#include "Graphics/Resource/Buffer.h"
+#include "Buffer.h"
 
 namespace bl
 {

@@ -22,17 +22,17 @@ public:
     Engine(); /** @brief Constructor */
     ~Engine(); /** @brief Destructor */
 
-    std::shared_ptr<GraphicsSystem> GetGraphics();
-    std::shared_ptr<ImGuiSystem> GetImGui();
-    std::shared_ptr<AudioSystem> GetAudio();
+    GraphicsSystem* GetGraphics();
+    ImGuiSystem* GetImGui();
+    AudioSystem* GetAudio();
 
 private:
     nlohmann::json _config;
     SDLInitializer _sdl;
-    std::shared_ptr<ResourceManager> _resourceManager;
-    std::shared_ptr<GraphicsSystem> _graphics;
-    std::shared_ptr<ImGuiSubsystem> _imgui;
-    std::shared_ptr<AudioSystem> _audio;
+    std::unique_ptr<ResourceManager> _resourceManager;
+    std::unique_ptr<GraphicsSystem> _graphics;
+    std::unique_ptr<ImGuiSystem> _imgui;
+    std::unique_ptr<AudioSystem> _audio;
 };
 
 } // namespace bl

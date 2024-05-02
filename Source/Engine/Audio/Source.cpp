@@ -1,32 +1,34 @@
-#include "AudioSource.h"
-
 #include "fmod.h"
 
-namespace bl {
+#include "Source.h"
 
-AudioSource::AudioSource(AudioSystem* pSystem)
+namespace bl 
+{
+
+Source::Source(AudioSystem* pSystem)
     : _system(pSystem)
 {
 }
 
-AudioSource::~AudioSource() { }
-
-void AudioSource::setSound(Sound* pSound) { m_pSound = pSound; }
-
-void AudioSource::set3DAttributes(glm::vec3 position, glm::vec3 velocity)
+Source::~Source() 
 {
-    FMOD_VECTOR pos { position.x, position.y, position.z };
-    FMOD_VECTOR vel { velocity.x, velocity.y, velocity.z };
-    FMOD_Channel_Set3DAttributes(m_pChannel, &pos, &vel);
 }
 
-void AudioSource::play(bool repeat)
+void Source::SetSound(Sound* sound) 
+{ 
+    _sound = sound;
+}
+
+void Source::Set3DAttributes(glm::vec3 position, glm::vec3 velocity)
 {
-    if (FMOD_System_PlaySound(
-            _system->get(), m_pSound->getHandle(), nullptr, false, &m_pChannel)
-        != FMOD_OK) {
-        throw std::runtime_error("Could not play an FMOD Sound!");
-    }
+    FMOD_VECTOR pos{position.x, position.y, position.z};
+    FMOD_VECTOR vel{velocity.x, velocity.y, velocity.z};
+    FMOD_CHECK(_channel->set3DAttributes(&pos, &vel))
+}
+
+void Source::Play(bool repeat)
+{
+    FMOD_CHECK(_system->Get()->playSound(_sound->Get(), nullptr, false, &_channel))
 }
 
 } // namespace bl

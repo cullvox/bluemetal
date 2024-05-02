@@ -1,21 +1,24 @@
+#include "Listener.h"
 
-///////////////////////////////
-// Headers
-///////////////////////////////
+namespace bl 
+{
 
-#include "AudioListener.h"
-
-namespace bl {
-
-///////////////////////////////
-// Classes
-///////////////////////////////
-
-AudioListener::AudioListener(AudioSystem* pSystem)
+Listener::Listener(AudioSystem* pSystem)
     : _system(pSystem)
 {
 }
 
-AudioListener::~AudioListener() { }
+Listener::~Listener() 
+{
+}
+
+void Listener::SetAttributes3D(glm::vec3 p, glm::vec3 v, glm::vec3 f, glm::vec3 u)
+{
+    FMOD_VECTOR pos{p.x, p.y, p.z};
+    FMOD_VECTOR vel{v.x, v.y, v.z};
+    FMOD_VECTOR fwd{f.x, f.y, f.z};
+    FMOD_VECTOR up{u.x, u.y, u.z};
+    FMOD_CHECK(_system->Get()->set3DListenerAttributes(0, &pos, &vel, &vel, &up))
+}
 
 } // namespace bl

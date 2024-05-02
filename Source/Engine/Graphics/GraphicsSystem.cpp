@@ -1,6 +1,6 @@
-#include "GraphicsSubsystem.h"
-#include "Engine.h"
 #include "Core/Print.h"
+#include "Engine/Engine.h"
+#include "GraphicsSystem.h"
 
 namespace bl 
 {
@@ -26,37 +26,37 @@ GraphicsSystem::~GraphicsSystem()
 {
 }
 
-Instance& GraphicsSubsystem::GetInstance() 
+Instance& GraphicsSystem::GetInstance() 
 { 
     return _instance; 
 }
 
-PhysicalDevice& GraphicsSubsystem::GetPhysicalDevice() 
+PhysicalDevice& GraphicsSystem::GetPhysicalDevice() 
 { 
     return _physicalDevice; 
 }
 
-RenderWindow& GraphicsSubsystem::GetWindow() 
+RenderWindow& GraphicsSystem::GetWindow() 
 { 
     return _window; 
 }
 
-Device& GraphicsSubsystem::GetDevice() 
+Device& GraphicsSystem::GetDevice() 
 { 
     return _device; 
 }
 
-Renderer& GraphicsSubsystem::GetRenderer() 
+Renderer& GraphicsSystem::GetRenderer() 
 { 
     return _renderer; 
 }
 
-DescriptorSetLayoutCache& GraphicsSubsystem::GetDescriptorCache() 
+DescriptorSetLayoutCache& GraphicsSystem::GetDescriptorCache() 
 { 
     return _descriptorCache; 
 }
 
-PipelineLayoutCache& GraphicsSubsystem::GetPipelineLayoutCache() 
+PipelineLayoutCache& GraphicsSystem::GetPipelineLayoutCache() 
 { 
     return _pipelineLayoutCache; 
 }

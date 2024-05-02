@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Graphics/Instance.h"
-#include "Window/Window.h"
+#include "Window.h"
+#include "Instance.h"
 
 namespace bl {
 

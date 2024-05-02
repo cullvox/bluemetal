@@ -1,5 +1,5 @@
 #include "Core/Print.h"
-#include "RenderWindow.h"
+#include "Window.h"
 #include "PhysicalDevice.h"
 
 namespace bl 
@@ -44,26 +44,26 @@ VkPhysicalDeviceType PhysicalDevice::GetType() const
     return _properties.deviceType;
 }
 
-std::vector<VkPresentModeKHR> PhysicalDevice::GetPresentModes(Window& window) const
+std::vector<VkPresentModeKHR> PhysicalDevice::GetPresentModes(Window* window) const
 {
     std::vector<VkPresentModeKHR> presentModes{};
     uint32_t presentModeCount = 0;
 
-    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window.GetSurface(), &presentModeCount, nullptr))
+    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window->GetSurface(), &presentModeCount, nullptr))
     presentModes.resize(presentModeCount);
-    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window.GetSurface(), &presentModeCount, presentModes.data()))
+    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window->GetSurface(), &presentModeCount, presentModes.data()))
 
     return presentModes;
 }
 
-std::vector<VkSurfaceFormatKHR> PhysicalDevice::getSurfaceFormats(Window& window) const
+std::vector<VkSurfaceFormatKHR> PhysicalDevice::GetSurfaceFormats(Window* window) const
 {
     std::vector<VkSurfaceFormatKHR> surfaceFormats{};
     uint32_t formatCount = 0;
 
-    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->getSurface(), &formatCount, nullptr))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->GetSurface(), &formatCount, nullptr))
     surfaceFormats.resize(formatCount);
-    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->getSurface(), &formatCount, surfaceFormats.data()))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->GetSurface(), &formatCount, surfaceFormats.data()))
     
     return surfaceFormats;
 }

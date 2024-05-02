@@ -8,7 +8,7 @@
 #include "imgui/imgui.h"
 
 #include "Export.h"
-#include "Engine/SDLSubsystem.h"
+#include "Engine/SDLInitializer.h"
 #include "Graphics/Vulkan.h"
 
 namespace bl
@@ -16,21 +16,21 @@ namespace bl
 
 class Engine;
 
-class ImGuiSubsystem
+class ImGuiSystem
 {
 public:
-    ImGuiSubsystem(Engine& engine);
-    ~ImGuiSubsystem();
+    ImGuiSystem(Engine* engine);
+    ~ImGuiSystem();
 
-    void process(const SDL_Event& event);
-    void beginFrame();
-    void endFrame(VkCommandBuffer cmd);
+    void Process(const SDL_Event& event);
+    void BeginFrame();
+    void EndFrame(VkCommandBuffer cmd);
 
 private:
-    void init();
-    void unload();
+    void Init();
+    void Unload();
 
-    Engine& _engine;
+    Engine* _engine;
     VkDescriptorPool _descriptorPool;
 };
 

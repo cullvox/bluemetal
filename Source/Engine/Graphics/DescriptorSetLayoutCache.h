@@ -2,7 +2,6 @@
 
 #include "Core/Hash.h"
 #include "Graphics/Device.h"
-#include "ShaderReflection.h"
 
 namespace bl
 {
@@ -20,6 +19,20 @@ struct DescriptorSetLayoutBindings
             if (rhs.bindings[i].descriptorType != bindings[i].descriptorType) return false;
             if (rhs.bindings[i].descriptorCount != bindings[i].descriptorCount) return false;
             if (rhs.bindings[i].stageFlags != bindings[i].stageFlags) return false;
+        }
+
+        return true;
+    }
+
+    bool EqualDisregardingStage(const bl::DescriptorSetLayoutBindings& rhs) const noexcept
+    {
+        if (bindings.size() != bindings.size()) return false;
+            
+        for (uint32_t i = 0; i < bindings.size(); i++) {
+            if (rhs.bindings[i].binding != bindings[i].binding) return false;
+            if (rhs.bindings[i].descriptorType != bindings[i].descriptorType) return false;
+            if (rhs.bindings[i].descriptorCount != bindings[i].descriptorCount) return false;
+            // if (rhs.bindings[i].stageFlags != bindings[i].stageFlags) return false;
         }
 
         return true;
@@ -47,13 +60,13 @@ struct DescriptorSetLayoutBindingsHash
 class DescriptorSetLayoutCache
 {
 public:
-    DescriptorSetLayoutCache(std::shared_ptr<GfxDevice> device);
+    DescriptorSetLayoutCache(Device* device);
     ~DescriptorSetLayoutCache();
 
     VkDescriptorSetLayout acquire(std::vector<VkDescriptorSetLayoutBinding> bindings);
 
 private:
-    std::shared_ptr<GfxDevice> _device;
+    Device* _device;
     std::unordered_map<DescriptorSetLayoutBindings, VkDescriptorSetLayout, DescriptorSetLayoutBindingsHash> _cache;
 };
 

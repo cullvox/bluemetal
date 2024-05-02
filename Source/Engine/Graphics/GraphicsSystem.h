@@ -1,15 +1,13 @@
 #pragma once
 
-#include "Export.h"
-
 #include "Resource/ResourceManager.h"
-#include "Graphics/Instance.h"
-#include "Graphics/Device.h"
-#include "Graphics/Window/Window.h"
-#include "Graphics/Window/Swapchain.h"
-#include "Graphics/Resource/DescriptorSetLayoutCache.h"
-#include "Graphics/Resource/PipelineLayoutCache.h"
-#include "Graphics/Renderer/Renderer.h"
+#include "Instance.h"
+#include "Device.h"
+#include "Window.h"
+#include "Swapchain.h"
+#include "DescriptorSetLayoutCache.h"
+#include "PipelineLayoutCache.h"
+#include "Renderer.h"
 
 namespace bl
 {
@@ -29,7 +27,8 @@ public:
     PipelineLayoutCache* GetPipelineLayoutCache();
     std::vector<PhysicalDevice*> GetPhysicalDevices();
     std::vector<Display*> GetDisplays();
-    std::unique_ptr<RenderWindow> CreateWindow();
+    
+    std::unique_ptr<Window> CreateWindow();
 
     virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path);
 

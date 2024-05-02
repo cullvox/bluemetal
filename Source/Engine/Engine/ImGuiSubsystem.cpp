@@ -11,15 +11,15 @@
 
 namespace bl {
 
-ImGuiSubsystem::ImGuiSubsystem(Engine& engine)
+ImGuiSystem::ImGuiSystem(Engine* engine)
     : _engine(engine)
 {
-    init();
+    Init();
 }
 
-ImGuiSubsystem::~ImGuiSubsystem()
+ImGuiSystem::~ImGuiSystem()
 {
-    unload();
+    Unload();
 }
 
 static void applyStyle()
@@ -83,20 +83,20 @@ static void applyStyle()
     style.GrabRounding = style.FrameRounding = 2.3f;
 }
 
-void ImGuiSubsystem::process(const SDL_Event& event)
+void ImGuiSystem::Process(const SDL_Event& event)
 {
     ImGui_ImplSDL2_ProcessEvent(&event);
 }
 
-void ImGuiSubsystem::init()
+void ImGuiSystem::Init()
 {
 
-    auto graphics = _engine.getGraphics();
-    auto device = graphics->getDevice();
-    auto instance = graphics->getInstance();
-    auto physicalDevice = graphics->getPhysicalDevice();
-    auto window = graphics->getWindow();
-    auto renderPass = graphics->getRenderer()->getUserInterfacePass();
+    auto graphics = _engine->GetGraphics();
+    auto device = graphics->GetDevice();
+    auto instance = graphics->GetInstance();
+    auto physicalDevice = graphics->GetPhysicalDevice();
+    auto window = graphics->GetWindow();
+    auto renderPass = graphics->GetRenderer()->getUserInterfacePass();
 
     VkDescriptorPoolSize poolSizes[] = { 
         { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
@@ -119,27 +119,27 @@ void ImGuiSubsystem::init()
     poolInfo.poolSizeCount = (uint32_t)std::size(poolSizes);
     poolInfo.pPoolSizes = poolSizes;
 
-    VK_CHECK(vkCreateDescriptorPool(device->get(), &poolInfo, nullptr, &_descriptorPool))
+    VK_CHECK(vkCreateDescriptorPool(device->Get(), &poolInfo, nullptr, &_descriptorPool))
 
     ImGui::CreateContext();
 
-    VkInstance inst = instance->get();
+    VkInstance inst = instance->Get();
     ImGui_ImplVulkan_LoadFunctions([](const char *function_name, void *vulkan_instance) {
         return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance *>(vulkan_instance)), function_name);
     }, &inst);
 
-    ImGui_ImplSDL2_InitForVulkan(window->get());
+    ImGui_ImplSDL2_InitForVulkan(window->Get());
 
     // Initialize ImGui for Vulkan, pass created objects.
     ImGui_ImplVulkan_InitInfo initInfo = {};
-    initInfo.Instance = instance->get();
-    initInfo.PhysicalDevice = physicalDevice->get();
-    initInfo.Device = device->get();
-    initInfo.QueueFamily = device->getGraphicsFamilyIndex();
-    initInfo.Queue = device->getGraphicsQueue();
+    initInfo.Instance = instance->Get();
+    initInfo.PhysicalDevice = physicalDevice->Get();
+    initInfo.Device = device->Get();
+    initInfo.QueueFamily = device->GetGraphicsFamilyIndex();
+    initInfo.Queue = device->GetGraphicsQueue();
     initInfo.PipelineCache = VK_NULL_HANDLE;
     initInfo.DescriptorPool = _descriptorPool;
-    initInfo.RenderPass = renderPass->get();
+    initInfo.RenderPass = renderPass->Get();
     initInfo.Subpass = 0;
     initInfo.MinImageCount = 3;
     initInfo.ImageCount = 3;
@@ -166,30 +166,28 @@ void ImGuiSubsystem::init()
     applyStyle();
 }
 
-void ImGuiSubsystem::unload()
+void ImGuiSystem::Unload()
 {
-    auto graphics = _engine.getGraphics();
-    auto device = graphics->getDevice();
+    auto graphics = _engine->GetGraphics();
+    auto device = graphics->GetDevice();
 
-    device->waitForDevice();
+    device->WaitForDevice();
     ImGui_ImplSDL2_Shutdown();
     ImGui_ImplVulkan_Shutdown();
 
-    vkDestroyDescriptorPool(device->get(), _descriptorPool, nullptr);
+    vkDestroyDescriptorPool(device->Get(), _descriptorPool, nullptr);
 }
 
-void ImGuiSubsystem::beginFrame()
+void ImGuiSystem::BeginFrame()
 {
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL2_NewFrame();
-
     ImGui::NewFrame();
 }
 
-void ImGuiSubsystem::endFrame(VkCommandBuffer cmd)
+void ImGuiSystem::EndFrame(VkCommandBuffer cmd)
 {
     ImGui::Render();
-
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmd);
 }
 

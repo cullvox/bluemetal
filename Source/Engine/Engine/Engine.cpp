@@ -10,10 +10,10 @@ Engine::Engine()
 {
     blInfo("Constructing bluemetal engine {}", bl::to_string(bl::engineVersion));
 
-    _resourceManager = std::make_shared<ResourceManager>();
-    _graphics = std::make_shared<GraphicsSystem>();
-    _imgui = std::make_shared<ImGuiSubsystem>();
-    _audio = std::make_shared<AudioSystem>();
+    _resourceManager = std::make_unique<ResourceManager>(this);
+    _graphics = std::make_unique<GraphicsSystem>(this);
+    _imgui = std::make_unique<ImGuiSubsystem>(this);
+    _audio = std::make_unique<AudioSystem>(this);
 }
 
 Engine::~Engine() 
@@ -22,17 +22,17 @@ Engine::~Engine()
 
 std::shared_ptr<GraphicsSystem> Engine::GetGraphics() 
 {
-    return graphics;
+    return _graphics.get();
 }
 
 std::shared_ptr<AudioSystem> Engine::GetAudio() 
 {
-    return audio;
+    return _audio.get();
 }
 
 std::shared_ptr<ImGuiSystem> Engine::GetImGui() 
 {
-    return imgui;
+    return _imgui.get();
 }
 
 } // namespace bl

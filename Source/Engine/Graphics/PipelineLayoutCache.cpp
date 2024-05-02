@@ -11,7 +11,7 @@ PipelineLayoutCache::PipelineLayoutCache(Device* device)
 PipelineLayoutCache::~PipelineLayoutCache()
 {
     for (auto& pair : _cache)
-        vkDestroyPipelineLayout(_device->get(), pair.second, nullptr);
+        vkDestroyPipelineLayout(_device->Get(), pair.second, nullptr);
 }
 
 VkPipelineLayout PipelineLayoutCache::acquire(
@@ -45,7 +45,7 @@ VkPipelineLayout PipelineLayoutCache::acquire(
     createInfo.pPushConstantRanges = ranges.data();
 
     VkPipelineLayout layout = VK_NULL_HANDLE;
-    VK_CHECK(vkCreatePipelineLayout(_device->get(), &createInfo, nullptr, &layout))
+    VK_CHECK(vkCreatePipelineLayout(_device->Get(), &createInfo, nullptr, &layout))
 
     // Add the new layout to the cache.
     _cache[layoutInfo] = layout;

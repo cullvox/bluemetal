@@ -44,11 +44,11 @@ int AudioSystem::GetNumChannelsPlaying()
     return count;
 }
 
-std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path)
+std::unique_ptr<Resource> AudioSystem::BuildResource(const std::string& type, const std::filesystem::path& path)
 {
     if (type == "sound")
     {
-        return std::make_unique<Sound>(*this, path);
+        return std::make_unique<Sound>(this, path);
     }
     else
     {

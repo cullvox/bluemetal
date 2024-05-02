@@ -9,23 +9,23 @@ namespace bl
 
 class AudioSystem;
 
-class BLUEMETAL_API AudioSource
+class Source
 {
 public:
-    AudioSource(AudioSystem* pSystem);
-    ~AudioSource();
+    Source(AudioSystem* pSystem);
+    ~Source();
 
-    void setSound(Sound* pSound);
-    void set3DAttributes(glm::vec3 position, glm::vec3 velocity);
-    void play(bool repeat = false);
+    void SetSound(Sound* pSound);
+    void Set3DAttributes(glm::vec3 position, glm::vec3 velocity);
+    void Play(bool repeat = false);
 
-    bool isPlaying();
-    bool isStopped();
+    bool IsPlaying();
+    bool IsStopped();
 
 private:
-    AudioSystem*    _system;
-    Sound*          m_pSound;
-    FMOD_CHANNEL*   m_pChannel;
+    AudioSystem* _system;
+    Sound* _sound;
+    FMOD::Channel* _channel;
 };
 
 } // namespace bl

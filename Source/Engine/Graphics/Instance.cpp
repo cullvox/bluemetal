@@ -1,7 +1,7 @@
-#include "Instance.h"
 #include "Core/Print.h"
 #include "Core/Version.h"
-#include "Window/Window.h"
+#include "Window.h"
+#include "Instance.h"
 
 namespace bl {
 

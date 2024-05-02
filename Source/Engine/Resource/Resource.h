@@ -23,7 +23,7 @@ class Resource : public ReferenceCounted
 {
 public:
     Resource() = default;
-    ~Resource() = default;
+    virtual ~Resource() = default;
 
     std::string GetName() const;
     uint64_t GetVersion() const;
