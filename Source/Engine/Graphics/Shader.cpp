@@ -4,14 +4,51 @@
 
 namespace bl {
 
-Shader::Shader(Device* device, VkShaderStageFlagBits stage, const std::vector<char>& binary)
+Shader::Shader(Device* device)
     : _device(device)
-    , _stage(stage)
     , _reflect()
     , _module(VK_NULL_HANDLE)
 {
+}
 
-    if (spvReflectCreateShaderModule(binary.size(), binary.data(), &_reflect) != SPV_REFLECT_RESULT_SUCCESS)
+Shader::~Shader() 
+{ 
+    Unload();
+}
+
+void Shader::Load(const nlohmann::json& json)
+{
+    // Determine the shaders stage from the json
+    auto stage = json["stage"].get<std::string>();
+    if (stage == "vertex")
+    {
+        _stage = VK_SHADER_STAGE_VERTEX_BIT;
+    }
+    else if (stage == "fragment")
+    {
+        _stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+    }
+    else
+    {
+        throw std::runtime_error("Invalid shader stage!");
+    }
+
+    // Load the shader binary into memory.
+    std::ifstream file(GetPath(), std::ios::ate | std::ios::binary);
+
+    if (!file.is_open()) 
+    {
+        throw std::runtime_error("failed to open file!");
+    }
+
+    size_t fileSize = (size_t) file.tellg();
+    std::vector<char> buffer(fileSize);
+
+    file.seekg(0);
+    file.read(buffer.data(), fileSize);
+    file.close();
+
+    if (spvReflectCreateShaderModule(buffer.size(), buffer.data(), &_reflect) != SPV_REFLECT_RESULT_SUCCESS)
     {
         throw std::runtime_error("Could not preform reflection on a shader module!");
     }
@@ -20,14 +57,16 @@ Shader::Shader(Device* device, VkShaderStageFlagBits stage, const std::vector<ch
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     moduleCreateInfo.pNext = nullptr;
     moduleCreateInfo.flags = 0;
-    moduleCreateInfo.codeSize = (uint32_t)binary.size();
-    moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(binary.data());
+    moduleCreateInfo.codeSize = (uint32_t)buffer.size();
+    moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(buffer.data());
 
     VK_CHECK(vkCreateShaderModule(_device->Get(), &moduleCreateInfo, nullptr, &_module))
 }
 
-Shader::~Shader() 
-{ 
+void Shader::Unload()
+{
+    if (_module == VK_NULL_HANDLE) return;
+     
     vkDestroyShaderModule(_device->Get(), _module, nullptr); 
     spvReflectDestroyShaderModule(&_reflect);
 }

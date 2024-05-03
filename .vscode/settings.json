@@ -118,7 +118,8 @@
         "*.ipp": "cpp",
         "hash_set": "cpp",
         "future": "cpp",
-        "__memory": "cpp"
+        "__memory": "cpp",
+        "*.def": "cpp"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",

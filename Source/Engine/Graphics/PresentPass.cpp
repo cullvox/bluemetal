@@ -115,13 +115,13 @@ void PresentPass::DestroyRenderPass()
 void PresentPass::CreateFramebuffers()
 {
     auto extent = _swapchain->GetExtent();
-    auto swapImageViews = _swapchain->GetImageViews();
+    auto attachments = _swapchain->GetImageViews();
     
-    _framebuffers.resize(GraphicsConfig::numFramesInFlight);
+    _framebuffers.resize(_swapchain->GetImageCount());
 
-    for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++) 
+    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) 
     {
-        VkImageView attachment = swapImageViews[i];
+        VkImageView attachment = attachments[i];
 
         VkFramebufferCreateInfo createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -135,7 +135,6 @@ void PresentPass::CreateFramebuffers()
         createInfo.layers = 1;
         
         VK_CHECK(vkCreateFramebuffer(_device->Get(), &createInfo, nullptr, &_framebuffers[i]))
-        i++;
     }
 }
 

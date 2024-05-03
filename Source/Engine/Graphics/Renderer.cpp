@@ -68,6 +68,11 @@ void Renderer::DestroySyncObjects()
     vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), (uint32_t)_commandBuffers.size(), _commandBuffers.data());
 }
 
+Window* Renderer::GetWindow()
+{
+    return _window;
+}
+
 void Renderer::Recreate()
 {
 
@@ -133,7 +138,10 @@ void Renderer::Render(std::function<void(VkCommandBuffer)> func)
 
     VK_CHECK(vkQueueSubmit(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
 
-    _swapchain->QueuePresent(_renderFinishedSemaphores[_currentFrame]);
+    if (_swapchain->QueuePresent(_renderFinishedSemaphores[_currentFrame]))
+    {
+        Recreate();
+    }
 
     _currentFrame = (_currentFrame + 1) % GraphicsConfig::numFramesInFlight;
 }

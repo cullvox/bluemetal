@@ -30,7 +30,7 @@ public:
     bool GetImmediateSupported() const; /** @brief Returns true on VK_PRESENT_MODE_IMMEDIATE being supported on current physical device. */
     bool AcquireNext(VkSemaphore semaphore, VkFence fence); /** @brief Gets the next image in the chain. Returns true if the swapchain needed to be recreated, you'll have to recreate your framebuffers and other accessories. */
     uint32_t GetImageIndex() const; /** @brief Returns the index of the swapchain image to render to. */
-    void QueuePresent(VkSemaphore semaphore); /** Presents the image at GetImageIndex() to the screen. */
+    bool QueuePresent(VkSemaphore semaphore); /** Presents the image at GetImageIndex() to the screen. */
     void Recreate(std::optional<VkPresentModeKHR> presentMode = std::nullopt, std::optional<VkSurfaceFormatKHR> surfaceFormat = std::nullopt); /** @brief Forces a swapchain recreation. */
 
 private:

@@ -23,6 +23,11 @@ Engine::~Engine()
 {
 }
 
+ResourceManager* Engine::GetResourceManager()
+{
+    return _resourceManager.get();
+}
+
 GraphicsSystem* Engine::GetGraphics() 
 {
     return _graphics.get();

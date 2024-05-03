@@ -26,7 +26,7 @@ public:
     void SetTitle(const std::string& title); /** @brief Changes the title displayed on the top of a windowed window. */
     void SetVideoMode(const VideoMode& mode); /** @brief Changes the windows dimensions and video mode. */
     VkSurfaceKHR GetSurface() const; /** @brief Returns the vulkan surface associated with this window. */
-    Swapchain* GetSwapchain(); /** @brief Returns the swapchain associated with this window. */
+    Swapchain* GetSwapchain() const; /** @brief Returns the swapchain associated with this window. */
 
 public:
     static void UseTemporaryWindow(const std::function<void(SDL_Window*)>& func); /** @brief Creates a temporary window that can be used for various non-display purposes. */

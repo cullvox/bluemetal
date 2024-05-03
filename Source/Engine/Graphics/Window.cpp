@@ -105,6 +105,11 @@ VkSurfaceKHR Window::GetSurface() const
     return _surface;
 }
 
+Swapchain* Window::GetSwapchain() const
+{
+    return _swapchain.get();
+}
+
 VkExtent2D Window::GetExtent() const
 {
     int w = 0, h = 0;

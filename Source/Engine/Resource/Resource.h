@@ -2,6 +2,7 @@
 
 #include "Precompiled.h"
 #include "Core/ReferenceCounted.h"
+#include "Core/Json.h"
 
 namespace bl 
 {
@@ -25,24 +26,24 @@ public:
     Resource() = default;
     virtual ~Resource() = default;
 
-    std::string GetName() const;
+    std::string GetPath() const;
     uint64_t GetVersion() const;
     ResourceLoadOp GetLoadOp() const;
     ResourceState GetState() const;
 
-    virtual void Load() = 0;
+    virtual void Load(const nlohmann::json& data) = 0;
     virtual void Unload() = 0;
 
 protected:
     friend class ResourceManager;
 
-    void SetName(const std::string& name);
+    void SetPath(const std::string& path);
     void SetVersion(uint64_t version);
     void SetLoadOp(ResourceLoadOp op);
     void SetState(ResourceState state);
 
 private:
-    std::string _name; /** @brief Usually a path to the resource in the filesystem. Name of the resource as described in the manifest, must be unique. */
+    std::string _path; /** @brief Usually a path to the resource in the filesystem. Name of the resource as described in the manifest, must be unique. */
     uint64_t _version; /** @brief Version of this resource, can change between versions of end software with patches. */
     ResourceLoadOp _loadOp;
     ResourceState _state;

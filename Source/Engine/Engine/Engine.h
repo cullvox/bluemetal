@@ -22,6 +22,7 @@ public:
     Engine(); /** @brief Constructor */
     ~Engine(); /** @brief Destructor */
 
+    ResourceManager* GetResourceManager();
     GraphicsSystem* GetGraphics();
     ImGuiSystem* GetImGui();
     AudioSystem* GetAudio();

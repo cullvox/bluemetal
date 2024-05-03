@@ -2,19 +2,22 @@
 
 #include <spirv_reflect.h>
 
+#include "Resource/Resource.h"
 #include "Device.h"
 
 namespace bl 
 {
 
 /** @brief A single unit of a shader pipeline. */
-class Shader 
+class Shader : public Resource
 {
 public:
-    Shader(Device* device, VkShaderStageFlagBits stage, const std::vector<char>& binary);  /** @brief Constructor */
+    Shader(Device* device);  /** @brief Constructor */
     ~Shader(); /** @brief Destructor */
 
-public:
+    virtual void Load(const nlohmann::json& data);
+    virtual void Unload();
+
     VkShaderStageFlagBits GetStage() const; /** @brief Returns the shader stage created with. */
     const SpvReflectShaderModule& GetReflection() const; /** @brief Returns the reflection module. */
     VkShaderModule Get() const; /** @brief Returns the underlying shader module handle. */

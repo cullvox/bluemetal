@@ -12,13 +12,13 @@ FrameCounter::~FrameCounter()
 {
 }
 
-void FrameCounter::beginFrame()
+void FrameCounter::BeginFrame()
 {
     _startOfFrame = std::chrono::high_resolution_clock::now();
     _frameCount++;
 }
 
-bool FrameCounter::endFrame()
+bool FrameCounter::EndFrame()
 {
     bool endedSecond {};
 
@@ -58,14 +58,14 @@ bool FrameCounter::endFrame()
     return endedSecond;
 }
 
-int FrameCounter::getFramesPerSecond()
+int FrameCounter::GetFramesPerSecond()
 {
     if (_framesPerSecond.size() < 1)
         return 0;
     return _framesPerSecond.back();
 }
 
-float FrameCounter::getAverageFramesPerSecond(uint32_t seconds)
+float FrameCounter::GetAverageFramesPerSecond(uint32_t seconds)
 {
 
     // Make sure we are getting a proper second count.
@@ -85,7 +85,7 @@ float FrameCounter::getAverageFramesPerSecond(uint32_t seconds)
     return averageFPS;
 }
 
-float FrameCounter::getMillisecondsPerFrame()
+float FrameCounter::GetMillisecondsPerFrame()
 {
     if (_millisecondsPerFrame.size() < 1)
         return 0.0f;
@@ -96,7 +96,7 @@ float FrameCounter::getMillisecondsPerFrame()
         / 1000000.0f;
 }
 
-float FrameCounter::getAverageMillisecondsPerFrame(uint32_t frames)
+float FrameCounter::GetAverageMillisecondsPerFrame(uint32_t frames)
 {
 
     // Make sure we are getting a proper second count

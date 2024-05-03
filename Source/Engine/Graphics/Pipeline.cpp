@@ -4,9 +4,8 @@
 namespace bl 
 {
 
-Pipeline::Pipeline(Device* device, const CreateInfo& createInfo)
+Pipeline::Pipeline(Device* device, const PipelineCreateInfo& createInfo)
     : _device(device)
-    , _layout(createInfo.layout)
 {
     Create(createInfo);
 }
@@ -47,7 +46,7 @@ VkPipeline Pipeline::Get() const
 //     }
 // }
 
-void Pipeline::Create(const CreateInfo& createInfo)
+void Pipeline::Create(const PipelineCreateInfo& createInfo)
 {
     std::vector<VkPipelineShaderStageCreateInfo> stages{};
     stages.reserve(createInfo.shaders.size());
@@ -259,7 +258,7 @@ void Pipeline::Create(const CreateInfo& createInfo)
     pipelineCreateInfo.pDepthStencilState = VK_NULL_HANDLE;
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
-    pipelineCreateInfo.layout = createInfo.layout;
+    pipelineCreateInfo.layout = _layout;
     pipelineCreateInfo.renderPass = createInfo.renderPass->Get();
     pipelineCreateInfo.subpass = createInfo.subpass;
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;

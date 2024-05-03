@@ -15,7 +15,7 @@ Instance::Instance(Version appVersion, std::string_view appName, bool enableVali
 Instance::~Instance()
 {
     if (_enableValidation)
-        _destroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);
+        vkDestroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);
     
     volkFinalize();
     vkDestroyInstance(_instance, nullptr);

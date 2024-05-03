@@ -9,23 +9,22 @@
 namespace bl 
 {
 
+struct PipelineCreateInfo /** @brief Create info for pipeline objects. */
+{
+    RenderPass* renderPass; /** @brief What pass this pipeline is operating within. */
+    uint32_t subpass; /** @brief What subpass this pipeline is used in. */
+    std::vector<VkVertexInputBindingDescription> vertexInputBindings;
+    std::vector<VkVertexInputAttributeDescription> vertexInputAttribs;
+    std::vector<Shader*> shaders; /** @brief The shaders used in this pipeline program. */
+    DescriptorSetLayoutCache* setLayoutCache;
+    PipelineLayoutCache* pipelineLayoutCache;
+};
+
 /** @brief A program consisting of shaders designed to run on the GPU. */
 class Pipeline 
 {
 public:
-    struct CreateInfo /** @brief Create info for pipeline objects. */
-    {
-        VkPipelineLayout layout;
-        RenderPass* renderPass; /** @brief What pass this pipeline is operating within. */
-        uint32_t subpass; /** @brief What subpass this pipeline is used in. */
-        std::vector<VkVertexInputBindingDescription> vertexInputBindings;
-        std::vector<VkVertexInputAttributeDescription> vertexInputAttribs;
-        std::vector<Shader*> shaders; /** @brief The shaders used in this pipeline program. */
-        DescriptorSetLayoutCache* setLayoutCache;
-        PipelineLayoutCache* pipelineLayoutCache;
-    };
-
-    Pipeline(Device* device, const CreateInfo& info); /** @brief Constructor */
+    Pipeline(Device* device, const PipelineCreateInfo& info); /** @brief Constructor */
     ~Pipeline(); /** @brief Destructor */
 
     VkPipelineLayout GetLayout() const;
@@ -34,7 +33,7 @@ public:
     void bind(VkCommandBuffer cmd); /** @brief Binds this pipeline to a command buffer. */
 
 private:
-    void Create(const CreateInfo& createInfo);
+    void Create(const PipelineCreateInfo& createInfo);
 
     Device* _device;
     VkPipelineLayout _layout;

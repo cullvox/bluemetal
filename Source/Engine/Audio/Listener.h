@@ -1,9 +1,11 @@
 #pragma once
 
-#include "AudioSystem.h"
+#include "Precompiled.h"
 
 namespace bl
 {
+
+class AudioSystem;
 
 class Listener
 {

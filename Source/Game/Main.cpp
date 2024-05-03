@@ -1,4 +1,5 @@
 #include "Core/Time.h"
+#include "Core/FrameCounter.h"
 #include "Engine/Engine.h"
 #include "Graphics/Shader.h"
 #include "Graphics/PhysicalDevice.h"
@@ -33,127 +34,96 @@ int main(int argc, const char** argv)
     bl::Engine engine;
 
     auto audio = engine.GetAudio();
-    auto sound = audio->CreateSound("Resources/Audio/Music/Mutation.flac");
+    // auto sound = audio->CreateSound("Resources/Audio/Music/Mutation.flac");
     auto listener = audio->CreateListener();
     auto source = audio->CreateSource();
 
-    source->SetSound(sound);
-    source->Play();
+    // source->SetSound(sound.get());
+    // source->Play();
 
     // float last = 0.0f;
     // float current = bl::Time::current();
 
-    auto imgui = engine.getImGui();
+    auto graphics = engine.GetGraphics();
+    auto imgui = engine.GetImGui();
 
+    // auto resourceMgr = engine.GetResourceManager();
+// 
+    // auto vert = resourceMgr->Load<Shader>("Resources/Shaders/Default.vert.spv");
+    // auto frag = resourceMgr->Load<Shader>("Resources/Shaders/Default.frag.spv");
 
-    auto loadShader = [=](const char* path, VkShaderStageFlagBits stage){
-        std::ifstream file(path, std::ios::ate | std::ios::binary);
+    // std::vector<bl::Vertex> cubeVertices{
+    //     // front
+    //     { {-1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+    //     { {1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+    //     { {1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+    //     { {-1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+    //     // back
+    //     { {-1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+    //     { {1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+    //     { {1.0f,  1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+    //     { {-1.0f,  1.0f, -1.f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+    // };
 
-        if (!file.is_open()) {
-            throw std::runtime_error("failed to open file!");
-        }
+    // std::vector<uint32_t> cubeIndices{
+    //     // front
+	// 	0, 1, 2,
+	// 	2, 3, 0,
+	// 	// right
+	// 	1, 5, 6,
+	// 	6, 2, 1,
+	// 	// back
+	// 	7, 6, 5,
+	// 	5, 4, 7,
+	// 	// left
+	// 	4, 0, 3,
+	// 	3, 7, 4,
+	// 	// bottom
+	// 	4, 5, 1,
+	// 	1, 0, 4,
+	// 	// top
+	// 	3, 2, 6,
+	// 	6, 7, 3
+    // };
 
-        size_t fileSize = (size_t) file.tellg();
-        std::vector<char> buffer(fileSize);
+    // auto mesh = std::make_shared<bl::Mesh>(graphics->GetDevice(), cubeVertices, cubeIndices);
+// 
+    // VkVertexInputBindingDescription vertexInputBinding{0, sizeof(bl::Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
+    // std::vector<VkVertexInputAttributeDescription> attributes = {
+    //     {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},
+    //     {1, 0, VK_FORMAT_R32G32B32_SFLOAT, 12},
+    //     {2, 0, VK_FORMAT_R32G32_SFLOAT, 24},
+    // };
 
-        file.seekg(0);
-        file.read(buffer.data(), fileSize);
-        file.close();
+    auto renderer = engine.GetRenderer();
 
-        return std::make_shared<bl::GfxShader>(graphics->getDevice(), stage, buffer);
-    };
-
-    auto vert = loadShader("Resources/Shaders/Default.vert.spv", VK_SHADER_STAGE_VERTEX_BIT);
-    auto frag = loadShader("Resources/Shaders/Default.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT);
-
-    auto descriptorCache = graphics->getDescriptorCache();
-    auto layoutCache = graphics->getPipelineLayoutCache();
-
-    std::vector<VkDescriptorSetLayoutBinding> bindings = {
-        VkDescriptorSetLayoutBinding{
-            0,
-            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-            1,
-            VK_SHADER_STAGE_VERTEX_BIT,
-            nullptr
-        }
-    };
-
-    VkDescriptorSetLayout bufferSetLayout = descriptorCache->acquire(bindings);
-    auto layout = graphics->getPipelineLayoutCache()->acquire({bufferSetLayout, bufferSetLayout}, {});
-
-    std::vector<bl::Vertex> cubeVertices{
-        // front
-        { {-1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {-1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        // back
-        { {-1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {1.0f,  1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {-1.0f,  1.0f, -1.f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-    };
-
-    std::vector<uint32_t> cubeIndices{
-        // front
-		0, 1, 2,
-		2, 3, 0,
-		// right
-		1, 5, 6,
-		6, 2, 1,
-		// back
-		7, 6, 5,
-		5, 4, 7,
-		// left
-		4, 0, 3,
-		3, 7, 4,
-		// bottom
-		4, 5, 1,
-		1, 0, 4,
-		// top
-		3, 2, 6,
-		6, 7, 3
-    };
-
-    auto mesh = std::make_shared<bl::Mesh>(graphics->getDevice(), cubeVertices, cubeIndices);
-
-    VkVertexInputBindingDescription vertexInputBinding{0, sizeof(bl::Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
-
-    std::vector<VkVertexInputAttributeDescription> attributes = {
-        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},
-        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, 12},
-        {2, 0, VK_FORMAT_R32G32_SFLOAT, 24},
-    };
-
-    bl::GfxPipeline::CreateInfo pipelineCreateInfo{};
-    pipelineCreateInfo.layout = layout;
-    pipelineCreateInfo.renderPass = renderer->getUserInterfacePass();
-    pipelineCreateInfo.subpass = 0;
-    pipelineCreateInfo.vertexInputBindings = {vertexInputBinding};
-    pipelineCreateInfo.vertexInputAttribs = attributes;
-    pipelineCreateInfo.shaders = {vert, frag};
-
-    auto pipeline = std::make_shared<bl::GfxPipeline>(graphics->getDevice(), pipelineCreateInfo);
-    auto window = graphics->getWindow();
-    auto presentModes = graphics->getPhysicalDevice()->getPresentModes(graphics->getWindow());
+    // bl::PipelineCreateInfo pci{};
+    // pci.renderPass = renderer->GetUIPass();
+    // pci.subpass = 0;
+    // pci.vertexInputBindings = {vertexInputBinding};
+    // pci.vertexInputAttribs = attributes;
+    // pci.shaders = {vert.get(), frag.get()};
+// 
+    // auto pipeline = std::make_shared<bl::Pipeline>(graphics->GetDevice(), pci);
+    auto window = engine.GetWindow();
+    auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(window);
 
     
-    auto globalBuffer = std::make_shared<bl::GfxBuffer>(graphics->getDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, sizeof(bl::GlobalUBO));
-    auto objectBuffer = std::make_shared<bl::GfxBuffer>(graphics->getDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, sizeof(bl::ObjectUBO));
+    // auto globalBuffer = std::make_shared<bl::Buffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, sizeof(bl::GlobalUBO));
+    // auto objectBuffer = std::make_shared<bl::Buffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, sizeof(bl::ObjectUBO));
 
     bl::FrameCounter frameCounter;
-    glm::vec3 cameraPos { 0.0f, 0.0f, -10.f};
+    // glm::vec3 cameraPos { 0.0f, 0.0f, -10.f};
 
     bool running = true;
     bool minimized = false;
     while (running) {
-        frameCounter.beginFrame();
+        frameCounter.BeginFrame();
 
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            imgui->process(event);
+            imgui->Process(event);
 
             switch (event.type) {
             case SDL_WINDOWEVENT:
@@ -172,7 +142,7 @@ int main(int argc, const char** argv)
             case SDL_KEYDOWN:
                 switch (event.key.keysym.sym) {
                 case SDLK_F12:
-                    renderDoc->beginCapture();
+                    // renderDoc->beginCapture();
                     break;
                 }
                 break;
@@ -181,24 +151,26 @@ int main(int argc, const char** argv)
 
         
 
-        bl::GlobalUBO globalUBO = {
-            0.0f,
-            0.0f,
-            window->getExtent(),
-            {},
+        //auto extent = window->GetExtent();
+        //auto extenti = glm::ivec2{(int)extent.width, (int)extent.height};
+        //auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
+        //bl::GlobalUBO globalUBO = {
+        //    0.0f,
+        //    0.0f,
+        //    extenti,
+        //    {},
+        //    glm::translate(glm::identity<glm::mat4>(), cameraPos),
+        //    glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.01f, 100.0f)
+        //};
+//
+        //globalBuffer->Upload((void*)&globalUBO);
 
-            glm::translate(glm::identity<glm::mat4>(), cameraPos),
-            glm::perspectiveFov(70.0f, (float)window->getExtent().x, (float)window->getExtent().y, 0.01f, 100.0f)
-        };
 
-        globalBuffer->upload((void*)&globalUBO);
+        //bl::ObjectUBO objectUBO = {
+        //    glm::identity<glm::mat4>()
+        //};
 
-
-        bl::ObjectUBO objectUBO = {
-            glm::identity<glm::mat4>()
-        };
-
-        objectBuffer->upload((void*)&objectUBO);
+        //objectBuffer->Upload((void*)&objectUBO);
 
         // last = current;
         // current = bl::Time::current();
@@ -207,62 +179,62 @@ int main(int argc, const char** argv)
         glm::vec3 position { sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
         glm::vec3 velocity { cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
 
-        source->set3DAttributes(position, velocity);
-        audio->update();
+        // source->Set3DAttributes(position, velocity);
+        audio->Update();
 
         if (!minimized) {
 
         
-        graphics->getRenderer()->render([&](VkCommandBuffer cmd){
+        renderer->Render([&](VkCommandBuffer cmd){
             
-            auto extent = window->getExtent();
+            auto extent = window->GetExtent();
 
             VkViewport vp{};
             vp.x = 0.0f;
             vp.y = 0.0f;
-            vp.width = (float)extent.x;
-            vp.height = (float)extent.y;
+            vp.width = (float)extent.width;
+            vp.height = (float)extent.height;
             vp.minDepth = 0.0f;
             vp.maxDepth = 1.0f;
             vkCmdSetViewport(cmd, 0, 1, &vp);
 
             VkRect2D scissor{};
             scissor.offset = {0, 0};
-            scissor.extent = {(uint32_t)extent.x, (uint32_t)extent.y};
+            scissor.extent = extent;
             vkCmdSetScissor(cmd, 0, 1, &scissor);
 
-            VkDescriptorBufferInfo bufferInfo {
-                globalBuffer->getBuffer(),
-                0,
-                globalBuffer->getSize()
-            };
+            // VkDescriptorBufferInfo bufferInfo {
+            //     globalBuffer->Get(),
+            //     0,
+            //     globalBuffer->GetSize()
+            // };
+// 
+            // VkWriteDescriptorSet descWrite {
+            //     VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            //     nullptr,
+            //     VK_NULL_HANDLE,
+            //     0,
+            //     0,
+            //     1,
+            //     VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            //     nullptr,
+            //     &bufferInfo,
+            //     nullptr
+            // };
+// 
+            // vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetLayout(), 0, 1, &descWrite);
+// 
+            // bufferInfo.buffer = objectBuffer->Get();
+            // bufferInfo.range = objectBuffer->GetSize();
+// 
+            // vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetLayout(), 1, 1, &descWrite);
+// 
+            // mesh->bind(cmd);
+// 
+            // vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->Get());
+            // vkCmdDraw(cmd, 3, 1, 0, 0);
 
-            VkWriteDescriptorSet descWrite {
-                VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
-                nullptr,
-                VK_NULL_HANDLE,
-                0,
-                0,
-                1,
-                VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
-                nullptr,
-                &bufferInfo,
-                nullptr
-            };
-
-            vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getLayout(), 0, 1, &descWrite);
-
-            bufferInfo.buffer = objectBuffer->getBuffer();
-            bufferInfo.range = objectBuffer->getSize();
-
-            vkCmdPushDescriptorSetKHR(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getLayout(), 1, 1, &descWrite);
-
-            mesh->bind(cmd);
-
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->get());
-            vkCmdDraw(cmd, 3, 1, 0, 0);
-
-            imgui->beginFrame();
+            imgui->BeginFrame();
 
             ImGui::Begin("Debug Info");
 
@@ -284,26 +256,26 @@ int main(int argc, const char** argv)
 
             if (ImGui::CollapsingHeader("Graphics")) {
 
-                ImGui::Text("Graphics Device: %s", graphics->getPhysicalDevice()->getDeviceName().c_str()); 
-                ImGui::Text("Graphics Vendor: %s", graphics->getPhysicalDevice()->getVendorName().c_str()); 
-                ImGui::Text("F/S: %d", frameCounter.getFramesPerSecond()); 
-                ImGui::Text("MS/F: %.2f", frameCounter.getMillisecondsPerFrame()); 
-                ImGui::Text("Average F/S (Over 10 Seconds): %.1f", frameCounter.getAverageFramesPerSecond(10));
-                ImGui::Text("Average MS/F (Over 144 Frames): %.2f", frameCounter.getAverageMillisecondsPerFrame(144)); 
-                ImGui::Text("Present Mode: %s", string_VkPresentModeKHR(graphics->getSwapchain()->getPresentMode())); 
+                ImGui::Text("Graphics Device: %s", graphics->GetPhysicalDevice()->GetDeviceName().c_str()); 
+                ImGui::Text("Graphics Vendor: %s", graphics->GetPhysicalDevice()->GetVendorName().c_str()); 
+                ImGui::Text("F/S: %d", frameCounter.GetFramesPerSecond()); 
+                ImGui::Text("MS/F: %.2f", frameCounter.GetMillisecondsPerFrame()); 
+                ImGui::Text("Average F/S (Over 10 Seconds): %.1f", frameCounter.GetAverageFramesPerSecond(10));
+                ImGui::Text("Average MS/F (Over 144 Frames): %.2f", frameCounter.GetAverageMillisecondsPerFrame(144)); 
+                ImGui::Text("Present Mode: %s", string_VkPresentModeKHR(window->GetSwapchain()->GetPresentMode())); 
                 // ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
 
                 if (ImGui::TreeNode("Physical Devices")) {
-                    auto physicalDevices = graphics->getPhysicalDevices();
+                    auto physicalDevices = graphics->GetPhysicalDevices();
 
                     for (size_t i = 0; i < physicalDevices.size(); i++) {
                         auto& physicalDevice = physicalDevices[i];
 
-                        if (ImGui::TreeNode((void*)(intptr_t)i, "%s", physicalDevice->getDeviceName().c_str())) {
+                        if (ImGui::TreeNode((void*)(intptr_t)i, "%s", physicalDevice->GetDeviceName().c_str())) {
                             
 
                             const char* deviceType = "";
-                            switch (physicalDevice->getType()) {
+                            switch (physicalDevice->GetType()) {
                             case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: deviceType = "Integrated"; break;
                             case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: deviceType = "Discrete"; break;
                             case VK_PHYSICAL_DEVICE_TYPE_CPU: deviceType = "CPU"; break;
@@ -313,13 +285,13 @@ int main(int argc, const char** argv)
                             ImGui::SameLine();
                             ImGui::TextColored(ImVec4{0.2f, 0.8f, 0.4f, 1.0f}, "%s", deviceType);
 
-                            if (physicalDevice == graphics->getPhysicalDevice()) {
+                            if (physicalDevice == graphics->GetPhysicalDevice()) {
                                 ImGui::SameLine();
                                 ImGui::TextColored(ImVec4{0.2f, 0.5f, 0.8f, 1.0f}, "Current");
                             }
 
                             if (ImGui::TreeNode("Present Modes")) {
-                                for (VkPresentModeKHR mode : physicalDevice->getPresentModes(window))
+                                for (VkPresentModeKHR mode : physicalDevice->GetPresentModes(window))
                                     ImGui::Text("%s", string_VkPresentModeKHR(mode));
 
                                 ImGui::TreePop();
@@ -334,20 +306,20 @@ int main(int argc, const char** argv)
             }
 
             if (ImGui::CollapsingHeader("Audio")) {
-                ImGui::Text("Audio Driver: %s", audio->getSystem()->getDriverName().c_str());
-                ImGui::Text("Num Channels: %d", audio->getSystem()->getNumChannelsPlaying());
+                ImGui::Text("Audio Driver: %s", audio->GetDriverName().c_str());
+                ImGui::Text("Num Channels: %d", audio->GetNumChannelsPlaying());
             }
 
             ImGui::End();
 
             ImGui::ShowDemoWindow();
 
-            imgui->endFrame(cmd);
+            imgui->EndFrame(cmd);
         });
 
         }
 
-        frameCounter.endFrame();
+        frameCounter.EndFrame();
     }
 
     } catch (std::exception& e) {

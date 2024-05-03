@@ -48,12 +48,27 @@ std::unique_ptr<Resource> AudioSystem::BuildResource(const std::string& type, co
 {
     if (type == "sound")
     {
-        return std::make_unique<Sound>(this, path);
+        return std::make_unique<Sound>(this);
     }
     else
     {
         throw std::runtime_error("Trying to create a resource this builder wasn't specified to!");
     }
+}
+
+std::unique_ptr<Sound> AudioSystem::CreateSound(std::filesystem::path path)
+{
+    return std::make_unique<Sound>(this);
+}
+
+std::unique_ptr<Listener> AudioSystem::CreateListener()
+{
+    return std::make_unique<Listener>(this);
+}
+
+std::unique_ptr<Source> AudioSystem::CreateSource()
+{
+    return std::make_unique<Source>(this);
 }
 
 } // namespace bl

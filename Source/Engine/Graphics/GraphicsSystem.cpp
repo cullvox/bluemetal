@@ -1,5 +1,6 @@
 #include "Core/Print.h"
 #include "Engine/Engine.h"
+#include "Shader.h"
 #include "GraphicsSystem.h"
 
 namespace bl 
@@ -8,7 +9,6 @@ namespace bl
 GraphicsSystem::GraphicsSystem(Engine* engine)
     : _engine(engine)
 {
-
     _instance = std::make_unique<Instance>(Version{}, "Maginvox", true);
     _physicalDevice = _instance->ChoosePhysicalDevice();
     _device = std::make_unique<Device>(_instance.get(), _physicalDevice);
@@ -16,7 +16,7 @@ GraphicsSystem::GraphicsSystem(Engine* engine)
     _pipelineLayoutCache = std::make_unique<PipelineLayoutCache>(_device.get());
 }
 
-GraphicsSystem::~GraphicsSystem() 
+GraphicsSystem::~GraphicsSystem()
 {
 }
 
@@ -43,6 +43,11 @@ DescriptorSetLayoutCache* GraphicsSystem::GetDescriptorCache()
 PipelineLayoutCache* GraphicsSystem::GetPipelineLayoutCache() 
 { 
     return _pipelineLayoutCache.get(); 
+}
+
+std::vector<PhysicalDevice*> GraphicsSystem::GetPhysicalDevices()
+{
+    return _instance->GetPhysicalDevices();
 }
 
 std::vector<Display*> GraphicsSystem::GetDisplays()
@@ -74,18 +79,16 @@ std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(Window* window)
     return std::make_unique<Renderer>(_device.get(), window);
 }
 
-// std::unique_ptr<Resource> GraphicsSystem::BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& json)
-// {
-//     if (type == "shader")
-//     {
-//         // Load the shader binary into memory.
-//         auto type = 
-//         return std::make_unique<Shader>(this, );
-//     }
-//     else
-//     {
-//         throw std::runtime_error("Could not create a resource that was not specified!");
-//     }
-// }
+std::unique_ptr<Resource> GraphicsSystem::BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& json)
+{
+    if (type == "shader")
+    {
+        return std::make_unique<Shader>(_device.get());
+    }
+    else
+    {
+        throw std::runtime_error("Could not create a resource that was not specified!");
+    }
+}
 
 } // namespace bl

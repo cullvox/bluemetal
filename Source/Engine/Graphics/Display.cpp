@@ -22,6 +22,14 @@ std::string Display::GetName() const
     return SDL_GetDisplayName(_display); 
 }
 
+VkOffset2D Display::GetOffset() const
+{
+    SDL_Rect rect{};
+    SDL_CHECK(SDL_GetDisplayUsableBounds(_display, &rect))
+
+    return VkOffset2D{rect.x, rect.y};
+}
+
 VkRect2D Display::GetRect() const 
 { 
     SDL_Rect rect{};

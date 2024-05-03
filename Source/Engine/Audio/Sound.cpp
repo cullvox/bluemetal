@@ -1,23 +1,23 @@
+#include "AudioSystem.h"
 #include "Sound.h"
 
 namespace bl 
 {
 
-Sound::Sound(AudioSystem* system, const std::filesystem::path& path)
+Sound::Sound(AudioSystem* system)
     : _system(system)
-    , _path(path)
 {
-    Load();
 }
 
 Sound::~Sound() 
 { 
-    Unload();
+    if (_sound)
+        Unload();
 }
 
-void Sound::Load()
+void Sound::Load(const nlohmann::json&)
 {
-    FMOD_CHECK(_system->Get()->createSound(_path.string().c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &_sound))
+    FMOD_CHECK(_system->Get()->createSound(GetPath().c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &_sound))
 }
 
 void Sound::Unload()

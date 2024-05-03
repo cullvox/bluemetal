@@ -6,6 +6,9 @@
 #include "Core/MacroUtils.h"
 #include "Core/NonCopyable.h"
 #include "Resource/ResourceManager.h"
+#include "Sound.h"
+#include "Listener.h"
+#include "Source.h"
 
 namespace bl
 {
@@ -27,7 +30,9 @@ public:
 
     virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& data);
 
-    ResourceRef<Sound> CreateSound(std::filesystem::path path);
+    std::unique_ptr<Sound> CreateSound(std::filesystem::path path);
+    std::unique_ptr<Listener> CreateListener();
+    std::unique_ptr<Source> CreateSource();
 
 private:
     Engine* _engine;

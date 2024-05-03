@@ -96,7 +96,7 @@ bool Swapchain::AcquireNext(VkSemaphore semaphore, VkFence fence)
     }
 }
 
-void Swapchain::QueuePresent(VkSemaphore signalSemaphore)
+bool Swapchain::QueuePresent(VkSemaphore signalSemaphore)
 {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -112,9 +112,12 @@ void Swapchain::QueuePresent(VkSemaphore signalSemaphore)
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
        Recreate();
+       return true;
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Could not queue Vulkan present!");
     }
+    
+    return false;
 }
 
 void Swapchain::EnsureSurfaceSupported()

@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Sound.h"
-#include "Export.h"
-
 
 namespace bl
 {
@@ -12,10 +10,10 @@ class AudioSystem;
 class Source
 {
 public:
-    Source(AudioSystem* pSystem);
+    Source(AudioSystem* system);
     ~Source();
 
-    void SetSound(Sound* pSound);
+    void SetSound(Sound* sound);
     void Set3DAttributes(glm::vec3 position, glm::vec3 velocity);
     void Play(bool repeat = false);
 

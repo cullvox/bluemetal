@@ -51,6 +51,9 @@ list(APPEND Sources
   "ImGui/imgui_impl_vulkan.cpp"
   "ImGui/ImGuiSystem.cpp"
 
+  "Resource/Resource.cpp"
+  "Resource/ResourceManager.cpp"
+
   "Engine/SDLInitializer.cpp"
   
   "Engine/Engine.cpp"

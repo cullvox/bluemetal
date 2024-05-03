@@ -18,7 +18,7 @@ class GraphicsSystem : public NonCopyable, public ResourceBuilder
 {
 public:
     GraphicsSystem(Engine* engine); /** @brief Constructor. */
-    ~GraphicsSystem(); /** @brief Destructor */
+    virtual ~GraphicsSystem(); /** @brief Destructor */
 
     Instance* GetInstance();
     PhysicalDevice* GetPhysicalDevice();

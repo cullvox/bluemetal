@@ -9,6 +9,10 @@ namespace bl
 
 class ResourceBuilder
 {
+public:
+    ResourceBuilder() = default;
+    virtual ~ResourceBuilder() = default;
+
     virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& data) = 0;
 };
 
