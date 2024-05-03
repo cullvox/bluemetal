@@ -28,6 +28,4 @@ void ResourceManager::UnloadUnreferenced()
 
 }
 
-
-
 } // namespace bl

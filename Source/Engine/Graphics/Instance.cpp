@@ -17,8 +17,8 @@ Instance::~Instance()
     if (_enableValidation)
         vkDestroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);
     
-    volkFinalize();
     vkDestroyInstance(_instance, nullptr);
+    volkFinalize();
 }
 
 VkInstance Instance::Get() const

@@ -8,6 +8,7 @@ Renderer::Renderer(Device* device, Window* window)
     : _device(device)
     , _window(window)
     , _swapchain(window->GetSwapchain())
+    , _currentFrame(0)
 {
     _presentPass = std::make_unique<PresentPass>(_device, _swapchain);
     _commandBuffers.resize(GraphicsConfig::numFramesInFlight);

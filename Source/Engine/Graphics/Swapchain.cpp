@@ -15,7 +15,7 @@ Swapchain::Swapchain(
     , _swapchain(VK_NULL_HANDLE)
 {
     EnsureSurfaceSupported();
-    Recreate(_presentMode);
+    Recreate();
 }
 
 Swapchain::~Swapchain()

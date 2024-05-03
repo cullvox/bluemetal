@@ -81,6 +81,8 @@ Window::Window(Device* device, const std::string& title, std::optional<VideoMode
 
 Window::~Window()
 {
+    _swapchain.reset();
+    vkDestroySurfaceKHR(_device->GetInstance()->Get(), _surface, nullptr);
     SDL_DestroyWindow(_window);
 }
 
