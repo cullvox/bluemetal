@@ -16,7 +16,7 @@ class Sound;
 class AudioSystem : public NonCopyable, public ResourceBuilder
 {
 public:
-    AudioSystem(Engine& engine);
+    AudioSystem(Engine* engine);
     ~AudioSystem();
 
 
@@ -30,7 +30,7 @@ public:
     ResourceRef<Sound> CreateSound(std::filesystem::path path);
 
 private:
-    Engine& _engine;
+    Engine* _engine;
     FMOD::System* _system;
 };
 

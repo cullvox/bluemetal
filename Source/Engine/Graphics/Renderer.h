@@ -25,6 +25,7 @@ private:
     Device* _device;
     Window* _window;
     Swapchain* _swapchain;
+    uint32_t _currentFrame;
     std::vector<VkCommandBuffer> _commandBuffers;
     std::vector<VkSemaphore> _imageAvailableSemaphores;
     std::vector<VkSemaphore> _renderFinishedSemaphores;

@@ -151,7 +151,8 @@ void Swapchain::ChooseFormat()
     // Look for the desired surface format.
     if (std::any_of(formats.begin(), formats.end(), 
         [](auto sf) {
-            return sf == GraphicsConfig::defaultSurfaceFormat;
+            auto dsf = GraphicsConfig::defaultSurfaceFormat;
+            return sf.format == dsf.format && sf.colorSpace == dsf.colorSpace;
         })) 
     {
         _surfaceFormat = GraphicsConfig::defaultSurfaceFormat;

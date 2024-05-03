@@ -7,11 +7,11 @@
 #include "Resource/ResourceManager.h"
 
 #include "Core/Json.h"
+#include "Core/Flags.h"
 #include "SDLInitializer.h"
 #include "Audio/AudioSystem.h"
 #include "Graphics/GraphicsSystem.h"
-#include "ImGuiSubsystem.h"
-#include "Core/Flags.h"
+#include "ImGui/ImGuiSystem.h"
 
 namespace bl
 {
@@ -25,6 +25,9 @@ public:
     GraphicsSystem* GetGraphics();
     ImGuiSystem* GetImGui();
     AudioSystem* GetAudio();
+
+    Window* GetWindow();
+    Renderer* GetRenderer();
 
 private:
     nlohmann::json _config;

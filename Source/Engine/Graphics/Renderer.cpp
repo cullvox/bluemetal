@@ -8,13 +8,12 @@ Renderer::Renderer(Device* device, Window* window)
     : _device(device)
     , _window(window)
     , _swapchain(window->GetSwapchain())
-    , _presentPass(_device, _swapchain)
-    , _currentFrame(0)
 {
+    _presentPass = std::make_unique<PresentPass>(_device, _swapchain);
     _commandBuffers.resize(GraphicsConfig::numFramesInFlight);
-    _imageAvailableSemaphores.resize(_swapchain->getImageCount());
-    _renderFinishedSemaphores.resize(_swapchain->getImageCount());
-    _inFlightFences.resize(_swapchain->getImageCount());
+    _imageAvailableSemaphores.resize(_swapchain->GetImageCount());
+    _renderFinishedSemaphores.resize(_swapchain->GetImageCount());
+    _inFlightFences.resize(_swapchain->GetImageCount());
 
     CreateSyncObjects();
 }
@@ -25,9 +24,9 @@ Renderer::~Renderer()
     DestroySyncObjects();
 }
 
-std::shared_ptr<RenderPass> Renderer::GetUIPass() 
+RenderPass* Renderer::GetUIPass() 
 { 
-    return _presentPass; 
+    return _presentPass.get(); 
 }
 
 void Renderer::CreateSyncObjects()
@@ -66,11 +65,13 @@ void Renderer::DestroySyncObjects()
         vkDestroyFence(_device->Get(), _inFlightFences[i], nullptr);
     }
 
-    vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), (uint32_t)_swapCommandBuffers.size(), _swapCommandBuffers.data());
+    vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), (uint32_t)_commandBuffers.size(), _commandBuffers.data());
 }
 
-void Renderer::Recreate(VkExtent2D extent)
+void Renderer::Recreate()
 {
+
+    VkExtent2D extent = _swapchain->GetExtent();
     // _geometryPass->recreate(extent);
     _presentPass->Recreate(extent);
 }
@@ -83,16 +84,15 @@ void Renderer::Render(std::function<void(VkCommandBuffer)> func)
     // Wait for the current image up coming in the chain to finish.
     VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
 
-    // Acquire the next image in the swapchain.
-    uint32_t imageIndex = 0;
-    bool recreated = false;
-    _swapchain->AcquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, imageIndex, recreated);
-
-    // Resize passes images if the swapchain resized.
-    if (recreated) {
-        Resize(_swapchain->GetExtent());
+    
+    // Acquire the next image in the swapchain and Resize passes images if the swapchain resized.
+    if (_swapchain->AcquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE)) 
+    {
+        Recreate();
         return; // skip this frame!
     }
+
+    auto imageIndex = _swapchain->GetImageIndex();
 
     // Reset the fence for this image so it can signal when it's done.
     VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
@@ -117,7 +117,7 @@ void Renderer::Render(std::function<void(VkCommandBuffer)> func)
     // Submit the command buffer to the graphics queue.
     std::array waitSemaphores = { _imageAvailableSemaphores[_currentFrame] };
     std::array signalSemaphores = { _renderFinishedSemaphores[_currentFrame] };
-    std::array commandBuffers = { _swapCommandBuffers[_currentFrame] };
+    std::array commandBuffers = { _commandBuffers[_currentFrame] };
     std::array waitStages = { (VkPipelineStageFlags)VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
     VkSubmitInfo submitInfo = {};
@@ -125,7 +125,7 @@ void Renderer::Render(std::function<void(VkCommandBuffer)> func)
     submitInfo.pNext = nullptr;
     submitInfo.waitSemaphoreCount = (uint32_t)waitSemaphores.size();
     submitInfo.pWaitSemaphores = waitSemaphores.data();
-    submitInfo.pWaitDstStageMask = waitStages;
+    submitInfo.pWaitDstStageMask = waitStages.data();
     submitInfo.commandBufferCount = (uint32_t)commandBuffers.size();
     submitInfo.pCommandBuffers = commandBuffers.data();
     submitInfo.signalSemaphoreCount = (uint32_t)signalSemaphores.size();

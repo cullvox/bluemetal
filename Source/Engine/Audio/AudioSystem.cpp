@@ -5,7 +5,7 @@
 namespace bl 
 {
 
-AudioSystem::AudioSystem(Engine& engine)
+AudioSystem::AudioSystem(Engine* engine)
     : _engine(engine)
 {
     FMOD_CHECK(FMOD::System_Create(&_system, FMOD_VERSION))
@@ -14,7 +14,7 @@ AudioSystem::AudioSystem(Engine& engine)
 
 AudioSystem::~AudioSystem() 
 { 
-    _system->close(); 
+    _system->close();
 }
 
 FMOD::System* AudioSystem::Get() 
@@ -44,7 +44,7 @@ int AudioSystem::GetNumChannelsPlaying()
     return count;
 }
 
-std::unique_ptr<Resource> AudioSystem::BuildResource(const std::string& type, const std::filesystem::path& path)
+std::unique_ptr<Resource> AudioSystem::BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json&)
 {
     if (type == "sound")
     {
@@ -54,11 +54,6 @@ std::unique_ptr<Resource> AudioSystem::BuildResource(const std::string& type, co
     {
         throw std::runtime_error("Trying to create a resource this builder wasn't specified to!");
     }
-}
-
-ResourceRef<Sound> AudioSystem::CreateSound(std::filesystem::path path)
-{
-    // return  
 }
 
 } // namespace bl

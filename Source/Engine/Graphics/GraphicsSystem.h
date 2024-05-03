@@ -39,8 +39,8 @@ private:
     PhysicalDevice* _physicalDevice;
     std::unique_ptr<Device> _device;
 
-    DescriptorSetLayoutCache _descriptorCache;
-    PipelineLayoutCache _pipelineLayoutCache;
+    std::unique_ptr<DescriptorSetLayoutCache> _descriptorCache;
+    std::unique_ptr<PipelineLayoutCache> _pipelineLayoutCache;
 
     std::vector<std::unique_ptr<Display>> _displays;
 };

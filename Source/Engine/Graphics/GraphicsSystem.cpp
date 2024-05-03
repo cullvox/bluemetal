@@ -5,79 +5,66 @@
 namespace bl 
 {
 
-GraphicsSystem::GraphicsSystem(Engine& engine)
+GraphicsSystem::GraphicsSystem(Engine* engine)
     : _engine(engine)
-    , _instance({}, {}, true)
-    , _physicalDevice(_instance.ChoosePhysicalDevice())
-    , _device(_instance, _physicalDevice)
-    , _window()
 {
 
-    auto displays = Display::getDisplays();
-    _window = std::make_shared<RenderWindow>(_instance, displays[0]->getDesktopMode(), "Maginvox");
-
-    _descriptorCache = std::make_shared<DescriptorSetLayoutCache>(_device);
-    _pipelineLayoutCache = std::make_shared<PipelineLayoutCache>(_device);
-    _swapchain = std::make_shared<Swapchain>(_device, _window);
-    _renderer = std::make_shared<Renderer>(_device, _swapchain);
+    _instance = std::make_unique<Instance>(Version{}, "Maginvox", true);
+    _physicalDevice = _instance->ChoosePhysicalDevice();
+    _device = std::make_unique<Device>(_instance.get(), _physicalDevice);
+    _descriptorCache = std::make_unique<DescriptorSetLayoutCache>(_device.get());
+    _pipelineLayoutCache = std::make_unique<PipelineLayoutCache>(_device.get());
 }
 
 GraphicsSystem::~GraphicsSystem() 
 {
 }
 
-Instance& GraphicsSystem::GetInstance() 
+Instance* GraphicsSystem::GetInstance() 
 { 
-    return _instance; 
+    return _instance.get(); 
 }
 
-PhysicalDevice& GraphicsSystem::GetPhysicalDevice() 
+PhysicalDevice* GraphicsSystem::GetPhysicalDevice() 
 { 
     return _physicalDevice; 
 }
 
-RenderWindow& GraphicsSystem::GetWindow() 
+Device* GraphicsSystem::GetDevice() 
 { 
-    return _window; 
+    return _device.get(); 
 }
 
-Device& GraphicsSystem::GetDevice() 
+DescriptorSetLayoutCache* GraphicsSystem::GetDescriptorCache() 
 { 
-    return _device; 
+    return _descriptorCache.get(); 
 }
 
-Renderer& GraphicsSystem::GetRenderer() 
+PipelineLayoutCache* GraphicsSystem::GetPipelineLayoutCache() 
 { 
-    return _renderer; 
+    return _pipelineLayoutCache.get(); 
 }
 
-DescriptorSetLayoutCache& GraphicsSystem::GetDescriptorCache() 
-{ 
-    return _descriptorCache; 
-}
-
-PipelineLayoutCache& GraphicsSystem::GetPipelineLayoutCache() 
-{ 
-    return _pipelineLayoutCache; 
-}
-
-std::vector<Display*> GrahphicsSystem::GetDisplays()
+std::vector<Display*> GraphicsSystem::GetDisplays()
 {
     int displayCount = SDL_GetNumVideoDisplays();
 
-    static std::vector<Display*> displays = [displayCount](){
-        std::vector<Display*> temp;
+    _displays.clear();
+    _displays.reserve(displayCount);
 
-        for (int i = 0; i < displayCount; i++)
-            temp.push_back(new Display(i));
+    std::vector<Display*> temp{};
+    temp.reserve(displayCount);
 
-        return temp;
-    }();
+    for (int i = 0; i < displayCount; i++)
+    {
+        _displays.push_back(std::make_unique<Display>(i));
+        temp.push_back(_displays[i].get());
+    }
 
-    return displays;
+    return temp;
 }
 
-std::unique_ptr<Window> GraphicsSystem::CreateWindow(const std::string& title, std::optional<VideoMode> videoMode = std::nullopt, bool fullscreen = true)
+std::unique_ptr<Window> GraphicsSystem::CreateWindow(const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
 {
     return std::make_unique<Window>(_device.get(), title, videoMode, fullscreen);
 }
@@ -87,15 +74,18 @@ std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(Window* window)
     return std::make_unique<Renderer>(_device.get(), window);
 }
 
-
-std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path)
-{
-    if (type == "shader")
-    {
-
-        path.get_extension
-
-    }
-}
+// std::unique_ptr<Resource> GraphicsSystem::BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& json)
+// {
+//     if (type == "shader")
+//     {
+//         // Load the shader binary into memory.
+//         auto type = 
+//         return std::make_unique<Shader>(this, );
+//     }
+//     else
+//     {
+//         throw std::runtime_error("Could not create a resource that was not specified!");
+//     }
+// }
 
 } // namespace bl

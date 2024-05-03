@@ -41,17 +41,18 @@ list(APPEND Sources
 
   "World/RenderActor.cpp"
 
-  # imgui
-  "imgui/imgui.cpp"
-  "imgui/imgui_demo.cpp"
-  "imgui/imgui_draw.cpp"
-  "imgui/imgui_tables.cpp"
-  "imgui/imgui_widgets.cpp"
-  "imgui/imgui_impl_sdl2.cpp"
-  "imgui/imgui_impl_vulkan.cpp"
+  # ImGui
+  "ImGui/imgui.cpp"
+  "ImGui/imgui_demo.cpp"
+  "ImGui/imgui_draw.cpp"
+  "ImGui/imgui_tables.cpp"
+  "ImGui/imgui_widgets.cpp"
+  "ImGui/imgui_impl_sdl2.cpp"
+  "ImGui/imgui_impl_vulkan.cpp"
+  "ImGui/ImGuiSystem.cpp"
 
   "Engine/SDLInitializer.cpp"
-  "Engine/ImGuiSubsystem.cpp"
+  
   "Engine/Engine.cpp"
   )
 

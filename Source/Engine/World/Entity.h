@@ -31,11 +31,11 @@ public:
     
     virtual void OnBorn() {}
     virtual void OnDeath() {}
-    virtual void OnUpdate(float dt) {}
-    virtual void OnRender(RenderData& rd) {}
+    virtual void OnUpdate(float /* deltaTime */) {}
+    virtual void OnRender(RenderData&  /* renderData */) {}
 
     virtual void SerializeState(SerializeData&) {}
-    virtual void DeserializeState(const DeserializeData& sd) {}
+    virtual void DeserializeState(const DeserializeData& /* serialData */) {}
 
 protected:
     void SetName(const std::string& name);

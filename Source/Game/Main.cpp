@@ -30,20 +30,15 @@ int main(int argc, const char** argv)
     (void)argv;
     
     try {
-    bl::Engine engine{};
- 
-    auto graphics = engine.getGraphics();
-    auto audio = engine.getAudio();
+    bl::Engine engine;
 
-    auto renderDoc = graphics->getRenderDoc();
-    auto renderer = graphics->getRenderer();
+    auto audio = engine.GetAudio();
+    auto sound = audio->CreateSound("Resources/Audio/Music/Mutation.flac");
+    auto listener = audio->CreateListener();
+    auto source = audio->CreateSource();
 
-    auto sound = audio->createSound("Resources/Audio/Music/Mutation.flac");
-    auto listener = audio->createListener();
-    auto source = audio->createSource();
-
-    source->setSound(sound.get());
-    source->play();
+    source->SetSound(sound);
+    source->Play();
 
     // float last = 0.0f;
     // float current = bl::Time::current();

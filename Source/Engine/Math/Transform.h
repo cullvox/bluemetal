@@ -16,7 +16,7 @@ struct Transform
         glm::mat4 mat;
         mat = glm::translate(mat, position);
         mat = glm::scale(mat, scale);
-        mat *= rotation;
+        mat *= glm::mat4(rotation);
         return mat;
     }
 };
