@@ -256,8 +256,6 @@ void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optio
 {
     _device->WaitForDevice(); // Since recreating the swapchain is a big operation, just wait for any processes to sync.
 
-    vkDestroySwapchainKHR(_device->Get(), _swapchain, nullptr);
-
     DestroyImageViews(); // Images will be recreated later.
     ChooseImageCount();
     ChooseExtent();
@@ -281,6 +279,7 @@ void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optio
     auto imageSharingMode = _device->GetAreQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
     auto format = surfaceFormat.value_or(_surfaceFormat);
     auto present = presentMode.value_or(_presentMode); 
+    auto oldSwapchain = _swapchain;
 
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -300,9 +299,12 @@ void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optio
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = present;
     createInfo.clipped = VK_TRUE;
-    createInfo.oldSwapchain = VK_NULL_HANDLE;
+    createInfo.oldSwapchain = oldSwapchain;
 
     VK_CHECK(vkCreateSwapchainKHR(_device->Get(), &createInfo, nullptr, &_swapchain));
+    
+    if (oldSwapchain)
+        vkDestroySwapchainKHR(_device->Get(), oldSwapchain, nullptr);
 
     _surfaceFormat = format;
     _presentMode = present; 
