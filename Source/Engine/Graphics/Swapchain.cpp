@@ -256,6 +256,8 @@ void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optio
 {
     _device->WaitForDevice(); // Since recreating the swapchain is a big operation, just wait for any processes to sync.
 
+    vkDestroySwapchainKHR(_device->Get(), _swapchain, nullptr);
+
     DestroyImageViews(); // Images will be recreated later.
     ChooseImageCount();
     ChooseExtent();
@@ -298,7 +300,7 @@ void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optio
     createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     createInfo.presentMode = present;
     createInfo.clipped = VK_TRUE;
-    createInfo.oldSwapchain = _swapchain;
+    createInfo.oldSwapchain = VK_NULL_HANDLE;
 
     VK_CHECK(vkCreateSwapchainKHR(_device->Get(), &createInfo, nullptr, &_swapchain));
 
