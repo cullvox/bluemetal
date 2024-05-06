@@ -13,7 +13,7 @@ Source::~Source()
 {
 }
 
-void Source::SetSound(Sound* sound) 
+void Source::SetSound(ResourceRef<Sound> sound) 
 { 
     _sound = sound;
 }
@@ -27,7 +27,7 @@ void Source::Set3DAttributes(glm::vec3 position, glm::vec3 velocity)
 
 void Source::Play(bool repeat)
 {
-    FMOD_CHECK(_system->Get()->playSound(_sound->Get(), nullptr, false, &_channel))
+    FMOD_CHECK(_system->Get()->playSound(_sound.Get()->Get(), nullptr, false, &_channel))
 }
 
 } // namespace bl

@@ -1,15 +1,22 @@
 {
     "Resources": [
         {
-            "Path": "Audio/Music/Taswell.flac",
+            "Path": "Resources/Audio/Music/Taswell.flac",
             "Type": "Sound"
         },
         {
-            "Path": "Shaders/Default.vert.spv",
+            "Path": "Resources/Audio/Music/Mutation.flac",
+            "Type": "Sound"
+        },
+        {
+            "Path": "Resources/Shaders/Default.vert.spv",
             "Type": "Shader",
-            "AdditionalData": {
-                "Stage": "Vertex"
-            }
+            "Stage": "Vertex"
+        },
+        {
+            "Path": "Resources/Shaders/Default.frag.spv",
+            "Type": "Shader",
+            "Stage": "Fragment"
         }
     ]
 }

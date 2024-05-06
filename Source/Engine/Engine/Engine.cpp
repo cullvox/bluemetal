@@ -10,17 +10,27 @@ Engine::Engine()
     blInfo("Constructing bluemetal engine {}", bl::to_string(bl::engineVersion));
 
     _resourceManager = std::make_unique<ResourceManager>();
+    _audio = std::make_unique<AudioSystem>(this);
     _graphics = std::make_unique<GraphicsSystem>(this);
+
 
     auto displays = _graphics->GetDisplays();
     _window = _graphics->CreateWindow("Maginvox", displays[0]->GetDesktopMode(), false);
     _renderer = _graphics->CreateRenderer(_window.get());
     _imgui = std::make_unique<ImGuiSystem>(this, _renderer.get());
-    _audio = std::make_unique<AudioSystem>(this);
+    
+    _resourceManager->RegisterBuilder({"Shader"}, _graphics.get());
+    _resourceManager->RegisterBuilder({"Sound"}, _audio.get());
 }
 
 Engine::~Engine() 
 {
+    _resourceManager.release();
+    _renderer.release();
+    _imgui.release();
+    _window.release();
+    _graphics.release();
+    _audio.release();
 }
 
 ResourceManager* Engine::GetResourceManager()

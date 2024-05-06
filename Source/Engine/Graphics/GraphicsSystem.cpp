@@ -81,9 +81,9 @@ std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(Window* window)
 
 std::unique_ptr<Resource> GraphicsSystem::BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& json)
 {
-    if (type == "shader")
+    if (type == "Shader")
     {
-        return std::make_unique<Shader>(_device.get());
+        return std::make_unique<Shader>(json, _device.get());
     }
     else
     {

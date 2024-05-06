@@ -12,10 +12,10 @@ class AudioSystem;
 class Sound : public Resource
 {
 public:
-    Sound(AudioSystem* system);
+    Sound(const nlohmann::json& data, AudioSystem* system);
     ~Sound();
 
-    virtual void Load(const nlohmann::json& json); /** @brief From Resource, loads the sound file into memory. */
+    virtual void Load(); /** @brief From Resource, loads the sound file into memory. */
     virtual void Unload(); /** @brief From Resource, frees the sound file from memory. */
 
     FMOD::Sound* Get();

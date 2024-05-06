@@ -23,7 +23,7 @@ enum class ResourceState
 class Resource : public ReferenceCounted
 {
 public:
-    Resource() = default;
+    Resource(const nlohmann::json& data) {}
     virtual ~Resource() = default;
 
     std::string GetPath() const;
@@ -31,7 +31,7 @@ public:
     ResourceLoadOp GetLoadOp() const;
     ResourceState GetState() const;
 
-    virtual void Load(const nlohmann::json& data) = 0;
+    virtual void Load() = 0;
     virtual void Unload() = 0;
 
 protected:

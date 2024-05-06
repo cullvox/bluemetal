@@ -52,8 +52,9 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     stages.reserve(createInfo.shaders.size());
 
     std::unordered_map<uint32_t, DescriptorSetLayoutBindings> pipelineSetBindings;
-    for (Shader* shader : createInfo.shaders)
+    for (auto resource : createInfo.shaders)
     {
+        auto shader = resource.Get();
         const auto& reflection = shader->GetReflection();
 
         // Build this shaders sets and their bindings.
@@ -111,6 +112,11 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
                     }
                 }
             }
+            else
+            {
+                // This set wasn't added to the pipeline layout yet, add it.
+                pipelineSetBindings.emplace(set, bindings);
+            }
         }
     }
 
@@ -125,7 +131,8 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     _layout = createInfo.pipelineLayoutCache->acquire(setLayouts, {});
 
     std::transform(createInfo.shaders.begin(), createInfo.shaders.end(), std::back_inserter(stages), 
-        [](auto&& shader){
+        [](auto&& resource){
+            auto shader = resource.Get();
             VkPipelineShaderStageCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
             createInfo.pNext = nullptr;

@@ -22,15 +22,30 @@ public:
     ResourceManager();
     ~ResourceManager();
 
-    void RegisterBuilder(std::vector<std::string> types, std::shared_ptr<ResourceBuilder> builder); /** @brief Registers a builder object to create resource references. */
+    void RegisterBuilder(std::vector<std::string> types, ResourceBuilder* builder); /** @brief Registers a builder object to create resource references. */
     void LoadFromManifest(const std::filesystem::path& manifest);
-    template<typename T> ResourceRef<T> Load(const std::string& name); /** @brief Loads any resource that isn't currently loaded into memory, just returns it if it already exists. */
+    template<typename T> ResourceRef<T> Load(const std::string& path); /** @brief Loads any resource that isn't currently loaded into memory, just returns it if it already exists. */
     void UnloadUnreferenced(); /** @brief Cleans up memory by unloading resources that aren't currently needed. Abides by a ResourceLoadOp. */
 
 private:
-    std::multimap<std::string, std::shared_ptr<ResourceBuilder>> _builders; /** @brief These builders build the resources inside the engine, some builders can build more than one type of resource hence a multimap. */
+    std::multimap<std::string, ResourceBuilder*> _builders; /** @brief These builders build the resources inside the engine, some builders can build more than one type of resource hence a multimap. */
     std::unordered_map<std::string, std::unique_ptr<Resource>> _resources;
 };
+
+template<typename T>
+ResourceRef<T> ResourceManager::Load(const std::string& path)
+{
+    auto it = _resources.find(path);
+    if (it == _resources.end())
+    {
+        throw std::runtime_error("Could not load an unavailable resource!");
+    }
+
+    auto& resource = it->second;
+    resource->Load();
+
+    return ResourceRef{static_cast<T*>(resource.get())};
+}
 
 } // namespace bl
 

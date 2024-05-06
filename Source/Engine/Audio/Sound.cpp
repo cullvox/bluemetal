@@ -4,8 +4,9 @@
 namespace bl 
 {
 
-Sound::Sound(AudioSystem* system)
-    : _system(system)
+Sound::Sound(const nlohmann::json& json, AudioSystem* system)
+    : Resource(json)
+    , _system(system)
 {
 }
 
@@ -15,7 +16,7 @@ Sound::~Sound()
         Unload();
 }
 
-void Sound::Load(const nlohmann::json&)
+void Sound::Load()
 {
     FMOD_CHECK(_system->Get()->createSound(GetPath().c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &_sound))
 }
@@ -23,6 +24,7 @@ void Sound::Load(const nlohmann::json&)
 void Sound::Unload()
 {
     FMOD_CHECK(_sound->release())
+    _sound = nullptr;
 }
 
 FMOD::Sound* Sound::Get() 

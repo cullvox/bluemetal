@@ -15,7 +15,7 @@ struct PipelineCreateInfo /** @brief Create info for pipeline objects. */
     uint32_t subpass; /** @brief What subpass this pipeline is used in. */
     std::vector<VkVertexInputBindingDescription> vertexInputBindings;
     std::vector<VkVertexInputAttributeDescription> vertexInputAttribs;
-    std::vector<Shader*> shaders; /** @brief The shaders used in this pipeline program. */
+    std::vector<ResourceRef<Shader>> shaders; /** @brief The shaders used in this pipeline program. */
     DescriptorSetLayoutCache* setLayoutCache;
     PipelineLayoutCache* pipelineLayoutCache;
 };

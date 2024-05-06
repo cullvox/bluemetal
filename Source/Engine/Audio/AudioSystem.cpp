@@ -44,21 +44,16 @@ int AudioSystem::GetNumChannelsPlaying()
     return count;
 }
 
-std::unique_ptr<Resource> AudioSystem::BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json&)
+std::unique_ptr<Resource> AudioSystem::BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& data)
 {
-    if (type == "sound")
+    if (type == "Sound")
     {
-        return std::make_unique<Sound>(this);
+        return std::make_unique<Sound>(data, this);
     }
     else
     {
         throw std::runtime_error("Trying to create a resource this builder wasn't specified to!");
     }
-}
-
-std::unique_ptr<Sound> AudioSystem::CreateSound(std::filesystem::path path)
-{
-    return std::make_unique<Sound>(this);
 }
 
 std::unique_ptr<Listener> AudioSystem::CreateListener()

@@ -12,10 +12,10 @@ namespace bl
 class Shader : public Resource
 {
 public:
-    Shader(Device* device);  /** @brief Constructor */
+    Shader(const nlohmann::json& json, Device* device);  /** @brief Constructor */
     ~Shader(); /** @brief Destructor */
 
-    virtual void Load(const nlohmann::json& data);
+    virtual void Load();
     virtual void Unload();
 
     VkShaderStageFlagBits GetStage() const; /** @brief Returns the shader stage created with. */

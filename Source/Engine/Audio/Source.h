@@ -13,7 +13,7 @@ public:
     Source(AudioSystem* system);
     ~Source();
 
-    void SetSound(Sound* sound);
+    void SetSound(ResourceRef<Sound> sound);
     void Set3DAttributes(glm::vec3 position, glm::vec3 velocity);
     void Play(bool repeat = false);
 
@@ -22,7 +22,7 @@ public:
 
 private:
     AudioSystem* _system;
-    Sound* _sound;
+    ResourceRef<Sound> _sound;
     FMOD::Channel* _channel;
 };
 
