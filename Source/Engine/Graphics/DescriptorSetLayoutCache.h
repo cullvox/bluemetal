@@ -63,7 +63,7 @@ public:
     DescriptorSetLayoutCache(Device* device);
     ~DescriptorSetLayoutCache();
 
-    VkDescriptorSetLayout acquire(std::vector<VkDescriptorSetLayoutBinding> bindings);
+    VkDescriptorSetLayout Acquire(std::vector<VkDescriptorSetLayoutBinding> bindings);
 
 private:
     Device* _device;

@@ -27,6 +27,7 @@ public:
     Pipeline(Device* device, const PipelineCreateInfo& info); /** @brief Constructor */
     ~Pipeline(); /** @brief Destructor */
 
+    std::vector<VkDescriptorSetLayout> GetDescriptorSetLayouts() const;
     VkPipelineLayout GetLayout() const;
     VkPipeline Get() const; /** @brief Gets the raw VkPipeline underlying this object. */
 
@@ -36,6 +37,7 @@ private:
     void Create(const PipelineCreateInfo& createInfo);
 
     Device* _device;
+    std::vector<VkDescriptorSetLayout> _descriptorSetLayouts;
     VkPipelineLayout _layout;
     VkPipeline _pipeline;
 };

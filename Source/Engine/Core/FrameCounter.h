@@ -16,6 +16,7 @@ public:
     float GetAverageFramesPerSecond(uint32_t seconds);
     float GetMillisecondsPerFrame();
     float GetAverageMillisecondsPerFrame(uint32_t frames);
+    float GetDeltaTime() const;
 
 private:
     using time_point = std::chrono::high_resolution_clock::time_point;
@@ -28,6 +29,7 @@ private:
     uint32_t                             _maximumHeldMillisecondsPerFrame = 144;
     std::list<uint32_t>                  _framesPerSecond;
     std::list<std::chrono::nanoseconds>  _millisecondsPerFrame;
+    float                                _delta;
 };
 
 } // namespace bl

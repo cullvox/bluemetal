@@ -13,7 +13,7 @@ RenderActor::RenderActor(const std::string& name, uint64_t uid, Device* device)
         device, 
         VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
         VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
-        sizeof(ObjectUBO) * GraphicsConfig::numFramesInFlight);
+        sizeof(ObjectPC) * GraphicsConfig::numFramesInFlight);
 
     // Allocate the object descriptor sets.
 
@@ -26,8 +26,8 @@ RenderActor::RenderActor(const std::string& name, uint64_t uid, Device* device)
     {
         bufferInfos[i] = VkDescriptorBufferInfo{
             _objectDUBO->Get(),
-            sizeof(ObjectUBO) * i,
-            sizeof(ObjectUBO)
+            sizeof(ObjectPC) * i,
+            sizeof(ObjectPC)
         };
 
         descWrites[i] = VkWriteDescriptorSet{
@@ -55,8 +55,8 @@ void RenderActor::UpdateObjectUBO(int currentFrame)
     // Copy the UBO data to the GPU.
     VkBufferCopy copy{
         0,
-        currentFrame * sizeof(ObjectUBO),
-        sizeof(ObjectUBO)
+        currentFrame * sizeof(ObjectPC),
+        sizeof(ObjectPC)
     };
 
     _objectDUBO->Upload(copy, &_objectData);

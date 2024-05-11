@@ -55,6 +55,8 @@ bool FrameCounter::EndFrame()
     // Add the ms to the frames
     _millisecondsPerFrame.push_back(ns);
 
+    _delta = std::chrono::duration_cast<std::chrono::microseconds>(_endOfFrame - _startOfFrame).count() / 1000000.0f;
+
     return endedSecond;
 }
 
@@ -120,6 +122,11 @@ float FrameCounter::GetAverageMillisecondsPerFrame(uint32_t frames)
 
     averageMPF /= frames;
     return averageMPF;
+}
+
+float FrameCounter::GetDeltaTime() const
+{
+    return _delta;
 }
 
 } // namespace bl

@@ -46,103 +46,109 @@ VkPipeline Pipeline::Get() const
 //     }
 // }
 
+static inline bool CompareBindings(const VkDescriptorSetLayoutBinding& a, const VkDescriptorSetLayoutBinding& b)
+{
+    return a.binding == b.binding && a.descriptorType == b.descriptorType && a.descriptorCount == b.descriptorCount;
+};
+
 void Pipeline::Create(const PipelineCreateInfo& createInfo)
 {
     std::vector<VkPipelineShaderStageCreateInfo> stages{};
     stages.reserve(createInfo.shaders.size());
 
-    std::unordered_map<uint32_t, DescriptorSetLayoutBindings> pipelineSetBindings;
+    // Obtain reflection data from shaders to build the pipeline layout.
+    std::unordered_map<uint32_t, DescriptorSetLayoutBindings> descriptorSetBindings;
+    std::vector<VkPushConstantRange> pushConstantRanges;
+
     for (auto resource : createInfo.shaders)
     {
         auto shader = resource.Get();
         const auto& reflection = shader->GetReflection();
 
-        // Build this shaders sets and their bindings.
-        std::unordered_map<uint32_t, DescriptorSetLayoutBindings> shaderSetBindings;
-        for (uint32_t i = 0; i < reflection.descriptor_set_count; i++)
-        {
-            const auto& set = reflection.descriptor_sets[i];
-            auto& bindings = shaderSetBindings[i].bindings; 
-            bindings.reserve(set.binding_count);
+        // Build a pipeline shader stage.
+        VkPipelineShaderStageCreateInfo stage{};
+        stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stage.pNext = nullptr;
+        stage.flags = 0;
+        stage.stage = shader->GetStage();
+        stage.module = shader->Get();
+        stage.pName = "main";
+        stage.pSpecializationInfo = nullptr;
 
-            for (uint32_t j = 0; j < set.binding_count; j++)
+        stages.push_back(stage);
+
+        // Reflect each descriptor binding to build descriptor set layouts.
+        for (uint32_t i = 0; i < reflection.descriptor_binding_count; i++)
+        {
+            const auto& db = reflection.descriptor_bindings[i];
+            auto& set = descriptorSetBindings[db.set];
+
+            VkDescriptorSetLayoutBinding binding{};
+            binding.binding = db.binding;
+            binding.descriptorType = (VkDescriptorType)db.descriptor_type;
+            binding.descriptorCount = db.count;
+            binding.stageFlags = shader->GetStage();
+            binding.pImmutableSamplers = nullptr;
+
+            // If this binding number already exists then compare and use that.
+            auto it = std::find_if(set.bindings.begin(), set.bindings.end(), 
+                [db](auto&& binding){ return db.binding == binding.binding; });
+
+            if (it != set.bindings.end())
             {
-                const auto binding = set.bindings[j];
-                bindings.emplace_back(j, (VkDescriptorType)binding->descriptor_type, binding->count, shader->GetStage(), nullptr);
-            }
-        }
+                // The binding exists, make sure they are the same.
+                auto& existingBinding = (*it);
+                if (!CompareBindings(existingBinding, binding))
+                    throw std::runtime_error("Bindings using same index but hold different types of data!");
 
-        // Merge the sets and their bindings into the main pipeline bindings, check for discrepancies.
-        auto compareBindings = [](const VkDescriptorSetLayoutBinding& a, const VkDescriptorSetLayoutBinding& b)
-        {
-            return a.binding == b.binding && a.descriptorType == b.descriptorType && a.descriptorCount == b.descriptorCount;
-        };
-
-        for (const auto& pair : shaderSetBindings)
-        {
-            uint32_t set = pair.first;
-            auto& bindings = pair.second.bindings;
-
-            if (pipelineSetBindings.contains(set))
-            {
-                auto& mainBindings = pipelineSetBindings[set].bindings;
-
-                for (uint32_t i = 0; i < bindings.size(); i++)
-                {
-                    auto& binding = bindings[i];
-                    auto bindingNum = binding.binding;
-
-                    auto it = std::find_if(mainBindings.begin(), mainBindings.end(), [bindingNum](auto&& binding){ return binding.binding == bindingNum; });
-                    if (it != mainBindings.end())
-                    {
-                        // Ensure that the bindings are the same in data.
-                        if (compareBindings(binding, *it))
-                        {
-                            it->stageFlags |= shader->GetStage();
-                        } 
-                        else
-                        {
-                            throw std::runtime_error("Shader descriptor set layout does not match previous shader!");
-                        }
-                    }
-                    else
-                    {
-                        // This binding wasn't added to the set yet and is new to this shader.
-                        mainBindings.push_back(binding);
-                    }
-                }
+                // Since they are the same just add this binding to the stage.
+                existingBinding.stageFlags |= shader->GetStage();
             }
             else
             {
-                // This set wasn't added to the pipeline layout yet, add it.
-                pipelineSetBindings.emplace(set, bindings);
+                // This binding doesn't exist yet for this descriptor, add it!
+                set.bindings.push_back(binding);
+            }
+        }
+
+        // Gather all the push constant ranges for the pipeline layout.
+        for (uint32_t i = 0; i < reflection.push_constant_block_count; i++)
+        {
+            const auto& pcb = reflection.push_constant_blocks[i];
+
+            VkPushConstantRange range{};
+            range.size = pcb.size;
+            range.offset = pcb.offset;
+            range.stageFlags = shader->GetStage();
+
+            // Check if the push constant already exists.
+            auto it = std::find_if(pushConstantRanges.begin(), pushConstantRanges.end(), 
+                [&range](auto&& existing){ return existing.size == range.size && existing.offset == range.offset; });
+
+            if (it != pushConstantRanges.end())
+            {
+                // Add the stage to the existing push constant range.
+                auto& existing = (*it);
+                existing.stageFlags |= shader->GetStage();
+            }
+            else
+            {
+                // This block wasn't added yet.
+                pushConstantRanges.push_back(range);
             }
         }
     }
 
-    std::vector<VkDescriptorSetLayout> setLayouts;
-    setLayouts.reserve(pipelineSetBindings.size());
-    
-    for (const auto& pair : pipelineSetBindings)
+    // Use the descriptor set layout cache to acquire layouts for each set.
+    _descriptorSetLayouts.reserve(descriptorSetBindings.size());
+
+    for (const auto& setBindings : descriptorSetBindings)
     {
-        setLayouts.push_back(createInfo.setLayoutCache->acquire(pair.second.bindings));
+        _descriptorSetLayouts.push_back(createInfo.setLayoutCache->Acquire(setBindings.second.bindings));
     }
 
-    _layout = createInfo.pipelineLayoutCache->acquire(setLayouts, {});
-
-    std::transform(createInfo.shaders.begin(), createInfo.shaders.end(), std::back_inserter(stages), 
-        [](auto&& resource){
-            auto shader = resource.Get();
-            VkPipelineShaderStageCreateInfo createInfo{};
-            createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-            createInfo.pNext = nullptr;
-            createInfo.flags = 0;
-            createInfo.stage = shader->GetStage();
-            createInfo.module = shader->Get();
-            createInfo.pName = "main";
-            createInfo.pSpecializationInfo = nullptr;
-            return createInfo;
-        });
+    // Finally acquire our layout using the pipeline layout cache.
+    _layout = createInfo.pipelineLayoutCache->Acquire(_descriptorSetLayouts, pushConstantRanges);
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -166,27 +172,14 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     tessellationState.flags = 0;
     tessellationState.patchControlPoints = 0;
 
-    // The viewport state is set to dynamic, it doesn't matter.
-    std::array<VkViewport, 1> viewports;
-    viewports[0].x = 0.0f;
-    viewports[0].y = 0.0f;
-    viewports[0].width = 0.0f;
-    viewports[0].height = 0.0f;
-    viewports[0].minDepth = 0.0f;
-    viewports[0].maxDepth = 1.0f;
-
-    std::array<VkRect2D, 1> scissors;
-    scissors[0].offset = { 0, 0 };
-    scissors[0].extent = { 0, 0 };
-
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.pNext = nullptr;
     viewportState.flags = 0;
-    viewportState.viewportCount = (uint32_t)viewports.size();
-    viewportState.pViewports = viewports.data();
-    viewportState.scissorCount = (uint32_t)scissors.size();
-    viewportState.pScissors = scissors.data();
+    viewportState.viewportCount = 0;
+    viewportState.pViewports = nullptr;
+    viewportState.scissorCount = 0;
+    viewportState.pScissors = nullptr;
 
     VkPipelineRasterizationStateCreateInfo rasterizationState = {};
     rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -239,8 +232,8 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     colorBlendState.blendConstants[3] = 0.0f;
 
     std::array dynamicStates{
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR,
+        VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
+        VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
     };
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};
@@ -262,7 +255,7 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     pipelineCreateInfo.pViewportState = &viewportState;
     pipelineCreateInfo.pRasterizationState = &rasterizationState;
     pipelineCreateInfo.pMultisampleState = &multisampleState;
-    pipelineCreateInfo.pDepthStencilState = VK_NULL_HANDLE;
+    pipelineCreateInfo.pDepthStencilState = nullptr;
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.layout = _layout;
@@ -272,6 +265,11 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     pipelineCreateInfo.basePipelineIndex = 0;
 
     VK_CHECK(vkCreateGraphicsPipelines(_device->Get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline))
+}
+
+std::vector<VkDescriptorSetLayout> Pipeline::GetDescriptorSetLayouts() const
+{
+    return _descriptorSetLayouts;
 }
 
 } // namespace bl

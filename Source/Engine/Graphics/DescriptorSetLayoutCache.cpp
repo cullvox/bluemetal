@@ -14,7 +14,7 @@ DescriptorSetLayoutCache::~DescriptorSetLayoutCache()
         vkDestroyDescriptorSetLayout(_device->Get(), pair.second, nullptr);
 }
 
-VkDescriptorSetLayout DescriptorSetLayoutCache::acquire(std::vector<VkDescriptorSetLayoutBinding> b)
+VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(std::vector<VkDescriptorSetLayoutBinding> b)
 {
 
     // Sort the bindings by the set binding.

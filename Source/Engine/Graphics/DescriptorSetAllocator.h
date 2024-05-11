@@ -5,19 +5,14 @@
 namespace bl
 {
 
-class DescriptorSetAllocator
+struct DescriptorRatio
 {
-public:
-    DescriptorSetAllocator(std::shared_ptr<GfxDevice> device);
-    ~DescriptorSetAllocator();
+    VkDescriptorType type;
+    float ratio;
 
-    void ResetPools();
-    VkDescriptorSet AllocateSet(VkDescriptorSetLayout layout);
-    
-    struct PoolSizes
+    static std::vector<DescriptorRatio> Default()
     {
-        std::vector<std::pair<VkDescriptorType, float>> sizes =
-        {    
+        return std::vector<DescriptorRatio>{
             { VK_DESCRIPTOR_TYPE_SAMPLER, 0.5f },
             { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.f },
             { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 4.f },
@@ -30,17 +25,27 @@ public:
             { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1.f },
             { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 0.5f }
         };
-    };
+    }
+};
+
+class DescriptorSetAllocator
+{
+public:
+    DescriptorSetAllocator(Device* device, uint32_t maxSets, std::span<DescriptorRatio> ratios);
+    ~DescriptorSetAllocator();
+
+    VkDescriptorSet Allocate(VkDescriptorSetLayout layout);
+    void ResetPools();
 
 private:
     VkDescriptorPool GrabPool();
-    VkDescriptorPool CreatePool();
+    VkDescriptorPool CreatePool(uint32_t setCount);
 
-    std::shared_ptr<GfxDevice>      _device;
-    VkDescriptorPool                _currentPool;
-    PoolSizes                       _descriptorSizes;
-    std::vector<VkDescriptorPool>   _usedPools;
-    std::vector<VkDescriptorPool>   _freePools;
+    Device* _device;
+    uint32_t _setsPerPool;
+    std::vector<DescriptorRatio> _ratios;
+    std::vector<VkDescriptorPool> _usedPools;
+    std::vector<VkDescriptorPool> _freePools;
 };
 
 } // namespace bl

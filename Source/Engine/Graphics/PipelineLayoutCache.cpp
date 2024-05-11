@@ -14,9 +14,7 @@ PipelineLayoutCache::~PipelineLayoutCache()
         vkDestroyPipelineLayout(_device->Get(), pair.second, nullptr);
 }
 
-VkPipelineLayout PipelineLayoutCache::acquire(
-    std::vector<VkDescriptorSetLayout>  setLayouts, 
-    std::vector<VkPushConstantRange>    ranges)
+VkPipelineLayout PipelineLayoutCache::Acquire(std::vector<VkDescriptorSetLayout> setLayouts, std::vector<VkPushConstantRange> ranges)
 {
     // Sort each value to ensure stability when hashing.
     std::sort(setLayouts.begin(), setLayouts.end());
@@ -29,8 +27,6 @@ VkPipelineLayout PipelineLayoutCache::acquire(
 
     // Check if the layout is in our cache.
     auto it = _cache.find(layoutInfo);
-
-    // Return a found layout.
     if (it != _cache.end())
         return (*it).second;
 

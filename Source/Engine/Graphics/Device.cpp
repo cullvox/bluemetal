@@ -10,10 +10,10 @@
 #pragma GCC diagnostic ignored "-Wparentheses"
 #elif BLUEMETAL_COMPILER_MSVC
 #pragma warning(push)
-#pragma warning(disable : 4100) // unused parameter
-#pragma warning(disable : 4189) // unused variables
-#pragma warning(disable : 4127) // constexpr not used
-#pragma warning(disable : 4324) // padded structures
+#pragma warning(disable: 4100) // unused parameter
+#pragma warning(disable: 4189) // unused variables
+#pragma warning(disable: 4127) // constexpr not used
+#pragma warning(disable: 4324) // padded structures
 #endif
 
 #define VMA_IMPLEMENTATION

@@ -82,7 +82,7 @@ void Renderer::Recreate()
     _presentPass->Recreate(extent);
 }
 
-void Renderer::Render(std::function<void(VkCommandBuffer)> func)
+void Renderer::Render(std::function<void(VkCommandBuffer, uint32_t)> func)
 {
     if (!_swapchain->Get()) // Swapchain must be valid.
         return;
@@ -116,7 +116,7 @@ void Renderer::Render(std::function<void(VkCommandBuffer)> func)
 
     VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo))
     _presentPass->Begin(cmd, renderArea, imageIndex);
-    func(cmd);
+    func(cmd, _currentFrame);
     _presentPass->End(cmd);
     VK_CHECK(vkEndCommandBuffer(cmd))
 

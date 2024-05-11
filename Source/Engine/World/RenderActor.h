@@ -18,7 +18,7 @@ public:
 private:
     void UpdateObjectUBO(int currentFrame);
     
-    ObjectUBO _objectData;
+    ObjectPC _objectData;
     std::array<VkDescriptorSet, GraphicsConfig::numFramesInFlight> _perFrameSets;
     std::unique_ptr<Buffer> _objectDUBO;
 };

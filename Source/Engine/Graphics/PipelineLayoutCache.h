@@ -58,7 +58,7 @@ public:
     PipelineLayoutCache(Device* device);
     ~PipelineLayoutCache();
 
-    VkPipelineLayout acquire(std::vector<VkDescriptorSetLayout> setLayouts, std::vector<VkPushConstantRange> ranges);
+    VkPipelineLayout Acquire(std::vector<VkDescriptorSetLayout> setLayouts, std::vector<VkPushConstantRange> ranges);
 
 private:
     Device* _device;

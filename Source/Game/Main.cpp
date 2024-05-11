@@ -1,11 +1,13 @@
 #include "Core/Time.h"
 #include "Core/FrameCounter.h"
+#include "Core/Print.h"
 #include "Engine/Engine.h"
 #include "Graphics/Shader.h"
 #include "Graphics/PhysicalDevice.h"
 #include "Graphics/Pipeline.h"
 #include "Graphics/Vertex.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/DescriptorSetAllocator.h"
 #include "Material/UniformData.h"
 
 #include "Math/Transform.h"
@@ -105,30 +107,66 @@ int main(int argc, const char** argv)
     pci.pipelineLayoutCache = graphics->GetPipelineLayoutCache();
 
     auto pipeline = std::make_shared<bl::Pipeline>(graphics->GetDevice(), pci);
+    auto setLayouts = pipeline->GetDescriptorSetLayouts();
     auto window = engine.GetWindow();
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(window);
+    std::vector ratios = bl::DescriptorRatio::Default();
+    auto descriptorAllocator = std::make_unique<bl::DescriptorSetAllocator>(graphics->GetDevice(), 1024, ratios);
 
-    auto globalBuffer = std::make_shared<bl::Buffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, sizeof(bl::GlobalUBO));
-    auto objectBuffer = std::make_shared<bl::Buffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, sizeof(bl::ObjectUBO));
+    auto globalBuffer = std::make_shared<bl::Buffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, sizeof(bl::GlobalUBO));
 
-    
+    void* globalBufferMap = nullptr;
+    globalBuffer->Map(&globalBufferMap);
+
+    std::array<VkDescriptorSet, bl::GraphicsConfig::numFramesInFlight> sets;
+    for (uint32_t i = 0; i < bl::GraphicsConfig::numFramesInFlight; i++)
+    {
+        sets[i] = descriptorAllocator->Allocate(setLayouts[0]);
+
+        VkDescriptorBufferInfo info{};
+        info.buffer = globalBuffer->Get();
+        info.offset = 0;
+        info.range = VK_WHOLE_SIZE;
+
+        VkWriteDescriptorSet write{};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.pNext = nullptr;
+        write.dstSet = sets[i];
+        write.dstBinding = 0;
+        write.dstArrayElement = 0;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        write.pImageInfo = nullptr;
+        write.pBufferInfo = &info;
+        write.pTexelBufferView = nullptr;
+
+        vkUpdateDescriptorSets(graphics->GetDevice()->Get(), 1, &write, 0, nullptr);
+    }
 
     bl::FrameCounter frameCounter;
     glm::vec3 cameraPos { 0.0f, 0.0f, -10.f};
 
+    bl::ObjectPC object{};
+    object.model = glm::identity<glm::mat4>();
+    object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, -10.f});
+
+    glm::mat4 view = glm::identity<glm::mat4>();
+    float walkingSpeed = 9.0f;
+
     bool running = true;
     bool minimized = false;
-    while (running) {
+    while (running) 
+    {
         frameCounter.BeginFrame();
 
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            imgui->Process(event);
-
-            switch (event.type) {
+            switch (event.type) 
+            {
             case SDL_WINDOWEVENT:
-                switch (event.window.event) {
+                switch (event.window.event) 
+                {
                 case SDL_WINDOWEVENT_CLOSE:
                     running = false;
                     break;
@@ -140,15 +178,21 @@ int main(int argc, const char** argv)
                     break;
                 }
                 break;
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym) {
-                case SDLK_F12:
-                    // renderDoc->beginCapture();
-                    break;
-                }
-                break;
             }
+
+            imgui->Process(event);
         }
+
+        SDL_PumpEvents();
+        const uint8_t* keystate = SDL_GetKeyboardState(NULL);    
+        if(keystate[SDL_SCANCODE_W])
+            view = glm::translate(view, glm::vec3{0.0f, 0.0f, walkingSpeed} * frameCounter.GetDeltaTime());
+        if (keystate[SDL_SCANCODE_S])
+            view = glm::translate(view, glm::vec3{0.0f, 0.0f, -walkingSpeed} * frameCounter.GetDeltaTime());
+        if (keystate[SDL_SCANCODE_A])
+            view = glm::translate(view, glm::vec3{walkingSpeed, 0.0f, 0.0f} * frameCounter.GetDeltaTime());
+        if (keystate[SDL_SCANCODE_D])
+            view = glm::translate(view, glm::vec3{-walkingSpeed, 0.0f, 0.0f} * frameCounter.GetDeltaTime());
 
         auto extent = window->GetExtent();
         auto extenti = glm::ivec2{(int)extent.width, (int)extent.height};
@@ -159,49 +203,47 @@ int main(int argc, const char** argv)
             0.0f,
             extenti,
             {},
-            glm::translate(glm::identity<glm::mat4>(), cameraPos),
-            glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.01f, 100.0f)
+            view,
+            glm::perspectiveFov(70.0f, extentf.x, extentf.y, 1.f, 100.0f)
         };
 
-        globalBuffer->Upload((void*)&globalUBO);
+        std::memcpy(globalBufferMap, &globalUBO, sizeof(globalUBO));
 
-        bl::ObjectUBO objectUBO = {
-            glm::identity<glm::mat4>()
-        };
+        object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
 
-        objectBuffer->Upload((void*)&objectUBO);
-
-        glm::vec3 position { sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
-        glm::vec3 velocity { cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
+        glm::vec3 position{ sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
+        glm::vec3 velocity{ cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
 
         source->Set3DAttributes(position, velocity);
         audio->Update();
 
         if (!minimized) {
 
-        renderer->Render([&](VkCommandBuffer cmd){
-            
+        renderer->Render([&](VkCommandBuffer cmd, uint32_t currentFrame){
+
             auto extent = window->GetExtent();
 
-            VkViewport vp;
-            vp.x = 0.0f;
-            vp.y = 0.0f;
-            vp.width = (float)extent.width;
-            vp.height = (float)extent.height;
-            vp.minDepth = 0.0f;
-            vp.maxDepth = 1.0f;
-            vkCmdSetViewport(cmd, 0, 1, &vp);
+            VkViewport viewport;
+            viewport.x = 0.0f;
+            viewport.y = 0.0f;
+            viewport.width = (float)extent.width;
+            viewport.height = (float)extent.height;
+            viewport.minDepth = 0.0f;
+            viewport.maxDepth = 1.0f;
+            vkCmdSetViewport(cmd, 0, 1, &viewport);
 
             VkRect2D scissor;
             scissor.offset = {0, 0};
             scissor.extent = extent;
-            vkCmdSetScissor(cmd, 0, 1, &scissor);
 
+            vkCmdSetViewportWithCount(cmd, 1, &viewport);
+            vkCmdSetScissorWithCount(cmd, 1, &scissor);
 
-            // mesh->bind(cmd);
-// 
+            mesh->bind(cmd);
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetLayout(), 0, 1, &sets[currentFrame], 0, nullptr);
             vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->Get());
-            vkCmdDraw(cmd, 3, 1, 0, 0);
+            vkCmdPushConstants(cmd, pipeline->GetLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(bl::ObjectPC), &object);
+            mesh->draw(cmd);
 
             imgui->BeginFrame();
 
@@ -241,8 +283,6 @@ int main(int argc, const char** argv)
                         auto& physicalDevice = physicalDevices[i];
 
                         if (ImGui::TreeNode((void*)(intptr_t)i, "%s", physicalDevice->GetDeviceName().c_str())) {
-                            
-
                             const char* deviceType = "";
                             switch (physicalDevice->GetType()) {
                             case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: deviceType = "Integrated"; break;
@@ -285,19 +325,17 @@ int main(int argc, const char** argv)
 
             imgui->EndFrame(cmd);
         });
-
         }
 
         frameCounter.EndFrame();
     }
 
+    globalBuffer->Unmap();
+
     } catch (std::exception& e) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Exception Error", e.what(), nullptr);
         return EXIT_FAILURE;
     }
-
-
-    system("pause");
 
     return 0;
 }

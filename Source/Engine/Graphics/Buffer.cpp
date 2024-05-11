@@ -49,16 +49,6 @@ void Buffer::CreateBuffer(VmaAllocationInfo* allocationInfo)
     VK_CHECK(vmaCreateBuffer(_device->GetAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, allocationInfo))
 }
 
-void Buffer::Map(void** mapped)
-{
-    VK_CHECK(vmaMapMemory(_device->GetAllocator(), _allocation, mapped))
-}
-
-void Buffer::Unmap()
-{
-    vmaUnmapMemory(_device->GetAllocator(), _allocation);
-}
-
 VmaAllocation Buffer::GetAllocation() const 
 { 
     return _allocation; 
@@ -72,6 +62,16 @@ VkBuffer Buffer::Get() const
 VkDeviceSize Buffer::GetSize() const 
 { 
     return _size; 
+}
+
+void Buffer::Map(void** mapped)
+{
+    VK_CHECK(vmaMapMemory(_device->GetAllocator(), _allocation, mapped))
+}
+
+void Buffer::Unmap()
+{
+    vmaUnmapMemory(_device->GetAllocator(), _allocation);
 }
 
 void Buffer::Upload(VkBufferCopy copyRegion, void* srcData)

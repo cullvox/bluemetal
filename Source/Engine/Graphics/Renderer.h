@@ -16,7 +16,7 @@ public:
     Window* GetWindow();
     void Recreate();
     RenderPass* GetUIPass();
-    void Render(std::function<void(VkCommandBuffer)> func);
+    void Render(std::function<void(VkCommandBuffer cmd, uint32_t currentFrame)> func);
 
 private:
     void CreateSyncObjects();

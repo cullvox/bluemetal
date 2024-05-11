@@ -25,7 +25,7 @@ struct MaterialBuffer // Slot 1, Binding 0
 };
 
 
-struct ObjectUBO // Slot 2, Binding 0
+struct ObjectPC // Model positions use a push constant block
 {
     alignas(16) glm::mat4 model;
 };
