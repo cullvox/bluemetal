@@ -144,14 +144,21 @@ int main(int argc, const char** argv)
     }
 
     bl::FrameCounter frameCounter;
-    glm::vec3 cameraPos { 0.0f, 0.0f, -10.f};
 
     bl::ObjectPC object{};
     object.model = glm::identity<glm::mat4>();
-    object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, -10.f});
+    object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, 0.0f});
 
+    bool firstMouse = true;
+    glm::ivec2 lastMouse{};
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -10.0f);
+    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
     glm::mat4 view = glm::identity<glm::mat4>();
+    float yaw = -90.0f, pitch = 0.0f;
     float walkingSpeed = 9.0f;
+    bool mouseCaptured = false;
+    bool windowFocused = false;
 
     bool running = true;
     bool minimized = false;
@@ -176,6 +183,12 @@ int main(int argc, const char** argv)
                 case SDL_WINDOWEVENT_RESTORED:
                     minimized = false;
                     break;
+                case SDL_WINDOWEVENT_FOCUS_GAINED:
+                    windowFocused = true;
+                    break;
+                case SDL_WINDOWEVENT_FOCUS_LOST:
+                    windowFocused = false;
+                    break;
                 }
                 break;
             }
@@ -184,15 +197,67 @@ int main(int argc, const char** argv)
         }
 
         SDL_PumpEvents();
+
         const uint8_t* keystate = SDL_GetKeyboardState(NULL);    
         if(keystate[SDL_SCANCODE_W])
-            view = glm::translate(view, glm::vec3{0.0f, 0.0f, walkingSpeed} * frameCounter.GetDeltaTime());
+            cameraPos += glm::vec3{0.0f, 0.0f, walkingSpeed} * frameCounter.GetDeltaTime();
         if (keystate[SDL_SCANCODE_S])
-            view = glm::translate(view, glm::vec3{0.0f, 0.0f, -walkingSpeed} * frameCounter.GetDeltaTime());
+            cameraPos += glm::vec3{0.0f, 0.0f, -walkingSpeed} * frameCounter.GetDeltaTime();
         if (keystate[SDL_SCANCODE_A])
-            view = glm::translate(view, glm::vec3{walkingSpeed, 0.0f, 0.0f} * frameCounter.GetDeltaTime());
+            cameraPos += glm::vec3{walkingSpeed, 0.0f, 0.0f} * frameCounter.GetDeltaTime();
         if (keystate[SDL_SCANCODE_D])
-            view = glm::translate(view, glm::vec3{-walkingSpeed, 0.0f, 0.0f} * frameCounter.GetDeltaTime());
+            cameraPos += glm::vec3{-walkingSpeed, 0.0f, 0.0f} * frameCounter.GetDeltaTime();
+        if (keystate[SDL_SCANCODE_ESCAPE])
+        {
+            mouseCaptured = false;
+            SDL_ShowCursor(SDL_ENABLE);
+        }
+
+        glm::ivec2 mouse;
+        uint32_t buttons = SDL_GetGlobalMouseState(&mouse.x, &mouse.y);
+
+        if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT) && windowFocused)
+        {
+            mouseCaptured = true;
+            SDL_ShowCursor(SDL_DISABLE);
+        }
+
+        if (mouseCaptured)
+        {
+            if (firstMouse)
+            {
+                lastMouse = mouse;
+                firstMouse = false;
+            }
+
+            glm::vec2 mouseOffset{ (float)(mouse.x - lastMouse.x), (float)(mouse.y - lastMouse.y) };
+            lastMouse = mouse;
+
+            float sensitivity = 0.1f;
+            mouseOffset *= sensitivity;
+
+            yaw += mouseOffset.x;
+            pitch -= mouseOffset.y;
+
+            if (pitch > 89.0f)
+                pitch = 89.0f;
+            if (pitch < -89.0f)
+                pitch = -89.0f;
+
+            glm::vec3 direction;
+            direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
+            direction.y = sin(glm::radians(pitch));
+            direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
+            cameraFront = glm::normalize(direction);
+
+            blInfo("Offset: {}, {}", mouseOffset.x, mouseOffset.y);
+            blInfo("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
+        }
+
+        view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
+
+        blInfo("Mouse: {}, {}, {}", mouse.x, mouse.y, firstMouse);
+        blInfo("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
 
         auto extent = window->GetExtent();
         auto extenti = glm::ivec2{(int)extent.width, (int)extent.height};
@@ -204,7 +269,7 @@ int main(int argc, const char** argv)
             extenti,
             {},
             view,
-            glm::perspectiveFov(70.0f, extentf.x, extentf.y, 1.f, 100.0f)
+            glm::perspectiveFov(70.0f, extentf.x, extentf.y, 1.0f, 100.0f)
         };
 
         std::memcpy(globalBufferMap, &globalUBO, sizeof(globalUBO));

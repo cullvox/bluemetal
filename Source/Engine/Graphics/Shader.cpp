@@ -54,6 +54,38 @@ void Shader::Load()
         throw std::runtime_error("Could not preform reflection on a shader module!");
     }
 
+    std::unordered_map<uint32_t, DescriptorReflection> descriptors;
+    for (uint32_t i = 0; i < _reflect.descriptor_binding_count; i++)
+    {
+        auto& binding = _reflect.descriptor_bindings[i];
+        auto& descriptor = descriptors[b.set];
+        auto bd = b.type_description;
+
+        VkDescriptorSetLayoutBinding layout{};
+        layout.binding = reflectedBinding.binding;
+        layout.descriptorType = (VkDescriptorType)reflectedBinding.descriptor_type;
+        layout.descriptorCount = reflectedBinding.count;
+        layout.stageFlags = shader->GetStage();
+        layout.pImmutableSamplers = nullptr;
+
+        
+
+        descriptor.AddBinding();
+
+    }
+
+    for (uint32_t i = 0; i < reflection.push_constant_block_count; i++)
+    {
+        const auto& pcb = reflection.push_constant_blocks[i];
+
+        VkPushConstantRange range{};
+        range.size = pcb.size;
+        range.offset = pcb.offset;
+        range.stageFlags = shader->GetStage();
+
+        _pushConstantRanges.push_back(range);
+    }
+
     // Create the shader module.
     VkShaderModuleCreateInfo moduleCreateInfo = {};
     moduleCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -81,6 +113,11 @@ VkShaderStageFlagBits Shader::GetStage() const
 const SpvReflectShaderModule& Shader::GetReflection() const
 {
     return _reflect;
+}
+
+std::vector<DescriptorReflection> Shader::GetDescriptors()
+{
+    return _descriptors;
 }
 
 VkShaderModule Shader::Get() const 

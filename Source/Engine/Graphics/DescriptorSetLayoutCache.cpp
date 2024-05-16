@@ -29,10 +29,13 @@ VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(std::vector<VkDescriptor
     auto it = _cache.find(bindings);
 
     // If a same layout is already cached, use it, instead build a new layout.
-    if (it != _cache.end()) {
+    if (it != _cache.end()) 
+    {
         // return found layout
         return (*it).second;
-    } else {
+    } 
+    else 
+    {
         VkDescriptorSetLayoutCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         createInfo.pNext = nullptr;

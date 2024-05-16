@@ -25,31 +25,74 @@ VkPipeline Pipeline::Get() const
     return _pipeline; 
 }
 
-// void Pipeline::mergeShaderResources(const std::vector<GfxPipelineResource>& shaderResources)
-// {
-//     for (auto& resource : shaderResources) {
-//         // shader resources for input and outputs can have the same names, adding the stage name
-//         // makes them unique
-//         auto key = resource.name;
-//         // if (resource.type  == PIPELINE_RESOURCE_TYPE_OUTPUT || resource.type ==
-//         // PIPELINE_RESOURCE_TYPE_INPUT)
-//         //    key = std::to_string(resource.stages) + ":" + key;
-// 
-//         // try to find the resource in the pipelines resources
-//         auto it = _resources.find(key);
-// 
-//         // if the resource is found add this stage to it, else add a new resource
-//         if (it != m_resources.end())
-//             it->second.stages |= resource.stages;
-//         else
-//             _resources.emplace(key, resource);
-//     }
-// }
-
-static inline bool CompareBindings(const VkDescriptorSetLayoutBinding& a, const VkDescriptorSetLayoutBinding& b)
+void Pipeline::ReflectMembers(SpvReflectBlockVariable& block, DescriptorSetLayoutBinding& binding)
 {
-    return a.binding == b.binding && a.descriptorType == b.descriptorType && a.descriptorCount == b.descriptorCount;
-};
+    if (binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER ||
+        binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ||
+        binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER ||
+        binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC) 
+        return;
+
+    const DescriptorMemberType vectorTypes[4][3] = // [components][type]
+    {
+        {DescriptorMemberType::eScalarBool, DescriptorMemberType::eScalarFloat, DescriptorMemberType::eScalarBoolean},
+        {DescriptorMemberType::eVector2b, DescriptorMemberType::eVector2i, DescriptorMemberType::eVector2f},
+        {DescriptorMemberType::eVector3b, DescriptorMemberType::eVector3i, DescriptorMemberType::eVector3f},
+        {DescriptorMemberType::eVector4b, DescriptorMemberType::eVector4i, DescriptorMemberType::eVector4f},
+    };
+
+    const DescriptorMemberType matrixTypes[3] =
+    {
+        DescriptorMemberType::eMatrix2, DescriptorMemberType::eMatrix3, DescriptorMemberType::eMatrix4
+    };
+
+    for (uint32_t j = 0; j < block.member_count; j++)
+    {
+        auto blockVariable = block.members[i];
+        auto typeDescription = blockVariable->type_description;
+        auto& numericTraits = blockVariable->numeric;
+
+        BlockMember member{};
+        member.name = blockVariable->name;
+        member.offset = blockVariable->offset;
+        member.size = blockVariable->size;
+
+        if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_ARRAY)
+        {
+            continue; // We don't support array values just yet. (eventually for voxels!)
+        }
+        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_VECTOR)
+        {
+            uint32_t components = numericTraits->vector.component_count;
+            uint32_t type = 0;
+            if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) type = 0; 
+            else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT) type = 1;
+            else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) type = 2;
+            return member.type = vectorTypes[components][type];
+        }
+        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_MATRIX)
+        { 
+            auto columns = numericTraits->matrix.column_count;
+            auto rows = numericTraits->matrix.row_count;
+            if (columns == rows) member.type = matrixTypes[columns];
+            else { continue; } // We don't support matrices that aren't dimensionally equal.
+        }
+        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL)
+        {
+            member.type = DescriptorMemberType::eScalarBool;
+        }
+        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT)
+        {
+            member.type = DescriptorMemberType::eScalarInt;
+        }
+        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT)
+        {
+            member.type = DescriptorMemberType::eScalarFloat;
+        }
+
+        binding[member.name] = member;
+    }
+}
 
 void Pipeline::Create(const PipelineCreateInfo& createInfo)
 {
@@ -57,13 +100,12 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     stages.reserve(createInfo.shaders.size());
 
     // Obtain reflection data from shaders to build the pipeline layout.
-    std::unordered_map<uint32_t, DescriptorSetLayoutBindings> descriptorSetBindings;
-    std::vector<VkPushConstantRange> pushConstantRanges;
+    std::unordered_map<uint32_t, DescriptorSetLayoutBuilder> descriptorSetLayoutBuilders;
+    std::vector<PushConstantRangeBuilder> pushConstantRangeBuilders;
 
     for (auto resource : createInfo.shaders)
     {
         auto shader = resource.Get();
-        const auto& reflection = shader->GetReflection();
 
         // Build a pipeline shader stage.
         VkPipelineShaderStageCreateInfo stage{};
@@ -80,62 +122,44 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
         // Reflect each descriptor binding to build descriptor set layouts.
         for (uint32_t i = 0; i < reflection.descriptor_binding_count; i++)
         {
-            const auto& db = reflection.descriptor_bindings[i];
-            auto& set = descriptorSetBindings[db.set];
-
-            VkDescriptorSetLayoutBinding binding{};
-            binding.binding = db.binding;
-            binding.descriptorType = (VkDescriptorType)db.descriptor_type;
-            binding.descriptorCount = db.count;
-            binding.stageFlags = shader->GetStage();
-            binding.pImmutableSamplers = nullptr;
+            const auto& reflected = reflection.descriptor_bindings[i];
+            auto& builder = descriptorSetLayoutBuilders[reflected.set];
 
             // If this binding number already exists then compare and use that.
-            auto it = std::find_if(set.bindings.begin(), set.bindings.end(), 
-                [db](auto&& binding){ return db.binding == binding.binding; });
-
-            if (it != set.bindings.end())
+            auto type = (VkDescriptorType)reflected.type;
+            auto count = reflected.count;
+            if (builder.ContainsBinding(reflected.binding))
             {
-                // The binding exists, make sure they are the same.
-                auto& existingBinding = (*it);
-                if (!CompareBindings(existingBinding, binding))
+                auto& binding = builder[reflected.binding];
+                if (!binding.Compare(type, count))
                     throw std::runtime_error("Bindings using same index but hold different types of data!");
 
-                // Since they are the same just add this binding to the stage.
-                existingBinding.stageFlags |= shader->GetStage();
+                binding.AddStageFlags(shader->GetStage());
             }
             else
             {
-                // This binding doesn't exist yet for this descriptor, add it!
-                set.bindings.push_back(binding);
+                auto& binding = builder[reflected.binding];
+                auto& block = reflected.block;
+                binding.SetLayout(reflected.binding, type, count, shader->GetStage(), nullptr);
+                ReflectMembers(binding, block);
             }
         }
 
         // Gather all the push constant ranges for the pipeline layout.
-        for (uint32_t i = 0; i < reflection.push_constant_block_count; i++)
+        // Check if the push constant already exists.=
+        auto it = std::find_if(_pushConstantRanges.begin(), _pushConstantRanges.end(), 
+            [&range](auto&& existing){ return existing.offset == range.offset && existing.size == range.size; });
+
+        if (it != _pushConstantRanges.end())
         {
-            const auto& pcb = reflection.push_constant_blocks[i];
-
-            VkPushConstantRange range{};
-            range.size = pcb.size;
-            range.offset = pcb.offset;
-            range.stageFlags = shader->GetStage();
-
-            // Check if the push constant already exists.
-            auto it = std::find_if(pushConstantRanges.begin(), pushConstantRanges.end(), 
-                [&range](auto&& existing){ return existing.size == range.size && existing.offset == range.offset; });
-
-            if (it != pushConstantRanges.end())
-            {
-                // Add the stage to the existing push constant range.
-                auto& existing = (*it);
-                existing.stageFlags |= shader->GetStage();
-            }
-            else
-            {
-                // This block wasn't added yet.
-                pushConstantRanges.push_back(range);
-            }
+            // Add the stage to the existing push constant range.
+            auto& existing = (*it);
+            existing.stageFlags |= shader->GetStage();
+        }
+        else
+        {
+            // This block wasn't added yet.
+            _pushConstantRanges.push_back(range);
         }
     }
 

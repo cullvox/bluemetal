@@ -3,6 +3,7 @@
 #include "Device.h"
 #include "Shader.h"
 #include "RenderPass.h"
+#include "Descriptor.h"
 #include "DescriptorSetLayoutCache.h"
 #include "PipelineLayoutCache.h"
 
@@ -27,14 +28,16 @@ public:
     Pipeline(Device* device, const PipelineCreateInfo& info); /** @brief Constructor */
     ~Pipeline(); /** @brief Destructor */
 
-    std::vector<VkDescriptorSetLayout> GetDescriptorSetLayouts() const;
     VkPipelineLayout GetLayout() const;
     VkPipeline Get() const; /** @brief Gets the raw VkPipeline underlying this object. */
+    std::vector<DescriptorSetLayoutBuilder> GetDescriptorSetLayouts();
+    std::vector<VkPushConstantRanges> GetPushConstantRanges();
 
     void bind(VkCommandBuffer cmd); /** @brief Binds this pipeline to a command buffer. */
 
 private:
     void Create(const PipelineCreateInfo& createInfo);
+    void ReflectMembers(DescriptorSetLayoutBinding& binding, SpvReflectBlockVariable& block);
 
     Device* _device;
     std::vector<VkDescriptorSetLayout> _descriptorSetLayouts;
