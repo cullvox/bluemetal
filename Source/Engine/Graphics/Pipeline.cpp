@@ -25,14 +25,8 @@ VkPipeline Pipeline::Get() const
     return _pipeline; 
 }
 
-void Pipeline::ReflectMembers(SpvReflectBlockVariable& block, DescriptorSetLayoutBinding& binding)
+void Pipeline::ReflectMembers(std::unordered_map<uint32_t, BlockMember>& blockMembers, SpvReflectBlockVariable& block)
 {
-    if (binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER ||
-        binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC ||
-        binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER ||
-        binding.descriptor_type != SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC) 
-        return;
-
     const DescriptorMemberType vectorTypes[4][3] = // [components][type]
     {
         {DescriptorMemberType::eScalarBool, DescriptorMemberType::eScalarFloat, DescriptorMemberType::eScalarBoolean},
@@ -90,7 +84,7 @@ void Pipeline::ReflectMembers(SpvReflectBlockVariable& block, DescriptorSetLayou
             member.type = DescriptorMemberType::eScalarFloat;
         }
 
-        binding[member.name] = member;
+        blockMembers[member.name] = member;
     }
 }
 
@@ -106,6 +100,7 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     for (auto resource : createInfo.shaders)
     {
         auto shader = resource.Get();
+        auto reflection = shader->GetReflection();
 
         // Build a pipeline shader stage.
         VkPipelineShaderStageCreateInfo stage{};
@@ -141,38 +136,54 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
                 auto& binding = builder[reflected.binding];
                 auto& block = reflected.block;
                 binding.SetLayout(reflected.binding, type, count, shader->GetStage(), nullptr);
-                ReflectMembers(binding, block);
+                ReflectMembers(binding.GetMembersMap(), block);
             }
         }
 
         // Gather all the push constant ranges for the pipeline layout.
-        // Check if the push constant already exists.=
-        auto it = std::find_if(_pushConstantRanges.begin(), _pushConstantRanges.end(), 
-            [&range](auto&& existing){ return existing.offset == range.offset && existing.size == range.size; });
+        // Check if the push constant already exists.
+        for (uint32_t i = 0; i < reflection.push_constant_block_count; i++)
+        {
+            auto& block = reflection.push_constant_blocks[i];
+            auto offset = block.offset; 
+            auto size = block.size;
 
-        if (it != _pushConstantRanges.end())
-        {
-            // Add the stage to the existing push constant range.
-            auto& existing = (*it);
-            existing.stageFlags |= shader->GetStage();
-        }
-        else
-        {
-            // This block wasn't added yet.
-            _pushConstantRanges.push_back(range);
+            auto it = std::find_if(_pushConstantRangeBuilders.begin(), _pushConstantRangeBuilders.end(), 
+                [offset, size](const auto& builder){ return builder.Compare(offset, size); });
+
+            if (it != _pushConstantRangeBuilders.end())
+            {
+                // Add the stage to the existing push constant range.
+                auto& builder = (*it);
+                builder.AddStageFlags(shader->GetStage());
+            }
+            else
+            {
+                // This block wasn't added yet.
+                _pushConstantRangeBuilders.push_back();
+                auto& builder = _pushConstantRangeBuilders.back();
+
+                builder.SetRange(shader->GetStage(), offset, size);
+                ReflectMembers(builder.GetMembersMap(), block);
+            }
         }
     }
 
     // Use the descriptor set layout cache to acquire layouts for each set.
-    _descriptorSetLayouts.reserve(descriptorSetBindings.size());
-
-    for (const auto& setBindings : descriptorSetBindings)
+    std::vector<VkDescriptorSetLayout> descriptorSetLayouts{descriptorSetLayoutBuilders.size()};
+    for (const auto& pair : descriptorSetLayoutBuilders)
     {
-        _descriptorSetLayouts.push_back(createInfo.setLayoutCache->Acquire(setBindings.second.bindings));
+        descriptorSetLayouts.push_back(pair.second.Build(createInfo.setLayoutCache));
+    }
+
+    std::vector<VkPushConstantRange> pushConstantRanges{_pushConstantRangeBuilders.size()};
+    for (const auto& pushConstantRangeBuilder : _pushConstantRangeBuilders)
+    {
+        pushConstantRanges.push_back(pushConstantRangeBuilder.GetRange());
     }
 
     // Finally acquire our layout using the pipeline layout cache.
-    _layout = createInfo.pipelineLayoutCache->Acquire(_descriptorSetLayouts, pushConstantRanges);
+    _layout = createInfo.pipelineLayoutCache->Acquire(descriptorSetLayouts, pushConstantRanges);
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

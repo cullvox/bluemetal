@@ -14,7 +14,7 @@ DescriptorSetLayoutCache::~DescriptorSetLayoutCache()
         vkDestroyDescriptorSetLayout(_device->Get(), pair.second, nullptr);
 }
 
-VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(std::vector<VkDescriptorSetLayoutBinding> b)
+VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(DescriptorSetLay b)
 {
 
     // Sort the bindings by the set binding.
@@ -24,8 +24,6 @@ VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(std::vector<VkDescriptor
         });
 
     DescriptorSetLayoutBindings bindings{b};
-
-    // look for descriptor set in cache
     auto it = _cache.find(bindings);
 
     // If a same layout is already cached, use it, instead build a new layout.

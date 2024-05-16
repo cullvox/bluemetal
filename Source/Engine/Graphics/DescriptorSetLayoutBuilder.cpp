@@ -17,31 +17,15 @@ void DescriptorBindingReflection::AddStageFlags(VkShaderStageFlag flags)
     _layout.stageFlags |= flags;
 }
 
-void DescriptorBindingReflection::AddUniformMember(std::string name, DescriptorMemberType type, uint32_t offset, uint32_t size)
-{
-    _members.emplace_back(name, type, offset, size);
-}
-
 bool DescriptorReflection::operator==(const DescriptorReflection& rhs) const noexcept
 {
     if (_bindings.size() != rhs._bindings.size()) return false;
-    for (uint32_t i = 0; i < _bindings.size(); i++) {
+    for (uint32_t i = 0; i < _bindings.size(); i++) 
+    {
         if (rhs._bindings[i].layout.binding != _bindings[i].layout.binding) return false;
         if (rhs._bindings[i].layout.descriptorType != _bindings[i].layout.descriptorType) return false;
         if (rhs._bindings[i].layout.descriptorCount != _bindings[i].layout.descriptorCount) return false;
         if (rhs._bindings[i].layout.stageFlags != _bindings[i].layout.stageFlags) return false;
-    }
-    return true;
-}
-
-bool DescriptorReflection::EqualDisregardingStage(const DescriptorReflection& rhs) const noexcept
-{
-    if (_bindings.size() != rhs._bindings.size()) return false;
-    for (uint32_t i = 0; i < _bindings.size(); i++) {
-        if (rhs._bindings[i].layout.binding != _bindings[i].layout.binding) return false;
-        if (rhs._bindings[i].layout.descriptorType != _bindings[i].layout.descriptorType) return false;
-        if (rhs._bindings[i].layout.descriptorCount != _bindings[i].layout.descriptorCount) return false;
-        // if (rhs.bindings[i].stageFlags != bindings[i].stageFlags) return false;
     }
     return true;
 }

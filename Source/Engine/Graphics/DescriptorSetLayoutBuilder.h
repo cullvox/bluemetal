@@ -7,25 +7,20 @@
 namespace bl
 {
 
-class DescriptorSetLayoutBinding
+class DescriptorSetLayoutBinding : public BlockMembersBuilder
 {
 public:
     DescriptorSetLayoutBinding();
     ~DescriptorSetLayoutBinding() = default;
 
+    DescriptorSetLayoutBinding& operator==(const DescriptorSetLayoutBinding& rhs) const;
     void SetLayout(uint32_t binding, VkDescriptorType type, uint32_t descriptorCount, VkShaderStageFlags flags, const VkSampler* immutableSamplers);
     void AddStageFlags(VkShaderStageFlag flags);
-    BlockMember& AccessOrInsertMember(std::string name);
-    std::vector<BlockMember> GetMembers() const;
     bool Compare(VkDescriptorType type, uint32_t descriptorCount) const;
-
-    BlockMember& operator[](std::string name); // Shorthanded for AccessOrInsertMember().
-    DescriptorSetLayoutBinding& operator==(const DescriptorSetLayoutBinding& rhs) const;
 
 private:
     uint32_t _location;
     VkDescriptorSetLayoutBinding _layout;
-    std::unordered_map<std::string, BlockMember> _members;
 };
 
 class DescriptorSetLayoutBuilder
@@ -34,14 +29,13 @@ public:
     DescriptorSetLayoutBuilder(uint32_t set);
     ~DescriptorSetLayoutBuilder();
 
+    DescriptorSetLayoutBinding& operator[](uint32_t binding);
+    VkDescriptorSetLayout Build(DescriptorSetLayoutCache* cache);
     uint32_t GetLocation() const;
-    DescriptorBindingReflection& AccessOrInsertBinding(uint32_t location);
     bool ContainsBinding(uint32_t binding) const;
     std::vector<DescriptorSetLayoutBinding> GetBindings() const;
     size_t HashBindings() const;
-    void Build(DescriptorSetLayoutCache* cache);
-
-    DescriptorSetLayoutBinding& operator[](uint32_t binding); // Shorthanded for AccessOrInsertBinding().
+    VkDescriptorSetLayout GetLayout() const;
 
 private:
     uint32_t _location;
