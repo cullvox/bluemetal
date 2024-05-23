@@ -31,6 +31,7 @@
 #include <fmt/format.h>
 
 #define GLM_ENABLE_EXPERIMENTAL
+#define GLM_DEPTH_ZERO_TO_ONE
 #include <glm/gtx/quaternion.hpp>
 #include <glm/ext/vector_int2.hpp>
 #include <glm/gtc/matrix_transform.hpp>

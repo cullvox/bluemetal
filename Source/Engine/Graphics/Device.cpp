@@ -35,6 +35,10 @@ Device::Device(Instance* instance, PhysicalDevice* physicalDevice)
     CreateDevice();
     CreateCommandPool();
     CreateAllocator();
+
+    _descriptorSetLayoutCache = std::make_unique<DescriptorSetLayoutCache>(this);
+    _pipelineLayoutCache = std::make_unique<PipelineLayoutCache>(this);
+    _descriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(this, 1024, DescriptorRatio::Default());
 }
 
 Device::~Device() { 
@@ -140,13 +144,34 @@ void Device::WaitForDevice() const
     vkDeviceWaitIdle(_device); 
 }
 
+VkDescriptorSetLayout Device::CacheDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding>& bindings)
+{
+    return _descriptorSetLayoutCache->Acquire(bindings);
+}
+
+VkPipelineLayout Device::CachePipelineLayout(const std::vector<VkDescriptorSetLayout>& descriptors, const std::vector<VkPushConstantRange>& pushConstants)
+{
+    return _pipelineLayoutCache->Acquire(descriptors, pushConstants);
+}
+
+VkDescriptorSet Device::AllocateDescriptorSet(VkDescriptorSetLayout layout)
+{
+    return _descriptorSetAllocator->Allocate(layout);
+}
+
+std::vector<VkDescriptorSet> Device::AllocateDescriptorSets(VkDescriptorSetLayout layout, uint32_t count)
+{
+    std::vector<VkDescriptorSet> sets;
+    sets.reserve(count);
+
+    for (uint32_t i = 0; i < count; i++) 
+        sets.push_back(_descriptorSetAllocator->Allocate(layout));
+
+    return sets;
+}
+
 std::vector<const char*> Device::GetValidationLayers()
 {
-    // The engines required layers.
-    std::vector layers = {
-        "VK_LAYER_KHRONOS_validation",
-    };
-
     // Get the systems validation layers.
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
@@ -156,7 +181,7 @@ std::vector<const char*> Device::GetValidationLayers()
     VK_CHECK(vkEnumerateDeviceLayerProperties(_physicalDevice->Get(), &propertiesCount, properties.data()))
 
     // Ensure that the requested layers are present on the system.
-    for (const char* name : layers) {
+    for (const char* name : GraphicsConfig::validationLayers) {
         if (!std::any_of(properties.begin(), properties.end(), 
                 [name](const auto& properties){ 
                     return strcmp(name, properties.layerName) == 0; 
@@ -165,7 +190,7 @@ std::vector<const char*> Device::GetValidationLayers()
         }
     }
 
-    return layers;
+    return GraphicsConfig::validationLayers;
 }
 
 std::vector<const char*> Device::GetExtensions()
@@ -262,7 +287,8 @@ void Device::CreateDevice()
     // In the event that we use compute, this needs to be upgraded.
     queueCreateInfos.resize(GetAreQueuesSame() ? 1 : 2);
 
-    const VkPhysicalDeviceFeatures features {};
+    const VkPhysicalDeviceFeatures features = {};
+
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
     createInfo.pNext = nullptr;

@@ -3,7 +3,8 @@
 #include "Device.h"
 #include "Shader.h"
 #include "RenderPass.h"
-#include "DescriptorSetLayoutBuilder.h"
+#include "DescriptorSetReflection.h"
+#include "PushConstantReflection.h"
 #include "DescriptorSetLayoutCache.h"
 #include "PipelineLayoutCache.h"
 
@@ -17,8 +18,6 @@ struct PipelineCreateInfo /** @brief Create info for pipeline objects. */
     std::vector<VkVertexInputBindingDescription> vertexInputBindings;
     std::vector<VkVertexInputAttributeDescription> vertexInputAttribs;
     std::vector<ResourceRef<Shader>> shaders; /** @brief The shaders used in this pipeline program. */
-    DescriptorSetLayoutCache* setLayoutCache;
-    PipelineLayoutCache* pipelineLayoutCache;
 };
 
 /** @brief A program consisting of shaders designed to run on the GPU. */
@@ -30,18 +29,18 @@ public:
 
     VkPipelineLayout GetLayout() const;
     VkPipeline Get() const; /** @brief Gets the raw VkPipeline underlying this object. */
-    std::vector<DescriptorSetLayoutBuilder> GetDescriptorSetLayouts();
-    std::vector<PushConstantRangeBuilder> GetPushConstantRanges();
+    std::vector<DescriptorSetReflection> GetDescriptorSetReflections() const;
+    std::vector<PushConstantReflection> GetPushConstantReflections() const;
 
     void bind(VkCommandBuffer cmd); /** @brief Binds this pipeline to a command buffer. */
 
 private:
     void Create(const PipelineCreateInfo& createInfo);
-    void ReflectMembers(std::unordered_map<uint32_t, BlockMember>& blockMembers, SpvReflectBlockVariable& block);
+    void ReflectMembers(BlockReflection& reflection, const SpvReflectBlockVariable& block);
 
     Device* _device;
-    std::vector<DescriptorSetLayoutBuilder> _descriptorSetLayouts;
-    std::vector<PushConstantRangeBuilder> _pushConstantRangeBuilders;
+    std::vector<DescriptorSetReflection> _descriptorSetReflections;
+    std::vector<PushConstantReflection> _pushConstantReflections;
     VkPipelineLayout _layout;
     VkPipeline _pipeline;
 };

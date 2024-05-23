@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Device.h"
+#include "Precompiled.h"
+#include "Vulkan.h"
 
 namespace bl
 {
@@ -10,9 +11,9 @@ struct DescriptorRatio
     VkDescriptorType type;
     float ratio;
 
-    static std::vector<DescriptorRatio> Default()
+    static std::vector<DescriptorRatio>& Default()
     {
-        return std::vector<DescriptorRatio>{
+        static auto ratios = std::vector<DescriptorRatio>{
             { VK_DESCRIPTOR_TYPE_SAMPLER, 0.5f },
             { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 4.f },
             { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 4.f },
@@ -25,9 +26,12 @@ struct DescriptorRatio
             { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1.f },
             { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 0.5f }
         };
+
+        return ratios;
     }
 };
 
+class Device;
 class DescriptorSetAllocator
 {
 public:

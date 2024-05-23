@@ -3,6 +3,10 @@
 namespace bl
 {
 
+Resource::Resource(const nlohmann::json&)
+{
+}
+
 std::string Resource::GetPath() const
 {
     return _path;

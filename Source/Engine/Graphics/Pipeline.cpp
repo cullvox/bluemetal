@@ -25,31 +25,41 @@ VkPipeline Pipeline::Get() const
     return _pipeline; 
 }
 
-void Pipeline::ReflectMembers(std::unordered_map<uint32_t, BlockMember>& blockMembers, SpvReflectBlockVariable& block)
+std::vector<DescriptorSetReflection> Pipeline::GetDescriptorSetReflections() const
 {
-    const DescriptorMemberType vectorTypes[4][3] = // [components][type]
+    return _descriptorSetReflections;
+}
+
+std::vector<PushConstantReflection> Pipeline::GetPushConstantReflections() const
+{
+    return _pushConstantReflections;
+}
+
+void Pipeline::ReflectMembers(BlockReflection& builder, const SpvReflectBlockVariable& block)
+{
+    const UniformMemberType vectorTypes[4][3] = // [components][type]
     {
-        {DescriptorMemberType::eScalarBool, DescriptorMemberType::eScalarFloat, DescriptorMemberType::eScalarBoolean},
-        {DescriptorMemberType::eVector2b, DescriptorMemberType::eVector2i, DescriptorMemberType::eVector2f},
-        {DescriptorMemberType::eVector3b, DescriptorMemberType::eVector3i, DescriptorMemberType::eVector3f},
-        {DescriptorMemberType::eVector4b, DescriptorMemberType::eVector4i, DescriptorMemberType::eVector4f},
+        {UniformMemberType::eScalarBool, UniformMemberType::eScalarInt, UniformMemberType::eScalarFloat},
+        {UniformMemberType::eVector2b, UniformMemberType::eVector2i, UniformMemberType::eVector2f},
+        {UniformMemberType::eVector3b, UniformMemberType::eVector3i, UniformMemberType::eVector3f},
+        {UniformMemberType::eVector4b, UniformMemberType::eVector4i, UniformMemberType::eVector4f},
     };
 
-    const DescriptorMemberType matrixTypes[3] =
+    const UniformMemberType matrixTypes[3] =
     {
-        DescriptorMemberType::eMatrix2, DescriptorMemberType::eMatrix3, DescriptorMemberType::eMatrix4
+        UniformMemberType::eMatrix2f, UniformMemberType::eMatrix3f, UniformMemberType::eMatrix4f
     };
 
     for (uint32_t j = 0; j < block.member_count; j++)
     {
-        auto blockVariable = block.members[i];
-        auto typeDescription = blockVariable->type_description;
-        auto& numericTraits = blockVariable->numeric;
+        auto& blockVariable = block.members[j];
+        auto& numericTraits = blockVariable.numeric;
+        auto typeDescription = blockVariable.type_description;
 
-        BlockMember member{};
-        member.name = blockVariable->name;
-        member.offset = blockVariable->offset;
-        member.size = blockVariable->size;
+        BlockMemberReflection member{};
+        member.name = blockVariable.name;
+        member.offset = blockVariable.offset;
+        member.size = blockVariable.size;
 
         if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_ARRAY)
         {
@@ -57,34 +67,34 @@ void Pipeline::ReflectMembers(std::unordered_map<uint32_t, BlockMember>& blockMe
         }
         else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_VECTOR)
         {
-            uint32_t components = numericTraits->vector.component_count;
+            uint32_t components = numericTraits.vector.component_count;
             uint32_t type = 0;
             if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) type = 0; 
             else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT) type = 1;
             else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) type = 2;
-            return member.type = vectorTypes[components][type];
+            member.type = vectorTypes[components][type];
         }
         else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_MATRIX)
         { 
-            auto columns = numericTraits->matrix.column_count;
-            auto rows = numericTraits->matrix.row_count;
+            auto columns = numericTraits.matrix.column_count;
+            auto rows = numericTraits.matrix.row_count;
             if (columns == rows) member.type = matrixTypes[columns];
             else { continue; } // We don't support matrices that aren't dimensionally equal.
         }
         else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL)
         {
-            member.type = DescriptorMemberType::eScalarBool;
+            member.type = UniformMemberType::eScalarBool;
         }
         else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT)
         {
-            member.type = DescriptorMemberType::eScalarInt;
+            member.type = UniformMemberType::eScalarInt;
         }
         else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT)
         {
-            member.type = DescriptorMemberType::eScalarFloat;
+            member.type = UniformMemberType::eScalarFloat;
         }
 
-        blockMembers[member.name] = member;
+        builder[member.name] = member;
     }
 }
 
@@ -94,13 +104,13 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     stages.reserve(createInfo.shaders.size());
 
     // Obtain reflection data from shaders to build the pipeline layout.
-    std::unordered_map<uint32_t, DescriptorSetLayoutBuilder> descriptorSetLayoutBuilders;
-    std::vector<PushConstantRangeBuilder> pushConstantRangeBuilders;
+    std::unordered_map<uint32_t, DescriptorSetReflection> descriptorSetReflections;
+    std::vector<PushConstantReflection> pushConstantReflections;
 
     for (auto resource : createInfo.shaders)
     {
         auto shader = resource.Get();
-        auto reflection = shader->GetReflection();
+        auto spvReflection = shader->GetReflection();
 
         // Build a pipeline shader stage.
         VkPipelineShaderStageCreateInfo stage{};
@@ -115,17 +125,21 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
         stages.push_back(stage);
 
         // Reflect each descriptor binding to build descriptor set layouts.
-        for (uint32_t i = 0; i < reflection.descriptor_binding_count; i++)
+        for (uint32_t i = 0; i < spvReflection.descriptor_binding_count; i++)
         {
-            const auto& reflected = reflection.descriptor_bindings[i];
-            auto& builder = descriptorSetLayoutBuilders[reflected.set];
+            const auto& spvBinding = spvReflection.descriptor_bindings[i];
+            auto& reflection = descriptorSetReflections[spvBinding.set];
+            reflection.SetLocation(spvBinding.set);
 
             // If this binding number already exists then compare and use that.
-            auto type = (VkDescriptorType)reflected.type;
-            auto count = reflected.count;
-            if (builder.ContainsBinding(reflected.binding))
+            auto location = spvBinding.binding; 
+            auto type = (VkDescriptorType)spvBinding.descriptor_type;
+            auto count = spvBinding.count;
+
+            if (reflection.ContainsBinding(location))
             {
-                auto& binding = builder[reflected.binding];
+                // A binding has already been created, ensure it's the same and add this stage to it.
+                auto& binding = reflection.AccessOrInsertBinding(location);
                 if (!binding.Compare(type, count))
                     throw std::runtime_error("Bindings using same index but hold different types of data!");
 
@@ -133,57 +147,70 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
             }
             else
             {
-                auto& binding = builder[reflected.binding];
-                auto& block = reflected.block;
-                binding.SetLayout(reflected.binding, type, count, shader->GetStage(), nullptr);
-                ReflectMembers(binding.GetMembersMap(), block);
+                // Insert a new binding and set it's data.
+                auto& binding = reflection.AccessOrInsertBinding(location);
+                binding.SetBinding(location, type, count, shader->GetStage(), nullptr);
+
+                // Reflect any and all members that this binding may have (if it's a uniform/storage buffer).
+                const auto& block = spvBinding.block;
+                ReflectMembers(binding, block);
             }
         }
 
         // Gather all the push constant ranges for the pipeline layout.
         // Check if the push constant already exists.
-        for (uint32_t i = 0; i < reflection.push_constant_block_count; i++)
+        for (uint32_t i = 0; i < spvReflection.push_constant_block_count; i++)
         {
-            auto& block = reflection.push_constant_blocks[i];
+            const auto& block = spvReflection.push_constant_blocks[i];
             auto offset = block.offset; 
             auto size = block.size;
 
-            auto it = std::find_if(_pushConstantRangeBuilders.begin(), _pushConstantRangeBuilders.end(), 
-                [offset, size](const auto& builder){ return builder.Compare(offset, size); });
+            auto it = std::find_if(pushConstantReflections.begin(), pushConstantReflections.end(),
+                [offset, size](const auto& refl){ return refl.Compare(offset, size); });
 
-            if (it != _pushConstantRangeBuilders.end())
+            if (it != pushConstantReflections.end())
             {
                 // Add the stage to the existing push constant range.
-                auto& builder = (*it);
-                builder.AddStageFlags(shader->GetStage());
+                auto& refl = (*it);
+                refl.AddStageFlags(shader->GetStage());
             }
             else
             {
                 // This block wasn't added yet.
-                _pushConstantRangeBuilders.push_back();
-                auto& builder = _pushConstantRangeBuilders.back();
-
-                builder.SetRange(shader->GetStage(), offset, size);
-                ReflectMembers(builder.GetMembersMap(), block);
+                _pushConstantReflections.emplace_back(shader->GetStage(), offset, size);
+                ReflectMembers(_pushConstantReflections.back(), block);
             }
         }
     }
 
     // Use the descriptor set layout cache to acquire layouts for each set.
-    std::vector<VkDescriptorSetLayout> descriptorSetLayouts{descriptorSetLayoutBuilders.size()};
-    for (const auto& pair : descriptorSetLayoutBuilders)
+    std::vector<VkDescriptorSetLayout> layouts;
+    layouts.reserve(descriptorSetReflections.size());
+    _descriptorSetReflections.reserve(descriptorSetReflections.size());
+
+    // Extract descriptor set layout bindings and create a layout.
+    for (auto& pair : descriptorSetReflections)
     {
-        descriptorSetLayouts.push_back(pair.second.Build(createInfo.setLayoutCache));
+        auto& reflection = pair.second;
+
+        // Retrieve a layout from cache or create a new descriptor set layout.
+        auto layout = _device->CacheDescriptorSetLayout(reflection.GetSortedBindings());
+        reflection.SetLayout(layout); // We save these layouts in the reflection data too for ease of use.
+        layouts.push_back(layout);
+
+        // Save the reflection data into the final vector.
+        _descriptorSetReflections.push_back(std::move(reflection));
     }
 
-    std::vector<VkPushConstantRange> pushConstantRanges{_pushConstantRangeBuilders.size()};
-    for (const auto& pushConstantRangeBuilder : _pushConstantRangeBuilders)
-    {
-        pushConstantRanges.push_back(pushConstantRangeBuilder.GetRange());
-    }
+    // Extract the push constant ranges from reflection.
+    std::vector<VkPushConstantRange> pushConstants;
+    pushConstants.reserve(_pushConstantReflections.size());
 
-    // Finally acquire our layout using the pipeline layout cache.
-    _layout = createInfo.pipelineLayoutCache->Acquire(descriptorSetLayouts, pushConstantRanges);
+    for (const auto& reflection : _pushConstantReflections)
+        pushConstants.push_back(reflection.GetRange());
+
+    // Acquire our layout using the pipeline layout cache.
+    _layout = _device->CachePipelineLayout(layouts, pushConstants);
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -300,11 +327,6 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     pipelineCreateInfo.basePipelineIndex = 0;
 
     VK_CHECK(vkCreateGraphicsPipelines(_device->Get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline))
-}
-
-std::vector<VkDescriptorSetLayout> Pipeline::GetDescriptorSetLayouts() const
-{
-    return _descriptorSetLayouts;
 }
 
 } // namespace bl

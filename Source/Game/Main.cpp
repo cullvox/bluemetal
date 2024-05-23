@@ -88,12 +88,7 @@ int main(int argc, const char** argv)
 
     auto mesh = std::make_shared<bl::Mesh>(graphics->GetDevice(), cubeVertices, cubeIndices);
 
-    VkVertexInputBindingDescription vertexInputBinding{0, sizeof(bl::Vertex), VK_VERTEX_INPUT_RATE_VERTEX};
-    std::vector<VkVertexInputAttributeDescription> attributes = {
-        {0, 0, VK_FORMAT_R32G32B32_SFLOAT, 0},
-        {1, 0, VK_FORMAT_R32G32B32_SFLOAT, 12},
-        {2, 0, VK_FORMAT_R32G32_SFLOAT, 24},
-    };
+
 
     auto renderer = engine.GetRenderer();
 
@@ -103,11 +98,9 @@ int main(int argc, const char** argv)
     pci.vertexInputBindings = {vertexInputBinding};
     pci.vertexInputAttribs = attributes;
     pci.shaders = {vert, frag};
-    pci.setLayoutCache = graphics->GetDescriptorCache();
-    pci.pipelineLayoutCache = graphics->GetPipelineLayoutCache();
 
     auto pipeline = std::make_shared<bl::Pipeline>(graphics->GetDevice(), pci);
-    auto setLayouts = pipeline->GetDescriptorSetLayouts();
+    auto descriptorReflections = pipeline->GetDescriptorSetReflections();
     auto window = engine.GetWindow();
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(window);
     std::vector ratios = bl::DescriptorRatio::Default();
@@ -118,11 +111,9 @@ int main(int argc, const char** argv)
     void* globalBufferMap = nullptr;
     globalBuffer->Map(&globalBufferMap);
 
-    std::array<VkDescriptorSet, bl::GraphicsConfig::numFramesInFlight> sets;
+    std::vector<VkDescriptorSet> sets = graphics->GetDevice()->AllocateDescriptorSets(descriptorReflections[0].GetLayout(), bl::GraphicsConfig::numFramesInFlight);
     for (uint32_t i = 0; i < bl::GraphicsConfig::numFramesInFlight; i++)
     {
-        sets[i] = descriptorAllocator->Allocate(setLayouts[0]);
-
         VkDescriptorBufferInfo info{};
         info.buffer = globalBuffer->Get();
         info.offset = 0;
@@ -166,6 +157,8 @@ int main(int argc, const char** argv)
     {
         frameCounter.BeginFrame();
 
+
+        glm::vec2 mouseRelativeMovement = {};
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
@@ -191,6 +184,9 @@ int main(int argc, const char** argv)
                     break;
                 }
                 break;
+            case SDL_MOUSEMOTION:
+                mouseRelativeMovement.x = (float)event.motion.xrel;
+                mouseRelativeMovement.y = (float)event.motion.yrel;
             }
 
             imgui->Process(event);
@@ -200,26 +196,26 @@ int main(int argc, const char** argv)
 
         const uint8_t* keystate = SDL_GetKeyboardState(NULL);    
         if(keystate[SDL_SCANCODE_W])
-            cameraPos += glm::vec3{0.0f, 0.0f, walkingSpeed} * frameCounter.GetDeltaTime();
+            cameraPos += -walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
         if (keystate[SDL_SCANCODE_S])
-            cameraPos += glm::vec3{0.0f, 0.0f, -walkingSpeed} * frameCounter.GetDeltaTime();
+            cameraPos += walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
         if (keystate[SDL_SCANCODE_A])
-            cameraPos += glm::vec3{walkingSpeed, 0.0f, 0.0f} * frameCounter.GetDeltaTime();
+            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * walkingSpeed * frameCounter.GetDeltaTime();
         if (keystate[SDL_SCANCODE_D])
-            cameraPos += glm::vec3{-walkingSpeed, 0.0f, 0.0f} * frameCounter.GetDeltaTime();
+            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * -walkingSpeed * frameCounter.GetDeltaTime();
         if (keystate[SDL_SCANCODE_ESCAPE])
         {
             mouseCaptured = false;
-            SDL_ShowCursor(SDL_ENABLE);
+            SDL_SetRelativeMouseMode(SDL_FALSE);
         }
 
         glm::ivec2 mouse;
-        uint32_t buttons = SDL_GetGlobalMouseState(&mouse.x, &mouse.y);
+        uint32_t buttons = SDL_GetMouseState(&mouse.x, &mouse.y);
 
-        if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT) && windowFocused)
+        if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT) && windowFocused && !ImGui::GetIO().WantCaptureMouse)
         {
             mouseCaptured = true;
-            SDL_ShowCursor(SDL_DISABLE);
+            SDL_SetRelativeMouseMode(SDL_TRUE);
         }
 
         if (mouseCaptured)
@@ -230,14 +226,11 @@ int main(int argc, const char** argv)
                 firstMouse = false;
             }
 
-            glm::vec2 mouseOffset{ (float)(mouse.x - lastMouse.x), (float)(mouse.y - lastMouse.y) };
-            lastMouse = mouse;
-
             float sensitivity = 0.1f;
-            mouseOffset *= sensitivity;
+            mouseRelativeMovement *= sensitivity;
 
-            yaw += mouseOffset.x;
-            pitch -= mouseOffset.y;
+            yaw += mouseRelativeMovement.x;
+            pitch -= mouseRelativeMovement.y;
 
             if (pitch > 89.0f)
                 pitch = 89.0f;
@@ -250,8 +243,11 @@ int main(int argc, const char** argv)
             direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
             cameraFront = glm::normalize(direction);
 
-            blInfo("Offset: {}, {}", mouseOffset.x, mouseOffset.y);
             blInfo("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
+
+            SDL_ShowCursor(SDL_DISABLE);
+            auto extent = window->GetExtent();
+            SDL_WarpMouseInWindow(window->Get(), extent.width/2, extent.height/2);
         }
 
         view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
@@ -329,6 +325,8 @@ int main(int argc, const char** argv)
             ImGui::Text("imgui");
             ImGui::SameLine();
             ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", ImGui::GetVersion());
+
+            ImGui::Text("x: %f, y: %f, z: %f", cameraPos.x, cameraPos.y, cameraPos.z);
 
             if (ImGui::CollapsingHeader("Graphics")) {
 

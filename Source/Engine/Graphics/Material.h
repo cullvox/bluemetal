@@ -9,13 +9,15 @@ namespace bl
 class Material : public Resource
 {
 public:
-    Material(Pipeline* pipeline);
+    Material(const nlohmann::json& data);
     ~Material();
 
+    virtual void Load();
+    virtual void Unload();
+
 private:
-    Pipeline* pipeline;
-    std::vector<Descriptor> _descriptors;
-    std::vector<Uniform> _uniforms;
+    std::unique_ptr<Pipeline> pipeline;
+    std::vector<VkDescriptorSet> _descriptors;
 };
 
 } // namespace bl

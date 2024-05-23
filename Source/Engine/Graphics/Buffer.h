@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Graphics/Device.h"
-#include "Describable.h"
 
 namespace bl 
 {
 
-class Buffer : public Describable
+class Buffer
 {
 public:
     Buffer(Device* device, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* allocationInfo = nullptr); /** @brief Constructor */

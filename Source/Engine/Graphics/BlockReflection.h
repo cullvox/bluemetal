@@ -5,7 +5,7 @@
 namespace bl
 {
 
-enum class BlockMemberType
+enum class UniformMemberType
 {
     eScalarBool,
     eScalarInt,
@@ -24,26 +24,28 @@ enum class BlockMemberType
     eMatrix4f,
 };
 
-struct BlockMember
+struct BlockMemberReflection
 {
     std::string name;
-    BlockMemberType type;
+    UniformMemberType type;
     uint32_t offset;
     uint32_t size;
 };
 
-class BlockMembersBuilder
+class BlockReflection
 {
 public:
-    BlockMembersBuilder() = default;
-    ~BlockMembersBuilder() = default;
+    BlockReflection() = default;
+    ~BlockReflection() = default;
 
-    BlockMember& operator[](const std::string& name); // Shorthanded for AccessOrInsertMember().
-    std::vector<BlockMember> GetMembers() const;
-    std::unordered_map<std::string, BlockMember>& GetMembersMap();
+    BlockMemberReflection& operator[](const std::string& name);
+    std::vector<BlockMemberReflection> GetMembers() const;
+    void SetBlockSize(uint32_t size);
+    uint32_t GetBlockSize() const;
 
 private:
-    std::unordered_map<std::string, BlockMember> _members;
-}
+    uint32_t _blockSize;
+    std::unordered_map<std::string, BlockMemberReflection> _members;
+};
 
 } // namespace bl

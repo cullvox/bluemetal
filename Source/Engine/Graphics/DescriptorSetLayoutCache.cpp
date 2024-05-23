@@ -1,7 +1,37 @@
+#include "Device.h"
 #include "DescriptorSetLayoutCache.h"
 
 namespace bl 
 {
+
+
+bool DescriptorLayoutCacheData::operator==(const DescriptorLayoutCacheData& rhs) const
+{
+    for (uint32_t i = 0; i < bindings.size(); i++)
+    {
+        const auto& b = bindings[i];
+        const auto& rb = rhs.bindings[i];
+
+        if (b.binding != rb.binding
+            || b.descriptorType != rb.descriptorType
+            || b.descriptorCount != rb.descriptorCount
+            || b.stageFlags != rb.stageFlags) return false;
+    }
+
+    return true;
+}
+
+size_t DescriptorLayoutCacheHasher::operator()(const DescriptorLayoutCacheData& data) const noexcept
+{
+    const auto& bindings = data.bindings;
+    size_t seed = std::hash<size_t>()(bindings.size());
+    for (const auto& b : bindings) 
+    {
+        size_t packed = b.binding | b.descriptorType << 8 | b.descriptorCount << 16 | b.stageFlags << 24; // pack binding into a uint64
+        seed = bl::hash_combine(seed, packed); // shuffle data and xor with the main hash
+    }
+    return seed;
+}
 
 DescriptorSetLayoutCache::DescriptorSetLayoutCache(Device* device)
     : _device(device)
@@ -14,22 +44,13 @@ DescriptorSetLayoutCache::~DescriptorSetLayoutCache()
         vkDestroyDescriptorSetLayout(_device->Get(), pair.second, nullptr);
 }
 
-VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(DescriptorSetLay b)
+VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(const std::vector<VkDescriptorSetLayoutBinding>& bindings)
 {
+    DescriptorLayoutCacheData data{bindings};
 
-    // Sort the bindings by the set binding.
-    std::sort(b.begin(), b.end(),
-        [](VkDescriptorSetLayoutBinding& a, VkDescriptorSetLayoutBinding& b){
-            return a.binding < b.binding;
-        });
-
-    DescriptorSetLayoutBindings bindings{b};
-    auto it = _cache.find(bindings);
-
-    // If a same layout is already cached, use it, instead build a new layout.
-    if (it != _cache.end()) 
+    auto it = _cache.find(data);
+    if (it != _cache.end())
     {
-        // return found layout
         return (*it).second;
     } 
     else 
@@ -38,14 +59,13 @@ VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(DescriptorSetLay b)
         createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         createInfo.pNext = nullptr;
         createInfo.flags = 0;
-        createInfo.bindingCount = (uint32_t)b.size();
-        createInfo.pBindings = b.data();
+        createInfo.bindingCount = (uint32_t)bindings.size();
+        createInfo.pBindings = bindings.data();
 
         VkDescriptorSetLayout layout = VK_NULL_HANDLE;
         VK_CHECK(vkCreateDescriptorSetLayout(_device->Get(), &createInfo, nullptr, &layout))
 
-        // add layout to cache
-        _cache[bindings] = layout;
+        _cache[data] = layout;
         return layout;
     }
 }
