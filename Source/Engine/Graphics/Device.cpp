@@ -172,6 +172,8 @@ std::vector<VkDescriptorSet> Device::AllocateDescriptorSets(VkDescriptorSetLayou
 
 std::vector<const char*> Device::GetValidationLayers()
 {
+    const auto& layers = GraphicsConfig::validationLayers;
+
     // Get the systems validation layers.
     uint32_t propertiesCount = 0;
     std::vector<VkLayerProperties> properties;
@@ -181,7 +183,7 @@ std::vector<const char*> Device::GetValidationLayers()
     VK_CHECK(vkEnumerateDeviceLayerProperties(_physicalDevice->Get(), &propertiesCount, properties.data()))
 
     // Ensure that the requested layers are present on the system.
-    for (const char* name : GraphicsConfig::validationLayers) {
+    for (const char* name : layers) {
         if (!std::any_of(properties.begin(), properties.end(), 
                 [name](const auto& properties){ 
                     return strcmp(name, properties.layerName) == 0; 
@@ -190,7 +192,7 @@ std::vector<const char*> Device::GetValidationLayers()
         }
     }
 
-    return GraphicsConfig::validationLayers;
+    return layers;
 }
 
 std::vector<const char*> Device::GetExtensions()

@@ -4,7 +4,6 @@
 namespace bl 
 {
 
-
 bool DescriptorLayoutCacheData::operator==(const DescriptorLayoutCacheData& rhs) const
 {
     for (uint32_t i = 0; i < bindings.size(); i++)

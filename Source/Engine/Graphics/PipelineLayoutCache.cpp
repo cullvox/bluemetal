@@ -7,7 +7,7 @@ namespace bl
 bool PipelineLayoutCacheData::operator==(const PipelineLayoutCacheData& rhs) const noexcept
 {
     if (layouts != rhs.layouts) return false;
-    for (int i = 0; i < ranges.size(); i++)
+    for (size_t i = 0; i < ranges.size(); i++)
     {
         const auto& r = ranges[i];
         const auto& rr = rhs.ranges[i];

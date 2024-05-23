@@ -6,6 +6,12 @@
 namespace bl
 {
 
+enum class MaterialPass
+{
+    eGeometry, /* Uses geometry pass (unlit) */
+    eLit, /* Uses the lighting pass (lit) */
+}
+
 class Material : public Resource
 {
 public:

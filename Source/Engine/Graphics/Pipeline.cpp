@@ -323,7 +323,7 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     pipelineCreateInfo.layout = _layout;
     pipelineCreateInfo.renderPass = createInfo.renderPass->Get();
     pipelineCreateInfo.subpass = createInfo.subpass;
-    pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE;
+    pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; /* no vendor actually supports derivative pipelines. */
     pipelineCreateInfo.basePipelineIndex = 0;
 
     VK_CHECK(vkCreateGraphicsPipelines(_device->Get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline))

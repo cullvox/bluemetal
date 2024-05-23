@@ -12,13 +12,12 @@ struct Vertex
     glm::vec3 normal;
     glm::vec2 texCoords;
 
-    static VkVertexInputBindingDescription GetBindingDescription()
+    static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions()
     {
-        VkVertexInputBindingDescription description = {};
-        description.binding = 0;
-        description.stride = sizeof(bl::Vertex);
-        description.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-        return description;
+        std::vector<VkVertexInputBindingDescription> descriptions = {
+            { 0, sizeof(bl::Vertex), VK_VERTEX_INPUT_RATE_VERTEX}
+        };
+        return descriptions;
     }
 
     static std::vector<VkVertexInputAttributeDescription> GetBindingAttributeDescriptions()

@@ -95,8 +95,8 @@ int main(int argc, const char** argv)
     bl::PipelineCreateInfo pci{};
     pci.renderPass = renderer->GetUIPass();
     pci.subpass = 0;
-    pci.vertexInputBindings = {vertexInputBinding};
-    pci.vertexInputAttribs = attributes;
+    pci.vertexInputBindings = bl::Vertex::GetBindingDescriptions();
+    pci.vertexInputAttribs = bl::Vertex::GetBindingAttributeDescriptions();
     pci.shaders = {vert, frag};
 
     auto pipeline = std::make_shared<bl::Pipeline>(graphics->GetDevice(), pci);
@@ -150,6 +150,7 @@ int main(int argc, const char** argv)
     float walkingSpeed = 9.0f;
     bool mouseCaptured = false;
     bool windowFocused = false;
+    glm::vec3 direction;
 
     bool running = true;
     bool minimized = false;
@@ -237,17 +238,12 @@ int main(int argc, const char** argv)
             if (pitch < -89.0f)
                 pitch = -89.0f;
 
-            glm::vec3 direction;
             direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
             direction.y = sin(glm::radians(pitch));
             direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
             cameraFront = glm::normalize(direction);
 
             blInfo("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
-
-            SDL_ShowCursor(SDL_DISABLE);
-            auto extent = window->GetExtent();
-            SDL_WarpMouseInWindow(window->Get(), extent.width/2, extent.height/2);
         }
 
         view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
@@ -325,6 +321,12 @@ int main(int argc, const char** argv)
             ImGui::Text("imgui");
             ImGui::SameLine();
             ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", ImGui::GetVersion());
+
+            if (ImGui::CollapsingHeader("Input"))
+            {
+                ImGui::Text("Camera Direction: %f, %f, %f", direction.x, direction.y, direction.z);
+                ImGui::Text("Mouse Relative: %f, %f", mouseRelativeMovement.x, mouseRelativeMovement.y);
+            }
 
             ImGui::Text("x: %f, y: %f, z: %f", cameraPos.x, cameraPos.y, cameraPos.z);
 
