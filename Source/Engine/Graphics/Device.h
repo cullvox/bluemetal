@@ -2,7 +2,6 @@
 
 #include "Window.h"
 #include "Instance.h"
-#include "DescriptorSetAllocator.h"
 #include "DescriptorSetLayoutCache.h"
 #include "PipelineLayoutCache.h"
 
@@ -30,8 +29,6 @@ public:
     void WaitForDevice() const; /** @brief Waits for an undefined amount of time for the device to finish whatever it may be doing. */
     VkDescriptorSetLayout CacheDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
     VkPipelineLayout CachePipelineLayout(const std::vector<VkDescriptorSetLayout>& descriptorSetLayouts, const std::vector<VkPushConstantRange>& pushConstantsRanges);
-    VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout);
-    std::vector<VkDescriptorSet> AllocateDescriptorSets(VkDescriptorSetLayout layout, uint32_t count);
 
 private:
     std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
@@ -49,7 +46,6 @@ private:
     VmaAllocator _allocator;
     std::unique_ptr<DescriptorSetLayoutCache> _descriptorSetLayoutCache;
     std::unique_ptr<PipelineLayoutCache> _pipelineLayoutCache;
-    std::unique_ptr<DescriptorSetAllocator> _descriptorSetAllocator;
 };
 
 } // namespace bl

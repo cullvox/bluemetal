@@ -30,7 +30,7 @@ list(APPEND Sources
   "Graphics/PushConstantReflection.cpp"
   "Graphics/PipelineLayoutCache.cpp"
   "Graphics/Pipeline.cpp"
-  "Graphics/DescriptorSetAllocator.cpp"
+  "Graphics/DescriptorSetCache.cpp"
   "Graphics/Swapchain.cpp"
   "Graphics/Mesh.cpp"
   "Graphics/PresentPass.cpp"
@@ -38,7 +38,6 @@ list(APPEND Sources
   "Graphics/GraphicsSystem.cpp"
   # "Graphics/GeometryPass.cpp"
 
-  "World/RenderActor.cpp"
 
   # ImGui
   "ImGui/imgui.cpp"

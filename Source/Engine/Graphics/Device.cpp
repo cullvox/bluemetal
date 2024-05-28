@@ -38,7 +38,6 @@ Device::Device(Instance* instance, PhysicalDevice* physicalDevice)
 
     _descriptorSetLayoutCache = std::make_unique<DescriptorSetLayoutCache>(this);
     _pipelineLayoutCache = std::make_unique<PipelineLayoutCache>(this);
-    _descriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(this, 1024, DescriptorRatio::Default());
 }
 
 Device::~Device() { 
@@ -152,22 +151,6 @@ VkDescriptorSetLayout Device::CacheDescriptorSetLayout(const std::vector<VkDescr
 VkPipelineLayout Device::CachePipelineLayout(const std::vector<VkDescriptorSetLayout>& descriptors, const std::vector<VkPushConstantRange>& pushConstants)
 {
     return _pipelineLayoutCache->Acquire(descriptors, pushConstants);
-}
-
-VkDescriptorSet Device::AllocateDescriptorSet(VkDescriptorSetLayout layout)
-{
-    return _descriptorSetAllocator->Allocate(layout);
-}
-
-std::vector<VkDescriptorSet> Device::AllocateDescriptorSets(VkDescriptorSetLayout layout, uint32_t count)
-{
-    std::vector<VkDescriptorSet> sets;
-    sets.reserve(count);
-
-    for (uint32_t i = 0; i < count; i++) 
-        sets.push_back(_descriptorSetAllocator->Allocate(layout));
-
-    return sets;
 }
 
 std::vector<const char*> Device::GetValidationLayers()

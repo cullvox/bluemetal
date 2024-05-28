@@ -7,29 +7,33 @@
 namespace bl
 {
 
+class Device;
+
+/** @brief Data used by the descriptor set layout cache */
 struct DescriptorLayoutCacheData
 {
     std::vector<VkDescriptorSetLayoutBinding> bindings;
     bool operator==(const DescriptorLayoutCacheData& rhs) const;
 };
 
+/** @brief Hashes descriptor set layout data. */
 struct DescriptorLayoutCacheHasher
 {
     size_t operator()(const DescriptorLayoutCacheData& data) const noexcept;
 };
 
-class Device;
+/** @brief Caches descriptor set layouts optimizing descriptor set creation speeds and memory usage. */
 class DescriptorSetLayoutCache
 {
 public:
-    DescriptorSetLayoutCache(Device* device);
-    ~DescriptorSetLayoutCache();
+    DescriptorSetLayoutCache(Device* device); /** @brief Constructor */
+    ~DescriptorSetLayoutCache(); /** @brief Destructor */
 
-    VkDescriptorSetLayout Acquire(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
+    VkDescriptorSetLayout Acquire(const std::vector<VkDescriptorSetLayoutBinding>& bindings); /** @brief Creates or retrieves a descriptor set layout from it's bindings. */
 
 private:
     Device* _device;
-    std::unordered_map<DescriptorLayoutCacheData, VkDescriptorSetLayout, DescriptorLayoutCacheHasher> _cache;
+    std::unordered_map<DescriptorLayoutCacheData, VkDescriptorSetLayout, DescriptorLayoutCacheHasher> _cache; /** @brief Hashmap caches all the descriptor set layouts. */
 };
 
 } // namespace bl

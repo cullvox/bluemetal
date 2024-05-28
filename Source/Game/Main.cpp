@@ -7,7 +7,6 @@
 #include "Graphics/Pipeline.h"
 #include "Graphics/Vertex.h"
 #include "Graphics/Mesh.h"
-#include "Graphics/DescriptorSetAllocator.h"
 #include "Material/UniformData.h"
 
 #include "Math/Transform.h"
@@ -103,8 +102,6 @@ int main(int argc, const char** argv)
     auto descriptorReflections = pipeline->GetDescriptorSetReflections();
     auto window = engine.GetWindow();
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(window);
-    std::vector ratios = bl::DescriptorRatio::Default();
-    auto descriptorAllocator = std::make_unique<bl::DescriptorSetAllocator>(graphics->GetDevice(), 1024, ratios);
 
     auto globalBuffer = std::make_shared<bl::Buffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, sizeof(bl::GlobalUBO));
 

@@ -1,16 +1,15 @@
 #pragma once
 
-#include <stdint.h>
+#include "Precompiled.h"
 
-namespace bl {
+namespace bl 
+{
 
-struct VoxelVertex {
+struct Voxel
+{
+    constexpr Voxel(uint32_t type, uint32_t );
 
-}
-
-struct Voxel {
-    uint16_t type : 10;
-    uint16_t 
+    uint32_t value;
 };
 
 } /* namespace ts */

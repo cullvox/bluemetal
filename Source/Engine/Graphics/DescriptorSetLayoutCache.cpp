@@ -52,21 +52,19 @@ VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(const std::vector<VkDesc
     {
         return (*it).second;
     } 
-    else 
-    {
-        VkDescriptorSetLayoutCreateInfo createInfo{};
-        createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        createInfo.pNext = nullptr;
-        createInfo.flags = 0;
-        createInfo.bindingCount = (uint32_t)bindings.size();
-        createInfo.pBindings = bindings.data();
 
-        VkDescriptorSetLayout layout = VK_NULL_HANDLE;
-        VK_CHECK(vkCreateDescriptorSetLayout(_device->Get(), &createInfo, nullptr, &layout))
+    VkDescriptorSetLayoutCreateInfo createInfo{};
+    createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    createInfo.pNext = nullptr;
+    createInfo.flags = 0;
+    createInfo.bindingCount = (uint32_t)bindings.size();
+    createInfo.pBindings = bindings.data();
 
-        _cache[data] = layout;
-        return layout;
-    }
+    VkDescriptorSetLayout layout = VK_NULL_HANDLE;
+    VK_CHECK(vkCreateDescriptorSetLayout(_device->Get(), &createInfo, nullptr, &layout))
+
+    _cache[data] = layout;
+    return layout;
 }
 
 } // namespace bl

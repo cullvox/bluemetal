@@ -119,7 +119,8 @@
         "hash_set": "cpp",
         "future": "cpp",
         "__memory": "cpp",
-        "*.def": "cpp"
+        "*.def": "cpp",
+        "__threading_support": "cpp"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
