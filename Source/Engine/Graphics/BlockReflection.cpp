@@ -29,5 +29,15 @@ uint32_t BlockReflection::GetBlockSize() const
     return _blockSize;
 }
 
+void BlockReflection::SetBlockName(const std::string& name)
+{
+    _name = name;
+}
+
+std::string BlockReflection::GetBlockName() const
+{
+    return _name;
+}
+
 
 } // namespace bl

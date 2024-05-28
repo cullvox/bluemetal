@@ -15,12 +15,16 @@ public:
 
     bool operator==(const DescriptorSetBindingReflection& rhs) const;
     void SetBinding(uint32_t binding, VkDescriptorType type, uint32_t descriptorCount, VkShaderStageFlags flags, const VkSampler* immutableSamplers);
+    void SetName(const std::string& name);
     uint32_t GetLocation() const;
     void AddStageFlags(VkShaderStageFlags flags);
     bool Compare(VkDescriptorType type, uint32_t descriptorCount) const;
     VkDescriptorSetLayoutBinding GetBinding() const;
+    std::string GetName() const;
+    VkDescriptorType GetType() const;
 
 private:
+    std::string _name;
     VkDescriptorSetLayoutBinding _binding;
 };
 

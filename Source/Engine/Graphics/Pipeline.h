@@ -21,7 +21,7 @@ struct PipelineCreateInfo /** @brief Create info for pipeline objects. */
 };
 
 /** @brief A program consisting of shaders designed to run on the GPU. */
-class Pipeline 
+class Pipeline
 {
 public:
     Pipeline(Device* device, const PipelineCreateInfo& info); /** @brief Constructor */
@@ -31,8 +31,6 @@ public:
     VkPipeline Get() const; /** @brief Gets the raw VkPipeline underlying this object. */
     std::vector<DescriptorSetReflection> GetDescriptorSetReflections() const;
     std::vector<PushConstantReflection> GetPushConstantReflections() const;
-
-    void bind(VkCommandBuffer cmd); /** @brief Binds this pipeline to a command buffer. */
 
 private:
     void Create(const PipelineCreateInfo& createInfo);

@@ -31,6 +31,8 @@ list(APPEND Sources
   "Graphics/PipelineLayoutCache.cpp"
   "Graphics/Pipeline.cpp"
   "Graphics/DescriptorSetCache.cpp"
+  "Graphics/Material.cpp"
+  "Graphics/MaterialInstance.cpp"
   "Graphics/Swapchain.cpp"
   "Graphics/Mesh.cpp"
   "Graphics/PresentPass.cpp"

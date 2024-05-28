@@ -2,16 +2,18 @@
 
 #include "Precompiled.h"
 #include "Material.h"
+#include "Buffer.h"
 
 namespace bl
 {
 
+/** @brief */
 class MaterialInstance : public Resource
 {
 public:
     constexpr static inline uint32_t MAX_PUSH_CONSTANT_SIZE = 128;
-    
-    MaterialInstance();
+
+    MaterialInstance(Device* _device, Material* material);
     ~MaterialInstance();
 
     void SetBool(const std::string& name, bool value);
@@ -29,32 +31,15 @@ public:
     void SetMatrix2(const std::string& name, glm::mat2 value);
     void SetMatrix3(const std::string& name, glm::mat3 value);
     void SetMatrix4(const std::string& name, glm::mat4 value);
-    
-    template<typename T>
-    void SetPushConstant(const std::string& name, T& data)
-    {
-        static_assert(sizeof(T) <= MAX_PUSH_CONSTANT_SIZE);
-
-        
-    }
-
-    void SetPushConstantRaw(const std::string& name, void* data, uint32_t length)
-    {
-        _constants[name]
-    }
 
 private:
-    struct Uniform
-    {
-        Buffer buffer;
-        std::unordered_map<std::string, >
-    }
+    void CreateBuffers();
+    void UpdateDescriptorBindings();
 
-    char _constant[MAX_PUSH_CONSTANT_SIZE];
-    std::unordered_map<std::string, >
-    Material* material;
+    Device* _device;
+    Material* _material;
     VkDescriptorSet _set;
-
+    std::unordered_map<std::string, Buffer> _uniformBuffers;
 };
 
 } // namespace bl

@@ -1,16 +1,19 @@
 #pragma once
 
 #include "Resource/Resource.h"
-#include "DescriptorSet.h"
+#include "Pipeline.h"
+#include "DescriptorSetCache.h"
 
 namespace bl
 {
+
+class MaterialInstance;
 
 enum class MaterialPass
 {
     eGeometry, /* Uses geometry pass (unlit) */
     eLit, /* Uses the lighting pass (lit) */
-}
+};
 
 /** @brief Shader uniforms merged together in an uncomfortably useful unison.
  * 
@@ -29,20 +32,20 @@ enum class MaterialPass
 class Material : public Resource
 {
 public:
-    Material(const nlohmann::json& data);
+    Material(Device* device, const nlohmann::json& data);
     ~Material();
 
     virtual void Load();
     virtual void Unload();
 
+    Pipeline* GetPipeline() const;
     std::unique_ptr<MaterialInstance> CreateInstance();
 
 private:
-    std::unique_ptr<DescriptorSetCache> _descriptorSetCache;
+    Device* _device;
     std::unique_ptr<Pipeline> pipeline;
-    std::unordered_map<BlockReflection> _uniformBufferBlocks;
-    std::unordered_map<BlockReflection> _pushConstantBlocks;
-    VkDescriptorSet _set;
+    std::unique_ptr<DescriptorSetCache> _descriptorSetCache;
+    std::unordered_map<std::string, BlockMemberReflection> _uniformBlocks;
 };
 
 } // namespace bl

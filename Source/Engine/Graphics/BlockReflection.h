@@ -42,8 +42,11 @@ public:
     std::vector<BlockMemberReflection> GetMembers() const;
     void SetBlockSize(uint32_t size);
     uint32_t GetBlockSize() const;
+    void SetBlockName(const std::string& name);
+    std::string GetBlockName() const;
 
 private:
+    std::string _name;
     uint32_t _blockSize;
     std::unordered_map<std::string, BlockMemberReflection> _members;
 };

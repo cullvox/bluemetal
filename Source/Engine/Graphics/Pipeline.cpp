@@ -37,6 +37,8 @@ std::vector<PushConstantReflection> Pipeline::GetPushConstantReflections() const
 
 void Pipeline::ReflectMembers(BlockReflection& builder, const SpvReflectBlockVariable& block)
 {
+    builder.SetBlockName(block.name);
+
     const UniformMemberType vectorTypes[4][3] = // [components][type]
     {
         {UniformMemberType::eScalarBool, UniformMemberType::eScalarInt, UniformMemberType::eScalarFloat},

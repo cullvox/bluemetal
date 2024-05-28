@@ -111,24 +111,7 @@ int main(int argc, const char** argv)
     std::vector<VkDescriptorSet> sets = graphics->GetDevice()->AllocateDescriptorSets(descriptorReflections[0].GetLayout(), bl::GraphicsConfig::numFramesInFlight);
     for (uint32_t i = 0; i < bl::GraphicsConfig::numFramesInFlight; i++)
     {
-        VkDescriptorBufferInfo info{};
-        info.buffer = globalBuffer->Get();
-        info.offset = 0;
-        info.range = VK_WHOLE_SIZE;
-
-        VkWriteDescriptorSet write{};
-        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.pNext = nullptr;
-        write.dstSet = sets[i];
-        write.dstBinding = 0;
-        write.dstArrayElement = 0;
-        write.descriptorCount = 1;
-        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        write.pImageInfo = nullptr;
-        write.pBufferInfo = &info;
-        write.pTexelBufferView = nullptr;
-
-        vkUpdateDescriptorSets(graphics->GetDevice()->Get(), 1, &write, 0, nullptr);
+        
     }
 
     bl::FrameCounter frameCounter;

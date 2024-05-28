@@ -26,6 +26,11 @@ void DescriptorSetBindingReflection::SetBinding(uint32_t binding, VkDescriptorTy
     _binding.pImmutableSamplers = immutableSamplers;
 }
 
+void DescriptorSetBindingReflection::SetName(const std::string& name)
+{
+    _name = name;
+}
+
 uint32_t DescriptorSetBindingReflection::GetLocation() const
 {
     return _binding.binding;
@@ -45,6 +50,11 @@ bool DescriptorSetBindingReflection::Compare(VkDescriptorType type, uint32_t des
 VkDescriptorSetLayoutBinding DescriptorSetBindingReflection::GetBinding() const
 {
     return _binding;
+}
+
+VkDescriptorType DescriptorSetBindingReflection::GetType() const
+{
+    return _binding.descriptorType;
 }
 
 ////////// DescriptorSetReflection //////////
