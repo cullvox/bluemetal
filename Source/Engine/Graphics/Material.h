@@ -15,6 +15,11 @@ enum class MaterialPass
     eLit, /* Uses the lighting pass (lit) */
 };
 
+struct Uniform : public BlockMemberReflection
+{
+    uint32_t binding;
+};
+
 /** @brief Shader uniforms merged together in an uncomfortably useful unison.
  * 
  * A brief explanation of descriptor sets in materials.
@@ -39,13 +44,12 @@ public:
     virtual void Unload();
 
     Pipeline* GetPipeline() const;
-    std::unique_ptr<MaterialInstance> CreateInstance();
-
 private:
     Device* _device;
     std::unique_ptr<Pipeline> pipeline;
     std::unique_ptr<DescriptorSetCache> _descriptorSetCache;
-    std::unordered_map<std::string, BlockMemberReflection> _uniformBlocks;
+    std::unordered_map<std::string, Uniform> _uniforms;
+    std::string _vert, _frag;
 };
 
 } // namespace bl

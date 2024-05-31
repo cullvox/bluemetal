@@ -62,14 +62,11 @@ list(APPEND Sources
 add_library(Bluemetal STATIC ${Sources})
 
 target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(Bluemetal ${Vulkan_LIBRARY} glm::glm-header-only spirv-reflect-static SDL2::SDL2 fmt::fmt FMOD)
 
-# generate export header
-include(GenerateExportHeader)
-
-generate_export_header(
-  Bluemetal
-  BASE_NAME "BLUEMETAL"
-  EXPORT_MACRO_NAME "BLUEMETAL_API"
-  DEPRECATED_MACRO_NAME "BLUEMETAL_DEPRECATED"
-  EXPORT_FILE_NAME "${CMAKE_CURRENT_SOURCE_DIR}/Export.h")
+target_link_libraries(Bluemetal PRIVATE 
+  ${Vulkan_LIBRARY} 
+  glm::glm
+  spirv-reflect-static 
+  SDL2::SDL2 
+  fmt::fmt 
+  FMOD)

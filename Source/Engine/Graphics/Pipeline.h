@@ -7,24 +7,27 @@
 #include "PushConstantReflection.h"
 #include "DescriptorSetLayoutCache.h"
 #include "PipelineLayoutCache.h"
+#include "Vertex.h"
 
 namespace bl 
 {
 
-struct PipelineCreateInfo /** @brief Create info for pipeline objects. */
+/** @brief Create info for pipeline objects. */
+struct PipelineStateInfo 
 {
-    RenderPass* renderPass; /** @brief What pass this pipeline is operating within. */
+    Shader* vertexModule;
+    Shader* fragmentModule;
     uint32_t subpass; /** @brief What subpass this pipeline is used in. */
-    std::vector<VkVertexInputBindingDescription> vertexInputBindings;
-    std::vector<VkVertexInputAttributeDescription> vertexInputAttribs;
-    std::vector<ResourceRef<Shader>> shaders; /** @brief The shaders used in this pipeline program. */
+    RenderPass* renderPass; /** @brief What pass this pipeline is operating within. */
+    std::vector<VkVertexInputBindingDescription> vertexInputBindings = Vertex::GetBindingDescriptions();
+    std::vector<VkVertexInputAttributeDescription> vertexInputAttribs = Vertex::GetBindingAttributeDescriptions();
 };
 
 /** @brief A program consisting of shaders designed to run on the GPU. */
 class Pipeline
 {
 public:
-    Pipeline(Device* device, const PipelineCreateInfo& info); /** @brief Constructor */
+    Pipeline(Device* device, const PipelineStateInfo& info); /** @brief Constructor */
     ~Pipeline(); /** @brief Destructor */
 
     VkPipelineLayout GetLayout() const;
@@ -33,7 +36,7 @@ public:
     std::vector<PushConstantReflection> GetPushConstantReflections() const;
 
 private:
-    void Create(const PipelineCreateInfo& createInfo);
+    void Create(const PipelineStateInfo& createInfo);
     void ReflectMembers(BlockReflection& reflection, const SpvReflectBlockVariable& block);
 
     Device* _device;

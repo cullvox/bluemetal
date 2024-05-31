@@ -108,12 +108,6 @@ int main(int argc, const char** argv)
     void* globalBufferMap = nullptr;
     globalBuffer->Map(&globalBufferMap);
 
-    std::vector<VkDescriptorSet> sets = graphics->GetDevice()->AllocateDescriptorSets(descriptorReflections[0].GetLayout(), bl::GraphicsConfig::numFramesInFlight);
-    for (uint32_t i = 0; i < bl::GraphicsConfig::numFramesInFlight; i++)
-    {
-        
-    }
-
     bl::FrameCounter frameCounter;
 
     bl::ObjectPC object{};

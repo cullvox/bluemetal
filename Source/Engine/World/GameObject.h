@@ -16,10 +16,14 @@ public:
     template<typename T> bool HasComponent() const;
     template<typename T> void AddComponent();
     template<typename T> void RemoveComponent();
+    template<typename T> T* GetComponent() const;
+    GameObject* GetChild(int index) const;
+    std::vector<GameObject*> GetChildren();
 
 private:
     std::string _name;
     std::unordered_map<size_t, std::unique_ptr<Component>> _components;
+    std::vector<GameObject*> _children;
 };
 
 template<typename T>

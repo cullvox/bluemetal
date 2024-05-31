@@ -11,8 +11,6 @@ namespace bl
 class MaterialInstance : public Resource
 {
 public:
-    constexpr static inline uint32_t MAX_PUSH_CONSTANT_SIZE = 128;
-
     MaterialInstance(Device* _device, Material* material);
     ~MaterialInstance();
 

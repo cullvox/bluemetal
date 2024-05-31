@@ -15,6 +15,11 @@ layout(set=0, binding=0) uniform GlobalUniform
     mat4 projection;
 } global;
 
+layout(set=1, binding=0) uniform MaterialUniform
+{
+    
+}
+
 layout(push_constant) uniform Constants
 {
     mat4 model;

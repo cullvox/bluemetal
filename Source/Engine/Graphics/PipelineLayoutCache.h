@@ -7,13 +7,13 @@
 namespace bl 
 {
 
-// VkDescriptorSetLayout objects will have the same underlying pointer value when shared, so they can just be hashed as intptrs
-// VkPushConstantRanges can be hash joined.
+class Device;
 
 struct PipelineLayoutCacheData 
 {
     std::vector<VkDescriptorSetLayout> layouts;
     std::vector<VkPushConstantRange> ranges;
+    
     bool operator==(const PipelineLayoutCacheData& rhs) const noexcept;
 };
 
@@ -22,7 +22,6 @@ struct PipelineLayoutCacheHasher
     std::size_t operator()(const PipelineLayoutCacheData& data) const noexcept;
 };
 
-class Device;
 class PipelineLayoutCache
 {
 public:
