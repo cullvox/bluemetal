@@ -302,7 +302,7 @@ void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optio
     createInfo.oldSwapchain = oldSwapchain;
 
     VK_CHECK(vkCreateSwapchainKHR(_device->Get(), &createInfo, nullptr, &_swapchain));
-    
+
     if (oldSwapchain)
         vkDestroySwapchainKHR(_device->Get(), oldSwapchain, nullptr);
 

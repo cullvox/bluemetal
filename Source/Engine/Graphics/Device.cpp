@@ -1,5 +1,8 @@
-#include "Device.h"
 #include "Core/Print.h"
+#include "Device.h"
+#include "DescriptorSetLayoutCache.h"
+#include "DescriptorSetCache.h"
+#include "PipelineLayoutCache.h"
 
 // VMA has a lot of warnings on a lot of different platforms.
 // Disable warnings from vk_me_alloc.h warnings on platforms.
@@ -38,6 +41,7 @@ Device::Device(Instance* instance, PhysicalDevice* physicalDevice)
 
     _descriptorSetLayoutCache = std::make_unique<DescriptorSetLayoutCache>(this);
     _pipelineLayoutCache = std::make_unique<PipelineLayoutCache>(this);
+    _descriptorSetCache = std::make_unique<DescriptorSetCache>(this, 1024, bl::DescriptorRatio::Default());
 }
 
 Device::~Device() { 

@@ -4,166 +4,68 @@
 namespace bl 
 {
 
-Pipeline::Pipeline(Device* device, const PipelineCreateInfo& createInfo)
-    : _device(device)
-{
-    Create(createInfo);
-}
-
-Pipeline::~Pipeline()
-{ 
-    vkDestroyPipeline(_device->Get(), _pipeline, nullptr);
-}
-
-VkPipelineLayout Pipeline::GetLayout() const 
-{
-    return _layout; 
-}
-
-VkPipeline Pipeline::Get() const 
-{
-    return _pipeline; 
-}
-
-std::vector<DescriptorSetReflection> Pipeline::GetDescriptorSetReflections() const
-{
-    return _descriptorSetReflections;
-}
-
-std::vector<PushConstantReflection> Pipeline::GetPushConstantReflections() const
-{
-    return _pushConstantReflections;
-}
-
-void Pipeline::ReflectMembers(BlockReflection& builder, const SpvReflectBlockVariable& block)
-{
-    builder.SetBlockName(block.name);
-
-    const UniformMemberType vectorTypes[4][3] = // [components][type]
-    {
-        {UniformMemberType::eScalarBool, UniformMemberType::eScalarInt, UniformMemberType::eScalarFloat},
-        {UniformMemberType::eVector2b, UniformMemberType::eVector2i, UniformMemberType::eVector2f},
-        {UniformMemberType::eVector3b, UniformMemberType::eVector3i, UniformMemberType::eVector3f},
-        {UniformMemberType::eVector4b, UniformMemberType::eVector4i, UniformMemberType::eVector4f},
-    };
-
-    const UniformMemberType matrixTypes[3] =
-    {
-        UniformMemberType::eMatrix2f, UniformMemberType::eMatrix3f, UniformMemberType::eMatrix4f
-    };
-
-    for (uint32_t j = 0; j < block.member_count; j++)
-    {
-        auto& blockVariable = block.members[j];
-        auto& numericTraits = blockVariable.numeric;
-        auto typeDescription = blockVariable.type_description;
-
-        BlockMemberReflection member{};
-        member.name = blockVariable.name;
-        member.offset = blockVariable.offset;
-        member.size = blockVariable.size;
-
-        if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_ARRAY)
-        {
-            continue; // We don't support array values just yet. (eventually for voxels!)
-        }
-        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_VECTOR)
-        {
-            uint32_t components = numericTraits.vector.component_count;
-            uint32_t type = 0;
-            if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) type = 0; 
-            else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT) type = 1;
-            else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) type = 2;
-            member.type = vectorTypes[components][type];
-        }
-        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_MATRIX)
-        { 
-            auto columns = numericTraits.matrix.column_count;
-            auto rows = numericTraits.matrix.row_count;
-            if (columns == rows) member.type = matrixTypes[columns];
-            else { continue; } // We don't support matrices that aren't dimensionally equal.
-        }
-        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL)
-        {
-            member.type = UniformMemberType::eScalarBool;
-        }
-        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT)
-        {
-            member.type = UniformMemberType::eScalarInt;
-        }
-        else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT)
-        {
-            member.type = UniformMemberType::eScalarFloat;
-        }
-
-        builder[member.name] = member;
-    }
-}
-
-void Pipeline::Create(const PipelineCreateInfo& createInfo)
-{
-    std::vector<VkPipelineShaderStageCreateInfo> stages{};
-    stages.reserve(createInfo.shaders.size());
+Pipeline::Pipeline(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state)
+    : _device(device) {
+    
+    std::array<VkPipelineShaderStageCreateInfo, 2> stages;
+    std::array<Shader*, 2> shaders = { state.stages.vert, state.stages.frag };
 
     // Obtain reflection data from shaders to build the pipeline layout.
-    std::unordered_map<uint32_t, DescriptorSetReflection> descriptorSetReflections;
-    std::vector<PushConstantReflection> pushConstantReflections;
+    std::unordered_map<uint32_t, DescriptorSetMeta> sets;
+    std::vector<PushConstantMeta> pushConstantReflections;
 
-    for (auto resource : createInfo.shaders)
-    {
-        auto shader = resource.Get();
-        auto spvReflection = shader->GetReflection();
-
-        // Build a pipeline shader stage.
-        VkPipelineShaderStageCreateInfo stage{};
-        stage.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-        stage.pNext = nullptr;
-        stage.flags = 0;
-        stage.stage = shader->GetStage();
-        stage.module = shader->Get();
-        stage.pName = "main";
-        stage.pSpecializationInfo = nullptr;
-
-        stages.push_back(stage);
+    for (int i = 0; i < shaders.size(); i++) {
+        
+        // Build the pipelines shader stage create info.
+        auto shader = shaders[i];
+        stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        stages[i].pNext = nullptr;
+        stages[i].flags = 0;
+        stages[i].stage = shader->GetStage();
+        stages[i].module = shader->Get();
+        stages[i].pName = "main";
+        stages[i].pSpecializationInfo = nullptr;
 
         // Reflect each descriptor binding to build descriptor set layouts.
-        for (uint32_t i = 0; i < spvReflection.descriptor_binding_count; i++)
+        auto reflection = shader->GetReflection();
+
+        for (uint32_t j = 0; j < reflection.descriptor_binding_count; j++)
         {
-            const auto& spvBinding = spvReflection.descriptor_bindings[i];
-            auto& reflection = descriptorSetReflections[spvBinding.set];
-            reflection.SetLocation(spvBinding.set);
+            const auto& reflectBinding = reflection.descriptor_bindings[j];
+            auto& set = _descriptorSetMetadata[reflectBinding.set];
+            
+            set.SetLocation(reflectBinding.set);
 
             // If this binding number already exists then compare and use that.
-            auto location = spvBinding.binding; 
-            auto type = (VkDescriptorType)spvBinding.descriptor_type;
-            auto count = spvBinding.count;
+            auto location = reflectBinding.binding; 
+            auto type = static_cast<VkDescriptorType>(reflectBinding.descriptor_type);
+            auto count = reflectBinding.count;
 
-            if (reflection.ContainsBinding(location))
+            // If the set already contains this binding we do less work!
+            bool doesBindingAlreadyExists = set.Contains(location);
+            auto& binding = set[location];
+
+            if (doesBindingAlreadyExists && !binding.Compare(type, count))
             {
-                // A binding has already been created, ensure it's the same and add this stage to it.
-                auto& binding = reflection.AccessOrInsertBinding(location);
-                if (!binding.Compare(type, count))
-                    throw std::runtime_error("Bindings using same index but hold different types of data!");
-
-                binding.AddStageFlags(shader->GetStage());
+                throw std::runtime_error("Bindings using same index but hold different types of data!");
             }
             else
             {
-                // Insert a new binding and set it's data.
-                auto& binding = reflection.AccessOrInsertBinding(location);
+                // This is a newly found binding
                 binding.SetBinding(location, type, count, shader->GetStage(), nullptr);
-
-                // Reflect any and all members that this binding may have (if it's a uniform/storage buffer).
-                const auto& block = spvBinding.block;
-                ReflectMembers(binding, block);
+                if (binding.IsBlock()) {
+                    ReflectMembers(binding, location, reflectBinding.block);
+                }
             }
+
+            binding.AddStageFlags(shader->GetStage());
         }
 
         // Gather all the push constant ranges for the pipeline layout.
         // Check if the push constant already exists.
-        for (uint32_t i = 0; i < spvReflection.push_constant_block_count; i++)
+        for (uint32_t j = 0; j < reflection.push_constant_block_count; j++)
         {
-            const auto& block = spvReflection.push_constant_blocks[i];
+            const auto& block = reflection.push_constant_blocks[j];
             auto offset = block.offset; 
             auto size = block.size;
 
@@ -179,37 +81,36 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
             else
             {
                 // This block wasn't added yet.
-                _pushConstantReflections.emplace_back(shader->GetStage(), offset, size);
-                ReflectMembers(_pushConstantReflections.back(), block);
+               // auto& pcr = _pushConstantReflections[]
+               // auto& pair = .emplace(shader->GetStage(), offset, size);
+               // ReflectMembers(_pushConstantReflections[], 0, block);
             }
         }
     }
 
     // Use the descriptor set layout cache to acquire layouts for each set.
     std::vector<VkDescriptorSetLayout> layouts;
-    layouts.reserve(descriptorSetReflections.size());
-    _descriptorSetReflections.reserve(descriptorSetReflections.size());
+    layouts.reserve(_descriptorSetMetadata.size());
+    _descriptorSetLayouts.reserve(_descriptorSetMetadata.size());
 
     // Extract descriptor set layout bindings and create a layout.
-    for (auto& pair : descriptorSetReflections)
+    for (auto& pair : _descriptorSetMetadata)
     {
-        auto& reflection = pair.second;
+        auto& meta = pair.second;
 
-        // Retrieve a layout from cache or create a new descriptor set layout.
-        auto layout = _device->CacheDescriptorSetLayout(reflection.GetSortedBindings());
-        reflection.SetLayout(layout); // We save these layouts in the reflection data too for ease of use.
+        // Acquire a layout from cache or create a new descriptor set layout.
+        auto layout = _device->CacheDescriptorSetLayout(meta.GetSortedBindings());
+        _descriptorSetLayouts.emplace(meta.GetLocation(), layout);
         layouts.push_back(layout);
-
-        // Save the reflection data into the final vector.
-        _descriptorSetReflections.push_back(std::move(reflection));
     }
 
     // Extract the push constant ranges from reflection.
     std::vector<VkPushConstantRange> pushConstants;
-    pushConstants.reserve(_pushConstantReflections.size());
+    pushConstants.reserve(_pushConstantMetadata.size());
 
-    for (const auto& reflection : _pushConstantReflections)
-        pushConstants.push_back(reflection.GetRange());
+    for (const auto& meta : _pushConstantMetadata) {
+        pushConstants.push_back(meta.GetRange());
+    }
 
     // Acquire our layout using the pipeline layout cache.
     _layout = _device->CachePipelineLayout(layouts, pushConstants);
@@ -218,10 +119,10 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputState.pNext = nullptr;
     vertexInputState.flags = 0;
-    vertexInputState.vertexBindingDescriptionCount = (uint32_t)createInfo.vertexInputBindings.size();
-    vertexInputState.pVertexBindingDescriptions = createInfo.vertexInputBindings.data();
-    vertexInputState.vertexAttributeDescriptionCount = (uint32_t)createInfo.vertexInputAttribs.size();
-    vertexInputState.pVertexAttributeDescriptions = createInfo.vertexInputAttribs.data();
+    vertexInputState.vertexBindingDescriptionCount = (uint32_t)state.vertexInput.vertexInputBindings.size();
+    vertexInputState.pVertexBindingDescriptions = state.vertexInput.vertexInputBindings.data();
+    vertexInputState.vertexAttributeDescriptionCount = (uint32_t)state.vertexInput.vertexInputAttribs.size();
+    vertexInputState.pVertexAttributeDescriptions = state.vertexInput.vertexInputAttribs.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
     inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -323,12 +224,103 @@ void Pipeline::Create(const PipelineCreateInfo& createInfo)
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.layout = _layout;
-    pipelineCreateInfo.renderPass = createInfo.renderPass->Get();
-    pipelineCreateInfo.subpass = createInfo.subpass;
-    pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; /* no vendor actually supports derivative pipelines. */
+    pipelineCreateInfo.renderPass = pass->Get();
+    pipelineCreateInfo.subpass = subpass;
+    pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; /* No vendor actually uses derivative pipelines. 😿 */
     pipelineCreateInfo.basePipelineIndex = 0;
 
     VK_CHECK(vkCreateGraphicsPipelines(_device->Get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline))
+}
+
+Pipeline::~Pipeline()
+{ 
+    vkDestroyPipeline(_device->Get(), _pipeline, nullptr);
+}
+
+VkPipelineLayout Pipeline::GetLayout() const 
+{
+    return _layout; 
+}
+
+VkPipeline Pipeline::Get() const 
+{
+    return _pipeline; 
+}
+
+std::unordered_map<uint32_t, DescriptorSetMeta> Pipeline::GetDescriptorSetMetadata() const
+{
+    return _descriptorSetMetadata;
+}
+
+std::unordered_set<PushConstantMeta> Pipeline::GetPushConstantMetadata() const
+{
+    return _pushConstantMetadata;
+}
+
+std::unordered_map<uint32_t, VkDescriptorSetLayout> Pipeline::GetDescriptorSetLayouts() const
+{
+    return _descriptorSetLayouts;
+}
+
+void Pipeline::ReflectMembers(BlockMeta& meta, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent)
+{
+    std::string structName;
+    if (parent.empty()) {
+        structName = block.name;
+    } else {
+        structName = fmt::format("{}.{}", parent, block.name);
+    }
+
+    meta.SetName(structName);
+
+    for (uint32_t j = 0; j < block.member_count; j++)
+    {
+        auto& blockVariable = block.members[j];
+        auto& numericTraits = blockVariable.numeric;
+        auto typeDescription = blockVariable.type_description;
+        BlockVariableType type;
+
+        if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_STRUCT) {
+            ReflectMembers(meta, binding, blockVariable, meta.GetName());
+            continue;
+        }
+
+        // We are a little specific about our supported material uniform block types.
+        if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_ARRAY) {
+            blWarning("Arrays are not supported in pipelines, it will not be parameterized.");
+            continue;
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_VECTOR) {
+
+            // We only support floating vector types.
+            if (!(typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT)) {
+                blWarning("Only float vectors are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
+                continue;
+            }
+            std::array types = { BlockVariableType::eVector2, BlockVariableType::eVector3, BlockVariableType::eVector4 };
+            type = types[numericTraits.vector.component_count];
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_MATRIX) {
+
+            // We only support 4x4 matrices. 
+            if (numericTraits.matrix.column_count != 4 || numericTraits.matrix.row_count != 4) {
+                blWarning("Only 4x4 matrices are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
+                continue;
+            }
+            type = BlockVariableType::eMatrix4;
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) {
+            type = BlockVariableType::eScalarBool;
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
+            type = BlockVariableType::eScalarInt;
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
+            type = BlockVariableType::eScalarFloat;
+        }
+
+        std::string name = fmt::format("{}.{}", structName, blockVariable.name);
+        meta[name].SetBinding(binding)
+            .SetOffset(blockVariable.offset)
+            .SetType(type)
+            .SetSize(blockVariable.size)
+            .SetName(name);
+    }
 }
 
 } // namespace bl

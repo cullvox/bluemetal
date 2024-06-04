@@ -2,11 +2,13 @@
 
 #include "Window.h"
 #include "Instance.h"
-#include "DescriptorSetLayoutCache.h"
-#include "PipelineLayoutCache.h"
 
 namespace bl 
 {
+
+class DescriptorSetLayoutCache;
+class PipelineLayoutCache;
+class DescriptorSetCache;
 
 /** @brief A graphics device used as the basis of many graphics operations. */
 class Device 
@@ -29,6 +31,10 @@ public:
     void WaitForDevice() const; /** @brief Waits for an undefined amount of time for the device to finish whatever it may be doing. */
     VkDescriptorSetLayout CacheDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
     VkPipelineLayout CachePipelineLayout(const std::vector<VkDescriptorSetLayout>& descriptorSetLayouts, const std::vector<VkPushConstantRange>& pushConstantsRanges);
+    VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout);
+    void FreeDescriptorSet(VkDescriptorSetLayout layout, VkDescriptorSet set);
+    void PushPostFrameDeleter(std::function<void(void)> func); /** @brief After count frames have been run though, this function will run. */
+    void PushPostFrameResetUpdated(StatefulResource& resource); /** @brief This resource will have its 'updated' flag reset after the next few frames. */
 
 private:
     std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
@@ -46,6 +52,7 @@ private:
     VmaAllocator _allocator;
     std::unique_ptr<DescriptorSetLayoutCache> _descriptorSetLayoutCache;
     std::unique_ptr<PipelineLayoutCache> _pipelineLayoutCache;
+    std::unique_ptr<DescriptorSetCache> _descriptorSetCache;
 };
 
 } // namespace bl

@@ -23,6 +23,7 @@ public:
     VkImageUsageFlags GetUsage() const; /** @brief Returns the image usage at construction. */
     VkImage Get() const; /** @brief Returns the vulkan image created at construction.  */
     VkImageView GetView() const; /** @brief Returns the default image view created at construction. */
+    VkImageLayout GetLayout() const; /** @brief Returns the images layout. */
 
 private:
     void CreateImage();
@@ -35,6 +36,7 @@ private:
     VkImageUsageFlags _usage;
     VkImageAspectFlags _aspectMask;
     uint32_t _mipLevels;
+    VkImageLayout _layout;
     VkImage _image;
     VkImageView _imageView;
     VmaAllocation _allocation;

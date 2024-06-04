@@ -2,17 +2,17 @@
 
 #include "Precompiled.h"
 #include "Vulkan.h"
-#include "BlockReflection.h"
+#include "BlockMeta.h"
 
 namespace bl
 {
 
-class PushConstantReflection : public BlockReflection
+class PushConstantMeta : public BlockMeta
 {
 public:
-    PushConstantReflection() = default;
-    PushConstantReflection(VkShaderStageFlags stages, uint32_t offset, uint32_t size);
-    ~PushConstantReflection() = default;
+    PushConstantMeta() = default;
+    PushConstantMeta(VkShaderStageFlags stages, uint32_t offset, uint32_t size);
+    ~PushConstantMeta() = default;
 
     void SetRange(VkShaderStageFlags stages, uint32_t offset, uint32_t size);
     void AddStageFlags(VkShaderStageFlags stages);

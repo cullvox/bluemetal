@@ -16,6 +16,8 @@ public:
     Window* GetWindow();
     void Recreate();
     RenderPass* GetUIPass();
+    uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::numFramesInFlight - 1. */
+    
     void Render(std::function<void(VkCommandBuffer cmd, uint32_t currentFrame)> func);
 
 private:
