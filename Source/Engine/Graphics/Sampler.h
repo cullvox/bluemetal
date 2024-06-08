@@ -34,6 +34,7 @@ public:
         VkBool32 unnormalizedCoordinates = VK_FALSE);
     ~Sampler();
 
+    VkSampler Get() const;
     void SetFilters(VkFilter magFilter, VkFilter minFilter);
     void SetMipmapMode(VkSamplerMipmapMode mode);
     void SetAddressMode(VkSamplerAddressMode mode);
@@ -44,26 +45,25 @@ public:
     void SetBorderColor(VkBorderColor color);
     void SetUnnormalizedCoordinates(VkBool32 unnormalizedCoordinates);
 
-    VkSampler Get();
 
 private:
     void Update();
 
     Device* _device;
-    VkFilter magFilter;
-    VkFilter minFilter;
-    VkSamplerMipmapMode mipmapMode;
-    VkSamplerAddressMode addressMod;
-    float mipLodBias;
-    bool enableAnisotropy;
-    float maxAnisotropy;
-    VkBool32 compareEnable;
-    VkCompareOp compareOp;
-    float minLod;
-    float maxLod;
-    VkBorderColor borderColor;
-    VkBool32 unnormalizedCoordinates;
     VkSampler _sampler;
+    VkFilter _magFilter;
+    VkFilter _minFilter;
+    VkSamplerMipmapMode _mipmapMode;
+    VkSamplerAddressMode _addressMode;
+    float _mipLodBias;
+    bool _enableAnisotropy;
+    float _maxAnisotropy;
+    VkBool32 _compareEnable;
+    VkCompareOp _compareOp;
+    float _minLod;
+    float _maxLod;
+    VkBorderColor _borderColor;
+    VkBool32 _unnormalizedCoordinates;
 };
 
 } // namespace bl

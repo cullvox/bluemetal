@@ -11,8 +11,7 @@ Image::Image(Device* device, VkImageType type, VkExtent3D extent, VkFormat forma
     , _format(format)
     , _usage(usage)
     , _aspectMask(aspectMask)
-    , _mipLevels(mipLevels)
-{
+    , _mipLevels(mipLevels) {
     CreateImage();
 }
 
@@ -23,8 +22,7 @@ Image::Image(Image& rhs)
     , _format(rhs._format)
     , _usage(rhs._usage)
     , _aspectMask(rhs._aspectMask)
-    , _mipLevels(rhs._mipLevels)
-{
+    , _mipLevels(rhs._mipLevels) {
     CreateImage();
 }
 
@@ -38,8 +36,7 @@ Image::Image(Image&& rhs)
     , _mipLevels(rhs._mipLevels)
     , _image(rhs._image)
     , _imageView(rhs._imageView)
-    , _allocation(rhs._allocation)
-{
+    , _allocation(rhs._allocation) {
     rhs._device = {};
     rhs._type = {};
     rhs._extent = {};
@@ -52,39 +49,36 @@ Image::Image(Image&& rhs)
     rhs._allocation = {};
 }
 
-Image::~Image() 
-{ 
+Image::~Image() { 
     vkDestroyImageView(_device->Get(), _imageView, nullptr);
     vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
 }
 
-VkExtent3D Image::GetExtent() const 
-{ 
+VkExtent3D Image::GetExtent() const { 
     return _extent; 
 }
 
-VkFormat Image::GetFormat() const 
-{ 
+VkFormat Image::GetFormat() const { 
     return _format;
 }
 
-VkImageUsageFlags Image::GetUsage() const 
-{ 
+VkImageUsageFlags Image::GetUsage() const {
     return _usage;
 }
 
-VkImageView Image::GetView() const 
-{
+VkImageView Image::GetView() const {
     return _imageView;
 }
 
-VkImage Image::Get() const 
-{ 
+VkImageLayout Image::GetLayout() const {
+    return _layout;
+}
+
+VkImage Image::Get() const {
     return _image;
 }
 
-void Image::CreateImage()
-{
+void Image::CreateImage() {
     auto graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
 
     VkImageCreateInfo imageCreateInfo = {};

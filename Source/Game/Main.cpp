@@ -7,6 +7,7 @@
 #include "Graphics/Pipeline.h"
 #include "Graphics/Vertex.h"
 #include "Graphics/Mesh.h"
+#include "Graphics/Material.h"
 #include "Material/UniformData.h"
 
 #include "Math/Transform.h"
@@ -91,15 +92,13 @@ int main(int argc, const char** argv)
 
     auto renderer = engine.GetRenderer();
 
-    bl::PipelineCreateInfo pci{};
-    pci.renderPass = renderer->GetUIPass();
-    pci.subpass = 0;
-    pci.vertexInputBindings = bl::Vertex::GetBindingDescriptions();
-    pci.vertexInputAttribs = bl::Vertex::GetBindingAttributeDescriptions();
-    pci.shaders = {vert, frag};
+    bl::PipelineStateInfo psi{};
+    psi.vertexInput.vertexInputBindings = bl::Vertex::GetBindingDescriptions();
+    psi.vertexInput.vertexInputAttribs = bl::Vertex::GetBindingAttributeDescriptions();
+    psi.stages = { vert.Get(), frag.Get() };
 
-    auto pipeline = std::make_shared<bl::Pipeline>(graphics->GetDevice(), pci);
-    auto descriptorReflections = pipeline->GetDescriptorSetReflections();
+    auto material = std::make_unique<bl::Material>(graphics->GetDevice(), renderer->GetUIPass(), 0, psi);
+    
     auto window = engine.GetWindow();
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(window);
 
@@ -271,9 +270,8 @@ int main(int argc, const char** argv)
             vkCmdSetScissorWithCount(cmd, 1, &scissor);
 
             mesh->bind(cmd);
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->GetLayout(), 0, 1, &sets[currentFrame], 0, nullptr);
-            vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->Get());
-            vkCmdPushConstants(cmd, pipeline->GetLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(bl::ObjectPC), &object);
+            material->Bind(cmd, currentFrame);
+            vkCmdPushConstants(cmd, material->GetLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(bl::ObjectPC), &object);
             mesh->draw(cmd);
 
             imgui->BeginFrame();

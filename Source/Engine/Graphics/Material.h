@@ -14,7 +14,7 @@ class MaterialBase
 {
 public:
     MaterialBase(Device* device);
-    ~MaterialBase();
+    virtual ~MaterialBase();
 
     void SetBoolean(const std::string& name, bool value);
     void SetInteger(const std::string& name, int value);
@@ -27,9 +27,9 @@ public:
     void Bind(VkCommandBuffer cmd, uint32_t currentFrame); /** @brief Bind this material for rending using it and it's data. */
 
 protected:
-    virtual const std::map<std::string, BlockVariable>& GetUniformMetadata();
-    virtual const std::map<std::string, uint32_t>& GetSamplerMetadata();
-    virtual Pipeline* GetPipeline();
+    virtual const std::map<std::string, BlockVariable>& GetUniformMetadata() = 0;
+    virtual const std::map<std::string, uint32_t>& GetSamplerMetadata() = 0;
+    virtual Pipeline* GetPipeline() = 0;
 
     void SetBindingDirty(uint32_t binding);
     template<typename T> 
@@ -65,7 +65,7 @@ private:
  * global and instance rendering data respectively. 
  * 
  */
-class Material : private Pipeline, public MaterialBase
+class Material : public Pipeline, public MaterialBase
 {
 public:
     Material(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet = 1);

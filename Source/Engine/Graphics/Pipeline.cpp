@@ -14,7 +14,7 @@ Pipeline::Pipeline(Device* device, RenderPass* pass, uint32_t subpass, const Pip
     std::unordered_map<uint32_t, DescriptorSetMeta> sets;
     std::vector<PushConstantMeta> pushConstantReflections;
 
-    for (int i = 0; i < shaders.size(); i++) {
+    for (size_t i = 0; i < shaders.size(); i++) {
         
         // Build the pipelines shader stage create info.
         auto shader = shaders[i];

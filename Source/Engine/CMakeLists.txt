@@ -19,6 +19,7 @@ list(APPEND Sources
   "Graphics/Device.cpp"
   "Graphics/Buffer.cpp"
   "Graphics/Image.cpp"
+  "Graphics/Sampler.cpp"
   "Graphics/Shader.cpp"
   "Graphics/BlockMeta.cpp"
   "Graphics/DescriptorSetMeta.cpp"
@@ -58,7 +59,7 @@ add_library(Bluemetal STATIC ${Sources})
 
 target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
 
-target_link_libraries(Bluemetal PRIVATE 
+target_link_libraries(Bluemetal PUBLIC 
   ${Vulkan_LIBRARY} 
   glm::glm
   spirv-reflect-static 

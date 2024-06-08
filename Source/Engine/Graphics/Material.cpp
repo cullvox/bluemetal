@@ -1,93 +1,45 @@
 #include "Core/Print.h"
 #include "Material.h"
 
-namespace bl
-{
+namespace bl {
+
+// ========== MaterialBase ========== //
 
 MaterialBase::MaterialBase(Device* device)
-    : _device(device)
-{
-}
+    : _device(device) {}
 
-Material::Material(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet)
-    : Pipeline(device, pass, subpass, state)
-    , MaterialBase(device)
-{
-    // Get the descriptor set dedicated to this material.
-    const auto& sets = GetDescriptorSetMetadata();
+MaterialBase::~MaterialBase() {}
 
-    if (!sets.contains(materialSet))
-        throw std::runtime_error("Material does not contain the used set!");
-
-    const auto& meta = sets.at(materialSet);
-
-    auto metaBindings = meta.GetMetaBindings();
-
-    for (const auto& binding : metaBindings) {
-        
-
-        switch (binding.GetType()) {
-        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
-        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
-            auto dynamicAlignment = CalculateDynamicAlignment(binding.GetSize());
-            auto blocks = binding.GetMembers();
-
-            // Create a buffer for this binding.
-            _data[binding.GetLocation()] = Buffer{device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, dynamicAlignment * GraphicsConfig::numFramesInFlight, nullptr};
-
-            // Get each uniform members block for its offsets.
-            for (const auto& variable : blocks) {
-                _uniformMetadata[variable.GetName()] = variable;
-            }
-            break;
-        }
-        case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-            _samplerMetadata[binding.GetName()] = binding.GetLocation();
-            _data[binding.GetLocation()] = SampledImage{};
-            break;
-        }
-    }
-
-}
-
-void MaterialBase::SetBoolean(const std::string& name, bool value)
-{
+void MaterialBase::SetBoolean(const std::string& name, bool value) {
     SetGenericUniform(name, value);
 }
 
-void MaterialBase::SetInteger(const std::string& name, int value)
-{
+void MaterialBase::SetInteger(const std::string& name, int value) {
     SetGenericUniform(name, value);
 }
 
-void MaterialBase::SetScaler(const std::string& name, float value)
-{
+void MaterialBase::SetScaler(const std::string& name, float value) {
     SetGenericUniform(name, value);
 }
 
-void MaterialBase::SetVector2(const std::string& name, glm::vec2 value)
-{
+void MaterialBase::SetVector2(const std::string& name, glm::vec2 value) {
     SetGenericUniform(name, value);
 }
 
-void MaterialBase::SetVector3(const std::string& name, glm::vec3 value)
-{
+void MaterialBase::SetVector3(const std::string& name, glm::vec3 value) {
     SetGenericUniform(name, value);
 }
 
-void MaterialBase::SetVector4(const std::string& name, glm::vec4 value)
-{
+void MaterialBase::SetVector4(const std::string& name, glm::vec4 value) {
     SetGenericUniform(name, value);
 }
 
-void MaterialBase::SetMatrix(const std::string& name, glm::mat4 value)
-{
+void MaterialBase::SetMatrix(const std::string& name, glm::mat4 value) {
     SetGenericUniform(name, value);
 }
 
 void MaterialBase::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
     uint32_t previousFrame = (currentFrame - 1) % GraphicsConfig::numFramesInFlight;
-    
     
     PerFrameData& currentFrameData = _perFrameData[currentFrame];
     PerFrameData& previousFrameData = _perFrameData[previousFrame];
@@ -154,8 +106,7 @@ void MaterialBase::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
     _currentFrame = (currentFrame + 1) % GraphicsConfig::numFramesInFlight;
 }
 
-void MaterialBase::SetSampledImage2D(const std::string& name, Sampler* sampler, Image* image)
-{
+void MaterialBase::SetSampledImage2D(const std::string& name, Sampler* sampler, Image* image) {
     if (!GetSamplerMetadata().contains(name)) {
         blError("Material does not contain sampler \"{}\"!", name);
         return;
@@ -184,16 +135,14 @@ void MaterialBase::SetSampledImage2D(const std::string& name, Sampler* sampler, 
     SetBindingDirty(binding);
 }
 
-void MaterialBase::SetBindingDirty(uint32_t binding)
-{
+void MaterialBase::SetBindingDirty(uint32_t binding) {
     assert(_data.contains(binding) && "Binding must exist to set it dirty!");
     for (uint32_t i = _currentFrame; i != _currentFrame; i = (i + 1) % GraphicsConfig::numFramesInFlight) {
         _perFrameData[i].dirty[binding] = true;
     }
 }
 
-size_t MaterialBase::CalculateDynamicAlignment(size_t uboSize)
-{
+size_t MaterialBase::CalculateDynamicAlignment(size_t uboSize) {
     size_t minUboAlignment = _device->GetPhysicalDevice()->GetProperties().limits.minUniformBufferOffsetAlignment;
     size_t dynamicAlignment = uboSize;
 
@@ -203,33 +152,73 @@ size_t MaterialBase::CalculateDynamicAlignment(size_t uboSize)
     return dynamicAlignment;
 }
 
-const std::map<std::string, BlockVariable>& Material::GetUniformMetadata()
-{
+// ========== Material ========== //
+
+Material::Material(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet)
+    : Pipeline(device, pass, subpass, state)
+    , MaterialBase(device) {
+    // Get the descriptor set dedicated to this material.
+    const auto& sets = GetDescriptorSetMetadata();
+
+    if (!sets.contains(materialSet))
+        throw std::runtime_error("Material does not contain the used set!");
+
+    const auto& meta = sets.at(materialSet);
+
+    auto metaBindings = meta.GetMetaBindings();
+
+    for (const auto& binding : metaBindings) {
+        switch (binding.GetType()) {
+        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+            auto dynamicAlignment = CalculateDynamicAlignment(binding.GetSize());
+            auto blocks = binding.GetMembers();
+
+            // Create a buffer for this binding.
+            _data[binding.GetLocation()] = Buffer{device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, dynamicAlignment * GraphicsConfig::numFramesInFlight, nullptr};
+
+            // Get each uniform members block for its offsets.
+            for (const auto& variable : blocks) {
+                _uniformMetadata[variable.GetName()] = variable;
+            }
+            break;
+        }
+        case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+            _samplerMetadata[binding.GetName()] = binding.GetLocation();
+            _data[binding.GetLocation()] = SampledImage{};
+            break;
+        default:
+            break;
+        }
+    }
+
+}
+
+Material::~Material() {}
+
+const std::map<std::string, BlockVariable>& Material::GetUniformMetadata() {
     return _uniformMetadata;
 }
 
-const std::map<std::string, uint32_t>& Material::GetSamplerMetadata()
-{
+const std::map<std::string, uint32_t>& Material::GetSamplerMetadata() {
     return _samplerMetadata;
 }
 
-Pipeline* Material::GetPipeline()
-{
+Pipeline* Material::GetPipeline() {
     return static_cast<Pipeline*>(this);
 }
 
-const std::map<std::string, BlockVariable>& MaterialInstance::GetUniformMetadata()
-{
+// ========== MaterialInstance ========== //
+
+const std::map<std::string, BlockVariable>& MaterialInstance::GetUniformMetadata() {
     return _material->GetUniformMetadata();
 }
 
-const std::map<std::string, uint32_t>& MaterialInstance::GetSamplerMetadata()
-{
+const std::map<std::string, uint32_t>& MaterialInstance::GetSamplerMetadata() {
     return _material->GetSamplerMetadata();
 }
 
-Pipeline* MaterialInstance::GetPipeline()
-{
+Pipeline* MaterialInstance::GetPipeline() {
     return _material->GetPipeline();
 }
 

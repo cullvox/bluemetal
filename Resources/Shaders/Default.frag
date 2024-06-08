@@ -2,6 +2,11 @@
 
 layout(location = 0) out vec4 outColor;
 
+layout(set=1, binding=0) uniform MaterialUniform
+{
+    vec4 color;
+} material;
+
 void main() {
-    outColor = vec4(0.0, 0.4, 0.7, 1.0);
+    outColor = material.color;
 }

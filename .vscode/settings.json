@@ -120,7 +120,10 @@
         "future": "cpp",
         "__memory": "cpp",
         "*.def": "cpp",
-        "__threading_support": "cpp"
+        "__threading_support": "cpp",
+        "cfenv": "cpp",
+        "execution": "cpp",
+        "strstream": "cpp"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
