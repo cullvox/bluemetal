@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Export.h"
 #include "Precompiled.h"
 #include "Core/Version.h"
 #include "Vulkan.h"

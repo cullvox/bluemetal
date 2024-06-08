@@ -84,4 +84,9 @@ VkFormat PhysicalDevice::FindSupportedFormat(const std::vector<VkFormat>& candid
     throw std::runtime_error("Could not find a valid format!");
 }
 
+const VkPhysicalDeviceProperties& PhysicalDevice::GetProperties() const
+{
+    return _properties;
+}
+
 } // namespace bl

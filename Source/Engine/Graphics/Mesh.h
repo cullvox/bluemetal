@@ -6,7 +6,7 @@
 namespace bl
 {
 
-class BLUEMETAL_API Mesh
+class Mesh
 {
 public:
     template<typename TVertex>

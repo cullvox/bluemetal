@@ -7,7 +7,6 @@
 #define IMGUI_IMPL_VULKAN_NO_PROTOTYPES
 #include "imgui.h"
 
-#include "Export.h"
 #include "Engine/SDLInitializer.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/Vulkan.h"

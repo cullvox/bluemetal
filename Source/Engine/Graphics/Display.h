@@ -1,15 +1,11 @@
 #pragma once
 
-#include "Export.h"
 #include "Precompiled.h"
-#include "Math/Rect.h"
 #include "VideoMode.h"
 
-namespace bl
-{
+namespace bl {
 
-class Display
-{
+class Display {
 public:
     Display(int display);
     ~Display();

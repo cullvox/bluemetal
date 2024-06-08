@@ -8,8 +8,12 @@ namespace bl
 class Buffer
 {
 public:
-    Buffer(Device* device, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* allocationInfo = nullptr); /** @brief Constructor */
-    ~Buffer(); /** @brief Destructor */
+    Buffer();
+    Buffer(Buffer&& rhs);
+    Buffer(Device* device, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* allocationInfo = nullptr);
+    ~Buffer();
+
+    Buffer& operator=(Buffer&& rhs);
 
     VkBufferUsageFlags GetUsage() const; /** @brief Returns the usage types of the buffer. */
     VkMemoryPropertyFlags GetMemoryProperties() const; /** @brief Returns the memory properties the buffer was created with. */
@@ -20,9 +24,10 @@ public:
     void Unmap();
     void Upload(VkBufferCopy copyRegion, void* data); /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
     void Upload(void* data); /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
+    void Flush(VkDeviceSize offset, VkDeviceSize size);
 
 private:
-    void CreateBuffer(VmaAllocationInfo* allocationInfo);
+    void Cleanup();
 
     Device* _device;
     VkBufferUsageFlags _usage;

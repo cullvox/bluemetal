@@ -2,17 +2,14 @@
 
 #include "Precompiled.h"
 #include "Core/NonCopyable.h"
-#include "Export.h"
 #include "Vulkan.h"
 
-namespace bl
-{
+namespace bl {
 
 class Window;
 
 /** @brief A physical GPU within the system. */
-class PhysicalDevice : public NonCopyable
-{
+class PhysicalDevice : public NonCopyable {
 public:
     PhysicalDevice(VkPhysicalDevice device); /** @brief Constructor */
     PhysicalDevice(PhysicalDevice&&) = default;
@@ -25,6 +22,7 @@ public:
     std::vector<VkPresentModeKHR> GetPresentModes(Window* window) const; /** @brief Gets the available present modes on the system. */ 
     std::vector<VkSurfaceFormatKHR> GetSurfaceFormats(Window* window) const; /** @brief Gets the available surface formats on this physical device.*/
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const; /** @brief Finds a supported format given candidates. */
+    const VkPhysicalDeviceProperties& GetProperties() const;
 
 private:
     VkPhysicalDevice _physicalDevice;

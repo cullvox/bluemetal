@@ -9,34 +9,28 @@
 #include "PipelineLayoutCache.h"
 #include "Vertex.h"
 
-namespace bl 
-{
+namespace bl {
 
 /** @brief Create info for pipeline objects. */
-struct PipelineStateInfo 
-{
-    struct Stages
-    {
+struct PipelineStateInfo {
+    struct Stages {
         Shader* vert;
         Shader* frag;
     } stages;
 
-    struct VertexInput
-    {
+    struct VertexInput {
         std::vector<VkVertexInputBindingDescription> vertexInputBindings = Vertex::GetBindingDescriptions();
         std::vector<VkVertexInputAttributeDescription> vertexInputAttribs = Vertex::GetBindingAttributeDescriptions();
     } vertexInput;
 
-    struct InputAssembly
-    {
+    struct InputAssembly {
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         bool primitiveRestartEnable = VK_FALSE;
     } inputAssembly;
 };
 
 /** @brief A program consisting of shaders designed to run on the GPU. */
-class Pipeline
-{
+class Pipeline {
 public:
     Pipeline(Device* device, RenderPass* renderPass, uint32_t subpass, const PipelineStateInfo& info); /** @brief Constructor */
     ~Pipeline(); /** @brief Destructor */
@@ -44,16 +38,17 @@ public:
     VkPipelineLayout GetLayout() const;
     VkPipeline Get() const; /** @brief Gets the raw VkPipeline underlying this object. */
     std::unordered_map<uint32_t, DescriptorSetMeta> GetDescriptorSetMetadata() const;
-    std::unordered_set<PushConstantMeta> GetPushConstantMetadata() const;
+    std::set<PushConstantMeta> GetPushConstantMetadata() const;
     std::unordered_map<uint32_t, VkDescriptorSetLayout> GetDescriptorSetLayouts() const;
 
+protected:
+    Device* _device;
+
 private:
-    void Create(const PipelineStateInfo& createInfo);
     void ReflectMembers(BlockMeta& reflection, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent = "");
 
-    Device* _device;
     std::unordered_map<uint32_t, DescriptorSetMeta> _descriptorSetMetadata;
-    std::unordered_set<PushConstantMeta> _pushConstantMetadata;
+    std::set<PushConstantMeta> _pushConstantMetadata;
     std::unordered_map<uint32_t, VkDescriptorSetLayout> _descriptorSetLayouts;
     VkPipelineLayout _layout;
     VkPipeline _pipeline;
@@ -61,7 +56,7 @@ private:
 
 } // namespace bl
 
-/* Getting real with descriptor sets.
+/* Getting realistic about descriptor sets.
 
     Descriptor Slot: 0
         Reserved for global data of the frame.

@@ -34,7 +34,6 @@ public:
     VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout);
     void FreeDescriptorSet(VkDescriptorSetLayout layout, VkDescriptorSet set);
     void PushPostFrameDeleter(std::function<void(void)> func); /** @brief After count frames have been run though, this function will run. */
-    void PushPostFrameResetUpdated(StatefulResource& resource); /** @brief This resource will have its 'updated' flag reset after the next few frames. */
 
 private:
     std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */

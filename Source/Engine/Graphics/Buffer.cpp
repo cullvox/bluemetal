@@ -4,23 +4,38 @@
 namespace bl 
 {
 
+Buffer::Buffer()
+    : _device(nullptr)
+    , _usage(0)
+    , _memoryProperties(0)
+    , _size(0)
+    , _buffer(VK_NULL_HANDLE)
+    , _allocation(VK_NULL_HANDLE)
+{
+}
+
+Buffer::Buffer(Buffer&& rhs)
+    : _device(rhs._device)
+    , _usage(rhs._usage)
+    , _memoryProperties(rhs._memoryProperties)
+    , _size(rhs._size)
+    , _buffer(rhs._buffer)
+    , _allocation(rhs._allocation)
+{
+    rhs._device = nullptr;
+    rhs._usage = 0;
+    rhs._memoryProperties = 0;
+    rhs._size = 0;
+    rhs._buffer = VK_NULL_HANDLE;
+    rhs._allocation = VK_NULL_HANDLE;
+}
+
 Buffer::Buffer(Device* device, VkBufferUsageFlags usage, VkMemoryPropertyFlags memoryProperties, VkDeviceSize size, VmaAllocationInfo* allocationInfo)
     : _device(device)
     , _usage(usage)
     , _memoryProperties(memoryProperties)
     , _size(size)
 {
-    CreateBuffer(allocationInfo);
-}
-
-Buffer::~Buffer() 
-{ 
-    vmaDestroyBuffer(_device->GetAllocator(), _buffer, _allocation);
-}
-
-void Buffer::CreateBuffer(VmaAllocationInfo* allocationInfo)
-{
-    // Build the buffer create info.
     uint32_t graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
 
     VkBufferCreateInfo bufferCreateInfo = {};
@@ -34,8 +49,6 @@ void Buffer::CreateBuffer(VmaAllocationInfo* allocationInfo)
     bufferCreateInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
 
     VmaAllocatorCreateFlags flags = 0;
-
-    // Allocate the buffer.
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.flags = flags;
     allocationCreateInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
@@ -47,6 +60,34 @@ void Buffer::CreateBuffer(VmaAllocationInfo* allocationInfo)
     allocationCreateInfo.priority = 0.0f;
 
     VK_CHECK(vmaCreateBuffer(_device->GetAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, allocationInfo))
+}
+
+Buffer::~Buffer() 
+{
+    Cleanup();
+}
+
+Buffer& Buffer::operator=(Buffer&& rhs)
+{
+    if (_buffer != VK_NULL_HANDLE) {
+        Cleanup();
+    }
+
+    _device = rhs._device;
+    _usage = rhs._usage;
+    _memoryProperties = rhs._memoryProperties;
+    _size = rhs._size;
+    _buffer = rhs._buffer;
+    _allocation = rhs._allocation;
+
+    rhs._device = nullptr;
+    rhs._usage = 0;
+    rhs._memoryProperties = 0;
+    rhs._size = 0;
+    rhs._buffer = VK_NULL_HANDLE;
+    rhs._allocation = VK_NULL_HANDLE;
+
+    return *this;
 }
 
 VmaAllocation Buffer::GetAllocation() const 
@@ -106,5 +147,15 @@ void Buffer::Upload(void* srcData)
     Upload(region, srcData);
 }
 
+void Buffer::Flush(VkDeviceSize offset, VkDeviceSize size)
+{
+    VK_CHECK(vmaFlushAllocation(_device->GetAllocator(), _allocation, offset, size))
+}
+
+void Buffer::Cleanup()
+{
+    if (_buffer != VK_NULL_HANDLE)
+        vmaDestroyBuffer(_device->GetAllocator(), _buffer, _allocation);
+}
 
 } // namespace bl

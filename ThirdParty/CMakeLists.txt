@@ -3,7 +3,7 @@ set(SPIRV_REFLECT_EXAMPLES OFF CACHE BOOL "")
 set(SPIRV_REFLECT_STATIC_LIB ON CACHE BOOL "")
 
 add_subdirectory("argparse-2.9")
-add_subdirectory("fmt-10.1.1")
+add_subdirectory("fmt-10.2.1")
 add_subdirectory("glm-1.0.1")
 add_subdirectory("sdl2-2.28.3")
 add_subdirectory("tinygltf-2.8.17")

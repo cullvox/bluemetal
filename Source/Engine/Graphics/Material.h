@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Math/Math.h"
 #include "Device.h"
 #include "Buffer.h"
 #include "Pipeline.h"
@@ -9,21 +10,45 @@
 namespace bl
 {
 
-class MaterialInstance;
-
-static inline const uint32_t MaxPushConstantSize = 128;
-
 class MaterialBase
 {
 public:
-    MaterialBase();
+    MaterialBase(Device* device);
     ~MaterialBase();
 
+    void SetBoolean(const std::string& name, bool value);
+    void SetInteger(const std::string& name, int value);
+    void SetScaler(const std::string& name, float value);
+    void SetVector2(const std::string& name, glm::vec2 value);
+    void SetVector3(const std::string& name, glm::vec3 value);
+    void SetVector4(const std::string& name, glm::vec4 value);
+    void SetMatrix(const std::string& name, glm::mat4 value);
+    void SetSampledImage2D(const std::string& name, Sampler* sampler, Image* image);
+    void Bind(VkCommandBuffer cmd, uint32_t currentFrame); /** @brief Bind this material for rending using it and it's data. */
 
+protected:
+    virtual const std::map<std::string, BlockVariable>& GetUniformMetadata();
+    virtual const std::map<std::string, uint32_t>& GetSamplerMetadata();
+    virtual Pipeline* GetPipeline();
+
+    void SetBindingDirty(uint32_t binding);
+    template<typename T> 
+    void SetGenericUniform(const std::string& name, T value);
+    size_t CalculateDynamicAlignment(size_t uboSize);
+
+    using SampledImage = std::pair<Sampler*, Image*>;
+
+    struct PerFrameData {
+        VkDescriptorSet set;
+        std::map<uint32_t, bool> dirty;
+    };
+
+    uint32_t _currentFrame;
+    std::map<uint32_t, std::variant<Buffer, SampledImage>> _data;
+    std::array<PerFrameData, GraphicsConfig::numFramesInFlight> _perFrameData;
 
 private:
-    VkDescriptorSet _set;
-    std::unordered_map<uint32_t, Buffer> _buffers; /** @brief Key is the binding index. */
+    Device* _device;
 };
 
 /** @brief Shader uniforms merged together in an uncomfortably useful unison.
@@ -40,58 +65,60 @@ private:
  * global and instance rendering data respectively. 
  * 
  */
-class Material : public MaterialBase
+class Material : private Pipeline, public MaterialBase
 {
 public:
-    Material(Device* device, Renderer* renderer, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet = 1);
+    Material(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet = 1);
     ~Material();
 
-    void SetBoolean(const std::string& name, bool value);
-    void SetInteger(const std::string& name, int value);
-    void SetScaler(const std::string& name, float value);
-    void SetVector2(const std::string& name, glm::vec2 value);
-    void SetVector3(const std::string& name, glm::vec3 value);
-    void SetVector4(const std::string& name, glm::vec4 value);
-    void SetMatrix(const std::string& name, glm::mat4 value);
-    void SetImage2D(const std::string& name, Image* image, Sampler* sampler = nullptr);
-
-    void Bind(uint32_t currentFrame);
-    Pipeline* GetPipeline() const;
+protected:
+    friend class MaterialInstance;
+    virtual const std::map<std::string, BlockVariable>& GetUniformMetadata();
+    virtual const std::map<std::string, uint32_t>& GetSamplerMetadata();
+    virtual Pipeline* GetPipeline();
 
 private:
-    void BuildPerFrameData();
-    void SetBindingDirty(uint32_t binding);
-
-    struct BufferData
-    {
-        bool isDirty; /** @brief If any data was changed from frame to frame all descriptor data is copied.  */
-        Buffer buffer;
-    };
-
-    struct ImageData
-    {
-        bool isDirty; /** @brief If any data was changed from frame to frame all descriptor data is copied.  */
-        Sampler* sampler;
-        Image* image;
-    };
-
-    struct PerFrameData
-    {
-        VkDescriptorSet set;
-        std::unordered_map<uint32_t, BufferData> buffers;
-        std::unordered_map<uint32_t, ImageData> samplers;
-    };
-
-    Device* _device;
-    std::unique_ptr<Pipeline> _pipeline;
-    std::unordered_map<std::string, BlockVariable> _uniformMetadata; 
-    std::unordered_map<std::string, uint32_t> _samplerMetadata; /** @brief Name -> Binding */
-
-    std::vector<VkDescriptorImageInfo> _imageInfos;
-    std::vector<VkWriteDescriptorSet> _writes;
-    
-    std::vector<std::function<void(void)>> _preBindUpdates;
-    std::array<PerFrameData, GraphicsConfig::numFramesInFlight> _perFrameData;
+    std::map<std::string, BlockVariable> _uniformMetadata; 
+    std::map<std::string, uint32_t> _samplerMetadata; /** @brief Name -> Binding */
 };
+
+class MaterialInstance : public MaterialBase {
+public:
+    MaterialInstance(Material* material);
+    ~MaterialInstance();
+
+protected:
+    virtual const std::map<std::string, BlockVariable>& GetUniformMetadata();
+    virtual const std::map<std::string, uint32_t>& GetSamplerMetadata();
+    virtual Pipeline* GetPipeline();
+
+private:
+    Material* _material;
+};
+
+template<typename T>
+void MaterialBase::SetGenericUniform(const std::string& name, T value)
+{
+    if (!GetUniformMetadata().contains(name))
+    {
+        blError("Could not set material uniform as it does not exist!");
+        return;
+    }
+
+    auto meta = GetUniformMetadata().at(name);
+    assert(sizeof(T) == meta.GetSize() && "Type must be the same as the uniform size!");
+
+    auto& buffer = std::get<Buffer>(_data[meta.GetBinding()]);
+    uint32_t blockSize = (uint32_t)buffer.GetSize() / GraphicsConfig::numFramesInFlight;
+    uint32_t offset = (blockSize * _currentFrame) + meta.GetOffset();
+
+    void* mapped;
+    buffer.Map(&mapped);
+    std::memcpy(((intptr_t*)mapped) + offset, &value, meta.GetSize());
+    buffer.Unmap();
+    buffer.Flush(offset, meta.GetSize());
+
+    SetBindingDirty(meta.GetBinding()); /* The buffer data must be copied to the other parts of the dynamic uniform buffer. */
+}
 
 } // namespace bl

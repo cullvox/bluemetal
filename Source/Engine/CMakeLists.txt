@@ -2,11 +2,7 @@ set(Sources "")
 
 list(APPEND Sources
 
-  # Noodle
-  # "Noodle/Noodle.cpp"
-  # "Noodle/NoodleLexer.cpp"
-  # "Noodle/NoodleToken.cpp"
-
+  # Core
   "Core/FrameCounter.cpp"
   
   # Audio
@@ -32,7 +28,6 @@ list(APPEND Sources
   "Graphics/Pipeline.cpp"
   "Graphics/DescriptorSetCache.cpp"
   "Graphics/Material.cpp"
-  "Graphics/MaterialInstance.cpp"
   "Graphics/Swapchain.cpp"
   "Graphics/Mesh.cpp"
   "Graphics/PresentPass.cpp"
@@ -68,5 +63,7 @@ target_link_libraries(Bluemetal PRIVATE
   glm::glm
   spirv-reflect-static 
   SDL2::SDL2 
-  fmt::fmt 
+  fmt::fmt
   FMOD)
+
+target_precompile_headers(Bluemetal PUBLIC "Precompiled.h")

@@ -1,14 +1,13 @@
 #pragma once
 
+#include "Math/Math.h"
 #include "Sound.h"
 
-namespace bl
-{
+namespace bl {
 
 class AudioSystem;
 
-class Source
-{
+class Source {
 public:
     Source(AudioSystem* system);
     ~Source();

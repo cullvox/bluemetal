@@ -1,11 +1,10 @@
 #pragma once
 
-#include "Export.h"
 #include "Precompiled.h"
 
 namespace bl {
 
-class BLUEMETAL_API FrameCounter {
+class FrameCounter {
 public:
     FrameCounter(int maxFramesCounted = 144);
     ~FrameCounter();

@@ -1,13 +1,9 @@
 #pragma once
 
-
-#include "Export.h"
 #include "Precompiled.h"
-
-#include "Resource/ResourceManager.h"
-
 #include "Core/Json.h"
 #include "Core/Flags.h"
+#include "Resource/ResourceManager.h"
 #include "SDLInitializer.h"
 #include "Audio/AudioSystem.h"
 #include "Graphics/GraphicsSystem.h"

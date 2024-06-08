@@ -252,7 +252,7 @@ std::unordered_map<uint32_t, DescriptorSetMeta> Pipeline::GetDescriptorSetMetada
     return _descriptorSetMetadata;
 }
 
-std::unordered_set<PushConstantMeta> Pipeline::GetPushConstantMetadata() const
+std::set<PushConstantMeta> Pipeline::GetPushConstantMetadata() const
 {
     return _pushConstantMetadata;
 }

@@ -1,14 +1,12 @@
 #pragma once
 
-#include "Precompiled.h"
+#include "Math/Math.h"
 
-namespace bl
-{
+namespace bl {
 
 class AudioSystem;
 
-class Listener
-{
+class Listener {
 public:
     Listener(AudioSystem* system);
     ~Listener();

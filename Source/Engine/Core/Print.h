@@ -1,7 +1,12 @@
 #pragma once
 
 #include <cstdlib>
+
 #include <fmt/core.h>
+#include <fmt/color.h>
+#include <fmt/chrono.h>
+#include <fmt/compile.h>
+#include <fmt/format.h>
 
 #include "PathUtils.h"
 
