@@ -16,6 +16,7 @@ public:
 
     DescriptorSetBindingMeta& SetBinding(uint32_t binding, VkDescriptorType type, uint32_t descriptorCount, VkShaderStageFlags flags, const VkSampler* immutableSamplers);
     DescriptorSetBindingMeta& AddStageFlags(VkShaderStageFlags flags);
+    DescriptorSetBindingMeta& SetType(VkDescriptorType type);
 
     uint32_t GetLocation() const;
     VkDescriptorType GetType() const;
@@ -26,20 +27,22 @@ private:
     VkDescriptorSetLayoutBinding _binding;
 };
 
-class DescriptorSetMeta {
+class DescriptorSetReflection {
 public:
-    DescriptorSetMeta() = default;
-    ~DescriptorSetMeta() = default;
+    DescriptorSetReflection() = default;
+    ~DescriptorSetReflection() = default;
 
-    bool operator==(DescriptorSetMeta& rhs) const noexcept;
+    bool operator==(DescriptorSetReflection& rhs) const noexcept;
     DescriptorSetBindingMeta& operator[](uint32_t binding);
     bool Contains(uint32_t binding) const;
 
-    DescriptorSetMeta& SetLocation(uint32_t set);
+    DescriptorSetReflection& SetLocation(uint32_t set);
 
     uint32_t GetLocation() const;
     std::vector<DescriptorSetBindingMeta> GetMetaBindings() const; /** @brief Returns all the underlying metadata about descriptor sets. */
     std::vector<VkDescriptorSetLayoutBinding> GetSortedBindings() const; /** @brief Returns underlying vulkan descriptor data, use for descriptor set layout creation/retrieving cached. */
+    std::unordered_map<uint32_t, DescriptorSetBindingMeta>& GetBindings();
+    const std::unordered_map<uint32_t, DescriptorSetBindingMeta>& GetBindings() const;
 
 private:
     uint32_t _set;

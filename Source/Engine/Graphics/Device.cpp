@@ -33,8 +33,7 @@ namespace bl
 
 Device::Device(Instance* instance, PhysicalDevice* physicalDevice)
     : _instance(instance)
-    , _physicalDevice(physicalDevice)
-{
+    , _physicalDevice(physicalDevice) {
     CreateDevice();
     CreateCommandPool();
     CreateAllocator();
@@ -50,58 +49,47 @@ Device::~Device() {
     vkDestroyDevice(_device, nullptr);
 }
 
-Instance* Device::GetInstance() const
-{
+Instance* Device::GetInstance() const {
     return _instance;
 }
 
-PhysicalDevice* Device::GetPhysicalDevice() const
-{
+PhysicalDevice* Device::GetPhysicalDevice() const {
     return _physicalDevice;
 }
 
-uint32_t Device::GetGraphicsFamilyIndex() const
-{
+uint32_t Device::GetGraphicsFamilyIndex() const {
     return _graphicsFamilyIndex;
 }
 
-uint32_t Device::GetPresentFamilyIndex() const
-{
+uint32_t Device::GetPresentFamilyIndex() const {
     return _presentFamilyIndex;
 }
 
-bool Device::GetAreQueuesSame() const
-{
+bool Device::GetAreQueuesSame() const {
     return _graphicsFamilyIndex == _presentFamilyIndex;
 }
 
-VkQueue Device::GetGraphicsQueue() const
-{
+VkQueue Device::GetGraphicsQueue() const {
     return _graphicsQueue;
 }
 
-VkQueue Device::GetPresentQueue() const
-{
+VkQueue Device::GetPresentQueue() const {
     return _presentQueue;
 }
 
-VkDevice Device::Get() const
-{
+VkDevice Device::Get() const {
     return _device;
 }
 
-VkCommandPool Device::GetCommandPool() const
-{
+VkCommandPool Device::GetCommandPool() const {
     return _commandPool;
 }
 
-VmaAllocator Device::GetAllocator() const
-{
+VmaAllocator Device::GetAllocator() const {
     return _allocator;
 }
 
-void Device::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder)
-{
+void Device::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder) {
     // Allocate the command buffer used to record the submission.
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -142,23 +130,23 @@ void Device::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorde
     WaitForDevice();
 }
 
-void Device::WaitForDevice() const 
-{ 
+void Device::WaitForDevice() const { 
     vkDeviceWaitIdle(_device); 
 }
 
-VkDescriptorSetLayout Device::CacheDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding>& bindings)
-{
+VkDescriptorSetLayout Device::CacheDescriptorSetLayout(const std::span<VkDescriptorSetLayoutBinding> bindings) {
     return _descriptorSetLayoutCache->Acquire(bindings);
 }
 
-VkPipelineLayout Device::CachePipelineLayout(const std::vector<VkDescriptorSetLayout>& descriptors, const std::vector<VkPushConstantRange>& pushConstants)
-{
+VkPipelineLayout Device::CachePipelineLayout(const std::span<VkDescriptorSetLayout> descriptors, const std::span<VkPushConstantRange> pushConstants) {
     return _pipelineLayoutCache->Acquire(descriptors, pushConstants);
 }
 
-std::vector<const char*> Device::GetValidationLayers()
-{
+VkDescriptorSet Device::AllocateDescriptorSet(VkDescriptorSetLayout layout) {
+    return _descriptorSetCache->Allocate(layout);
+}
+
+std::vector<const char*> Device::GetValidationLayers() {
     const auto& layers = GraphicsConfig::validationLayers;
 
     // Get the systems validation layers.
@@ -182,8 +170,7 @@ std::vector<const char*> Device::GetValidationLayers()
     return layers;
 }
 
-std::vector<const char*> Device::GetExtensions()
-{
+std::vector<const char*> Device::GetExtensions() {
     // The engines required device extensions.
     std::vector requiredExtensions = { 
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -210,8 +197,7 @@ std::vector<const char*> Device::GetExtensions()
     return requiredExtensions;
 }
 
-void Device::CreateDevice()
-{
+void Device::CreateDevice() {
     std::vector<const char*> extensions = GetExtensions();
     std::vector<const char*> layers{};
 
@@ -301,8 +287,7 @@ void Device::CreateDevice()
     blInfo("Created the Vulkan device using: {}", _physicalDevice->GetDeviceName());
 }
 
-void Device::CreateCommandPool()
-{
+void Device::CreateCommandPool() {
     VkCommandPoolCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     createInfo.pNext = nullptr;
@@ -312,8 +297,7 @@ void Device::CreateCommandPool()
     VK_CHECK(vkCreateCommandPool(_device, &createInfo, nullptr, &_commandPool))
 }
 
-void Device::CreateAllocator()
-{
+void Device::CreateAllocator() {
     VmaVulkanFunctions functions = {};
     functions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
     functions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;

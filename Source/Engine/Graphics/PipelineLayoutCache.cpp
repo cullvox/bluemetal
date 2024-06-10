@@ -47,9 +47,11 @@ PipelineLayoutCache::~PipelineLayoutCache()
         vkDestroyPipelineLayout(_device->Get(), pair.second, nullptr);
 }
 
-VkPipelineLayout PipelineLayoutCache::Acquire(const std::vector<VkDescriptorSetLayout>& layouts, const std::vector<VkPushConstantRange>& ranges)
+VkPipelineLayout PipelineLayoutCache::Acquire(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges)
 {
-    PipelineLayoutCacheData data{layouts, ranges};
+    PipelineLayoutCacheData data = {};
+    data.layouts.assign(layouts.begin(), layouts.end());
+    data.ranges.assign(ranges.begin(), ranges.end());
 
     // Sort each value to ensure stability when hashing.
     std::sort(data.layouts.begin(), data.layouts.end());

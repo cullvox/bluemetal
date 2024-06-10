@@ -39,6 +39,11 @@ DescriptorSetBindingMeta& DescriptorSetBindingMeta::AddStageFlags(VkShaderStageF
     return *this;
 }
 
+DescriptorSetBindingMeta& DescriptorSetBindingMeta::SetType(VkDescriptorType type) {
+    _binding.descriptorType = type;
+    return *this;
+}
+
 uint32_t DescriptorSetBindingMeta::GetLocation() const
 {
     return _binding.binding;
@@ -60,30 +65,30 @@ bool DescriptorSetBindingMeta::IsBlock() const
         || _binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
 }
 
-////////// DescriptorSetMeta //////////
+////////// DescriptorSetReflection //////////
 
-DescriptorSetBindingMeta& DescriptorSetMeta::operator[](uint32_t binding) {
+DescriptorSetBindingMeta& DescriptorSetReflection::operator[](uint32_t binding) {
     return _bindings[binding];
 }
 
-bool DescriptorSetMeta::operator==(DescriptorSetMeta& rhs) const noexcept {
+bool DescriptorSetReflection::operator==(DescriptorSetReflection& rhs) const noexcept {
     return _set == rhs._set && _bindings == rhs._bindings;
 }
 
-DescriptorSetMeta& DescriptorSetMeta::SetLocation(uint32_t set) {
+DescriptorSetReflection& DescriptorSetReflection::SetLocation(uint32_t set) {
     _set = set;
     return *this;
 }
 
-uint32_t DescriptorSetMeta::GetLocation() const {
+uint32_t DescriptorSetReflection::GetLocation() const {
     return _set;
 }
 
-bool DescriptorSetMeta::Contains(uint32_t binding) const {
+bool DescriptorSetReflection::Contains(uint32_t binding) const {
     return _bindings.contains(binding);
 }
 
-std::vector<DescriptorSetBindingMeta> DescriptorSetMeta::GetMetaBindings() const {
+std::vector<DescriptorSetBindingMeta> DescriptorSetReflection::GetMetaBindings() const {
     // Create a vector containing each binding from the hash map.
     std::vector<DescriptorSetBindingMeta> bindings;
     bindings.reserve(_bindings.size());
@@ -98,7 +103,7 @@ std::vector<DescriptorSetBindingMeta> DescriptorSetMeta::GetMetaBindings() const
     return bindings;
 }
 
-std::vector<VkDescriptorSetLayoutBinding> DescriptorSetMeta::GetSortedBindings() const {
+std::vector<VkDescriptorSetLayoutBinding> DescriptorSetReflection::GetSortedBindings() const {
     std::vector<VkDescriptorSetLayoutBinding> out;
     out.reserve(_bindings.size());
 
@@ -109,5 +114,14 @@ std::vector<VkDescriptorSetLayoutBinding> DescriptorSetMeta::GetSortedBindings()
 
     return out;
 }
+
+std::unordered_map<uint32_t, DescriptorSetBindingMeta>& DescriptorSetReflection::GetBindings() {
+    return _bindings;
+}
+
+const std::unordered_map<uint32_t, DescriptorSetBindingMeta>& DescriptorSetReflection::GetBindings() const {
+    return _bindings;
+}
+
 
 }

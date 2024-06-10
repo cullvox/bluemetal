@@ -102,10 +102,39 @@ int main(int argc, const char** argv)
     auto window = engine.GetWindow();
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(window);
 
-    auto globalBuffer = std::make_shared<bl::Buffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, sizeof(bl::GlobalUBO));
+    auto globalBuffer = std::make_unique<bl::Buffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, sizeof(bl::GlobalUBO));
 
     void* globalBufferMap = nullptr;
     globalBuffer->Map(&globalBufferMap);
+
+    
+    std::array<VkDescriptorSetLayoutBinding, 1> bindings;
+    bindings[0].binding = 0;
+    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bindings[0].descriptorCount = 1;
+    bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    bindings[0].pImmutableSamplers = nullptr;
+
+    auto layout = graphics->GetDevice()->CacheDescriptorSetLayout(bindings);
+
+    VkDescriptorSet globalSet = graphics->GetDevice()->AllocateDescriptorSet(layout);
+
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = globalBuffer->Get();
+    bufferInfo.offset = 0;
+    bufferInfo.range = VK_WHOLE_SIZE;
+
+    VkWriteDescriptorSet write = {};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.pNext = nullptr;
+    write.dstSet = globalSet;
+    write.dstBinding = 0;
+    write.dstArrayElement = 0;
+    write.descriptorCount = 1;
+    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    write.pBufferInfo = &bufferInfo;
+
+    vkUpdateDescriptorSets(graphics->GetDevice()->Get(), 1, &write, 0, nullptr);
 
     bl::FrameCounter frameCounter;
 
@@ -269,9 +298,10 @@ int main(int argc, const char** argv)
             vkCmdSetViewportWithCount(cmd, 1, &viewport);
             vkCmdSetScissorWithCount(cmd, 1, &scissor);
 
-            mesh->bind(cmd);
+            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline()->GetLayout(), 0, 1, &globalSet, 0, nullptr);
             material->Bind(cmd, currentFrame);
-            vkCmdPushConstants(cmd, material->GetLayout(), VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(bl::ObjectPC), &object);
+            material->PushConstant(cmd, 0, sizeof(bl::ObjectPC), &object);
+            mesh->bind(cmd);
             mesh->draw(cmd);
 
             imgui->BeginFrame();

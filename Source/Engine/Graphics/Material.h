@@ -13,7 +13,7 @@ namespace bl
 class MaterialBase
 {
 public:
-    MaterialBase(Device* device);
+    MaterialBase(Device* device, uint32_t materialSet);
     virtual ~MaterialBase();
 
     void SetBoolean(const std::string& name, bool value);
@@ -25,12 +25,14 @@ public:
     void SetMatrix(const std::string& name, glm::mat4 value);
     void SetSampledImage2D(const std::string& name, Sampler* sampler, Image* image);
     void Bind(VkCommandBuffer cmd, uint32_t currentFrame); /** @brief Bind this material for rending using it and it's data. */
+    void PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t size, const void* value);
 
 protected:
     virtual const std::map<std::string, BlockVariable>& GetUniformMetadata() = 0;
     virtual const std::map<std::string, uint32_t>& GetSamplerMetadata() = 0;
     virtual Pipeline* GetPipeline() = 0;
 
+    void BuildMaterialData(VkDescriptorSetLayout layout);
     void SetBindingDirty(uint32_t binding);
     template<typename T> 
     void SetGenericUniform(const std::string& name, T value);
@@ -43,6 +45,7 @@ protected:
         std::map<uint32_t, bool> dirty;
     };
 
+    uint32_t _materialSet;
     uint32_t _currentFrame;
     std::map<uint32_t, std::variant<Buffer, SampledImage>> _data;
     std::array<PerFrameData, GraphicsConfig::numFramesInFlight> _perFrameData;
@@ -65,21 +68,25 @@ private:
  * global and instance rendering data respectively. 
  * 
  */
-class Material : public Pipeline, public MaterialBase
+class Material : public MaterialBase
 {
 public:
     Material(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet = 1);
     ~Material();
 
+    virtual Pipeline* GetPipeline();
+
 protected:
     friend class MaterialInstance;
     virtual const std::map<std::string, BlockVariable>& GetUniformMetadata();
     virtual const std::map<std::string, uint32_t>& GetSamplerMetadata();
-    virtual Pipeline* GetPipeline();
-
+    
 private:
+    Device* _device;
     std::map<std::string, BlockVariable> _uniformMetadata; 
     std::map<std::string, uint32_t> _samplerMetadata; /** @brief Name -> Binding */
+    VkDescriptorSetLayout _layout;
+    std::unique_ptr<Pipeline> _pipeline;
 };
 
 class MaterialInstance : public MaterialBase {

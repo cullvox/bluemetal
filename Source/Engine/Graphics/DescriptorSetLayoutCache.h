@@ -29,7 +29,7 @@ public:
     DescriptorSetLayoutCache(Device* device); /** @brief Constructor */
     ~DescriptorSetLayoutCache(); /** @brief Destructor */
 
-    VkDescriptorSetLayout Acquire(const std::vector<VkDescriptorSetLayoutBinding>& bindings); /** @brief Creates or retrieves a descriptor set layout from it's bindings. */
+    VkDescriptorSetLayout Acquire(std::span<VkDescriptorSetLayoutBinding> bindings); /** @brief Creates or retrieves a descriptor set layout from it's bindings. */
 
 private:
     Device* _device;

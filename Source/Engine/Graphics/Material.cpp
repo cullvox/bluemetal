@@ -5,8 +5,9 @@ namespace bl {
 
 // ========== MaterialBase ========== //
 
-MaterialBase::MaterialBase(Device* device)
-    : _device(device) {}
+MaterialBase::MaterialBase(Device* device, uint32_t materialSet)
+    : _materialSet(materialSet)
+    , _device(device)  {}
 
 MaterialBase::~MaterialBase() {}
 
@@ -51,7 +52,7 @@ void MaterialBase::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
     for (auto& binding : currentFrameData.dirty) {
         // If second is marked as true, the binding is dirty and needs to be updated.
         if (binding.second) {
-            assert(_data.contains(binding.first) && "Binding not found, creation went wrong!");
+            assert(_data.contains(binding.first) && "Binding not found, something in the constructor went wrong!");
             auto& variant = _data[binding.first];
 
             switch(variant.index()) {
@@ -100,6 +101,7 @@ void MaterialBase::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
         }
     }
 
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline()->Get());
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline()->GetLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
 
     // Save the next frame number for when updating what bindings are dirty/not updated.
@@ -135,6 +137,86 @@ void MaterialBase::SetSampledImage2D(const std::string& name, Sampler* sampler, 
     SetBindingDirty(binding);
 }
 
+void MaterialBase::PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t size, const void* data) {
+
+    // Find the shader stage that uses the offset and size.
+    auto pushConstantReflections = GetPipeline()->GetReflection().GetPushConstantReflections();
+    
+    auto it = std::find_if(pushConstantReflections.begin(), pushConstantReflections.end(), [offset, size](const auto& pcr){
+                    return pcr.Compare(offset, size);
+                });
+
+    if (it == pushConstantReflections.end()) {
+        blError("Push constant offset or size does not align to a push constant range in any stage!");
+        return;
+    }
+
+    auto pcr = (*it);
+
+    vkCmdPushConstants(cmd, GetPipeline()->GetLayout(), pcr.GetStages(), offset, size, data);
+}
+
+void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
+
+    // Allocate the per frame descriptor sets.
+    for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++) {
+        _perFrameData[i].set = _device->AllocateDescriptorSet(layout);
+    }
+
+
+    const auto& reflection = GetPipeline()->GetReflection();
+    const auto& sets = reflection.GetDescriptorSetReflections();
+    const auto& set = sets.at(_materialSet);
+    
+
+
+    VkDescriptorBufferInfo bufferInfo = {};
+    VkWriteDescriptorSet write = {};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.pNext = nullptr;
+
+    auto bindings = set.GetMetaBindings();
+
+    std::vector<VkDescriptorBufferInfo> bufferInfos;
+    std::vector<VkWriteDescriptorSet> writes;
+
+    for (const auto& binding : bindings) {
+        switch(binding.GetType()) {
+        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+            auto dynamicAlignment = CalculateDynamicAlignment(binding.GetSize());
+            auto& variant = (_data[binding.GetLocation()] = Buffer{_device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, dynamicAlignment * GraphicsConfig::numFramesInFlight, nullptr});
+
+            bufferInfo.buffer = std::get<Buffer>(variant).Get();
+            bufferInfo.offset = 0;
+            bufferInfo.range = dynamicAlignment;
+            bufferInfos.push_back(bufferInfo);
+
+            write.dstBinding = binding.GetLocation();
+            write.dstArrayElement = 0;
+            write.descriptorCount = 1;
+            write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+            write.pBufferInfo = &bufferInfos.back();
+            writes.push_back(write);
+        } break;
+        case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+            _data[binding.GetLocation()] = SampledImage{};
+            // An image/sampler must be written before the first material bind!
+            break;
+        default: 
+            break;
+        }
+    }
+    
+    for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++) {        
+        for (auto& write : writes)
+            write.dstSet = _perFrameData[i].set;
+
+        vkUpdateDescriptorSets(_device->Get(), writes.size(), writes.data(), 0, nullptr);
+    }
+
+    
+}
+
 void MaterialBase::SetBindingDirty(uint32_t binding) {
     assert(_data.contains(binding) && "Binding must exist to set it dirty!");
     for (uint32_t i = _currentFrame; i != _currentFrame; i = (i + 1) % GraphicsConfig::numFramesInFlight) {
@@ -155,27 +237,42 @@ size_t MaterialBase::CalculateDynamicAlignment(size_t uboSize) {
 // ========== Material ========== //
 
 Material::Material(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet)
-    : Pipeline(device, pass, subpass, state)
-    , MaterialBase(device) {
-    // Get the descriptor set dedicated to this material.
-    const auto& sets = GetDescriptorSetMetadata();
+    : MaterialBase(device, materialSet)
+    , _device(device) {
 
+    // Get the descriptor set metadata and dedicated set for this material.
+    
+    PipelineReflection reflection{state};
+
+    auto& sets = reflection.GetDescriptorSetReflections();
     if (!sets.contains(materialSet))
         throw std::runtime_error("Material does not contain the used set!");
 
-    const auto& meta = sets.at(materialSet);
+    auto& meta = sets.at(materialSet);
 
+    // Ensure that all uniform buffers are actually dynamic uniform buffers.
+    auto& bindings = meta.GetBindings();
+    for (auto& pair : bindings) {
+        auto binding = pair.second.GetBinding();
+        if (binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+            pair.second.SetType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+        }
+    }
+
+    // Construct the pipeline.
+    _pipeline = std::make_unique<Pipeline>(_device, pass, subpass, state, &reflection);
+    
+    _layout = _pipeline->GetDescriptorSetLayouts().at(materialSet);
+
+    BuildMaterialData(_layout);
+
+    // Create buffers/sampler uniform data.
     auto metaBindings = meta.GetMetaBindings();
-
     for (const auto& binding : metaBindings) {
         switch (binding.GetType()) {
         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
-            auto dynamicAlignment = CalculateDynamicAlignment(binding.GetSize());
             auto blocks = binding.GetMembers();
-
-            // Create a buffer for this binding.
-            _data[binding.GetLocation()] = Buffer{device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, dynamicAlignment * GraphicsConfig::numFramesInFlight, nullptr};
 
             // Get each uniform members block for its offsets.
             for (const auto& variable : blocks) {
@@ -185,16 +282,14 @@ Material::Material(Device* device, RenderPass* pass, uint32_t subpass, const Pip
         }
         case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
             _samplerMetadata[binding.GetName()] = binding.GetLocation();
-            _data[binding.GetLocation()] = SampledImage{};
             break;
         default:
             break;
         }
     }
-
 }
 
-Material::~Material() {}
+Material::~Material() { }
 
 const std::map<std::string, BlockVariable>& Material::GetUniformMetadata() {
     return _uniformMetadata;
@@ -205,10 +300,17 @@ const std::map<std::string, uint32_t>& Material::GetSamplerMetadata() {
 }
 
 Pipeline* Material::GetPipeline() {
-    return static_cast<Pipeline*>(this);
+    return _pipeline.get();
 }
 
 // ========== MaterialInstance ========== //
+
+MaterialInstance::MaterialInstance(Material* material)
+    : MaterialBase(material->_device, material->_materialSet) {
+    BuildMaterialData(material->_layout);
+}
+
+MaterialInstance::~MaterialInstance() {}
 
 const std::map<std::string, BlockVariable>& MaterialInstance::GetUniformMetadata() {
     return _material->GetUniformMetadata();

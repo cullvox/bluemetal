@@ -13,6 +13,7 @@ namespace bl {
 
 /** @brief Create info for pipeline objects. */
 struct PipelineStateInfo {
+    
     struct Stages {
         Shader* vert;
         Shader* frag;
@@ -29,26 +30,46 @@ struct PipelineStateInfo {
     } inputAssembly;
 };
 
+class PipelineReflection {
+public:
+    PipelineReflection();
+    PipelineReflection(const PipelineReflection& other);
+    PipelineReflection(PipelineReflection&& other);
+    PipelineReflection(const PipelineStateInfo& state); /** @brief Preforms reflection/merging of reflected shader data. */
+    ~PipelineReflection();
+
+    PipelineReflection& operator=(const PipelineReflection& rhs);
+    PipelineReflection& operator=(PipelineReflection&& rhs);
+
+    std::unordered_map<uint32_t, DescriptorSetReflection>& GetDescriptorSetReflections();
+    std::vector<PushConstantReflection>& GetPushConstantReflections();
+    const std::unordered_map<uint32_t, DescriptorSetReflection>& GetDescriptorSetReflections() const;
+    const std::vector<PushConstantReflection>& GetPushConstantReflections() const;
+
+private:
+    void ReflectMembers(BlockMeta& reflection, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent = "");
+
+    std::unordered_map<uint32_t, DescriptorSetReflection> _descriptorSetMetadata;
+    std::vector<PushConstantReflection> _pushConstantMetadata;
+};
+
 /** @brief A program consisting of shaders designed to run on the GPU. */
 class Pipeline {
 public:
-    Pipeline(Device* device, RenderPass* renderPass, uint32_t subpass, const PipelineStateInfo& info); /** @brief Constructor */
+    Pipeline(Device* device, RenderPass* renderPass, uint32_t subpass, const PipelineStateInfo& info, const PipelineReflection* reflection = nullptr); /** @brief Constructor */
     ~Pipeline(); /** @brief Destructor */
 
+    const PipelineReflection& GetReflection() const;
     VkPipelineLayout GetLayout() const;
     VkPipeline Get() const; /** @brief Gets the raw VkPipeline underlying this object. */
-    std::unordered_map<uint32_t, DescriptorSetMeta> GetDescriptorSetMetadata() const;
-    std::set<PushConstantMeta> GetPushConstantMetadata() const;
+
     std::unordered_map<uint32_t, VkDescriptorSetLayout> GetDescriptorSetLayouts() const;
 
 protected:
     Device* _device;
 
 private:
-    void ReflectMembers(BlockMeta& reflection, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent = "");
-
-    std::unordered_map<uint32_t, DescriptorSetMeta> _descriptorSetMetadata;
-    std::set<PushConstantMeta> _pushConstantMetadata;
+    PipelineReflection _reflection;
     std::unordered_map<uint32_t, VkDescriptorSetLayout> _descriptorSetLayouts;
     VkPipelineLayout _layout;
     VkPipeline _pipeline;
