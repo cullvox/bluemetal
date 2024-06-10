@@ -7,6 +7,7 @@ namespace bl {
 
 MaterialBase::MaterialBase(Device* device, uint32_t materialSet)
     : _materialSet(materialSet)
+    , _currentFrame(0)
     , _device(device)  {}
 
 MaterialBase::~MaterialBase() {}
@@ -163,12 +164,9 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
         _perFrameData[i].set = _device->AllocateDescriptorSet(layout);
     }
 
-
     const auto& reflection = GetPipeline()->GetReflection();
     const auto& sets = reflection.GetDescriptorSetReflections();
     const auto& set = sets.at(_materialSet);
-    
-
 
     VkDescriptorBufferInfo bufferInfo = {};
     VkWriteDescriptorSet write = {};
@@ -211,7 +209,7 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
         for (auto& write : writes)
             write.dstSet = _perFrameData[i].set;
 
-        vkUpdateDescriptorSets(_device->Get(), writes.size(), writes.data(), 0, nullptr);
+        vkUpdateDescriptorSets(_device->Get(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
     }
 
     
@@ -219,7 +217,8 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
 
 void MaterialBase::SetBindingDirty(uint32_t binding) {
     assert(_data.contains(binding) && "Binding must exist to set it dirty!");
-    for (uint32_t i = _currentFrame; i != _currentFrame; i = (i + 1) % GraphicsConfig::numFramesInFlight) {
+
+    for (uint32_t i = (_currentFrame + 1) % GraphicsConfig::numFramesInFlight; i != _currentFrame; i = (i + 1) % GraphicsConfig::numFramesInFlight) {
         _perFrameData[i].dirty[binding] = true;
     }
 }

@@ -128,7 +128,7 @@ void PipelineReflection::ReflectMembers(BlockMeta& meta, uint32_t binding, const
                 continue;
             }
             std::array types = { BlockVariableType::eVector2, BlockVariableType::eVector3, BlockVariableType::eVector4 };
-            type = types[numericTraits.vector.component_count];
+            type = types[numericTraits.vector.component_count - 2];
         } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_MATRIX) {
 
             // We only support 4x4 matrices. 
