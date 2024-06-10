@@ -98,6 +98,7 @@ int main(int argc, const char** argv)
     psi.stages = { vert.Get(), frag.Get() };
 
     auto material = std::make_unique<bl::Material>(graphics->GetDevice(), renderer->GetUIPass(), 0, psi);
+    material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
     
     auto window = engine.GetWindow();
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(window);
