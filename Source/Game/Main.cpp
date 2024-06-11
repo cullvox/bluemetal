@@ -108,7 +108,6 @@ int main(int argc, const char** argv)
     void* globalBufferMap = nullptr;
     globalBuffer->Map(&globalBufferMap);
 
-    
     std::array<VkDescriptorSetLayoutBinding, 1> bindings;
     bindings[0].binding = 0;
     bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -143,6 +142,8 @@ int main(int argc, const char** argv)
     object.model = glm::identity<glm::mat4>();
     object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, 0.0f});
 
+
+
     bool firstMouse = true;
     glm::ivec2 lastMouse{};
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -10.0f);
@@ -154,6 +155,24 @@ int main(int argc, const char** argv)
     bool mouseCaptured = false;
     bool windowFocused = false;
     glm::vec3 direction;
+
+    auto extent = window->GetExtent();
+    auto extenti = glm::ivec2{(int)extent.width, (int)extent.height};
+    auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
+
+    view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
+    auto projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 1.0f, 100.0f);
+
+    bl::GlobalUBO globalUBO = {
+        0.0f,
+        0.0f,
+        extenti,
+        {},
+        view,
+        projection
+    };
+
+    std::memcpy(globalBufferMap, &globalUBO, sizeof(globalUBO));
 
     bool running = true;
     bool minimized = false;
@@ -255,29 +274,43 @@ int main(int argc, const char** argv)
         blInfo("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
 
         auto extent = window->GetExtent();
-        auto extenti = glm::ivec2{(int)extent.width, (int)extent.height};
         auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
+        // auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
         bl::GlobalUBO globalUBO = {
             0.0f,
             0.0f,
-            extenti,
+            extentf,
             {},
             view,
-            glm::perspectiveFov(70.0f, extentf.x, extentf.y, 1.0f, 100.0f)
+            projection
         };
 
         std::memcpy(globalBufferMap, &globalUBO, sizeof(globalUBO));
 
-        object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
+        // object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
 
         glm::vec3 position{ sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
         glm::vec3 velocity{ cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
+
+        glm::vec4 color = { (sinf(bl::Time::current()) + 1.f) / 2.f, (sinf(bl::Time::current() + 543.f) + 1.f) / 2.f, (sinf(bl::Time::current() + 53.5f) + 1.f) / 2.f, 1.0f };
+        
+        glm::vec4 val{};
+
+        std::memcpy(&val, &color, sizeof(glm::vec4));
+
+        // glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f};
+        material->SetVector4("material.color", color);
 
         source->Set3DAttributes(position, velocity);
         audio->Update();
 
         if (!minimized) {
+
+        
+        // graphics->GetDevice()->ImmediateSubmit([&material](VkCommandBuffer cmd){
+        //     material->UpdateBuffers(cmd);
+        // });
 
         renderer->Render([&](VkCommandBuffer cmd, uint32_t currentFrame){
 

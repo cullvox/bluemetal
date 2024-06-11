@@ -61,12 +61,12 @@ void MaterialBase::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
                 Buffer& buffer = std::get<Buffer>(variant);
                 VkDeviceSize blockSize = buffer.GetSize() / GraphicsConfig::numFramesInFlight;
 
-                VkBufferCopy bufferCopy = {};
-                bufferCopy.srcOffset = blockSize * currentFrame;
-                bufferCopy.dstOffset = blockSize * previousFrame;
-                bufferCopy.size = blockSize;
+                void* mapped = nullptr;
+                buffer.Map(&mapped);
 
-                vkCmdCopyBuffer(cmd, buffer.Get(), buffer.Get(), 1, &bufferCopy);
+                std::memcpy(static_cast<intptr_t*>(mapped) + blockSize * _currentFrame, static_cast<intptr_t*>(mapped) + blockSize * previousFrame, blockSize);
+                buffer.Unmap();
+                buffer.Flush(blockSize * _currentFrame, blockSize);
             } break;
             case 1: { // sampler type
                 VkCopyDescriptorSet descriptorCopy = {};
@@ -157,6 +157,36 @@ void MaterialBase::PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t s
     vkCmdPushConstants(cmd, GetPipeline()->GetLayout(), pcr.GetStages(), offset, size, data);
 }
 
+void MaterialBase::UpdateBuffers(VkCommandBuffer cmd) {
+    uint32_t previousFrame = (_currentFrame - 1) % GraphicsConfig::numFramesInFlight;
+    
+    PerFrameData& currentFrameData = _perFrameData[_currentFrame];
+
+    for (auto& binding : currentFrameData.dirty) {
+    // If second is marked as true, the binding is dirty and needs to be updated.
+        if (binding.second) {
+            assert(_data.contains(binding.first) && "Binding not found, something in the constructor went wrong!");
+            auto& variant = _data[binding.first];
+
+            switch(variant.index()) {
+            case 0: { // buffer type
+                Buffer& buffer = std::get<Buffer>(variant);
+                VkDeviceSize blockSize = buffer.GetSize() / GraphicsConfig::numFramesInFlight;
+
+                void* mapped = nullptr;
+                buffer.Map(&mapped);
+
+                std::memcpy(static_cast<intptr_t*>(mapped) + blockSize * _currentFrame, static_cast<intptr_t*>(mapped) + blockSize * previousFrame, blockSize);
+                buffer.Unmap();
+                buffer.Flush(blockSize * _currentFrame, blockSize);
+            } break;
+            }
+
+            binding.second = false; // No longer dirty.
+        }
+    }
+}
+
 void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
 
     // Allocate the per frame descriptor sets.
@@ -198,7 +228,7 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
         } break;
         case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
             _data[binding.GetLocation()] = SampledImage{};
-            // An image/sampler must be written before the first material bind!
+            // An image/sampler must be written to before being rendering.
             break;
         default: 
             break;
@@ -211,8 +241,6 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
 
         vkUpdateDescriptorSets(_device->Get(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
     }
-
-    
 }
 
 void MaterialBase::SetBindingDirty(uint32_t binding) {

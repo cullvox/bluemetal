@@ -8,8 +8,8 @@ layout(set=0, binding=0) uniform GlobalUniform
 {
     float time;
     float dt;
-    ivec2 resolution;
-    ivec2 mouse;
+    vec2 resolution;
+    vec2 mouse;
 
     mat4 view;
     mat4 projection;

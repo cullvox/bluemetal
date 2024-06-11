@@ -26,6 +26,7 @@ public:
     void SetSampledImage2D(const std::string& name, Sampler* sampler, Image* image);
     void Bind(VkCommandBuffer cmd, uint32_t currentFrame); /** @brief Bind this material for rending using it and it's data. */
     void PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t size, const void* value);
+    void UpdateBuffers(VkCommandBuffer cmd); /** @brief Call before the render pass renders. */
 
 protected:
     virtual const std::map<std::string, BlockVariable>& GetUniformMetadata() = 0;
