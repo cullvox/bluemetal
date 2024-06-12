@@ -26,7 +26,7 @@ public:
     void SetSampledImage2D(const std::string& name, Sampler* sampler, Image* image);
     void Bind(VkCommandBuffer cmd, uint32_t currentFrame); /** @brief Bind this material for rending using it and it's data. */
     void PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t size, const void* value);
-    void UpdateBuffers(VkCommandBuffer cmd); /** @brief Call before the render pass renders. */
+    void UpdateUniforms(); /** @brief Call before the render pass renders. */
 
 protected:
     virtual const std::map<std::string, BlockVariable>& GetUniformMetadata() = 0;
@@ -40,6 +40,7 @@ protected:
     size_t CalculateDynamicAlignment(size_t uboSize);
 
     using SampledImage = std::pair<Sampler*, Image*>;
+    // using BufferData = std::pair<Buffer, std::unique_ptr<void*, decltype(&bl::AlignedFree)>>;
 
     struct PerFrameData {
         VkDescriptorSet set;
@@ -117,14 +118,14 @@ void MaterialBase::SetGenericUniform(const std::string& name, T value)
     assert(sizeof(T) == meta.GetSize() && "Type must be the same as the uniform size!");
 
     auto& buffer = std::get<Buffer>(_data[meta.GetBinding()]);
-    uint32_t blockSize = (uint32_t)buffer.GetSize() / GraphicsConfig::numFramesInFlight;
-    uint32_t offset = (blockSize * _currentFrame) + meta.GetOffset();
+    VkDeviceSize blockSize = buffer.GetSize() / GraphicsConfig::numFramesInFlight;
+    // uint32_t previousFrame = (_currentFrame - 1) % GraphicsConfig::numFramesInFlight;
 
-    void* mapped;
+    void* mapped = nullptr;
     buffer.Map(&mapped);
-    std::memcpy(((intptr_t*)mapped) + offset, &value, meta.GetSize());
+    std::memcpy(static_cast<intptr_t*>(mapped) + (blockSize * _currentFrame), &value, blockSize);
     buffer.Unmap();
-    buffer.Flush(offset, meta.GetSize());
+    buffer.Flush(blockSize * _currentFrame, blockSize);
 
     SetBindingDirty(meta.GetBinding()); /* The buffer data must be copied to the other parts of the dynamic uniform buffer. */
 }

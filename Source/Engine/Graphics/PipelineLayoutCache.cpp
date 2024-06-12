@@ -53,8 +53,9 @@ VkPipelineLayout PipelineLayoutCache::Acquire(const std::span<VkDescriptorSetLay
     data.layouts.assign(layouts.begin(), layouts.end());
     data.ranges.assign(ranges.begin(), ranges.end());
 
+    // std::sort(data.layouts.begin(), data.layouts.end()); // Turns out that descriptor set layouts are ordered in only some drivers.
+
     // Sort each value to ensure stability when hashing.
-    std::sort(data.layouts.begin(), data.layouts.end());
     std::sort(data.ranges.begin(), data.ranges.end(), 
         [](VkPushConstantRange& a, VkPushConstantRange& b){
             return a.offset < b.offset;

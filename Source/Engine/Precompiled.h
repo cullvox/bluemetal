@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <cstdlib>
 
 #include <array>
 #include <bitset>

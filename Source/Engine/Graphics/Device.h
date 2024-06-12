@@ -29,7 +29,7 @@ public:
     VmaAllocator GetAllocator() const; /** @brief Returns the Vulkan Memory Allocator object. */
     void ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder); /** @brief Submits commands to the graphics queue on the double. */
     void WaitForDevice() const; /** @brief Waits for an undefined amount of time for the device to finish whatever it may be doing. */
-    VkDescriptorSetLayout CacheDescriptorSetLayout(const std::span<VkDescriptorSetLayoutBinding> bindings);
+    VkDescriptorSetLayout CacheDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding>& bindings);
     VkPipelineLayout CachePipelineLayout(const std::span<VkDescriptorSetLayout> descriptorSetLayouts, const std::span<VkPushConstantRange> pushConstantsRanges);
     VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout);
     void FreeDescriptorSet(VkDescriptorSetLayout layout, VkDescriptorSet set);

@@ -134,7 +134,7 @@ void Device::WaitForDevice() const {
     vkDeviceWaitIdle(_device); 
 }
 
-VkDescriptorSetLayout Device::CacheDescriptorSetLayout(const std::span<VkDescriptorSetLayoutBinding> bindings) {
+VkDescriptorSetLayout Device::CacheDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding>& bindings) {
     return _descriptorSetLayoutCache->Acquire(bindings);
 }
 

@@ -27,6 +27,10 @@
 //     }
 // }
 
+static inline float randomValue() {
+    return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+}
+
 int main(int argc, const char** argv)
 {
     (void)argc;
@@ -108,7 +112,7 @@ int main(int argc, const char** argv)
     void* globalBufferMap = nullptr;
     globalBuffer->Map(&globalBufferMap);
 
-    std::array<VkDescriptorSetLayoutBinding, 1> bindings;
+    std::vector<VkDescriptorSetLayoutBinding> bindings{1};
     bindings[0].binding = 0;
     bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     bindings[0].descriptorCount = 1;
@@ -293,7 +297,7 @@ int main(int argc, const char** argv)
         glm::vec3 position{ sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
         glm::vec3 velocity{ cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
 
-        glm::vec4 color = { (sinf(bl::Time::current()) + 1.f) / 2.f, (sinf(bl::Time::current() + 543.f) + 1.f) / 2.f, (sinf(bl::Time::current() + 53.5f) + 1.f) / 2.f, 1.0f };
+        glm::vec4 color = { randomValue(), 0.5f, randomValue(), 1.0f };
         
         glm::vec4 val{};
 
@@ -308,9 +312,7 @@ int main(int argc, const char** argv)
         if (!minimized) {
 
         
-        // graphics->GetDevice()->ImmediateSubmit([&material](VkCommandBuffer cmd){
-        //     material->UpdateBuffers(cmd);
-        // });
+        material->UpdateUniforms();
 
         renderer->Render([&](VkCommandBuffer cmd, uint32_t currentFrame){
 

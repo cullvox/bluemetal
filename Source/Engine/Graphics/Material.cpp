@@ -1,4 +1,5 @@
 #include "Core/Print.h"
+#include "Core/Memory.h"
 #include "Material.h"
 
 namespace bl {
@@ -41,55 +42,7 @@ void MaterialBase::SetMatrix(const std::string& name, glm::mat4 value) {
 }
 
 void MaterialBase::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
-    uint32_t previousFrame = (currentFrame - 1) % GraphicsConfig::numFramesInFlight;
-    
     PerFrameData& currentFrameData = _perFrameData[currentFrame];
-    PerFrameData& previousFrameData = _perFrameData[previousFrame];
-
-    // If any previous frames changed their data this frame is dirty and must 
-    // preform a descriptor copy to this frame.
-
-    std::vector<VkCopyDescriptorSet> descriptorCopies;
-    for (auto& binding : currentFrameData.dirty) {
-        // If second is marked as true, the binding is dirty and needs to be updated.
-        if (binding.second) {
-            assert(_data.contains(binding.first) && "Binding not found, something in the constructor went wrong!");
-            auto& variant = _data[binding.first];
-
-            switch(variant.index()) {
-            case 0: { // buffer type
-                Buffer& buffer = std::get<Buffer>(variant);
-                VkDeviceSize blockSize = buffer.GetSize() / GraphicsConfig::numFramesInFlight;
-
-                void* mapped = nullptr;
-                buffer.Map(&mapped);
-
-                std::memcpy(static_cast<intptr_t*>(mapped) + blockSize * _currentFrame, static_cast<intptr_t*>(mapped) + blockSize * previousFrame, blockSize);
-                buffer.Unmap();
-                buffer.Flush(blockSize * _currentFrame, blockSize);
-            } break;
-            case 1: { // sampler type
-                VkCopyDescriptorSet descriptorCopy = {};
-                descriptorCopy.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
-                descriptorCopy.pNext = nullptr;
-                descriptorCopy.srcSet = previousFrameData.set;
-                descriptorCopy.srcBinding = binding.first;
-                descriptorCopy.srcArrayElement = 0;
-                descriptorCopy.dstSet = currentFrameData.set;
-                descriptorCopy.dstBinding = binding.first;
-                descriptorCopy.dstArrayElement = 0;
-                descriptorCopy.descriptorCount = 1;
-                descriptorCopies.push_back(descriptorCopy);
-            } break;
-            }
-
-            binding.second = false; // No longer dirty.
-        }
-    }
-
-    if (!descriptorCopies.empty()) {
-        vkUpdateDescriptorSets(_device->Get(), 0, nullptr, (uint32_t)descriptorCopies.size(), descriptorCopies.data());
-    }
 
     // Compute the dynamic offsets for each uniform buffer.
     std::vector<uint32_t> offsets;
@@ -157,13 +110,18 @@ void MaterialBase::PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t s
     vkCmdPushConstants(cmd, GetPipeline()->GetLayout(), pcr.GetStages(), offset, size, data);
 }
 
-void MaterialBase::UpdateBuffers(VkCommandBuffer cmd) {
+void MaterialBase::UpdateUniforms() {
     uint32_t previousFrame = (_currentFrame - 1) % GraphicsConfig::numFramesInFlight;
-    
-    PerFrameData& currentFrameData = _perFrameData[_currentFrame];
 
+    PerFrameData& currentFrameData = _perFrameData[_currentFrame];
+    PerFrameData& previousFrameData = _perFrameData[previousFrame];
+
+    // If any previous frames changed their data this frame is dirty and must 
+    // preform a descriptor copy to this frame.
+
+    std::vector<VkCopyDescriptorSet> descriptorCopies;
     for (auto& binding : currentFrameData.dirty) {
-    // If second is marked as true, the binding is dirty and needs to be updated.
+        // If second is marked as true, the binding is dirty and needs to be updated.
         if (binding.second) {
             assert(_data.contains(binding.first) && "Binding not found, something in the constructor went wrong!");
             auto& variant = _data[binding.first];
@@ -175,15 +133,31 @@ void MaterialBase::UpdateBuffers(VkCommandBuffer cmd) {
 
                 void* mapped = nullptr;
                 buffer.Map(&mapped);
-
-                std::memcpy(static_cast<intptr_t*>(mapped) + blockSize * _currentFrame, static_cast<intptr_t*>(mapped) + blockSize * previousFrame, blockSize);
+                std::memcpy(static_cast<intptr_t*>(mapped) + (blockSize * _currentFrame), static_cast<intptr_t*>(mapped) + (blockSize * previousFrame), blockSize);
                 buffer.Unmap();
                 buffer.Flush(blockSize * _currentFrame, blockSize);
+            } break;
+            case 1: { // sampler type
+                VkCopyDescriptorSet descriptorCopy = {};
+                descriptorCopy.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+                descriptorCopy.pNext = nullptr;
+                descriptorCopy.srcSet = previousFrameData.set;
+                descriptorCopy.srcBinding = binding.first;
+                descriptorCopy.srcArrayElement = 0;
+                descriptorCopy.dstSet = currentFrameData.set;
+                descriptorCopy.dstBinding = binding.first;
+                descriptorCopy.dstArrayElement = 0;
+                descriptorCopy.descriptorCount = 1;
+                descriptorCopies.push_back(descriptorCopy);
             } break;
             }
 
             binding.second = false; // No longer dirty.
         }
+    }
+
+    if (!descriptorCopies.empty()) {
+        vkUpdateDescriptorSets(_device->Get(), 0, nullptr, (uint32_t)descriptorCopies.size(), descriptorCopies.data());
     }
 }
 
@@ -211,8 +185,12 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
     for (const auto& binding : bindings) {
         switch(binding.GetType()) {
         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+
             auto dynamicAlignment = CalculateDynamicAlignment(binding.GetSize());
-            auto& variant = (_data[binding.GetLocation()] = Buffer{_device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, dynamicAlignment * GraphicsConfig::numFramesInFlight, nullptr});
+            auto bufferSize = dynamicAlignment * GraphicsConfig::numFramesInFlight;
+
+            auto& variant = (_data[binding.GetLocation()] = Buffer{ 
+                Buffer{_device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, bufferSize, nullptr}});
 
             bufferInfo.buffer = std::get<Buffer>(variant).Get();
             bufferInfo.offset = 0;

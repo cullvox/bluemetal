@@ -43,10 +43,9 @@ DescriptorSetLayoutCache::~DescriptorSetLayoutCache()
         vkDestroyDescriptorSetLayout(_device->Get(), pair.second, nullptr);
 }
 
-VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(std::span<VkDescriptorSetLayoutBinding> bindings)
+VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(const std::vector<VkDescriptorSetLayoutBinding>& bindings)
 {
-    DescriptorLayoutCacheData data{};
-    data.bindings.assign(bindings.begin(), bindings.end());
+    DescriptorLayoutCacheData data{bindings};
 
     auto it = _cache.find(data);
     if (it != _cache.end())
@@ -58,8 +57,8 @@ VkDescriptorSetLayout DescriptorSetLayoutCache::Acquire(std::span<VkDescriptorSe
     createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     createInfo.pNext = nullptr;
     createInfo.flags = 0;
-    createInfo.bindingCount = (uint32_t)data.bindings.size();
-    createInfo.pBindings = data.bindings.data();
+    createInfo.bindingCount = (uint32_t)bindings.size();
+    createInfo.pBindings = bindings.data();
 
     VkDescriptorSetLayout layout = VK_NULL_HANDLE;
     VK_CHECK(vkCreateDescriptorSetLayout(_device->Get(), &createInfo, nullptr, &layout))
