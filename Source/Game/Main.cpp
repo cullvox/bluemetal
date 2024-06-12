@@ -297,7 +297,7 @@ int main(int argc, const char** argv)
         glm::vec3 position{ sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
         glm::vec3 velocity{ cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
 
-        glm::vec4 color = { randomValue(), 0.5f, randomValue(), 1.0f };
+        glm::vec4 color = { 1.f, 0.5f, 0.f, 1.0f };
         
         glm::vec4 val{};
 

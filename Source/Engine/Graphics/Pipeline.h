@@ -41,15 +41,15 @@ public:
     PipelineReflection& operator=(const PipelineReflection& rhs);
     PipelineReflection& operator=(PipelineReflection&& rhs);
 
-    std::unordered_map<uint32_t, DescriptorSetReflection>& GetDescriptorSetReflections();
+    std::map<uint32_t, DescriptorSetReflection>& GetDescriptorSetReflections();
     std::vector<PushConstantReflection>& GetPushConstantReflections();
-    const std::unordered_map<uint32_t, DescriptorSetReflection>& GetDescriptorSetReflections() const;
+    const std::map<uint32_t, DescriptorSetReflection>& GetDescriptorSetReflections() const;
     const std::vector<PushConstantReflection>& GetPushConstantReflections() const;
 
 private:
     void ReflectMembers(BlockMeta& reflection, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent = "");
 
-    std::unordered_map<uint32_t, DescriptorSetReflection> _descriptorSetMetadata;
+    std::map<uint32_t, DescriptorSetReflection> _descriptorSetMetadata;
     std::vector<PushConstantReflection> _pushConstantMetadata;
 };
 

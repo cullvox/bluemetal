@@ -77,7 +77,7 @@ PipelineReflection::~PipelineReflection() {}
 PipelineReflection& PipelineReflection::operator=(const PipelineReflection& rhs) = default;
 PipelineReflection& PipelineReflection::operator=(PipelineReflection&& rhs) = default;
 
-std::unordered_map<uint32_t, DescriptorSetReflection>& PipelineReflection::GetDescriptorSetReflections() {
+std::map<uint32_t, DescriptorSetReflection>& PipelineReflection::GetDescriptorSetReflections() {
     return _descriptorSetMetadata;
 }
 
@@ -85,7 +85,7 @@ std::vector<PushConstantReflection>& PipelineReflection::GetPushConstantReflecti
     return _pushConstantMetadata;
 }
 
-const std::unordered_map<uint32_t, DescriptorSetReflection>& PipelineReflection::GetDescriptorSetReflections() const {
+const std::map<uint32_t, DescriptorSetReflection>& PipelineReflection::GetDescriptorSetReflections() const {
     return _descriptorSetMetadata;
 }
 
@@ -187,8 +187,7 @@ Pipeline::Pipeline(Device* device, RenderPass* pass, uint32_t subpass, const Pip
     _descriptorSetLayouts.reserve(descriptorSetMetadata.size());
 
     // Extract descriptor set layout bindings and create a layout.
-    for (auto& pair : descriptorSetMetadata)
-    {
+    for (auto& pair : descriptorSetMetadata) {
         auto& meta = pair.second;
 
         // Acquire a layout from cache or create a new descriptor set layout.

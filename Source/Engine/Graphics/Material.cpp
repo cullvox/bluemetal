@@ -133,7 +133,15 @@ void MaterialBase::UpdateUniforms() {
 
                 void* mapped = nullptr;
                 buffer.Map(&mapped);
-                std::memcpy(static_cast<intptr_t*>(mapped) + (blockSize * _currentFrame), static_cast<intptr_t*>(mapped) + (blockSize * previousFrame), blockSize);
+
+                void* dstData = static_cast<intptr_t*>(mapped) + (blockSize * _currentFrame);
+                void* newData = static_cast<intptr_t*>(mapped) + (blockSize * previousFrame);
+
+                std::memcpy(dstData, newData, blockSize);
+
+                // std::memcpy((intptr_t*)mapped + (blockSize * _currentFrame), (intptr_t*)mapped + (blockSize * previousFrame), blockSize);
+                
+                
                 buffer.Unmap();
                 buffer.Flush(blockSize * _currentFrame, blockSize);
             } break;
@@ -224,6 +232,7 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
 void MaterialBase::SetBindingDirty(uint32_t binding) {
     assert(_data.contains(binding) && "Binding must exist to set it dirty!");
 
+    _perFrameData[_currentFrame].dirty[binding] = false; /* This current frame is now the current data and is no longer dirty. */
     for (uint32_t i = (_currentFrame + 1) % GraphicsConfig::numFramesInFlight; i != _currentFrame; i = (i + 1) % GraphicsConfig::numFramesInFlight) {
         _perFrameData[i].dirty[binding] = true;
     }

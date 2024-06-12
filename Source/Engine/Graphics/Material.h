@@ -121,11 +121,15 @@ void MaterialBase::SetGenericUniform(const std::string& name, T value)
     VkDeviceSize blockSize = buffer.GetSize() / GraphicsConfig::numFramesInFlight;
     // uint32_t previousFrame = (_currentFrame - 1) % GraphicsConfig::numFramesInFlight;
 
-    void* mapped = nullptr;
-    buffer.Map(&mapped);
-    std::memcpy(static_cast<intptr_t*>(mapped) + (blockSize * _currentFrame), &value, blockSize);
+    auto offset = (blockSize * _currentFrame) + meta.GetOffset();
+
+    char* uniform = nullptr;
+    buffer.Map((void**)&uniform);
+    uniform += offset;
+    std::memcpy(uniform, &value, sizeof(T));
     buffer.Unmap();
-    buffer.Flush(blockSize * _currentFrame, blockSize);
+
+    buffer.Flush(offset, sizeof(T));
 
     SetBindingDirty(meta.GetBinding()); /* The buffer data must be copied to the other parts of the dynamic uniform buffer. */
 }
