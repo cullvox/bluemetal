@@ -2,6 +2,7 @@
 #include "Core/Version.h"
 #include "Window.h"
 #include "Instance.h"
+#include "vulkan/vulkan_core.h"
 
 namespace bl {
 
@@ -79,7 +80,9 @@ std::vector<const char*> Instance::GetExtensionsForSDL()
 std::vector<const char*> Instance::GetExtensions()
 {
     // Add required instance extensions below...
-    std::vector<const char*> extensions{};
+    std::vector<const char*> extensions = {
+        VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
+    };
 
     if (_enableValidation) // Validation only required when enabled
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
@@ -167,7 +170,7 @@ void Instance::CreateInstance(Version appVersion, std::string_view appName)
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pNext = _enableValidation ? &debugMessengerCreateInfo : nullptr;
-    instanceCreateInfo.flags = 0;
+    instanceCreateInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;;
     instanceCreateInfo.pApplicationInfo = &applicationInfo;
     instanceCreateInfo.enabledLayerCount = (uint32_t)layers.size();
     instanceCreateInfo.ppEnabledLayerNames = layers.data();

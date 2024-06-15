@@ -15,6 +15,18 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
       IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
       INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/api/core/inc/")
 
+elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+
+  message("FMOD On Darwin ${CMAKE_CURRENT_LIST_DIR}")
+
+  set_target_properties(
+    FMOD
+    PROPERTIES
+      IMPORTED_LOCATION       "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/macos/libfmod.dylib"
+      IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/macos/libfmodL.dylib"
+      IMPORTED_CONFIGURATIONS "RELEASE;DEBUG"
+      INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/api/core/inc/")
+
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
 
   set_target_properties(

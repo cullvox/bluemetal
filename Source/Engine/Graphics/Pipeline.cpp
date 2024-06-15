@@ -1,5 +1,6 @@
 #include "Core/Print.h"
 #include "Pipeline.h"
+#include "vulkan/vulkan_core.h"
 
 namespace bl {
 
@@ -290,21 +291,21 @@ Pipeline::Pipeline(Device* device, RenderPass* pass, uint32_t subpass, const Pip
     colorBlendState.blendConstants[3] = 0.0f;
 
     std::array dynamicStates{
-        VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT,
-        VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT,
+        VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT,
+        VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT_EXT,
     };
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.pNext = nullptr;
-    dynamicState.flags = 0;
+    dynamicState.flags = {};
     dynamicState.dynamicStateCount = (uint32_t)dynamicStates.size();
     dynamicState.pDynamicStates = dynamicStates.data();
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
     pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineCreateInfo.pNext = nullptr;
-    pipelineCreateInfo.flags = 0;
+    pipelineCreateInfo.flags = {};
     pipelineCreateInfo.stageCount = (uint32_t)stages.size();
     pipelineCreateInfo.pStages = stages.data();
     pipelineCreateInfo.pVertexInputState = &vertexInputState;

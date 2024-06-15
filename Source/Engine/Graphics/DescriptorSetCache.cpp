@@ -112,7 +112,7 @@ VkDescriptorPool DescriptorSetCache::CreatePool(uint32_t setCount)
     std::vector<VkDescriptorPoolSize> poolSizes;
     for (const auto& ratio : _ratios)
     {
-        poolSizes.emplace_back(ratio.type, (uint32_t)(ratio.ratio * setCount));
+        poolSizes.emplace_back(VkDescriptorPoolSize{ratio.type, (uint32_t)(ratio.ratio * setCount)});
     }
 
     VkDescriptorPoolCreateInfo createInfo{};

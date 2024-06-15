@@ -1,36 +1,32 @@
 #include "Graphics/Config.h"
 #include "PresentPass.h"
+#include <stdint.h>
 
 namespace bl 
 {
 
 PresentPass::PresentPass(Device* device, Swapchain* swapchain)
     : _device(device)
-    , _swapchain(swapchain)
-{
+    , _swapchain(swapchain) {
     CreateRenderPass();
     CreateFramebuffers();
 }
 
-PresentPass::~PresentPass()
-{
+PresentPass::~PresentPass() {
     DestroyFramebuffers();
     DestroyRenderPass();
 }
 
-VkRenderPass PresentPass::Get() 
-{ 
+VkRenderPass PresentPass::Get()  { 
     return _pass;
 }
 
-void PresentPass::Recreate(VkExtent2D)
-{
+void PresentPass::Recreate(VkExtent2D, uint32_t) {
     DestroyFramebuffers();
     CreateFramebuffers();
 }
 
-void PresentPass::Begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index)
-{
+void PresentPass::Begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index) {
     std::array<VkClearValue, 2> clearValues = {};
 
     VkClearColorValue value = {};
@@ -40,7 +36,7 @@ void PresentPass::Begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index
     value.float32[3] = 1.0f;
 
     clearValues[0].color = value;
-    clearValues[1].depthStencil = VkClearDepthStencilValue(1.0f, 0);
+    clearValues[1].depthStencil = VkClearDepthStencilValue{1.0f, 0};
 
     VkRenderPassBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -54,13 +50,11 @@ void PresentPass::Begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t index
     vkCmdBeginRenderPass(cmd, &beginInfo, VK_SUBPASS_CONTENTS_INLINE);
 }
 
-void PresentPass::End(VkCommandBuffer cmd)
-{
+void PresentPass::End(VkCommandBuffer cmd) {
     vkCmdEndRenderPass(cmd);
 }
 
-void PresentPass::CreateRenderPass()
-{
+void PresentPass::CreateRenderPass() {
     std::array<VkAttachmentDescription, 1> attachments = {};
     attachments[0].flags = 0;
     attachments[0].format = _swapchain->GetFormat();
@@ -107,20 +101,17 @@ void PresentPass::CreateRenderPass()
     VK_CHECK(vkCreateRenderPass(_device->Get(), &createInfo, nullptr, &_pass))
 }
 
-void PresentPass::DestroyRenderPass()
-{
+void PresentPass::DestroyRenderPass() {
     vkDestroyRenderPass(_device->Get(), _pass, nullptr);
 }
 
-void PresentPass::CreateFramebuffers()
-{
+void PresentPass::CreateFramebuffers() {
     auto extent = _swapchain->GetExtent();
     auto attachments = _swapchain->GetImageViews();
     
     _framebuffers.resize(_swapchain->GetImageCount());
 
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) 
-    {
+    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
         VkImageView attachment = attachments[i];
 
         VkFramebufferCreateInfo createInfo = {};
@@ -138,10 +129,8 @@ void PresentPass::CreateFramebuffers()
     }
 }
 
-void PresentPass::DestroyFramebuffers()
-{
-    for (VkFramebuffer fb : _framebuffers) 
-    {
+void PresentPass::DestroyFramebuffers() {
+    for (VkFramebuffer fb : _framebuffers) {
         vkDestroyFramebuffer(_device->Get(), fb, nullptr);
     }
 

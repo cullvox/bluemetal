@@ -12,92 +12,78 @@ Swapchain::Swapchain(
     , _physicalDevice(_device->GetPhysicalDevice())
     , _window(window)
     , _imageCount(0)
-    , _swapchain(VK_NULL_HANDLE)
-{
+    , _swapchain(VK_NULL_HANDLE) {
     EnsureSurfaceSupported();
     Recreate();
 }
 
-Swapchain::~Swapchain()
-{
+Swapchain::~Swapchain() {
     DestroyImageViews();
     vkDestroySwapchainKHR(_device->Get(), _swapchain, nullptr);
 }
 
-VkSwapchainKHR Swapchain::Get() const 
-{ 
+VkSwapchainKHR Swapchain::Get() const { 
     return _swapchain; 
 }
 
-VkFormat Swapchain::GetFormat() const 
-{
+VkFormat Swapchain::GetFormat() const {
      return _surfaceFormat.format;
 }
 
-VkExtent2D Swapchain::GetExtent() const 
-{
+VkExtent2D Swapchain::GetExtent() const {
      return _extent; 
 }
 
-uint32_t Swapchain::GetImageCount() const 
-{
+uint32_t Swapchain::GetImageCount() const {
      return _imageCount; 
 }
 
-VkPresentModeKHR Swapchain::GetPresentMode() const
-{
+VkPresentModeKHR Swapchain::GetPresentMode() const {
      return _presentMode; 
 }
 
-VkSurfaceFormatKHR Swapchain::GetSurfaceFormat() const
-{
+VkSurfaceFormatKHR Swapchain::GetSurfaceFormat() const {
      return _surfaceFormat; 
 }
 
-std::vector<VkImage> Swapchain::GetImages() const 
-{
+std::vector<VkImage> Swapchain::GetImages() const {
     return _swapImages;
 }
 
-std::vector<VkImageView> Swapchain::GetImageViews() const
-{
+std::vector<VkImageView> Swapchain::GetImageViews() const {
      return _swapImageViews; 
 }
 
-uint32_t Swapchain::GetImageIndex() const
-{
+uint32_t Swapchain::GetImageIndex() const {
     return _imageIndex;
 }
 
-bool Swapchain::GetMailboxSupported() const
-{
+bool Swapchain::GetMailboxSupported() const {
     return _isMailboxSupported;
 }
 
-bool Swapchain::GetImmediateSupported() const
-{
+bool Swapchain::GetImmediateSupported() const {
     return _isImmediateSupported;
 }
 
-bool Swapchain::AcquireNext(VkSemaphore semaphore, VkFence fence)
-{
+bool Swapchain::AcquireNext(VkSemaphore semaphore, VkFence fence) {
     VkResult result = vkAcquireNextImageKHR(_device->Get(), _swapchain, UINT32_MAX, semaphore, fence, &_imageIndex);
     
-    switch (result) 
-    {
+    switch (result) {
     case VK_SUBOPTIMAL_KHR:
-    case VK_SUCCESS:
-        return false; // The swapchain does not need to be recreated.
+    case VK_SUCCESS: 
+        break; // The swapchain does not need to be recreated.
     case VK_ERROR_OUT_OF_DATE_KHR:
         Recreate();
-        return true;
+        break;
     default:
         throw std::runtime_error("Could not acquire the next swapchain image!");
     }
+
+    return _wasRecreated;
 }
 
-bool Swapchain::QueuePresent(VkSemaphore signalSemaphore)
-{
+bool Swapchain::QueuePresent(VkSemaphore signalSemaphore) {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.pNext = nullptr;
@@ -111,17 +97,17 @@ bool Swapchain::QueuePresent(VkSemaphore signalSemaphore)
     VkResult result = vkQueuePresentKHR(_device->GetPresentQueue(), &presentInfo);
 
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-       Recreate();
+       Recreate(); // Next frame _wasRecreated will be reset.
        return true;
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Could not queue Vulkan present!");
     }
-    
+
+    _wasRecreated = false; // Reset the recreation field.
     return false;
 }
 
-void Swapchain::EnsureSurfaceSupported()
-{
+void Swapchain::EnsureSurfaceSupported() {
     VkBool32 supported = false;
     VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->Get(), _device->GetPresentFamilyIndex(), _window->GetSurface(), &supported))
 
@@ -130,8 +116,7 @@ void Swapchain::EnsureSurfaceSupported()
     }
 }
 
-void Swapchain::ChooseImageCount()
-{
+void Swapchain::ChooseImageCount() {
     VkSurfaceCapabilitiesKHR capabilities = {};
     VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->Get(), _window->GetSurface(), &capabilities))
 
@@ -146,14 +131,12 @@ void Swapchain::ChooseImageCount()
     }
 }
 
-void Swapchain::ChooseFormat()
-{
+void Swapchain::ChooseFormat() {
     // Get the surface formats from the physical device.
     std::vector<VkSurfaceFormatKHR> formats = _physicalDevice->GetSurfaceFormats(_window);
 
     // Look for the desired surface format.
-    if (std::any_of(formats.begin(), formats.end(), 
-        [](auto sf) {
+    if (std::any_of(formats.begin(), formats.end(), [](auto sf) {
             auto dsf = GraphicsConfig::defaultSurfaceFormat;
             return sf.format == dsf.format && sf.colorSpace == dsf.colorSpace;
         })) 
@@ -177,8 +160,7 @@ void Swapchain::ChoosePresentMode()
     _isImmediateSupported = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR) != modes.end();
 
     // Try to find the caller's present mode or use the default instead.
-    if (std::find(modes.begin(), modes.end(), GraphicsConfig::defaultPresentMode) != modes.end()) 
-    {
+    if (std::find(modes.begin(), modes.end(), GraphicsConfig::defaultPresentMode) != modes.end()) {
         _presentMode = GraphicsConfig::defaultPresentMode;
         return;
     }
@@ -188,8 +170,7 @@ void Swapchain::ChoosePresentMode()
     _presentMode = VK_PRESENT_MODE_FIFO_KHR;
 }
 
-void Swapchain::ChooseExtent()
-{
+void Swapchain::ChooseExtent() {
     VkSurfaceCapabilitiesKHR capabilities = {};
 
     VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->Get(), _window->GetSurface(), &capabilities))
@@ -212,8 +193,7 @@ void Swapchain::ObtainImages()
     VK_CHECK(vkGetSwapchainImagesKHR(_device->Get(), _swapchain, &_imageCount, _swapImages.data()))
 }
 
-void Swapchain::CreateImageViews()
-{
+void Swapchain::CreateImageViews() {
     _swapImageViews.resize(_imageCount);
 
     for (uint32_t i = 0; i < _imageCount; i++) {
@@ -244,16 +224,14 @@ void Swapchain::CreateImageViews()
     }
 }
 
-void Swapchain::DestroyImageViews()
-{
+void Swapchain::DestroyImageViews() {
     for (VkImageView iv : _swapImageViews)
         vkDestroyImageView(_device->Get(), iv, nullptr);
 
     _swapImageViews.clear();
 }
 
-void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optional<VkSurfaceFormatKHR> surfaceFormat)
-{
+void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optional<VkSurfaceFormatKHR> surfaceFormat) {
     _device->WaitForDevice(); // Since recreating the swapchain is a big operation, just wait for any processes to sync.
 
     DestroyImageViews(); // Images will be recreated later.
@@ -303,14 +281,21 @@ void Swapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optio
 
     VK_CHECK(vkCreateSwapchainKHR(_device->Get(), &createInfo, nullptr, &_swapchain));
 
-    if (oldSwapchain)
+    if (oldSwapchain) {
         vkDestroySwapchainKHR(_device->Get(), oldSwapchain, nullptr);
+    }
 
     _surfaceFormat = format;
     _presentMode = present; 
 
     ObtainImages();
     CreateImageViews();
+
+    _wasRecreated = true;
+}
+
+bool Swapchain::WasRecreated() const {
+    return _wasRecreated;
 }
 
 } // namespace bl

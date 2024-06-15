@@ -49,7 +49,7 @@ private:
     ResourceState _state;
 };
 
-template<typename T>
+template<class T>
 using ResourceRef = ReferenceCounter<T>; /** @brief Rename the reference counter to something a little more useful. */
 
 } // namespace bl

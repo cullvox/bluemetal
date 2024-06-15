@@ -31,6 +31,7 @@ list(APPEND Sources
   "Graphics/Material.cpp"
   "Graphics/Swapchain.cpp"
   "Graphics/Mesh.cpp"
+  "Graphics/GeometryPass.cpp"
   "Graphics/PresentPass.cpp"
   "Graphics/Renderer.cpp"
   "Graphics/GraphicsSystem.cpp"

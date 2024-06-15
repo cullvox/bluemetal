@@ -133,4 +133,5 @@
         "subpass",
         "swapchain"
     ],
+    "cmake.configureOnOpen": true,
 }

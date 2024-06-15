@@ -1,4 +1,5 @@
 #include "Core/Print.h"
+#include "SDL_error.h"
 #include "Vulkan.h"
 #include "Device.h"
 #include "Window.h"
@@ -12,6 +13,7 @@ void Window::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func)
 
     if (!temporaryWindow) 
     {
+        const char* err = SDL_GetError();
         throw std::runtime_error("Could not create a temporary SDL window to get Vulkan instance extensions!");
     }
 

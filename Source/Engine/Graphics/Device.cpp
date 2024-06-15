@@ -3,6 +3,7 @@
 #include "DescriptorSetLayoutCache.h"
 #include "DescriptorSetCache.h"
 #include "PipelineLayoutCache.h"
+#include "vulkan/vulkan_core.h"
 
 // VMA has a lot of warnings on a lot of different platforms.
 // Disable warnings from vk_me_alloc.h warnings on platforms.
@@ -19,8 +20,18 @@
 #pragma warning(disable: 4324) // padded structures
 #endif
 
+#ifdef BLUEMETAL_COMPILER_APPLE_CLANG
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wnullability-completeness"
+#endif
+
 #define VMA_IMPLEMENTATION
+#define VMA_DYNAMIC_VULKAN_FUNCTIONS 1
 #include "vk_mem_alloc.h"
+
+#ifdef BLUEMETAL_COMPILER_APPLE_CLANG
+#pragma clang diagnostic pop
+#endif
 
 #ifdef BLUEMETAL_COMPILER_GNU
 #pragma GCC diagnostic pop
@@ -40,7 +51,6 @@ Device::Device(Instance* instance, PhysicalDevice* physicalDevice)
 
     _descriptorSetLayoutCache = std::make_unique<DescriptorSetLayoutCache>(this);
     _pipelineLayoutCache = std::make_unique<PipelineLayoutCache>(this);
-    _descriptorSetCache = std::make_unique<DescriptorSetCache>(this, 1024, bl::DescriptorRatio::Default());
 }
 
 Device::~Device() { 
@@ -174,6 +184,8 @@ std::vector<const char*> Device::GetExtensions() {
     // The engines required device extensions.
     std::vector requiredExtensions = { 
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+        "VK_KHR_portability_subset",
+        "VK_EXT_extended_dynamic_state"
     };
 
     // Get vulkan device extensions on this system.
@@ -190,7 +202,7 @@ std::vector<const char*> Device::GetExtensions() {
                 [pName](const auto& properties){ 
                     return std::strcmp(pName, properties.extensionName) == 0; 
                 })) {
-            throw std::runtime_error("Could not find required instance extension: {}");
+            throw std::runtime_error("Could not find required device extension: {}");
         }
     }
 
@@ -264,9 +276,14 @@ void Device::CreateDevice() {
 
     const VkPhysicalDeviceFeatures features = {};
 
+    VkPhysicalDeviceExtendedDynamicStateFeaturesEXT dynamicStateFeatures = {};
+    dynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
+    dynamicStateFeatures.pNext = nullptr;
+    dynamicStateFeatures.extendedDynamicState = VK_TRUE;
+
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pNext = nullptr;
+    createInfo.pNext = &dynamicStateFeatures;
     createInfo.flags = 0;
     createInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
     createInfo.pQueueCreateInfos = queueCreateInfos.data();

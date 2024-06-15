@@ -2,6 +2,7 @@
 
 #include "Precompiled.h"
 #include "Core/Print.h"
+#include <sys/types.h>
 
 namespace bl {
 
@@ -29,6 +30,12 @@ static inline constexpr std::string to_string(VersionRelease release) {
 }
 
 struct Version {
+    Version()
+        : release(VersionRelease::eAlpha), major(0), minor(1), patch(0) {}
+
+    Version(VersionRelease release, uint32_t major, uint32_t minor, uint32_t patch)
+        : release(release), major(major), minor(minor), patch(patch) {}
+
     VersionRelease release;
     uint32_t major;
     uint32_t minor;

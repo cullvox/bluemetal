@@ -1,64 +1,25 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
 #include "Device.h"
 #include "Image.h"
 #include "RenderPass.h"
+#include "vulkan/vulkan_core.h"
 
-namespace bl
-{
+namespace bl {
 
-///////////////////////////////
-// Classes
-///////////////////////////////
-
-struct GeometryPassCreateInfo
-{
-    Device* pDevice;
-    uint32_t        imageCount;
-    VkExtent2D      extent;
-};
-
-/// A render pass containing images for geometry d
-class BLUEMETAL_API GeometryPass : public RenderPass
-{
+class GeometryPass : public RenderPass {
 public:
-    GeometryPass();
-    GeometryPass(const GeometryPassCreateInfo& createInfo);
+    GeometryPass(Device* device);
     ~GeometryPass();
 
-    /// Creates the geometry pass and generates the images required for rendering.
-    [[nodiscard]] bool create(const GeometryPassCreateInfo& createInfo);
-
-    /// Returns the underlying Vulkan render pass object.
-    virtual VkRenderPass getHandle();
-
-    /// Resizes images, and framebuffers to match extent.
-    virtual void recreate(VkExtent2D extent);
-
-    /// Records this render pass to the framebuffer.
-    virtual void record(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex);
+    virtual VkRenderPass Get() override;
+    virtual void Recreate(VkExtent2D extent, uint32_t imageCount) override;
+    virtual void Begin(VkCommandBuffer cmd, VkRect2D renderArea, uint32_t imageIndex) override;
+    virtual void NextSubpass(VkCommandBuffer cmd) override;
+    virtual void End(VkCommandBuffer cmd) override;
 
 private:
-    bool createImages();
-    void destroyImages();
-    bool createFramebuffer();
-    void destroyFramebuffer();
-    bool createPass();
-    void destroyPass();
 
-    Device*                     m_pDevice;
-    VkExtent2D                          m_extent;
-    VkFormat                            m_albedoSpecularFormat;
-    VkFormat                            m_positionFormat;
-    VkFormat                            m_normalFormat;
-    std::vector<std::unique_ptr<GfxImage>> m_albedoSpecularImages;
-    std::vector<std::unique_ptr<GfxImage>> m_positionImages;
-    std::vector<std::unique_ptr<GfxImage>> m_normalImages;
-    std::vector<VkFramebuffer>          m_geometryFramebuffer;
 };
 
 }

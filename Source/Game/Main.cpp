@@ -331,8 +331,8 @@ int main(int argc, const char** argv)
             scissor.offset = {0, 0};
             scissor.extent = extent;
 
-            vkCmdSetViewportWithCount(cmd, 1, &viewport);
-            vkCmdSetScissorWithCount(cmd, 1, &scissor);
+            vkCmdSetViewportWithCountEXT(cmd, 1, &viewport);
+            vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
 
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline()->GetLayout(), 0, 1, &globalSet, 0, nullptr);
             material->Bind(cmd, currentFrame);

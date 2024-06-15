@@ -44,7 +44,7 @@ ResourceRef<T> ResourceManager::Load(const std::string& path)
     auto& resource = it->second;
     resource->Load();
 
-    return ResourceRef{static_cast<T*>(resource.get())};
+    return ResourceRef<T>{static_cast<T*>(resource.get())};
 }
 
 } // namespace bl

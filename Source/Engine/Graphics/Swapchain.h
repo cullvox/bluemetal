@@ -28,10 +28,16 @@ public:
     std::vector<VkImageView> GetImageViews() const; /** @brief Returns handles to image views of the swapchain images from @ref getImages. */
     bool GetMailboxSupported() const; /** @brief Returns true on VK_PRESENT_MODE_MAILBOX being supported on current physical device. */
     bool GetImmediateSupported() const; /** @brief Returns true on VK_PRESENT_MODE_IMMEDIATE being supported on current physical device. */
-    bool AcquireNext(VkSemaphore semaphore, VkFence fence); /** @brief Gets the next image in the chain. Returns true if the swapchain needed to be recreated, you'll have to recreate your framebuffers and other accessories. */
+
+    /** @brief Gets the next image in the chain.
+     *
+     *  @returns The value from WasRecreated(), if the swapchain was recreated before the acquire it will also return true as from WasRecreated().
+     */
+    bool AcquireNext(VkSemaphore semaphore, VkFence fence); 
     uint32_t GetImageIndex() const; /** @brief Returns the index of the swapchain image to render to. */
     bool QueuePresent(VkSemaphore semaphore); /** Presents the image at GetImageIndex() to the screen. */
     void Recreate(std::optional<VkPresentModeKHR> presentMode = std::nullopt, std::optional<VkSurfaceFormatKHR> surfaceFormat = std::nullopt); /** @brief Forces a swapchain recreation. */
+    bool WasRecreated() const;
 
 private:
     void EnsureSurfaceSupported(); /** @brief Throws if a surface isn't supported for some strange reason. */
@@ -56,6 +62,7 @@ private:
     uint32_t _imageIndex;
     bool _isMailboxSupported;
     bool _isImmediateSupported;
+    bool _wasRecreated;
 };
 
 } // namespace bl

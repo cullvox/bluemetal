@@ -2,6 +2,7 @@
 
 #include "Precompiled.h"
 #include "Vulkan.h"
+#include "vulkan/vulkan_core.h"
 
 namespace bl
 {
@@ -10,6 +11,9 @@ class Device;
 
 struct DescriptorRatio
 {
+    DescriptorRatio(VkDescriptorType type, float ratio)
+        : type(type), ratio(ratio) {}
+
     VkDescriptorType type;
     float ratio;
 
