@@ -96,7 +96,7 @@ void ImGuiSystem::Init()
     auto instance = graphics->GetInstance();
     auto physicalDevice = graphics->GetPhysicalDevice();
     auto window = _renderer->GetWindow();
-    auto renderPass = _renderer->GetUIPass();
+    auto renderPass = _renderer->GetRenderPass();
 
     std::array poolSizes = { 
         VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
@@ -139,7 +139,7 @@ void ImGuiSystem::Init()
     initInfo.Queue = device->GetGraphicsQueue();
     initInfo.PipelineCache = VK_NULL_HANDLE;
     initInfo.DescriptorPool = _descriptorPool;
-    initInfo.RenderPass = renderPass->Get();
+    initInfo.RenderPass = renderPass;
     initInfo.Subpass = 0;
     initInfo.MinImageCount = 3;
     initInfo.ImageCount = 3;

@@ -184,7 +184,9 @@ std::vector<const char*> Device::GetExtensions() {
     // The engines required device extensions.
     std::vector requiredExtensions = { 
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+#ifdef BLUEMETAL_VULKAN_PORTABILITY
         "VK_KHR_portability_subset",
+#endif
         "VK_EXT_extended_dynamic_state"
     };
 
@@ -202,7 +204,7 @@ std::vector<const char*> Device::GetExtensions() {
                 [pName](const auto& properties){ 
                     return std::strcmp(pName, properties.extensionName) == 0; 
                 })) {
-            throw std::runtime_error("Could not find required device extension: {}");
+            throw std::runtime_error("Could not find a required device extension!");
         }
     }
 

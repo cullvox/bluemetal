@@ -7,14 +7,12 @@
 namespace bl {
 
 Instance::Instance(Version appVersion, std::string_view appName, bool enableValidation)
-    : _enableValidation(enableValidation)
-{
+    : _enableValidation(enableValidation) {
     CreateInstance(appVersion, appName);
     EnumeratePhysicalDevices();
 }
 
-Instance::~Instance()
-{
+Instance::~Instance() {
     if (_enableValidation)
         vkDestroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);
     
@@ -22,18 +20,15 @@ Instance::~Instance()
     volkFinalize();
 }
 
-VkInstance Instance::Get() const
-{
+VkInstance Instance::Get() const {
     return _instance;
 }
 
-bool Instance::GetValidationEnabled() const
-{
+bool Instance::GetValidationEnabled() const {
     return _enableValidation;
 }
 
-std::vector<PhysicalDevice*> Instance::GetPhysicalDevices() const
-{
+std::vector<PhysicalDevice*> Instance::GetPhysicalDevices() const {
     std::vector<PhysicalDevice*> out;
     std::transform(_physicalDevices.begin(), _physicalDevices.end(), 
         std::back_inserter(out), [](auto&& pd){ return pd.get(); });
@@ -41,8 +36,7 @@ std::vector<PhysicalDevice*> Instance::GetPhysicalDevices() const
     return out;
 }
 
-PhysicalDevice* Instance::ChoosePhysicalDevice() const
-{
+PhysicalDevice* Instance::ChoosePhysicalDevice() const {
     auto physicalDevices = GetPhysicalDevices();
     auto it = std::find_if(physicalDevices.begin(), physicalDevices.end(), 
                 [](auto&& pd)
@@ -50,20 +44,15 @@ PhysicalDevice* Instance::ChoosePhysicalDevice() const
                     return pd->GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; 
                 });
                     
-    if (it != physicalDevices.end())
-    { 
+    if (it != physicalDevices.end()) { 
         return *it;
-    }
-    else
-    {
+    } else {
         blWarning("Using index zero physical device, user does not have a discrete card!");
         return physicalDevices[0];
     } 
 }
 
-std::vector<const char*> Instance::GetExtensionsForSDL()
-{
-
+std::vector<const char*> Instance::GetExtensionsForSDL() {
     // Enumerate the instance extensions from SDL.
     std::vector<const char*> extensions;
     unsigned int extensionsCount = 0;
@@ -77,8 +66,7 @@ std::vector<const char*> Instance::GetExtensionsForSDL()
     return extensions;
 }
 
-std::vector<const char*> Instance::GetExtensions()
-{
+std::vector<const char*> Instance::GetExtensions() {
     // Add required instance extensions below...
     std::vector<const char*> extensions = {
         VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME

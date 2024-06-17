@@ -73,7 +73,7 @@ private:
 class Material : public MaterialBase
 {
 public:
-    Material(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet = 1);
+    Material(Device* device, VkRenderPass pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet = 1);
     ~Material();
 
     virtual Pipeline* GetPipeline();

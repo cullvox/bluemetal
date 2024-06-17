@@ -7,13 +7,10 @@
 namespace bl 
 {
 
-void Window::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func)
-{
+void Window::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func) {
     SDL_Window* temporaryWindow = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN);
 
-    if (!temporaryWindow) 
-    {
-        const char* err = SDL_GetError();
+    if (!temporaryWindow) {
         throw std::runtime_error("Could not create a temporary SDL window to get Vulkan instance extensions!");
     }
 

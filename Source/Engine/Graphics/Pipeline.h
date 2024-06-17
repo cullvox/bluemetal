@@ -2,7 +2,6 @@
 
 #include "Device.h"
 #include "Shader.h"
-#include "RenderPass.h"
 #include "DescriptorSetMeta.h"
 #include "PushConstantReflection.h"
 #include "DescriptorSetLayoutCache.h"
@@ -56,19 +55,16 @@ private:
 /** @brief A program consisting of shaders designed to run on the GPU. */
 class Pipeline {
 public:
-    Pipeline(Device* device, RenderPass* renderPass, uint32_t subpass, const PipelineStateInfo& info, const PipelineReflection* reflection = nullptr); /** @brief Constructor */
-    ~Pipeline(); /** @brief Destructor */
+    Pipeline(Device* device, const PipelineStateInfo& info, VkRenderPass renderPass, uint32_t subpass, const PipelineReflection* reflection = nullptr);
+    ~Pipeline();
 
-    const PipelineReflection& GetReflection() const;
-    VkPipelineLayout GetLayout() const;
-    VkPipeline Get() const; /** @brief Gets the raw VkPipeline underlying this object. */
-
-    std::unordered_map<uint32_t, VkDescriptorSetLayout> GetDescriptorSetLayouts() const;
-
-protected:
-    Device* _device;
+    auto GetReflection() const -> const PipelineReflection&;
+    auto GetLayout() const -> VkPipelineLayout;
+    auto Get() const -> VkPipeline;
+    auto GetDescriptorSetLayouts() const -> const std::unordered_map<uint32_t, VkDescriptorSetLayout>&;
 
 private:
+    Device* _device;
     PipelineReflection _reflection;
     std::unordered_map<uint32_t, VkDescriptorSetLayout> _descriptorSetLayouts;
     VkPipelineLayout _layout;

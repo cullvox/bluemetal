@@ -156,13 +156,11 @@ void PipelineReflection::ReflectMembers(BlockMeta& meta, uint32_t binding, const
 }
 
 
-Pipeline::Pipeline(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, const PipelineReflection* reflection)
+Pipeline::Pipeline(Device* device, const PipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const PipelineReflection* reflection)
     : _device(device) {
     
-    if (reflection)
-        _reflection = (*reflection);
-    else
-        _reflection = PipelineReflection{state};
+
+    _reflection = reflection ? *reflection : PipelineReflection{state};
 
     std::array<VkPipelineShaderStageCreateInfo, 2> stages;
     std::array<Shader*, 2> shaders = { state.stages.vert, state.stages.frag };
@@ -318,7 +316,7 @@ Pipeline::Pipeline(Device* device, RenderPass* pass, uint32_t subpass, const Pip
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.layout = _layout;
-    pipelineCreateInfo.renderPass = pass->Get();
+    pipelineCreateInfo.renderPass = pass;
     pipelineCreateInfo.subpass = subpass;
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; /* No vendor actually uses derivative pipelines. 😿 */
     pipelineCreateInfo.basePipelineIndex = 0;
@@ -345,7 +343,7 @@ VkPipeline Pipeline::Get() const
     return _pipeline; 
 }
 
-std::unordered_map<uint32_t, VkDescriptorSetLayout> Pipeline::GetDescriptorSetLayouts() const
+const std::unordered_map<uint32_t, VkDescriptorSetLayout>& Pipeline::GetDescriptorSetLayouts() const
 {
     return _descriptorSetLayouts;
 }

@@ -2,11 +2,9 @@
 
 #include "Config.h"
 #include "Device.h"
-#include "Graphics/DescriptorSetCache.h"
+#include "DescriptorSetCache.h"
 #include "Window.h"
-#include "GeometryPass.h"
-#include "PresentPass.h"
-#include "vulkan/vulkan_core.h"
+#include "Image.h"
 
 namespace bl {
 
@@ -18,7 +16,7 @@ public:
     ~Renderer(); /** @brief Destructor */
 
     Window* GetWindow();
-    VkRenderPass* GetRenderPass();
+    VkRenderPass GetRenderPass() const;
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::numFramesInFlight - 1. */
     DescriptorSetCache* GetDescriptorSetCache();
     void Render(RenderFunction func);
@@ -26,15 +24,17 @@ public:
 private:
     void CreateSyncObjects();
     void DestroySyncObjects();
-    void CreateRenderPass();
-    void DestroyRenderPass();
+    void CreateRenderPasses();
+    void DestroyRenderPasses();
     void DestroyImagesAndFramebuffers();
+    void RecreateImages();
 
     Device* _device;
     Window* _window;
     Swapchain* _swapchain;
 
     // Frame Synchronization
+    uint32_t _imageCount;
     uint32_t _currentFrame;
     std::vector<VkCommandBuffer> _commandBuffers;
     std::vector<VkSemaphore> _imageAvailableSemaphores;
@@ -42,9 +42,9 @@ private:
     std::vector<VkFence> _inFlightFences;
 
     // Render Pass Data
-    VkFormat _lightFormat, _depthFormat, _albedoFormat, _normalFormat;
+    VkFormat _depthFormat;
     VkRenderPass _pass;
-    std::vector<std::unique_ptr<Image>> _lightImages, _depthImages, _albedoImages, _normalImages;
+    std::vector<Image> _depthImages;
     std::vector<VkFramebuffer> _framebuffers;
 
     DescriptorSetCache _descriptorSetCache;

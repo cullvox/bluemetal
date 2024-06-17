@@ -4,25 +4,15 @@
 namespace bl 
 {
 
-Image::Image(Device* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, uint32_t mipLevels)
+Image::Image(Device* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, VkImageLayout initialLayout, uint32_t mipLevels)
     : _device(device)
     , _extent(extent)
     , _type(type)
     , _format(format)
     , _usage(usage)
     , _aspectMask(aspectMask)
+    , _layout(initialLayout)
     , _mipLevels(mipLevels) {
-    CreateImage();
-}
-
-Image::Image(Image& rhs)
-    : _device(rhs._device)
-    , _extent(rhs._extent)
-    , _type(rhs._type)
-    , _format(rhs._format)
-    , _usage(rhs._usage)
-    , _aspectMask(rhs._aspectMask)
-    , _mipLevels(rhs._mipLevels) {
     CreateImage();
 }
 
@@ -66,16 +56,66 @@ VkImageUsageFlags Image::GetUsage() const {
     return _usage;
 }
 
-VkImageView Image::GetView() const {
-    return _imageView;
-}
-
 VkImageLayout Image::GetLayout() const {
     return _layout;
 }
 
 VkImage Image::Get() const {
     return _image;
+}
+
+VkImageView Image::GetView() const {
+    return _imageView;
+}
+
+void Image::Transition(VkImageLayout layout) {
+
+    _device->ImmediateSubmit([&](VkCommandBuffer cmd){
+        
+        VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_NONE;
+        VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_NONE;
+
+        VkImageMemoryBarrier barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        barrier.pNext = nullptr;
+        
+        if (_layout == VK_IMAGE_LAYOUT_UNDEFINED && layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+            barrier.srcAccessMask = 0;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        } else if (_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        } else {
+            throw std::runtime_error("Unsupported image layout transition!");
+        }
+        
+        barrier.oldLayout = _layout;
+        barrier.newLayout = layout;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = _image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseMipLevel = 0;
+        barrier.subresourceRange.levelCount = 1;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+
+        vkCmdPipelineBarrier(
+            cmd,
+            sourceStage, destinationStage,
+            0,
+            0, nullptr,
+            0, nullptr,
+            1, &barrier);
+    });
+
+    _layout = layout;
 }
 
 void Image::CreateImage() {
@@ -96,7 +136,7 @@ void Image::CreateImage() {
     imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
     imageCreateInfo.queueFamilyIndexCount = 1;
     imageCreateInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
-    imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    imageCreateInfo.initialLayout = _layout;
 
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.flags = 0;

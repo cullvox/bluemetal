@@ -222,8 +222,8 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
     }
     
     for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++) {        
-        for (auto& write : writes)
-            write.dstSet = _perFrameData[i].set;
+        for (auto& write_ : writes)
+            write_.dstSet = _perFrameData[i].set;
 
         vkUpdateDescriptorSets(_device->Get(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
     }
@@ -250,7 +250,7 @@ size_t MaterialBase::CalculateDynamicAlignment(size_t uboSize) {
 
 // ========== Material ========== //
 
-Material::Material(Device* device, RenderPass* pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet)
+Material::Material(Device* device, VkRenderPass pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet)
     : MaterialBase(device, materialSet)
     , _device(device) {
 
@@ -274,7 +274,7 @@ Material::Material(Device* device, RenderPass* pass, uint32_t subpass, const Pip
     }
 
     // Construct the pipeline.
-    _pipeline = std::make_unique<Pipeline>(_device, pass, subpass, state, &reflection);
+    _pipeline = std::make_unique<Pipeline>(_device, state, pass, subpass, &reflection);
     
     _layout = _pipeline->GetDescriptorSetLayouts().at(materialSet);
 
