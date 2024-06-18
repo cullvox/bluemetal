@@ -1,19 +1,21 @@
 #pragma once
 
-#include "Image.h"
+#include "Resource/Resource.h"
+#include "Texture.h"
+#include "VulkanImage.h"
 
 namespace bl {
 
-class Texture2D : public Resource { 
+class Texture2D : public Texture { 
 public:
     Texture2D(const nlohmann::json& data);
     ~Texture2D();
 
-    virtual void Load();
-    virtual void Unload();
+    virtual void Load() override;
+    virtual void Unload() override;
 
 private:
-    Image _image;
+    VulkanImage _image;
 };
 
 } // namespace bl

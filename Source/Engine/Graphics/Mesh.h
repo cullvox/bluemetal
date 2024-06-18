@@ -1,16 +1,13 @@
 #pragma once
 
-#include "Device.h"
-#include "Buffer.h"
+#include "VulkanBuffer.h"
 
-namespace bl
-{
+namespace bl {
 
-class Mesh
-{
+class Mesh {
 public:
     template<typename TVertex>
-    Mesh(Device* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices);
+    Mesh(VulkanDevice* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices);
 
     template<typename TVertex>
     void setVertices(const std::vector<TVertex>& vertices);
@@ -20,7 +17,7 @@ public:
     void draw(VkCommandBuffer cmd);
 
 private:
-    Device* _device;
+    VulkanDevice* _device;
     std::unique_ptr<Buffer> _vertexBuffer;
     std::unique_ptr<Buffer> _indexBuffer;
     uint32_t _indexCount;

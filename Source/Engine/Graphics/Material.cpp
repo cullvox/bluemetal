@@ -6,7 +6,7 @@ namespace bl {
 
 // ========== MaterialBase ========== //
 
-MaterialBase::MaterialBase(Device* device, uint32_t materialSet)
+MaterialBase::MaterialBase(VulkanDevice* device, uint32_t materialSet)
     : _materialSet(materialSet)
     , _currentFrame(0)
     , _device(device)  {}
@@ -50,7 +50,7 @@ void MaterialBase::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
         if (binding.second.index() == 0) {
             auto& variant = _data[binding.first];
             Buffer& buffer = std::get<Buffer>(variant);
-            uint32_t blockSize = (uint32_t)buffer.GetSize() / GraphicsConfig::numFramesInFlight;
+            uint32_t blockSize = (uint32_t)buffer.GetSize() / VulkanConfig::numFramesInFlight;
             offsets.push_back(blockSize * currentFrame);
         }
     }
@@ -59,10 +59,10 @@ void MaterialBase::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline()->GetLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
 
     // Save the next frame number for when updating what bindings are dirty/not updated.
-    _currentFrame = (currentFrame + 1) % GraphicsConfig::numFramesInFlight;
+    _currentFrame = (currentFrame + 1) % VulkanConfig::numFramesInFlight;
 }
 
-void MaterialBase::SetSampledImage2D(const std::string& name, Sampler* sampler, Image* image) {
+void MaterialBase::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image) {
     if (!GetSamplerMetadata().contains(name)) {
         blError("Material does not contain sampler \"{}\"!", name);
         return;
@@ -111,7 +111,7 @@ void MaterialBase::PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t s
 }
 
 void MaterialBase::UpdateUniforms() {
-    uint32_t previousFrame = (_currentFrame - 1) % GraphicsConfig::numFramesInFlight;
+    uint32_t previousFrame = (_currentFrame - 1) % VulkanConfig::numFramesInFlight;
 
     PerFrameData& currentFrameData = _perFrameData[_currentFrame];
     PerFrameData& previousFrameData = _perFrameData[previousFrame];
@@ -129,7 +129,7 @@ void MaterialBase::UpdateUniforms() {
             switch(variant.index()) {
             case 0: { // buffer type
                 Buffer& buffer = std::get<Buffer>(variant);
-                VkDeviceSize blockSize = buffer.GetSize() / GraphicsConfig::numFramesInFlight;
+                VkDeviceSize blockSize = buffer.GetSize() / VulkanConfig::numFramesInFlight;
 
                 void* mapped = nullptr;
                 buffer.Map(&mapped);
@@ -172,7 +172,7 @@ void MaterialBase::UpdateUniforms() {
 void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
 
     // Allocate the per frame descriptor sets.
-    for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++) {
+    for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) {
         _perFrameData[i].set = _device->AllocateDescriptorSet(layout);
     }
 
@@ -195,7 +195,7 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
 
             auto dynamicAlignment = CalculateDynamicAlignment(binding.GetSize());
-            auto bufferSize = dynamicAlignment * GraphicsConfig::numFramesInFlight;
+            auto bufferSize = dynamicAlignment * VulkanConfig::numFramesInFlight;
 
             auto& variant = (_data[binding.GetLocation()] = Buffer{ 
                 Buffer{_device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, bufferSize, nullptr}});
@@ -221,7 +221,7 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
         }
     }
     
-    for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++) {        
+    for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) {        
         for (auto& write_ : writes)
             write_.dstSet = _perFrameData[i].set;
 
@@ -233,7 +233,7 @@ void MaterialBase::SetBindingDirty(uint32_t binding) {
     assert(_data.contains(binding) && "Binding must exist to set it dirty!");
 
     _perFrameData[_currentFrame].dirty[binding] = false; /* This current frame is now the current data and is no longer dirty. */
-    for (uint32_t i = (_currentFrame + 1) % GraphicsConfig::numFramesInFlight; i != _currentFrame; i = (i + 1) % GraphicsConfig::numFramesInFlight) {
+    for (uint32_t i = (_currentFrame + 1) % VulkanConfig::numFramesInFlight; i != _currentFrame; i = (i + 1) % VulkanConfig::numFramesInFlight) {
         _perFrameData[i].dirty[binding] = true;
     }
 }
@@ -250,13 +250,13 @@ size_t MaterialBase::CalculateDynamicAlignment(size_t uboSize) {
 
 // ========== Material ========== //
 
-Material::Material(Device* device, VkRenderPass pass, uint32_t subpass, const PipelineStateInfo& state, uint32_t materialSet)
+Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, const VulkanPipelineStateInfo& state, uint32_t materialSet)
     : MaterialBase(device, materialSet)
     , _device(device) {
 
     // Get the descriptor set metadata and dedicated set for this material.
     
-    PipelineReflection reflection{state};
+    VulkanPipelineReflection reflection{state};
 
     auto& sets = reflection.GetDescriptorSetReflections();
     if (!sets.contains(materialSet))
@@ -305,7 +305,7 @@ Material::Material(Device* device, VkRenderPass pass, uint32_t subpass, const Pi
 
 Material::~Material() { }
 
-const std::map<std::string, BlockVariable>& Material::GetUniformMetadata() {
+const std::map<std::string, VulkanBlockVariable>& Material::GetUniformMetadata() {
     return _uniformMetadata;
 }
 
@@ -326,7 +326,7 @@ MaterialInstance::MaterialInstance(Material* material)
 
 MaterialInstance::~MaterialInstance() {}
 
-const std::map<std::string, BlockVariable>& MaterialInstance::GetUniformMetadata() {
+const std::map<std::string, VulkanBlockVariable>& MaterialInstance::GetUniformMetadata() {
     return _material->GetUniformMetadata();
 }
 

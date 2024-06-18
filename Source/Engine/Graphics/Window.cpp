@@ -1,13 +1,13 @@
 #include "Core/Print.h"
-#include "SDL_error.h"
-#include "Vulkan.h"
-#include "Device.h"
+#include "VulkanInstance.h"
+#include "VulkanDevice.h"
+#include "VulkanSwapchain.h"
 #include "Window.h"
 
 namespace bl 
 {
 
-void Window::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func) {
+void VulkanWindow::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func) {
     SDL_Window* temporaryWindow = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN);
 
     if (!temporaryWindow) {
@@ -18,7 +18,7 @@ void Window::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func) {
     SDL_DestroyWindow(temporaryWindow);
 }
 
-void Window::UseTemporarySurface(Instance* instance, const std::function<void(VkSurfaceKHR)>& func)
+void VulkanWindow::UseTemporarySurface(VulkanInstance* instance, const std::function<void(VkSurfaceKHR)>& func)
 {
     UseTemporaryWindow([&](SDL_Window* window){
             VkSurfaceKHR temporarySurface = VK_NULL_HANDLE;
@@ -28,7 +28,7 @@ void Window::UseTemporarySurface(Instance* instance, const std::function<void(Vk
         });
 }
 
-std::vector<const char*> Window::GetSurfaceExtensions()
+std::vector<const char*> VulkanWindow::GetSurfaceExtensions()
 {
     std::vector<const char*> extensions = {};
     UseTemporaryWindow([&](SDL_Window* window){
@@ -40,7 +40,7 @@ std::vector<const char*> Window::GetSurfaceExtensions()
     return extensions;
 }
 
-Window::Window(Device* device, const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
+VulkanWindow::VulkanWindow(VulkanDevice* device, const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
     : _device(device)
 {
     auto flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
@@ -75,17 +75,17 @@ Window::Window(Device* device, const std::string& title, std::optional<VideoMode
         throw std::runtime_error("Could not create an Vulkan surface!");
     }
 
-    _swapchain = std::make_unique<Swapchain>(_device, this);
+    _swapchain = std::make_unique<VulkanSwapchain>(_device, this);
 }
 
-Window::~Window()
+VulkanWindow::~VulkanWindow()
 {
     _swapchain.reset();
     vkDestroySurfaceKHR(_device->GetInstance()->Get(), _surface, nullptr);
     SDL_DestroyWindow(_window);
 }
 
-VideoMode Window::GetCurrentVideoMode() const
+VideoMode VulkanWindow::GetCurrentVideoMode() const
 {
     int x = 0, y = 0;
     SDL_GetWindowPosition(_window, &x, &y);
@@ -96,22 +96,22 @@ VideoMode Window::GetCurrentVideoMode() const
     return VideoMode{{{x, y}, {(uint32_t)mode.w, (uint32_t)mode.h}}, mode.refresh_rate};
 }
 
-SDL_Window* Window::Get() const 
+SDL_Window* VulkanWindow::Get() const 
 { 
     return _window; 
 }
 
-VkSurfaceKHR Window::GetSurface() const
+VkSurfaceKHR VulkanWindow::GetSurface() const
 {
     return _surface;
 }
 
-Swapchain* Window::GetSwapchain() const
+VulkanSwapchain* VulkanWindow::GetSwapchain() const
 {
     return _swapchain.get();
 }
 
-VkExtent2D Window::GetExtent() const
+VkExtent2D VulkanWindow::GetExtent() const
 {
     int w = 0, h = 0;
     SDL_Vulkan_GetDrawableSize(_window, &w, &h);

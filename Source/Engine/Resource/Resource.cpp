@@ -27,6 +27,14 @@ ResourceState Resource::GetState() const
     return _state;
 }
 
+void Resource::Load() {
+    _state = ResourceState::eLoaded;
+}
+
+void Resource::Unload() {
+    _state = ResourceState::eUnloaded;
+}
+
 void Resource::SetPath(const std::string& path)
 {
     _path = path;

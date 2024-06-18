@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Config.h"
-#include "Device.h"
-#include "DescriptorSetCache.h"
 #include "Window.h"
-#include "Image.h"
+#include "VulkanConfig.h"
+#include "VulkanDevice.h"
+#include "VulkanSwapchain.h"
+#include "VulkanDescriptorSetCache.h"
+#include "VulkanImage.h"
 
 namespace bl {
 
@@ -12,13 +13,12 @@ using RenderFunction = std::function<void(VkCommandBuffer cmd, uint32_t currentF
 
 class Renderer {
 public:
-    Renderer(Device* device, Window* window); /** @brief Constructor */
+    Renderer(VulkanDevice* device, VulkanWindow* window); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
-    Window* GetWindow();
     VkRenderPass GetRenderPass() const;
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::numFramesInFlight - 1. */
-    DescriptorSetCache* GetDescriptorSetCache();
+    VulkanDescriptorSetCache* GetDescriptorSetCache();
     void Render(RenderFunction func);
 
 private:
@@ -29,9 +29,9 @@ private:
     void DestroyImagesAndFramebuffers();
     void RecreateImages();
 
-    Device* _device;
-    Window* _window;
-    Swapchain* _swapchain;
+    VulkanDevice* _device;
+    VulkanWindow* _window;
+    VulkanSwapchain* _swapchain;
 
     // Frame Synchronization
     uint32_t _imageCount;
@@ -44,10 +44,10 @@ private:
     // Render Pass Data
     VkFormat _depthFormat;
     VkRenderPass _pass;
-    std::vector<Image> _depthImages;
+    std::vector<VulkanImage> _depthImages;
     std::vector<VkFramebuffer> _framebuffers;
 
-    DescriptorSetCache _descriptorSetCache;
+    VulkanDescriptorSetCache _descriptorSetCache;
 };
 
 } // namespace bl

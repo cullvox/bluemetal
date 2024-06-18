@@ -108,6 +108,15 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} /W4 /permissive /Zc:preprocessor /wd4251")
 endif()
 
+# Any apple product requires the use of the Vulkan Portability Subset.
+if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+  bl_message("Enabling Vulkan Portability Subset for MacOS")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY")
+endif()
+
 #===============================================================================
 # build source
 #===============================================================================

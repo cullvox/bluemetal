@@ -2,9 +2,9 @@
 #include "Core/FrameCounter.h"
 #include "Core/Print.h"
 #include "Engine/Engine.h"
-#include "Graphics/Shader.h"
-#include "Graphics/PhysicalDevice.h"
-#include "Graphics/Pipeline.h"
+#include "Graphics/VulkanShader.h"
+#include "Graphics/VulkanPhysicalDevice.h"
+#include "Graphics/VulkanPipeline.h"
 #include "Graphics/Vertex.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Material.h"
@@ -53,8 +53,8 @@ int main(int argc, const char** argv)
     auto graphics = engine.GetGraphics();
     auto imgui = engine.GetImGui();
     
-    auto vert = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.vert.spv");
-    auto frag = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.frag.spv");
+    auto vert = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.vert.spv");
+    auto frag = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.frag.spv");
 
     std::vector<bl::Vertex> cubeVertices{
         // front
@@ -96,7 +96,7 @@ int main(int argc, const char** argv)
 
     auto renderer = engine.GetRenderer();
 
-    bl::PipelineStateInfo psi{};
+    bl::VulkanPipelineStateInfo psi{};
     psi.vertexInput.vertexInputBindings = bl::Vertex::GetBindingDescriptions();
     psi.vertexInput.vertexInputAttribs = bl::Vertex::GetBindingAttributeDescriptions();
     psi.stages = { vert.Get(), frag.Get() };

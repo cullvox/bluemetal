@@ -4,6 +4,7 @@
 // Headers
 ///////////////////////////////
 
+#include "Graphics/Window.h"
 #define IMGUI_IMPL_VULKAN_NO_PROTOTYPES
 #include "imgui.h"
 
@@ -19,7 +20,7 @@ class Engine;
 class ImGuiSystem
 {
 public:
-    ImGuiSystem(Engine* engine, Renderer* renderer);
+    ImGuiSystem(Engine* engine, VulkanWindow* window, Renderer* renderer);
     ~ImGuiSystem();
 
     void Process(const SDL_Event& event);
@@ -32,6 +33,7 @@ private:
     void Unload();
 
     Engine* _engine;
+    VulkanWindow* _window;
     Renderer* _renderer;
     VkDescriptorPool _descriptorPool;
 };

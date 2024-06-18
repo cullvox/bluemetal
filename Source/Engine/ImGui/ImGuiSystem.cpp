@@ -11,8 +11,9 @@
 namespace bl 
 {
 
-ImGuiSystem::ImGuiSystem(Engine* engine, Renderer* renderer)
+ImGuiSystem::ImGuiSystem(Engine* engine, VulkanWindow* window, Renderer* renderer)
     : _engine(engine)
+    , _window(window)
     , _renderer(renderer)
 {
     Init();
@@ -95,7 +96,7 @@ void ImGuiSystem::Init()
     auto device = graphics->GetDevice();
     auto instance = graphics->GetInstance();
     auto physicalDevice = graphics->GetPhysicalDevice();
-    auto window = _renderer->GetWindow();
+    auto window = _window;
     auto renderPass = _renderer->GetRenderPass();
 
     std::array poolSizes = { 

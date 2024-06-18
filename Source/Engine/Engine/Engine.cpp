@@ -17,7 +17,7 @@ Engine::Engine()
     auto displays = _graphics->GetDisplays();
     _window = _graphics->CreateWindow("Maginvox", displays[0]->GetDesktopMode(), false);
     _renderer = _graphics->CreateRenderer(_window.get());
-    _imgui = std::make_unique<ImGuiSystem>(this, _renderer.get());
+    _imgui = std::make_unique<ImGuiSystem>(this, _window.get(), _renderer.get());
 
     _resourceManager->RegisterBuilder({"Shader"}, _graphics.get());
     _resourceManager->RegisterBuilder({"Sound"}, _audio.get());
@@ -53,7 +53,7 @@ ImGuiSystem* Engine::GetImGui()
     return _imgui.get();
 }
 
-Window* Engine::GetWindow()
+VulkanWindow* Engine::GetWindow()
 {
     return _window.get();
 }

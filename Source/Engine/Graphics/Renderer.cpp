@@ -1,30 +1,37 @@
-#include "Renderer.h"
 #include "Core/Print.h"
-#include "Graphics/DescriptorSetCache.h"
-#include "vulkan/vulkan_core.h"
+#include "VulkanDescriptorSetCache.h"
+#include "Renderer.h"
+#include <exception>
 
 namespace bl {
 
-
-Renderer::Renderer(Device* device, Window* window)
+Renderer::Renderer(VulkanDevice* device, VulkanWindow* window)
     : _device(device)
     , _window(window)
     , _swapchain(window->GetSwapchain())
     , _currentFrame(0)
-    , _descriptorSetCache(_device, 1024, DescriptorRatio::Default()) {
-    _commandBuffers.resize(GraphicsConfig::numFramesInFlight);
+    , _descriptorSetCache(_device, 1024, VulkanDescriptorRatio::Default()) {
+    _commandBuffers.resize(VulkanConfig::numFramesInFlight);
     _imageAvailableSemaphores.resize(_swapchain->GetImageCount());
     _renderFinishedSemaphores.resize(_swapchain->GetImageCount());
     _inFlightFences.resize(_swapchain->GetImageCount());
 
-    CreateSyncObjects();
-    CreateRenderPasses();
-    RecreateImages();
+    try {
+        CreateSyncObjects();
+        CreateRenderPasses();
+        RecreateImages();
+    } catch (const std::exception& e) {
+        DestroyImagesAndFramebuffers();
+        DestroyRenderPasses();
+        DestroySyncObjects();
+        throw;
+    }
 }
 
 Renderer::~Renderer()  {
     _device->WaitForDevice();
 
+    DestroyImagesAndFramebuffers();
     DestroyRenderPasses();
     DestroySyncObjects();
 }
@@ -39,7 +46,7 @@ void Renderer::CreateSyncObjects() {
     allocateInfo.pNext = nullptr;
     allocateInfo.commandPool = _device->GetCommandPool();
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocateInfo.commandBufferCount = GraphicsConfig::numFramesInFlight;
+    allocateInfo.commandBufferCount = VulkanConfig::numFramesInFlight;
 
     VK_CHECK(vkAllocateCommandBuffers(_device->Get(), &allocateInfo, _commandBuffers.data()))
 
@@ -53,7 +60,7 @@ void Renderer::CreateSyncObjects() {
     fenceInfo.pNext = nullptr;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++) {
+    for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) {
         VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]))
         VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
         VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_inFlightFences[i]))
@@ -61,7 +68,7 @@ void Renderer::CreateSyncObjects() {
 }
 
 void Renderer::DestroySyncObjects() {
-    for (uint32_t i = 0; i < GraphicsConfig::numFramesInFlight; i++) {
+    for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) {
         vkDestroySemaphore(_device->Get(), _imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(_device->Get(), _inFlightFences[i], nullptr);
@@ -76,10 +83,6 @@ void Renderer::DestroyImagesAndFramebuffers() {
 
     _framebuffers.clear();
     _depthImages.clear();
-}
-
-Window* Renderer::GetWindow() {
-    return _window;
 }
 
 void Renderer::RecreateImages() {
@@ -201,7 +204,7 @@ void Renderer::Render(std::function<void(VkCommandBuffer, uint32_t)> func)
         RecreateImages();
     }
 
-    _currentFrame = (_currentFrame + 1) % GraphicsConfig::numFramesInFlight;
+    _currentFrame = (_currentFrame + 1) % VulkanConfig::numFramesInFlight;
 }
 
 void Renderer::CreateRenderPasses() {
@@ -284,7 +287,7 @@ void Renderer::DestroyRenderPasses() {
     vkDestroyRenderPass(_device->Get(), _pass, nullptr);
 }
 
-DescriptorSetCache* Renderer::GetDescriptorSetCache() {
+VulkanDescriptorSetCache* Renderer::GetDescriptorSetCache() {
     return &_descriptorSetCache;
 }
 

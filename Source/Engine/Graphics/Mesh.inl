@@ -3,7 +3,7 @@ namespace bl
 {
 
 template<typename TVertex>
-Mesh::Mesh(Device* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices)
+Mesh::Mesh(VulkanDevice* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices)
     : _device(device)
 {
     setVertices(vertices);

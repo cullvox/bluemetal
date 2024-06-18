@@ -1,6 +1,6 @@
 #include "Core/Print.h"
 #include "Engine/Engine.h"
-#include "Shader.h"
+#include "VulkanShader.h"
 #include "GraphicsSystem.h"
 
 namespace bl 
@@ -9,43 +9,33 @@ namespace bl
 GraphicsSystem::GraphicsSystem(Engine* engine)
     : _engine(engine)
 {
-    _instance = std::make_unique<Instance>(Version{}, "Maginvox", true);
+    _instance = std::make_unique<VulkanInstance>(Version{}, "Maginvox", true);
     _physicalDevice = _instance->ChoosePhysicalDevice();
-    _device = std::make_unique<Device>(_instance.get(), _physicalDevice);
-    _descriptorCache = std::make_unique<DescriptorSetLayoutCache>(_device.get());
-    _pipelineLayoutCache = std::make_unique<PipelineLayoutCache>(_device.get());
+    _device = std::make_unique<VulkanDevice>(_instance.get(), _physicalDevice);
+    // _descriptorCache = std::make_unique<VulkanDescriptorSetLayoutCache>(_device.get());
+    // _pipelineLayoutCache = std::make_unique<VulkanPipelineLayoutCache>(_device.get());
 }
 
 GraphicsSystem::~GraphicsSystem()
 {
 }
 
-Instance* GraphicsSystem::GetInstance() 
+VulkanInstance* GraphicsSystem::GetInstance() 
 { 
     return _instance.get(); 
 }
 
-PhysicalDevice* GraphicsSystem::GetPhysicalDevice() 
+const VulkanPhysicalDevice* GraphicsSystem::GetPhysicalDevice() 
 { 
     return _physicalDevice; 
 }
 
-Device* GraphicsSystem::GetDevice() 
+VulkanDevice* GraphicsSystem::GetDevice() 
 { 
     return _device.get(); 
 }
 
-DescriptorSetLayoutCache* GraphicsSystem::GetDescriptorCache() 
-{ 
-    return _descriptorCache.get(); 
-}
-
-PipelineLayoutCache* GraphicsSystem::GetPipelineLayoutCache() 
-{ 
-    return _pipelineLayoutCache.get(); 
-}
-
-std::vector<PhysicalDevice*> GraphicsSystem::GetPhysicalDevices()
+std::vector<const VulkanPhysicalDevice*> GraphicsSystem::GetPhysicalDevices()
 {
     return _instance->GetPhysicalDevices();
 }
@@ -69,12 +59,12 @@ std::vector<Display*> GraphicsSystem::GetDisplays()
     return temp;
 }
 
-std::unique_ptr<Window> GraphicsSystem::CreateWindow(const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
+std::unique_ptr<VulkanWindow> GraphicsSystem::CreateWindow(const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
 {
-    return std::make_unique<Window>(_device.get(), title, videoMode, fullscreen);
+    return std::make_unique<VulkanWindow>(_device.get(), title, videoMode, fullscreen);
 }
 
-std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(Window* window)
+std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(VulkanWindow* window)
 {
     return std::make_unique<Renderer>(_device.get(), window);
 }
@@ -83,7 +73,7 @@ std::unique_ptr<Resource> GraphicsSystem::BuildResource(const std::string& type,
 {
     if (type == "Shader")
     {
-        return std::make_unique<Shader>(json, _device.get());
+        return std::make_unique<VulkanShader>(json, _device.get());
     }
     else
     {
