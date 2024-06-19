@@ -157,10 +157,15 @@ void VulkanInstance::CreateInstance(Version appVersion, std::string_view appName
     applicationInfo.engineVersion = VK_MAKE_VERSION(engineVersion.major, engineVersion.minor, engineVersion.patch);
     applicationInfo.apiVersion = VulkanConfig::apiVersion;
 
+    VkInstanceCreateFlags flags = 0;
+    #ifdef BLUEMETAL_VULKAN_PORTABILITY
+    flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+    #endif
+
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pNext = _enableValidation ? &debugMessengerCreateInfo : nullptr;
-    instanceCreateInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;;
+    instanceCreateInfo.flags = flags;
     instanceCreateInfo.pApplicationInfo = &applicationInfo;
     instanceCreateInfo.enabledLayerCount = (uint32_t)layers.size();
     instanceCreateInfo.ppEnabledLayerNames = layers.data();

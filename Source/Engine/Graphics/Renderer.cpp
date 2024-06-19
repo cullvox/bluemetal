@@ -99,7 +99,7 @@ void Renderer::RecreateImages() {
         _depthImages.emplace_back(_device, VK_IMAGE_TYPE_2D, imageExtent, _depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
     }
 
-    _framebuffers.reserve(_imageCount);
+    _framebuffers.resize(_imageCount);
 
     auto swapchainImageViews = _swapchain->GetImageViews();
     for (uint32_t i = 0; i < _imageCount; i++) {
