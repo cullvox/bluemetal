@@ -1,5 +1,8 @@
 #include "Core/Print.h"
+#include "Graphics/VulkanConversions.h"
+#include "VulkanBuffer.h"
 #include "VulkanImage.h"
+#include "vulkan/vulkan_core.h"
 
 namespace bl {
 
@@ -79,17 +82,28 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     VK_CHECK(vkCreateImageView(_device->Get(), &viewCreateInfo, nullptr, &_imageView))
 }
 
-VulkanImage::VulkanImage(VulkanImage&& rhs)
-    : _device(rhs._device)
-    , _extent(rhs._extent)
-    , _type(rhs._type)
-    , _format(rhs._format)
-    , _usage(rhs._usage)
-    , _aspectMask(rhs._aspectMask)
-    , _mipLevels(rhs._mipLevels)
-    , _image(rhs._image)
-    , _imageView(rhs._imageView)
-    , _allocation(rhs._allocation) {
+VulkanImage::VulkanImage(VulkanImage&& rhs) {
+    this->operator=(std::move(rhs));
+}
+
+VulkanImage::~VulkanImage() { 
+    Destroy();
+}
+
+VulkanImage& VulkanImage::operator=(VulkanImage&& rhs) {
+    Destroy();
+
+    _device = rhs._device;
+    _extent = rhs._extent;
+    _type = rhs._type;
+    _format = rhs._format;
+    _usage = rhs._usage;
+    _aspectMask = rhs._aspectMask;
+    _mipLevels = rhs._mipLevels;
+    _image = rhs._image;
+    _imageView = rhs._imageView;
+    _allocation = rhs._allocation;
+
     rhs._device = {};
     rhs._type = {};
     rhs._extent = {};
@@ -100,11 +114,8 @@ VulkanImage::VulkanImage(VulkanImage&& rhs)
     rhs._image = {};
     rhs._imageView = {};
     rhs._allocation = {};
-}
 
-VulkanImage::~VulkanImage() { 
-    vkDestroyImageView(_device->Get(), _imageView, nullptr);
-    vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
+    return *this;
 }
 
 VkExtent3D VulkanImage::GetExtent() const { 
@@ -131,54 +142,90 @@ VkImageView VulkanImage::GetView() const {
     return _imageView;
 }
 
-void VulkanImage::Transition(VkImageLayout layout) {
+void VulkanImage::Destroy() {
+    vkDestroyImageView(_device->Get(), _imageView, nullptr);
+    vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
+}
+
+void VulkanImage::UploadData(std::span<std::byte> data) {
+
+    // Create a staging buffer.
+    VmaAllocationInfo allocInfo = {};
+    VulkanBuffer stagingBuffer{_device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_GPU_ONLY, data.size(), &allocInfo};
+
+    // Copy image memory to the staging buffer.
+    std::memcpy(allocInfo.pMappedData, data.data(), data.size());
 
     _device->ImmediateSubmit([&](VkCommandBuffer cmd){
-        
-        VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_NONE;
-        VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_NONE;
+        Transition(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-        VkImageMemoryBarrier barrier = {};
-        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-        barrier.pNext = nullptr;
-        
-        if (_layout == VK_IMAGE_LAYOUT_UNDEFINED && layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
-            barrier.srcAccessMask = 0;
-            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        VkBufferImageCopy region = {};
+        region.bufferOffset = 0;
+        region.bufferRowLength = 0;
+        region.bufferImageHeight = 0;
+        region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.baseArrayLayer = 0;
+        region.imageSubresource.layerCount = 1;
+        region.imageOffset = {0, 0};
+        region.imageExtent = _extent;
 
-            sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-            destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        } else if (_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
-            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        vkCmdCopyBufferToImage(cmd, stagingBuffer.Get(), _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-            sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-            destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        } else {
-            throw std::runtime_error("Unsupported VulkanImage layout transition!");
-        }
-        
-        barrier.oldLayout = _layout;
-        barrier.newLayout = layout;
-        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.image = _image;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        barrier.subresourceRange.baseMipLevel = 0;
-        barrier.subresourceRange.levelCount = 1;
-        barrier.subresourceRange.baseArrayLayer = 0;
-        barrier.subresourceRange.layerCount = 1;
-
-        vkCmdPipelineBarrier(
-            cmd,
-            sourceStage, destinationStage,
-            0,
-            0, nullptr,
-            0, nullptr,
-            1, &barrier);
+        Transition(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     });
+}
+
+void VulkanImage::Transition(VkCommandBuffer cmd, VkImageLayout layout) {
+    VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_NONE;
+    VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_NONE;
+
+    VkImageMemoryBarrier barrier = {};
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.pNext = nullptr;
+    
+    if (_layout == VK_IMAGE_LAYOUT_UNDEFINED && layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+        barrier.srcAccessMask = 0;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+    } else if (_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && layout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    } else {
+        throw std::runtime_error("Unsupported VulkanImage layout transition!");
+    }
+    
+    barrier.oldLayout = _layout;
+    barrier.newLayout = layout;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.image = _image;
+    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.baseMipLevel = 0;
+    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseArrayLayer = 0;
+    barrier.subresourceRange.layerCount = 1;
+
+    vkCmdPipelineBarrier(
+        cmd,
+        sourceStage, destinationStage,
+        0,
+        0, nullptr,
+        0, nullptr,
+        1, &barrier);
 
     _layout = layout;
+}
+
+void VulkanImage::Transition(VkImageLayout layout) {
+    _device->ImmediateSubmit([&](VkCommandBuffer cmd){
+        Transition(cmd, layout);
+    });
 }
 
 } // namespace bl

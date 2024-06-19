@@ -1,6 +1,7 @@
 #include "Core/Print.h"
 #include "Graphics/VulkanBlockReflection.h"
 #include "VulkanPipeline.h"
+#include "vulkan/vulkan_core.h"
 
 namespace bl {
 
@@ -263,7 +264,19 @@ Pipeline::Pipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, V
     multisampleState.alphaToCoverageEnable = VK_FALSE;
     multisampleState.alphaToOneEnable = VK_FALSE;
 
-    // VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
+    VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
+    depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+    depthStencilState.pNext = nullptr;
+    depthStencilState.flags = 0;
+    depthStencilState.depthTestEnable = VK_TRUE;
+    depthStencilState.depthWriteEnable = VK_TRUE;
+    depthStencilState.depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
+    depthStencilState.depthBoundsTestEnable = VK_FALSE;
+    depthStencilState.stencilTestEnable = VK_FALSE;
+    depthStencilState.front = {}; // unused
+    depthStencilState.back = {};
+    depthStencilState.minDepthBounds = 0.0f;
+    depthStencilState.maxDepthBounds = 1.0f;
 
     std::array<VkPipelineColorBlendAttachmentState, 1> attachments = {};
     attachments[0].blendEnable = VK_TRUE;
@@ -312,7 +325,7 @@ Pipeline::Pipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, V
     pipelineCreateInfo.pViewportState = &viewportState;
     pipelineCreateInfo.pRasterizationState = &rasterizationState;
     pipelineCreateInfo.pMultisampleState = &multisampleState;
-    pipelineCreateInfo.pDepthStencilState = nullptr;
+    pipelineCreateInfo.pDepthStencilState = &depthStencilState;
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.layout = _layout;

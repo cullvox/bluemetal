@@ -26,14 +26,14 @@ public:
         VkImageUsageFlags   usage, 
         VkImageAspectFlags  viewAspectMask, 
         VkImageLayout       initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, 
-        uint32_t            mipLevels = 0);
+        uint32_t            mipLevels = 1);
 
     /// @brief Move Constructor
     /// @param[inout] image The other image to move it's data into this new object. 
     VulkanImage(VulkanImage&& image);
 
     /// @brief Default Destructor
-    ~VulkanImage(); 
+    ~VulkanImage();
 
 public:
     /// @brief Move Assign Operator 
@@ -69,10 +69,21 @@ public:
     /// @return Returns the default image view created at construction.
     VkImageView GetView() const;
 
+    /// @brief Destroys the Vulkan image freeing up GPU memory.
+    void Destroy();
+
 public:
+    void UploadData(std::span<std::byte> data);
+
+
     /// @brief Transitions the image from the previous layout to another new one.
-    /// @param layout[in] New layout to transition the image into.  
-    /// @param format[in] A new format to set the image to, leave empty to use the current format.
+    /// @brief Command buffer to write the image transition command to.
+    /// @param layout[in] New layout to transition the image into.
+    void Transition(VkCommandBuffer cmd, VkImageLayout layout);
+
+    /// @brief Transitions the image from the previous layout to another new one.
+    /// Immediately submits a command buffer to the graphics card.
+    /// @param layout[in] New layout to transition the image into.
     void Transition(VkImageLayout layout);
 
 private:

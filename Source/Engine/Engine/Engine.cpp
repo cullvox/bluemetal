@@ -25,12 +25,12 @@ Engine::Engine()
 
 Engine::~Engine() 
 {
-    _resourceManager.release();
-    _renderer.release();
-    _imgui.release();
-    _window.release();
-    _graphics.release();
-    _audio.release();
+    std::ignore = _resourceManager.release();
+    std::ignore = _renderer.release();
+    std::ignore = _imgui.release();
+    std::ignore = _window.release();
+    std::ignore = _graphics.release();
+    std::ignore = _audio.release();
 }
 
 ResourceManager* Engine::GetResourceManager()

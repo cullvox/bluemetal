@@ -4,6 +4,13 @@
 
 namespace bl {
 
+template<typename T>
+std::span<const std::byte> vector_as_bytes(const std::vector<T>& vec) {
+    const std::byte* data_ptr = reinterpret_cast<const std::byte*>(vec.data());
+    size_t size = sizeof(T) * vec.size();
+    return std::span<const std::byte>{data_ptr, size};
+}
+
 class Mesh {
 public:
     template<typename TVertex>
@@ -18,8 +25,8 @@ public:
 
 private:
     VulkanDevice* _device;
-    std::unique_ptr<Buffer> _vertexBuffer;
-    std::unique_ptr<Buffer> _indexBuffer;
+    VulkanBuffer _vertexBuffer;
+    VulkanBuffer _indexBuffer;
     uint32_t _indexCount;
 };
 

@@ -50,6 +50,7 @@ VulkanDevice::VulkanDevice(VulkanInstance* instance, const VulkanPhysicalDevice*
 
     _descriptorSetLayoutCache = std::make_unique<VulkanDescriptorSetLayoutCache>(this);
     _pipelineLayoutCache = std::make_unique<VulkanPipelineLayoutCache>(this);
+    _descriptorSetCache = std::make_unique<VulkanDescriptorSetCache>(this, 1024, VulkanDescriptorRatio::Default());
 }
 
 VulkanDevice::~VulkanDevice() { 

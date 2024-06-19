@@ -7,6 +7,12 @@
 
 namespace bl {
 
+/// @brief 
+enum class TextureFileType {
+    ePNG,
+    eQOI,
+};
+
 /// @brief Pixel formats that are currently supported for a texture object. 
 enum class TextureFormat {
     eRGB,
@@ -20,6 +26,7 @@ enum class TextureColorSpace {
 };
 
 /// @brief Generic texture loading resource interface.
+///
 /// This is a generic texture loader and will load the file generically of 
 /// type, size, or color space. It's useful for further basic textures to
 /// inherit from this or for building other resources. Texture resources are
@@ -47,6 +54,7 @@ public:
 
 private:
     VkExtent2D _extent;
+    TextureFileType _type; 
     TextureFormat _format;
     TextureColorSpace _colorSpace;
     std::vector<std::byte> _imageData;

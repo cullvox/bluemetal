@@ -107,7 +107,7 @@ int main(int argc, const char** argv)
     auto window = engine.GetWindow();
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(window);
 
-    auto globalBuffer = std::make_unique<bl::Buffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, sizeof(bl::GlobalUBO));
+    auto globalBuffer = std::make_unique<bl::VulkanBuffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO));
 
     void* globalBufferMap = nullptr;
     globalBuffer->Map(&globalBufferMap);

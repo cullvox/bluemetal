@@ -72,16 +72,16 @@ bool VulkanSwapchain::AcquireNext(VkSemaphore semaphore, VkFence fence) {
     
     switch (result) {
     case VK_SUBOPTIMAL_KHR:
-    case VK_SUCCESS: 
+    case VK_SUCCESS:
+        return false; 
         break; // The swapchain does not need to be recreated.
     case VK_ERROR_OUT_OF_DATE_KHR:
         Recreate();
+        return true;
         break;
     default:
         throw std::runtime_error("Could not acquire the next swapchain image!");
     }
-
-    return _wasRecreated;
 }
 
 bool VulkanSwapchain::QueuePresent(VkSemaphore signalSemaphore) {

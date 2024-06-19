@@ -1,3 +1,5 @@
+#include "Mesh.h"
+#include "vulkan/vulkan_core.h"
 
 namespace bl
 {
@@ -17,8 +19,8 @@ void Mesh::setVertices(const std::vector<TVertex>& vertices)
     // Create the vertex and index buffers
     size_t vbSize = sizeof(TVertex) * vertices.size();
     
-    _vertexBuffer = std::make_unique<Buffer>(_device, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vbSize);
-    _vertexBuffer->Upload((void*)vertices.data());
+    _vertexBuffer = VulkanBuffer{_device, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY, vbSize};
+    _vertexBuffer.Upload(bl::vector_as_bytes(vertices));
 }
 
 } // namespace bl

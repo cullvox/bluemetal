@@ -49,7 +49,7 @@ void MaterialBase::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
     for (const auto& binding : _data) {
         if (binding.second.index() == 0) {
             auto& variant = _data[binding.first];
-            Buffer& buffer = std::get<Buffer>(variant);
+            VulkanBuffer& buffer = std::get<VulkanBuffer>(variant);
             uint32_t blockSize = (uint32_t)buffer.GetSize() / VulkanConfig::numFramesInFlight;
             offsets.push_back(blockSize * currentFrame);
         }
@@ -128,7 +128,7 @@ void MaterialBase::UpdateUniforms() {
 
             switch(variant.index()) {
             case 0: { // buffer type
-                Buffer& buffer = std::get<Buffer>(variant);
+                VulkanBuffer& buffer = std::get<VulkanBuffer>(variant);
                 VkDeviceSize blockSize = buffer.GetSize() / VulkanConfig::numFramesInFlight;
 
                 void* mapped = nullptr;
@@ -197,10 +197,9 @@ void MaterialBase::BuildMaterialData(VkDescriptorSetLayout layout) {
             auto dynamicAlignment = CalculateDynamicAlignment(binding.GetSize());
             auto bufferSize = dynamicAlignment * VulkanConfig::numFramesInFlight;
 
-            auto& variant = (_data[binding.GetLocation()] = Buffer{ 
-                Buffer{_device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT, bufferSize, nullptr}});
+            auto& variant = (_data[binding.GetLocation()] = VulkanBuffer{_device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, bufferSize, nullptr});
 
-            bufferInfo.buffer = std::get<Buffer>(variant).Get();
+            bufferInfo.buffer = std::get<VulkanBuffer>(variant).Get();
             bufferInfo.offset = 0;
             bufferInfo.range = dynamicAlignment;
             bufferInfos.push_back(bufferInfo);

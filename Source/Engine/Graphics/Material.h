@@ -50,7 +50,7 @@ protected:
 
     uint32_t _materialSet;
     uint32_t _currentFrame;
-    std::map<uint32_t, std::variant<Buffer, SampledImage>> _data;
+    std::map<uint32_t, std::variant<VulkanBuffer, SampledImage>> _data;
     std::array<PerFrameData, VulkanConfig::numFramesInFlight> _perFrameData;
 
 private:
@@ -118,7 +118,7 @@ void MaterialBase::SetGenericUniform(const std::string& name, T value)
     auto meta = GetUniformMetadata().at(name);
     assert(sizeof(T) == meta.GetSize() && "Type must be the same as the uniform size!");
 
-    auto& buffer = std::get<Buffer>(_data[meta.GetBinding()]);
+    auto& buffer = std::get<VulkanBuffer>(_data[meta.GetBinding()]);
     VkDeviceSize blockSize = buffer.GetSize() / VulkanConfig::numFramesInFlight;
     // uint32_t previousFrame = (_currentFrame - 1) % GraphicsConfig::numFramesInFlight;
 
