@@ -15,9 +15,7 @@ include(bluemetallog)
 # options
 #===============================================================================
 
-
 option(BLUEMETAL_DEVELOPMENT ON "Enables development mode and splits modules into shared libraries.")
-
 
 # spit out the current options
 bl_message("This is a development build.")
