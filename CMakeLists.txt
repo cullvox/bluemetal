@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.24)
 
-project(bluemetal)
+project(bluemetal C CXX)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake/Modules")
 
@@ -122,6 +122,9 @@ endif()
 #===============================================================================
 # build source
 #===============================================================================
+
+bl_message("BUILD_TYPE - ${CMAKE_BUILD_TYPE}")
+bl_message("COMPILE_FLAGS - ${CMAKE_CXX_FLAGS_DEBUG}")
 
 add_subdirectory("Source") # some compile options are applied in this folder
 

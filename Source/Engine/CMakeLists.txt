@@ -55,6 +55,8 @@ list(APPEND Sources
 
 add_library(Bluemetal STATIC ${Sources})
 
+target_compile_features(Bluemetal PRIVATE cxx_std_20)
+
 target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(Bluemetal PUBLIC 
