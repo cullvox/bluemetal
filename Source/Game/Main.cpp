@@ -8,6 +8,7 @@
 #include "Graphics/Vertex.h"
 #include "Graphics/Mesh.h"
 #include "Graphics/Material.h"
+#include "Graphics/VulkanConversions.h"
 #include "Material/UniformData.h"
 
 #include "Math/Transform.h"
@@ -376,7 +377,7 @@ int main(int argc, const char** argv)
                 ImGui::Text("MS/F: %.2f", frameCounter.GetMillisecondsPerFrame()); 
                 ImGui::Text("Average F/S (Over 10 Seconds): %.1f", frameCounter.GetAverageFramesPerSecond(10));
                 ImGui::Text("Average MS/F (Over 144 Frames): %.2f", frameCounter.GetAverageMillisecondsPerFrame(144)); 
-                ImGui::Text("Present Mode: %s", string_VkPresentModeKHR(window->GetSwapchain()->GetPresentMode())); 
+                ImGui::Text("Present Mode: %s", bl::vk::ToString(window->GetSwapchain()->GetPresentMode())); 
                 // ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
 
                 if (ImGui::TreeNode("Physical Devices")) {
@@ -404,7 +405,7 @@ int main(int argc, const char** argv)
 
                             if (ImGui::TreeNode("Present Modes")) {
                                 for (VkPresentModeKHR mode : physicalDevice->GetPresentModes(window))
-                                    ImGui::Text("%s", string_VkPresentModeKHR(mode));
+                                    ImGui::Text("%s", bl::vk::ToString(mode));
 
                                 ImGui::TreePop();
                             }

@@ -167,7 +167,7 @@ void VulkanSwapchain::ChoosePresentMode()
     }
 
     // If our mode wasn't found just use FIFO, as it's reliable and always available.
-    blWarning("Present mode {} is unavailable, using VK_PRESENT_MODE_FIFO_KHR.", string_VkPresentModeKHR(VulkanConfig::defaultPresentMode));
+    blWarning("Present mode is unavailable, using VK_PRESENT_MODE_FIFO_KHR.");
     _presentMode = VK_PRESENT_MODE_FIFO_KHR;
 }
 

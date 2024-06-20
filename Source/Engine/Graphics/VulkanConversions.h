@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Vulkan.h"
+#include "vulkan/vulkan_core.h"
 
 namespace bl {
 
@@ -266,7 +267,7 @@ static inline const char* toUserString(VkFormat format) {
     }
 }
 
-static inline const char* toUserString(VkPresentModeKHR presentMode) {
+static inline const char* ToString(VkPresentModeKHR presentMode) {
     switch (presentMode) {
     case VK_PRESENT_MODE_IMMEDIATE_KHR: return "Immediate";
     case VK_PRESENT_MODE_MAILBOX_KHR: return "Mailbox";
