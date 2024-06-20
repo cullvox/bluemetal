@@ -1,7 +1,7 @@
 add_library(FMOD SHARED IMPORTED GLOBAL)
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "GCC")
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     set(FMOD_IMPORTED_LOCATION       "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/linux/x86_64/libfmod.so.13.21")
     set(FMOD_IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/linux/x86_64/libfmodL.so.13.21")
   else()
