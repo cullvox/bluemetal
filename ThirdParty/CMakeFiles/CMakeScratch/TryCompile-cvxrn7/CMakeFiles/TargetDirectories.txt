@@ -1,2 +1,0 @@
-C:/Users/cullv/Projects/bluemetal/ThirdParty/CMakeFiles/CMakeScratch/TryCompile-cvxrn7/CMakeFiles/cmTC_25610.dir
-C:/Users/cullv/Projects/bluemetal/ThirdParty/CMakeFiles/CMakeScratch/TryCompile-cvxrn7/CMakeFiles/ALL_BUILD.dir

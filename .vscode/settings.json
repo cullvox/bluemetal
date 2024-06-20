@@ -123,7 +123,8 @@
         "__threading_support": "cpp",
         "cfenv": "cpp",
         "execution": "cpp",
-        "strstream": "cpp"
+        "strstream": "cpp",
+        "zconf.h": "c"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",

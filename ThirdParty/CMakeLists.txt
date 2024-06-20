@@ -1,11 +1,21 @@
+include(FetchContent)
+
 set(SDL_TEST OFF)
 set(SPIRV_REFLECT_EXAMPLES OFF CACHE BOOL "")
 set(SPIRV_REFLECT_STATIC_LIB ON CACHE BOOL "")
 
-add_subdirectory("argparse-2.9")
-add_subdirectory("fmt-10.2.1")
-add_subdirectory("glm-1.0.1")
-add_subdirectory("sdl2-2.28.3")
-add_subdirectory("tinygltf-2.8.17")
-add_subdirectory("spriv-reflect-sdk-1.3.261.1")
-add_subdirectory("fmod")
+set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+# set(ZLIB_USE_STATIC_LIBRARIES ON)
+set(ZLIB_INSTALL ON)
+
+CPMAddPackage("gh:p-ranav/argparse@3.0")
+CPMAddPackage("gh:g-truc/glm#1.0.1")
+CPMAddPackage("gh:libsdl-org/sdl#release-2.30.4")
+CPMAddPackage("gh:fmtlib/fmt#10.2.1")
+CPMAddPackage("gh:khronosgroup/spirv-reflect#vulkan-sdk-1.3.283.0")
+CPMAddPackage("gh:nlohmann/json@3.11.3")
+CPMAddPackage("gh:jimmy-park/zlib-cmake#1.3.1")
+CPMAddPackage("gh:randy408/libspng@0.7.4")
+CPMAddPackage("gh:auburn/fastnoise2@0.10.0-alpha")
+
+add_subdirectory("fmod") # FMOD is specificly 

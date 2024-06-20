@@ -63,6 +63,7 @@ target_link_libraries(Bluemetal PUBLIC
   spirv-reflect-static 
   SDL2::SDL2 
   fmt::fmt
-  FMOD)
+  FMOD
+  spng)
 
 target_precompile_headers(Bluemetal PUBLIC "Precompiled.h")
