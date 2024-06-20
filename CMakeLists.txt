@@ -45,7 +45,7 @@ bl_message("Found Vulkan - ${Vulkan_INCLUDE_DIR}")
 
 # build without specific compile options
 
-include(cmake/CPM.cmake)
+include(CMake/CPM.cmake)
 
 add_subdirectory("ThirdParty")
 
