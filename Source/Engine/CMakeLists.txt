@@ -64,6 +64,6 @@ target_link_libraries(Bluemetal PUBLIC
   SDL2::SDL2 
   fmt::fmt
   FMOD
-  spng)
+  spng_static)
 
 target_precompile_headers(Bluemetal PUBLIC "Precompiled.h")

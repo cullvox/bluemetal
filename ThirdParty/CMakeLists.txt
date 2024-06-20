@@ -8,6 +8,8 @@ set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(ZLIB_USE_STATIC_LIBS ON)
 set(ZLIB_INSTALL ON)
 
+set(SPNG_SHARED OFF)
+
 CPMAddPackage("gh:p-ranav/argparse@3.0")
 CPMAddPackage("gh:g-truc/glm#1.0.1")
 CPMAddPackage("gh:libsdl-org/sdl#release-2.30.4")
