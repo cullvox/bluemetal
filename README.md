@@ -1,6 +1,7 @@
-<img src="Images/logo_dark.svg" width=75%>
+<p align="center"> 
+   <img src="Images/logo_dark.svg" width=75%>
 
-<p align="center">      
+     
    (wow look at this nice logo)
 </p>
 
