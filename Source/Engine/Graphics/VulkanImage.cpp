@@ -147,7 +147,7 @@ void VulkanImage::Destroy() {
     vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
 }
 
-void VulkanImage::UploadData(std::span<std::byte> data) {
+void VulkanImage::UploadData(std::span<const std::byte> data, VkImageLayout finalLayout) {
 
     // Create a staging buffer.
     VmaAllocationInfo allocInfo = {};
@@ -172,7 +172,7 @@ void VulkanImage::UploadData(std::span<std::byte> data) {
 
         vkCmdCopyBufferToImage(cmd, stagingBuffer.Get(), _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
 
-        Transition(cmd, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        Transition(cmd, finalLayout);
     });
 }
 

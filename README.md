@@ -1,4 +1,4 @@
-![bluemetallogo](Images/bluemetal_logo.png)
+![bluemetallogo](Images/logo_dark.svg)
 
 <p align="center">      
    (wow look at this nice logo)

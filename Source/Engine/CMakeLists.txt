@@ -32,6 +32,8 @@ list(APPEND Sources
   "Graphics/Material.cpp"
   "Graphics/Mesh.cpp"
   "Graphics/Renderer.cpp"
+  "Graphics/Texture.cpp"
+  "Graphics/Texture2D.cpp"
   "Graphics/GraphicsSystem.cpp"
 
 
@@ -55,7 +57,8 @@ list(APPEND Sources
 
 add_library(Bluemetal STATIC ${Sources})
 
-target_compile_features(Bluemetal PRIVATE cxx_std_20)
+set_property(TARGET Bluemetal PROPERTY CXX_STANDARD 20)
+
 
 target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
 

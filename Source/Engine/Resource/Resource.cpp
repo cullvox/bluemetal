@@ -3,27 +3,21 @@
 namespace bl
 {
 
-Resource::Resource(const nlohmann::json&)
-{
-}
+Resource::Resource(const nlohmann::json&) {}
 
-std::string Resource::GetPath() const
-{
+std::filesystem::path Resource::GetPath() const {
     return _path;
 }
 
-uint64_t Resource::GetVersion() const
-{
+uint64_t Resource::GetVersion() const {
     return _version;
 }
 
-ResourceLoadOp Resource::GetLoadOp() const
-{
+ResourceLoadOp Resource::GetLoadOp() const {
     return _loadOp;
 }
 
-ResourceState Resource::GetState() const
-{
+ResourceState Resource::GetState() const {
     return _state;
 }
 
@@ -35,23 +29,19 @@ void Resource::Unload() {
     _state = ResourceState::eUnloaded;
 }
 
-void Resource::SetPath(const std::string& path)
-{
+void Resource::SetPath(const std::filesystem::path& path) {
     _path = path;
 }
 
-void Resource::SetVersion(uint64_t version)
-{
+void Resource::SetVersion(uint64_t version) {
     _version = version;
 }
 
-void Resource::SetLoadOp(ResourceLoadOp op)
-{
+void Resource::SetLoadOp(ResourceLoadOp op) {
     _loadOp = op;
 }
 
-void Resource::SetState(ResourceState state)
-{
+void Resource::SetState(ResourceState state) {
     _state = state;
 }
 

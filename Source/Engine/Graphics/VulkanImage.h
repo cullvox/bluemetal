@@ -1,7 +1,6 @@
 #pragma once
 
 #include "VulkanDevice.h"
-#include "vulkan/vulkan_core.h"
 
 namespace bl {
 
@@ -15,6 +14,7 @@ public:
     /// @param[in] device Device to contruct the image from.
     /// @param[in] type Type of image to create.
     /// @param[in] extent The extent in pixels of the image.
+    /// @param[in] format The format for pixel storage and data representation.
     /// @param[in] usage What the image is used for in api.
     /// @param[in] viewAspectMask The default image view aspect mask.
     /// @param[in] mipLevels How many mipmap levels will this image have. 
@@ -73,11 +73,12 @@ public:
     void Destroy();
 
 public:
-    void UploadData(std::span<std::byte> data);
-
+    /// @brief Uploads image data into a vulkan image.
+    /// @param data The data to upload to the GPU. 
+    void UploadData(std::span<const std::byte> data, VkImageLayout finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     /// @brief Transitions the image from the previous layout to another new one.
-    /// @brief Command buffer to write the image transition command to.
+    /// @param cmd Command buffer to write the image transition command to.
     /// @param layout[in] New layout to transition the image into.
     void Transition(VkCommandBuffer cmd, VkImageLayout layout);
 

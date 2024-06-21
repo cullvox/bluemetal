@@ -1,9 +1,7 @@
 #pragma once
 
 #include "Resource/Resource.h"
-#include "vulkan/vulkan_core.h"
-#include <MacTypes.h>
-#include <cstddef>
+#include "Vulkan.h"
 
 namespace bl {
 
@@ -52,7 +50,15 @@ public:
     /// @returns The size of the texture in pixels.
     VkExtent2D GetExtent() const;
 
+    TextureFormat GetFormat() const;
+    TextureColorSpace GetColorSpace() const;
+
+    std::span<const std::byte> GetImageData() const;
+
 private:
+    void DecodePNG(const std::vector<std::byte>& buffer);
+    void DecodeQOI(const std::vector<std::byte>& buffer);
+
     VkExtent2D _extent;
     TextureFileType _type; 
     TextureFormat _format;

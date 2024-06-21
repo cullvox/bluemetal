@@ -1,8 +1,5 @@
 #pragma once
 
-#define VK_NO_PROTOTYPES
-#include <vulkan/vulkan.h>
-
 #include "volk.h"
 
 #ifdef BLUEMETAL_COMPILER_APPLE_CLANG
