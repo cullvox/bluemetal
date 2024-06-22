@@ -9,6 +9,7 @@
 #include "Graphics/Mesh.h"
 #include "Graphics/Material.h"
 #include "Graphics/VulkanConversions.h"
+#include "Graphics/Texture2D.h"
 #include "Material/UniformData.h"
 
 #include "Math/Transform.h"
@@ -59,15 +60,15 @@ int main(int argc, const char** argv)
 
     std::vector<bl::Vertex> cubeVertices{
         // front
-        { {-1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {-1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {1.0f, 0.0f} },
         { {1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {-1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 1.0f} },
+        { {-1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {1.0f, 1.0f} },
         // back
-        { {-1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {-1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {1.0f, 0.0f} },
         { {1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {1.0f,  1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {-1.0f,  1.0f, -1.f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
+        { {1.0f,  1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 1.0f} },
+        { {-1.0f,  1.0f, -1.f }, { 0.0f, 0.0f, 0.0f }, {1.0f, 1.0f} },
     };
 
     std::vector<uint32_t> cubeIndices{
@@ -147,7 +148,8 @@ int main(int argc, const char** argv)
     object.model = glm::identity<glm::mat4>();
     object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, 0.0f});
 
-
+    auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/fox.png");
+    auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_NEAREST};
 
     bool firstMouse = true;
     glm::ivec2 lastMouse{};

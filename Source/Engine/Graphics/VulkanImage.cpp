@@ -143,6 +143,8 @@ VkImageView VulkanImage::GetView() const {
 }
 
 void VulkanImage::Destroy() {
+    if (!_device) return;
+
     vkDestroyImageView(_device->Get(), _imageView, nullptr);
     vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
 }
@@ -151,7 +153,7 @@ void VulkanImage::UploadData(std::span<const std::byte> data, VkImageLayout fina
 
     // Create a staging buffer.
     VmaAllocationInfo allocInfo = {};
-    VulkanBuffer stagingBuffer{_device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_GPU_ONLY, data.size(), &allocInfo};
+    VulkanBuffer stagingBuffer{_device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, data.size(), &allocInfo, true};
 
     // Copy image memory to the staging buffer.
     std::memcpy(allocInfo.pMappedData, data.data(), data.size());

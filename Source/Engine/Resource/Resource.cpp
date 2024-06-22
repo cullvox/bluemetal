@@ -5,6 +5,11 @@ namespace bl
 
 Resource::Resource(const nlohmann::json&) {}
 
+Resource::~Resource() {
+    if (_state == ResourceState::eLoaded)
+        Unload();
+}
+
 std::filesystem::path Resource::GetPath() const {
     return _path;
 }

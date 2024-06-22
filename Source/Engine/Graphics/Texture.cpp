@@ -33,9 +33,9 @@ void Texture::Load() {
     std::transform(extension.begin(), extension.end(), extension.begin(), 
         [](unsigned char c){ return std::tolower(c); });
 
-    if (extension == "png") {
+    if (extension == ".png") {
         DecodePNG(buffer);
-    } else if (extension == "qoi") {
+    } else if (extension == ".qoi") {
         DecodeQOI(buffer);
     } else {
         blError("Invalid texture extension cannot parse image: {}", path.c_str());
@@ -49,6 +49,22 @@ void Texture::Unload() {
     _imageData.resize(0);
 }
 
+VkExtent2D Texture::GetExtent() const {
+    return _extent;
+}
+
+TextureFormat Texture::GetFormat() const {
+    return _format;
+}
+
+TextureColorSpace Texture::GetColorSpace() const {
+    return _colorSpace;
+}
+
+std::span<const std::byte> Texture::GetImageData() const {
+    return _imageData;
+}
+
 void Texture::DecodePNG(const std::vector<std::byte>& data) {
     spng_ctx* ctx = spng_ctx_new(0);
     spng_set_png_buffer(ctx, data.data(), data.size());
@@ -58,6 +74,13 @@ void Texture::DecodePNG(const std::vector<std::byte>& data) {
 
     _imageData.resize(decodedSize);
     spng_decode_image(ctx, _imageData.data(), _imageData.size(), SPNG_FMT_RGBA8, 0);
+    _format = TextureFormat::eRGBA;
+
+    spng_ihdr header = {};
+    spng_get_ihdr(ctx, &header);
+
+    _extent = {header.width, header.height};
+
     spng_ctx_free(ctx);
 }
 

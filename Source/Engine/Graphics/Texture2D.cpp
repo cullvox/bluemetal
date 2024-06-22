@@ -18,6 +18,8 @@ Texture2D::Texture2D(const nlohmann::json& data, VulkanDevice* device)
     : Texture(data)
     , _device(device) {}
 
+Texture2D::~Texture2D() {}
+
 void Texture2D::Load() {
     Texture::Load();
 
@@ -35,7 +37,7 @@ void Texture2D::Load() {
         VK_IMAGE_TYPE_2D, 
         vk::Make3D(GetExtent()),
         format,
-        VK_IMAGE_USAGE_SAMPLED_BIT,
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
         VK_IMAGE_ASPECT_COLOR_BIT};
 
     _image.UploadData(GetImageData(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

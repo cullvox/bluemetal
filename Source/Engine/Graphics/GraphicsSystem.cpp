@@ -1,6 +1,7 @@
 #include "Core/Print.h"
 #include "Engine/Engine.h"
 #include "VulkanShader.h"
+#include "Texture2D.h" 
 #include "GraphicsSystem.h"
 
 namespace bl 
@@ -71,12 +72,11 @@ std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(VulkanWindow* window)
 
 std::unique_ptr<Resource> GraphicsSystem::BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& json)
 {
-    if (type == "Shader")
-    {
+    if (type == "Shader") {
         return std::make_unique<VulkanShader>(json, _device.get());
-    }
-    else
-    {
+    } else if (type == "Texture") {
+        return std::make_unique<Texture2D>(json, _device.get());
+    } else {
         throw std::runtime_error("Could not create a resource that was not specified!");
     }
 }

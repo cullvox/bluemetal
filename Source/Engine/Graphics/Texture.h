@@ -38,7 +38,7 @@ public:
     Texture(const nlohmann::json& data);
 
     /// @brief Destructor
-    ~Texture();
+    virtual ~Texture();
 
     /// @brief Loads the texture file into memory.
     virtual void Load() override;

@@ -19,7 +19,7 @@ Engine::Engine()
     _renderer = _graphics->CreateRenderer(_window.get());
     _imgui = std::make_unique<ImGuiSystem>(this, _window.get(), _renderer.get());
 
-    _resourceManager->RegisterBuilder({"Shader"}, _graphics.get());
+    _resourceManager->RegisterBuilder({"Shader", "Texture"}, _graphics.get());
     _resourceManager->RegisterBuilder({"Sound"}, _audio.get());
 }
 

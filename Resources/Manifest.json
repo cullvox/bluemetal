@@ -17,6 +17,10 @@
             "Path": "Resources/Shaders/Default.frag.spv",
             "Type": "Shader",
             "Stage": "Fragment"
+        },
+        {
+            "Path": "Resources/Textures/fox.png",
+            "Type": "Texture"
         }
     ]
 }
