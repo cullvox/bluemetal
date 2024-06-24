@@ -2,10 +2,11 @@
 
 #include "Vulkan.h"
 #include "VulkanDevice.h"
+#include "VulkanMutableResource.h"
 
 namespace bl {
 
-class VulkanSampler {
+class VulkanSampler : public VulkanMutableResource {
 public:
     VulkanSampler(
         VulkanDevice* device,
@@ -35,6 +36,7 @@ public:
     void SetBorderColor(VkBorderColor color);
     void SetUnnormalizedCoordinates(VkBool32 unnormalizedCoordinates);
 
+    virtual std::size_t GetHash() const override;
 
 private:
     void Update();
@@ -54,6 +56,7 @@ private:
     float _maxLod;
     VkBorderColor _borderColor;
     VkBool32 _unnormalizedCoordinates;
+    std::size_t _hash;
 };
 
 } // namespace bl

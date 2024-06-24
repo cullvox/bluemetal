@@ -151,6 +151,9 @@ int main(int argc, const char** argv)
     auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/fox.png");
     auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_NEAREST};
 
+    
+    material->SetSampledImage2D("image", &sampler, texture.Get()->GetImage());
+
     bool firstMouse = true;
     glm::ivec2 lastMouse{};
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -10.0f);

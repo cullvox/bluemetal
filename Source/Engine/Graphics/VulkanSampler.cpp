@@ -1,3 +1,4 @@
+#include "Core/Hash.h"
 #include "VulkanSampler.h"
 
 namespace bl {
@@ -47,7 +48,7 @@ void VulkanSampler::Update() {
     createInfo.flags = 0;
     createInfo.magFilter = _magFilter;
     createInfo.minFilter = _minFilter;
-    createInfo.mipmapMode = _mipmapMode,
+    createInfo.mipmapMode = _mipmapMode;
     createInfo.addressModeU = _addressMode;
     createInfo.addressModeV = _addressMode;
     createInfo.addressModeW = _addressMode;
@@ -60,6 +61,12 @@ void VulkanSampler::Update() {
     createInfo.maxLod = _maxLod;
     createInfo.borderColor = _borderColor;
     createInfo.unnormalizedCoordinates = _unnormalizedCoordinates;
+
+    _hash = 0x59CFA54A2CD1; // some random prime
+    bl::hash_combine(_hash, 
+        _magFilter, _minFilter, _mipmapMode, _addressMode, 
+        _mipLodBias, _enableAnisotropy, _maxAnisotropy, _compareEnable, 
+        _compareOp, _minLod, _maxLod, _borderColor, _unnormalizedCoordinates);
 
     VK_CHECK(vkCreateSampler(_device->Get(), &createInfo, nullptr, &_sampler));
 }
@@ -112,6 +119,10 @@ void VulkanSampler::SetBorderColor(VkBorderColor color) {
 
 void VulkanSampler::SetUnnormalizedCoordinates(VkBool32 unnormalizedCoordinates) {
     _unnormalizedCoordinates = unnormalizedCoordinates;
+}
+
+std::size_t VulkanSampler::GetHash() const {
+    return _hash;
 }
 
 } // namespace bl

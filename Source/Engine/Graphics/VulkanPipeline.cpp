@@ -41,6 +41,8 @@ VulkanPipelineReflection::VulkanPipelineReflection(const VulkanPipelineStateInfo
                 binding.SetBinding(location, type, count, shader->GetStage(), nullptr);
                 if (binding.IsBlock()) {
                     ReflectMembers(binding, location, reflectBinding.block);
+                } else {
+                    binding.SetName(reflectBinding.name);
                 }
             }
 
@@ -157,7 +159,7 @@ void VulkanPipelineReflection::ReflectMembers(VulkanBlockReflection& meta, uint3
 }
 
 
-Pipeline::Pipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanPipelineReflection* reflection)
+VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanPipelineReflection* reflection)
     : _device(device) {
     
 
@@ -337,26 +339,26 @@ Pipeline::Pipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, V
     VK_CHECK(vkCreateGraphicsPipelines(_device->Get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline))
 }
 
-Pipeline::~Pipeline()
+VulkanPipeline::~VulkanPipeline()
 { 
     vkDestroyPipeline(_device->Get(), _pipeline, nullptr);
 }
 
-const VulkanPipelineReflection& Pipeline::GetReflection() const {
+const VulkanPipelineReflection& VulkanPipeline::GetReflection() const {
     return _reflection;
 }
 
-VkPipelineLayout Pipeline::GetLayout() const 
+VkPipelineLayout VulkanPipeline::GetLayout() const 
 {
     return _layout; 
 }
 
-VkPipeline Pipeline::Get() const 
+VkPipeline VulkanPipeline::Get() const 
 {
     return _pipeline; 
 }
 
-const std::unordered_map<uint32_t, VkDescriptorSetLayout>& Pipeline::GetDescriptorSetLayouts() const
+const std::unordered_map<uint32_t, VkDescriptorSetLayout>& VulkanPipeline::GetDescriptorSetLayouts() const
 {
     return _descriptorSetLayouts;
 }

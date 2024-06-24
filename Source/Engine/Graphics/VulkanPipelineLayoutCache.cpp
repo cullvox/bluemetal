@@ -24,13 +24,11 @@ std::size_t VulkanPipelineLayoutCacheHasher::operator()(const VulkanPipelineLayo
 {
     std::size_t seed = 0;
     for (const auto& layout : data.layouts)
-        seed = hash_combine(seed, layout);
+        hash_combine(seed, layout);
 
     for (const auto& range : data.ranges)
     {
-        seed = hash_combine(seed, range.stageFlags);
-        seed = hash_combine(seed, range.offset);
-        seed = hash_combine(seed, range.size);
+        hash_combine(seed, range.stageFlags, range.offset, range.size);
     }
 
     return seed;

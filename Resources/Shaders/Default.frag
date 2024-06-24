@@ -12,6 +12,6 @@ layout(set=1, binding=0) uniform MaterialUniform
 layout(set=1, binding=1) uniform sampler2D image; 
 
 void main() {
-    outColor = vec4(inTextureCoordinates, 0.0, 1.0);
-    // outColor = texture(image, texCoords);
+    // outColor = vec4(inTextureCoordinates, 0.0, 1.0);
+    outColor = texture(image, inTextureCoordinates);
 }

@@ -54,10 +54,10 @@ private:
 };
 
 /** @brief A program consisting of shaders designed to run on the GPU. */
-class Pipeline {
+class VulkanPipeline {
 public:
-    Pipeline(VulkanDevice* device, const VulkanPipelineStateInfo& info, VkRenderPass renderPass, uint32_t subpass, const VulkanPipelineReflection* reflection = nullptr);
-    ~Pipeline();
+    VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateInfo& info, VkRenderPass renderPass, uint32_t subpass, const VulkanPipelineReflection* reflection = nullptr);
+    ~VulkanPipeline();
 
     auto GetReflection() const -> const VulkanPipelineReflection&;
     auto GetLayout() const -> VkPipelineLayout;

@@ -27,7 +27,7 @@ void Texture::Load() {
     buffer.resize(file.tellg());
 
     // Use the extension to determine the file type.
-    std::string extension = path.extension();
+    std::string extension = path.extension().string();
 
     // Transform the extension to only lowercase.
     std::transform(extension.begin(), extension.end(), extension.begin(), 
@@ -38,7 +38,7 @@ void Texture::Load() {
     } else if (extension == ".qoi") {
         DecodeQOI(buffer);
     } else {
-        blError("Invalid texture extension cannot parse image: {}", path.c_str());
+        blError("Invalid texture extension cannot parse image: {}", path.string());
         return;
     }
 
@@ -66,8 +66,12 @@ std::span<const std::byte> Texture::GetImageData() const {
 }
 
 void Texture::DecodePNG(const std::vector<std::byte>& data) {
+    
+
+    
     spng_ctx* ctx = spng_ctx_new(0);
     spng_set_png_buffer(ctx, data.data(), data.size());
+    spng_set_srgb(ctx, true);
 
     size_t decodedSize = 0;
     spng_decoded_image_size(ctx, SPNG_FMT_RGBA8, &decodedSize);
@@ -79,6 +83,7 @@ void Texture::DecodePNG(const std::vector<std::byte>& data) {
     spng_ihdr header = {};
     spng_get_ihdr(ctx, &header);
 
+    _colorSpace = TextureColorSpace::eSRGB;
     _extent = {header.width, header.height};
 
     spng_ctx_free(ctx);

@@ -18,7 +18,7 @@ Sound::~Sound()
 
 void Sound::Load()
 {
-    FMOD_CHECK(_system->Get()->createSound(GetPath().c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &_sound))
+    FMOD_CHECK(_system->Get()->createSound(GetPath().string().c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &_sound))
 }
 
 void Sound::Unload()

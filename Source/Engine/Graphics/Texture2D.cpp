@@ -51,4 +51,8 @@ void Texture2D::Unload() {
     Resource::Unload();
 }
 
+VulkanImage* Texture2D::GetImage() {
+    return &_image;
+}
+
 } // namespace bl

@@ -21,6 +21,8 @@ public:
     /// @brief Unloads the texture from GPU memory.
     virtual void Unload() override;
 
+    VulkanImage* GetImage();
+
 private:
     VulkanDevice* _device;
     VulkanImage _image;

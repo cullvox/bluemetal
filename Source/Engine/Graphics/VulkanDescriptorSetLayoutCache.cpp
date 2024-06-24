@@ -27,7 +27,7 @@ size_t VulkanDescriptorLayoutCacheHasher::operator()(const VulkanDescriptorLayou
     for (const auto& b : bindings) 
     {
         size_t packed = b.binding | b.descriptorType << 8 | b.descriptorCount << 16 | b.stageFlags << 24; // pack binding into a uint64
-        seed = bl::hash_combine(seed, packed); // shuffle data and xor with the main hash
+        bl::hash_combine(seed, packed); // shuffle data and xor with the main hash
     }
     return seed;
 }
