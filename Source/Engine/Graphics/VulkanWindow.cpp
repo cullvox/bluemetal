@@ -2,10 +2,9 @@
 #include "VulkanInstance.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapchain.h"
-#include "Window.h"
+#include "VulkanWindow.h"
 
-namespace bl 
-{
+namespace bl  {
 
 void VulkanWindow::UseTemporaryWindow(const std::function<void(SDL_Window*)>& func) {
     SDL_Window* temporaryWindow = SDL_CreateWindow("", 0, 0, 1, 1, SDL_WINDOW_VULKAN);
@@ -18,8 +17,7 @@ void VulkanWindow::UseTemporaryWindow(const std::function<void(SDL_Window*)>& fu
     SDL_DestroyWindow(temporaryWindow);
 }
 
-void VulkanWindow::UseTemporarySurface(VulkanInstance* instance, const std::function<void(VkSurfaceKHR)>& func)
-{
+void VulkanWindow::UseTemporarySurface(VulkanInstance* instance, const std::function<void(VkSurfaceKHR)>& func) {
     UseTemporaryWindow([&](SDL_Window* window){
             VkSurfaceKHR temporarySurface = VK_NULL_HANDLE;
             SDL_Vulkan_CreateSurface(window, instance->Get(), &temporarySurface);
@@ -28,8 +26,7 @@ void VulkanWindow::UseTemporarySurface(VulkanInstance* instance, const std::func
         });
 }
 
-std::vector<const char*> VulkanWindow::GetSurfaceExtensions()
-{
+std::vector<const char*> VulkanWindow::GetSurfaceExtensions() {
     std::vector<const char*> extensions = {};
     UseTemporaryWindow([&](SDL_Window* window){
             unsigned int extensionsCount = 0;
@@ -41,8 +38,7 @@ std::vector<const char*> VulkanWindow::GetSurfaceExtensions()
 }
 
 VulkanWindow::VulkanWindow(VulkanDevice* device, const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
-    : _device(device)
-{
+    : _device(device) {
     auto flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI;
     
     if (fullscreen)
@@ -53,8 +49,7 @@ VulkanWindow::VulkanWindow(VulkanDevice* device, const std::string& title, std::
     auto w = 1080;
     auto h = 720;
 
-    if (videoMode)
-    {
+    if (videoMode) {
         auto mode = videoMode.value();
         x = mode.rect.offset.x;
         y = mode.rect.offset.y;
@@ -63,30 +58,26 @@ VulkanWindow::VulkanWindow(VulkanDevice* device, const std::string& title, std::
     }
 
     _window = SDL_CreateWindow(title.c_str(), x, y, w, h, flags);
-    if (!_window) 
-    {
+    if (!_window) {
         throw std::runtime_error("Could not create an SDL window!");
     }
 
     SDL_ShowWindow(_window);
 
-    if (SDL_Vulkan_CreateSurface(_window, _device->GetInstance()->Get(), &_surface) != SDL_TRUE)
-    {
+    if (SDL_Vulkan_CreateSurface(_window, _device->GetInstance()->Get(), &_surface) != SDL_TRUE) {
         throw std::runtime_error("Could not create an Vulkan surface!");
     }
 
-    _swapchain = std::make_unique<VulkanSwapchain>(_device, this);
+    _swapchain = VulkanSwapchain{_device, _surface};
 }
 
-VulkanWindow::~VulkanWindow()
-{
-    _swapchain.reset();
+VulkanWindow::~VulkanWindow() {
+    _swapchain.Destroy()
     vkDestroySurfaceKHR(_device->GetInstance()->Get(), _surface, nullptr);
     SDL_DestroyWindow(_window);
 }
 
-VideoMode VulkanWindow::GetCurrentVideoMode() const
-{
+VideoMode VulkanWindow::GetCurrentVideoMode() const {
     int x = 0, y = 0;
     SDL_GetWindowPosition(_window, &x, &y);
 
@@ -96,8 +87,7 @@ VideoMode VulkanWindow::GetCurrentVideoMode() const
     return VideoMode{{{x, y}, {(uint32_t)mode.w, (uint32_t)mode.h}}, mode.refresh_rate};
 }
 
-SDL_Window* VulkanWindow::Get() const 
-{ 
+SDL_Window* VulkanWindow::Get() const { 
     return _window; 
 }
 
@@ -106,8 +96,7 @@ VkSurfaceKHR VulkanWindow::GetSurface() const
     return _surface;
 }
 
-VulkanSwapchain* VulkanWindow::GetSwapchain() const
-{
+VulkanSwapchain* VulkanWindow::GetSwapchain() const {
     return _swapchain.get();
 }
 

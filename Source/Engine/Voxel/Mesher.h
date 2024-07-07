@@ -2,14 +2,12 @@
 
 #include "Precompiled.h"
 
-namespace bl
-{
+namespace bl {
 
-class Mesher
-{
+class MesherInterface {
 public:
-    Mesher() = default;
-    ~Mesher() = default;
+    MesherInterface() = default;
+    ~MesherInterface() = default;
 
     
 };

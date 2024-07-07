@@ -1,13 +1,10 @@
 #include "VulkanDevice.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 
-namespace bl 
-{
+namespace bl {
 
-bool VulkanDescriptorLayoutCacheData::operator==(const VulkanDescriptorLayoutCacheData& rhs) const
-{
-    for (uint32_t i = 0; i < bindings.size(); i++)
-    {
+bool VulkanDescriptorLayoutCacheData::operator==(const VulkanDescriptorLayoutCacheData& rhs) const {
+    for (uint32_t i = 0; i < bindings.size(); i++) {
         const auto& b = bindings[i];
         const auto& rb = rhs.bindings[i];
 
@@ -20,39 +17,37 @@ bool VulkanDescriptorLayoutCacheData::operator==(const VulkanDescriptorLayoutCac
     return true;
 }
 
-size_t VulkanDescriptorLayoutCacheHasher::operator()(const VulkanDescriptorLayoutCacheData& data) const noexcept
-{
+size_t VulkanDescriptorLayoutCacheHasher::operator()(const VulkanDescriptorLayoutCacheData& data) const noexcept {
     const auto& bindings = data.bindings;
     size_t seed = std::hash<size_t>()(bindings.size());
-    for (const auto& b : bindings) 
-    {
+    for (const auto& b : bindings) {
         size_t packed = b.binding | b.descriptorType << 8 | b.descriptorCount << 16 | b.stageFlags << 24; // pack binding into a uint64
         bl::hash_combine(seed, packed); // shuffle data and xor with the main hash
     }
     return seed;
 }
 
-VulkanDescriptorSetLayoutCache::VulkanDescriptorSetLayoutCache(VulkanDevice* device)
-    : _device(device)
-{
-}
+VulkanDescriptorSetLayoutCache::VulkanDescriptorSetLayoutCache(const VulkanDevice* device)
+    : _device(device) { }
 
-VulkanDescriptorSetLayoutCache::~VulkanDescriptorSetLayoutCache()
-{
+VulkanDescriptorSetLayoutCache::~VulkanDescriptorSetLayoutCache() {
+    // Destroy all descriptor set layouts.
     for (auto& pair : _cache)
         vkDestroyDescriptorSetLayout(_device->Get(), pair.second, nullptr);
 }
 
-VkDescriptorSetLayout VulkanDescriptorSetLayoutCache::Acquire(const std::vector<VkDescriptorSetLayoutBinding>& bindings)
-{
-    VulkanDescriptorLayoutCacheData data{bindings};
+VkDescriptorSetLayout VulkanDescriptorSetLayoutCache::Acquire(std::span<VkDescriptorSetLayoutBinding> bindings) {
+    VulkanDescriptorLayoutCacheData data;
+    data.bindings.assign(bindings.begin(), bindings.end());
+
+    // Ensure that the bindings are sorted before they are hashed.
+    std::sort(data.bindings.begin(), data.bindings.end(), [](const VkDescriptorSetLayoutBinding& a, const VkDescriptorSetLayoutBinding& b){ return a.binding < b.binding; });
 
     auto it = _cache.find(data);
     if (it != _cache.end())
-    {
-        return (*it).second;
-    } 
+        return (*it).second; // Return an already cached descriptor set layout.
 
+    // Create a new descriptor set layout, cache it, and return it.
     VkDescriptorSetLayoutCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     createInfo.pNext = nullptr;

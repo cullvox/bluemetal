@@ -11,7 +11,6 @@ list(APPEND Sources
   "Audio/Listener.cpp"
   "Audio/Sound.cpp"
 
-  "Graphics/volk.cpp"
   "Graphics/Display.cpp"
   "Graphics/Window.cpp"
   "Graphics/VulkanInstance.cpp"
@@ -69,6 +68,9 @@ target_link_libraries(Bluemetal PUBLIC
   SDL2::SDL2 
   fmt::fmt
   FMOD
-  spng_static)
+  spng_static
+  volk
+  GPUOpen::VulkanMemoryAllocator
+  qoixx::qoixx)
 
 target_precompile_headers(Bluemetal PUBLIC "Precompiled.h")

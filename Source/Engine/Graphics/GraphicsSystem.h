@@ -1,46 +1,47 @@
 #pragma once
 
 #include "Resource/ResourceManager.h"
-#include "Window.h"
+#include "Window/Window.h"
 #include "VulkanInstance.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapchain.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineLayoutCache.h"
-#include "Renderer.h"
-#include <memory>
+#include "Renderer.h".
 
-namespace bl
-{
+namespace bl {
 
 class Engine;
 
-class GraphicsSystem : public NonCopyable, public ResourceBuilder
-{
+class GraphicsSystem : 
+    public NonCopyable,
+    public ResourceBuilder {
 public:
-    GraphicsSystem(Engine* engine); /** @brief Constructor. */
+
+    /// @brief Initializes the graphics system.
+    GraphicsSystem(
+        Engine* engine, 
+        bool quickInit = true); /** @brief Constructor. */
     virtual ~GraphicsSystem(); /** @brief Destructor */
 
-    VulkanInstance* GetInstance();
-    const VulkanPhysicalDevice* GetPhysicalDevice();
-    VulkanDevice* GetDevice();
+    const VulkanInstance* GetInstance() const;
+    const VulkanPhysicalDevice* GetPhysicalDevice() const;
+    const VulkanDevice* GetDevice() const;
     VulkanDescriptorSetLayoutCache* GetDescriptorCache();
     VulkanPipelineLayoutCache* GetPipelineLayoutCache();
     std::vector<const VulkanPhysicalDevice*> GetPhysicalDevices();
-    std::vector<Display*> GetDisplays();
-    
-    std::unique_ptr<VulkanWindow> CreateWindow(const std::string& title, std::optional<VideoMode> videoMode = std::nullopt, bool fullscreen = true);
-    std::unique_ptr<Renderer> CreateRenderer(VulkanWindow* window);
+    VulkanWindow CreateRenderWindow(const std::string& title, Rect2D rect, bool fullscreen = true);
 
     virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& data);
 
 private:
     Engine* _engine;
-    std::unique_ptr<VulkanInstance> _instance;
+    VulkanInstance _instance;
     const VulkanPhysicalDevice* _physicalDevice;
-    std::unique_ptr<VulkanDevice> _device;
+    VulkanDevice _device;
+    VulkanDescriptorSetLayoutCache _descriptorSetLayoutCache;
+    VulkanPipelineLayoutCache _pipelineLayoutCache;
 
-    std::vector<std::unique_ptr<Display>> _displays;
 };
 
 } // namespace bl

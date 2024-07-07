@@ -41,16 +41,12 @@
 namespace bl 
 {
 
-VulkanDevice::VulkanDevice(VulkanInstance* instance, const VulkanPhysicalDevice* physicalDevice)
+VulkanDevice::VulkanDevice(VulkanInstance* instance, const VulkanPhysicalDevice* physicalDevice, VkSurfaceKHR temporarySurface)
     : _instance(instance)
     , _physicalDevice(physicalDevice) {
-    CreateDevice();
+    CreateDevice(temporarySurface);
     CreateCommandPool();
     CreateAllocator();
-
-    _descriptorSetLayoutCache = std::make_unique<VulkanDescriptorSetLayoutCache>(this);
-    _pipelineLayoutCache = std::make_unique<VulkanPipelineLayoutCache>(this);
-    _descriptorSetCache = std::make_unique<VulkanDescriptorSetCache>(this, 1024, VulkanDescriptorRatio::Default());
 }
 
 VulkanDevice::~VulkanDevice() { 
@@ -59,7 +55,7 @@ VulkanDevice::~VulkanDevice() {
     vkDestroyDevice(_device, nullptr);
 }
 
-VulkanInstance* VulkanDevice::GetInstance() const {
+const VulkanInstance* VulkanDevice::GetInstance() const {
     return _instance;
 }
 
@@ -99,7 +95,7 @@ VmaAllocator VulkanDevice::GetAllocator() const {
     return _allocator;
 }
 
-void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder) {
+void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder) const {
     // Allocate the command buffer used to record the submission.
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -142,18 +138,6 @@ void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& r
 
 void VulkanDevice::WaitForDevice() const { 
     vkDeviceWaitIdle(_device); 
-}
-
-VkDescriptorSetLayout VulkanDevice::CacheDescriptorSetLayout(const std::vector<VkDescriptorSetLayoutBinding>& bindings) {
-    return _descriptorSetLayoutCache->Acquire(bindings);
-}
-
-VkPipelineLayout VulkanDevice::CachePipelineLayout(const std::span<VkDescriptorSetLayout> descriptors, const std::span<VkPushConstantRange> pushConstants) {
-    return _pipelineLayoutCache->Acquire(descriptors, pushConstants);
-}
-
-VkDescriptorSet VulkanDevice::AllocateDescriptorSet(VkDescriptorSetLayout layout) {
-    return _descriptorSetCache->Allocate(layout);
 }
 
 std::vector<const char*> VulkanDevice::GetValidationLayers() {
@@ -211,7 +195,7 @@ std::vector<const char*> VulkanDevice::GetExtensions() {
     return requiredExtensions;
 }
 
-void VulkanDevice::CreateDevice() {
+void VulkanDevice::CreateDevice(VkSurfaceKHR surface) {
     std::vector<const char*> extensions = GetExtensions();
     std::vector<const char*> layers{};
 
@@ -227,28 +211,19 @@ void VulkanDevice::CreateDevice() {
 
     // Determine what families will be dedicated to graphics and present.
     uint32_t i = 0;
-
-    // Use a temporary window and surface for surface support checking.
-    VulkanWindow::UseTemporarySurface(_instance, [&](VkSurfaceKHR surface){
-        // Check for queue usage.
-        for (const VkQueueFamilyProperties& properties : queueProperties) 
-        {
-            if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) 
-            {
-                _graphicsFamilyIndex = i;
-            }
-
-            VkBool32 surfaceSupported = VK_FALSE;
-            VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->Get(), i, surface, &surfaceSupported))
-            
-            if (surfaceSupported) 
-            {
-                _presentFamilyIndex = i;
-            }
-
-            i++;
+    for (const VkQueueFamilyProperties& properties : queueProperties) {
+        if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+            _graphicsFamilyIndex = i;
         }
-    });
+        
+        VkBool32 surfaceSupported = VK_FALSE;
+        VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->Get(), i, surface, &surfaceSupported))
+        
+        if (surfaceSupported) {
+            _presentFamilyIndex = i;
+        }
+        i++;
+    }
 
     const float queuePriorities[] = { 1.0f, 1.0f };
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {

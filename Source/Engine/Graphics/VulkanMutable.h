@@ -11,10 +11,13 @@ namespace bl {
 /// and have a dependant resource know it's been changed we hash it's creation
 /// data and those dependants can check if the data was changed to update
 /// themselves accordingly.
-class VulkanMutableResource {
+///
+/// Using a VulkanMutableReference we can determine if the mutable has changed
+/// and support the updatable objects we want.
+class VulkanMutable {
 public:
-    VulkanMutableResource() = default;
-    ~VulkanMutableResource() = default;
+    VulkanMutable() = default;
+    ~VulkanMutable() = default;
 
     /// @brief Returns the hash of the mutable resource.
     ///
@@ -24,19 +27,24 @@ public:
     virtual std::size_t GetHash() const = 0;
 };
 
+/// @brief Stores the previously known hash of the referenced object.
+///
+/// You can check if a Vulkan object has changed by checking if create info
+/// is the same or different as what it used to be. This way we can support
+/// resources that are recreated in real time.
 template<class T>
-struct VulkanMutableResourceReference {
-    static_assert(std::is_base_of_v<VulkanMutableResource, T> == true && "T must be based on VulkanMutableResource!");
+struct VulkanMutableReference {
+    static_assert(std::is_base_of_v<VulkanMutable, T> == true && "T must be based on VulkanMutableResource!");
     
-    VulkanMutableResourceReference();
-    VulkanMutableResourceReference(const VulkanMutableResourceReference& rhs) = default;
-    VulkanMutableResourceReference(VulkanMutableResourceReference&& rhs) = default;
-    VulkanMutableResourceReference(T* resource) 
+    VulkanMutableReference();
+    VulkanMutableReference(const VulkanMutableReference& rhs) = default;
+    VulkanMutableReference(VulkanMutableReference&& rhs) = default;
+    VulkanMutableReference(T* resource) 
         : _resource(resource) {} // Allow a call to WasChanged() to update the _currentHash.
-    ~VulkanMutableResourceReference() = default;
+    ~VulkanMutableReference() = default;
 
-    VulkanMutableResourceReference& operator=(const VulkanMutableResourceReference& rhs) = default;
-    VulkanMutableResourceReference& operator=(VulkanMutableResourceReference&& rhs) = default;
+    VulkanMutableReference& operator=(const VulkanMutableReference& rhs) = default;
+    VulkanMutableReference& operator=(VulkanMutableReference&& rhs) = default;
     T* operator->() const { 
         assert(_resource != nullptr && "Resource must not be NULL!");  
         return _resource; 

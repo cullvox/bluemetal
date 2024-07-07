@@ -2,11 +2,10 @@
 
 #include "Core/NonMoveable.h"
 
-namespace bl
-{
+namespace bl {
 
-class ReferenceCounted /** @brief Any class that needs to know how many times it's being used. */
-{
+/// @brief Any class that needs to know how many times it's being used.
+class ReferenceCounted {
 public:
     ReferenceCounted() = default;
     ~ReferenceCounted() = default;
@@ -25,8 +24,7 @@ private:
 };
 
 template<typename T>
-class ReferenceCounter : public NonMoveable
-{
+class ReferenceCounter : public NonMoveable {
     static_assert(std::is_base_of_v<ReferenceCounted, T>);
 public:
     ReferenceCounter()

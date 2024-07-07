@@ -50,8 +50,8 @@ void Material::SetMatrix(const std::string& name, glm::mat4 value) {
     SetGenericUniform(name, value);
 }
 
-void Material::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
-    PerFrameData& currentFrameData = _perFrameData[currentFrame];
+void Material::Bind(VulkanRenderData& rd) {
+    PerFrameData& currentFrameData = _perFrameData[rd.currentFrame];
 
     // Compute the dynamic offsets for each uniform buffer.
     std::vector<uint32_t> offsets;
@@ -60,15 +60,15 @@ void Material::Bind(VkCommandBuffer cmd, uint32_t currentFrame) {
             auto& variant = _data[binding.first];
             VulkanBuffer& buffer = std::get<VulkanBuffer>(variant);
             uint32_t blockSize = (uint32_t)buffer.GetSize() / VulkanConfig::numFramesInFlight;
-            offsets.push_back(blockSize * currentFrame);
+            offsets.push_back(blockSize * rd.currentFrame);
         }
     }
 
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline()->Get());
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline()->GetLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
+    vkCmdBindPipeline(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline()->Get());
+    vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline()->GetLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
 
     // Save the next frame number for when updating what bindings are dirty/not updated.
-    _currentFrame = (currentFrame + 1) % VulkanConfig::numFramesInFlight;
+    _currentFrame = (rd.currentFrame + 1) % VulkanConfig::numFramesInFlight;
 }
 
 void Material::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image) {

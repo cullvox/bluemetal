@@ -10,11 +10,11 @@ namespace bl
 GraphicsSystem::GraphicsSystem(Engine* engine)
     : _engine(engine)
 {
-    _instance = std::make_unique<VulkanInstance>(Version{}, "Maginvox", true);
+    _instance = {Version{}, "Maginvox", true};
     _physicalDevice = _instance->ChoosePhysicalDevice();
-    _device = std::make_unique<VulkanDevice>(_instance.get(), _physicalDevice);
-    // _descriptorCache = std::make_unique<VulkanDescriptorSetLayoutCache>(_device.get());
-    // _pipelineLayoutCache = std::make_unique<VulkanPipelineLayoutCache>(_device.get());
+    _device = {&_instance, _physicalDevice};
+    _descriptorSetLayoutCache = { &_device };
+    _pipelineLayoutCache = { _device.Get() };
 }
 
 GraphicsSystem::~GraphicsSystem()

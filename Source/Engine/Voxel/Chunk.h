@@ -14,7 +14,6 @@ public:
     ~Chunk();
 
     void Set(glm::ivec3 localPosition, Voxel voxel);
-    
 
 private:
     std::array<Voxel, VoxelLimits::ChunkSizeCubed> _voxels;

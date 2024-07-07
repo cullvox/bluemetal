@@ -2,14 +2,16 @@
 
 #include "Vulkan.h"
 #include "VulkanDevice.h"
-#include "VulkanMutableResource.h"
+#include "VulkanMutable.h"
+#include "VulkanDeleterQueue.h"
 
 namespace bl {
 
-class VulkanSampler : public VulkanMutableResource {
+class VulkanSampler : public VulkanMutable {
 public:
     VulkanSampler(
         VulkanDevice* device,
+        VulkanDeleterQueue* deleterQueue,
         VkFilter magFilter = VK_FILTER_LINEAR,
         VkFilter minFilter = VK_FILTER_LINEAR,
         VkSamplerMipmapMode mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
@@ -26,6 +28,7 @@ public:
     ~VulkanSampler();
 
     VkSampler Get() const;
+    // Mutable values
     void SetFilters(VkFilter magFilter, VkFilter minFilter);
     void SetMipmapMode(VkSamplerMipmapMode mode);
     void SetAddressMode(VkSamplerAddressMode mode);
@@ -42,6 +45,7 @@ private:
     void Update();
 
     VulkanDevice* _device;
+    VulkanDeleterQueue* _deleter;
     VkSampler _sampler;
     VkFilter _magFilter;
     VkFilter _minFilter;

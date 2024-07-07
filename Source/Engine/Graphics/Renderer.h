@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Window.h"
+#include "Window/Window.h"
+#include "VulkanFrameTracker.h"
 #include "VulkanConfig.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapchain.h"
-#include "VulkanDescriptorSetCache.h"
+#include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanImage.h"
 
 namespace bl {
@@ -13,12 +14,11 @@ using RenderFunction = std::function<void(VkCommandBuffer cmd, uint32_t currentF
 
 class Renderer {
 public:
-    Renderer(VulkanDevice* device, VulkanWindow* window); /** @brief Constructor */
+    Renderer(const VulkanDevice* device, WindowInterface* window); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
     VkRenderPass GetRenderPass() const;
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::numFramesInFlight - 1. */
-    VulkanDescriptorSetCache* GetDescriptorSetCache();
     void Render(RenderFunction func);
 
 private:
@@ -29,9 +29,9 @@ private:
     void DestroyImagesAndFramebuffers();
     void RecreateImages();
 
-    VulkanDevice* _device;
-    VulkanWindow* _window;
-    VulkanSwapchain* _swapchain;
+    const VulkanDevice* _device;
+    const VulkanWindow* _window;
+    VulkanSwapchain _swapchain;
 
     // Frame Synchronization
     uint32_t _imageCount;

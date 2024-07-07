@@ -1,10 +1,9 @@
 #pragma once
 
-namespace bl
-{
+namespace bl {
 
-class NonMoveable /** @brief Any object that should not be copied. */
-{
+/// @brief Any object that should not be moved.
+class NonMoveable {
 public:
     NonMoveable() = default;
     NonMoveable(NonMoveable&) = default;

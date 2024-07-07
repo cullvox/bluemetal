@@ -5,6 +5,7 @@ namespace bl {
 
 VulkanSampler::VulkanSampler(
     VulkanDevice* device,
+    VulkanDeleterQueue* deleter,
     VkFilter magFilter,
     VkFilter minFilter,
     VkSamplerMipmapMode mipmapMode,
@@ -19,6 +20,7 @@ VulkanSampler::VulkanSampler(
     VkBorderColor borderColor,
     VkBool32 unnormalizedCoordinates)
     : _device(device)
+    , _deleter(deleter)
     , _sampler(VK_NULL_HANDLE)
     , _magFilter(magFilter)
     , _minFilter(minFilter)
@@ -38,9 +40,9 @@ VulkanSampler::VulkanSampler(
 
 void VulkanSampler::Update() {
 
-    // _device->PushPostFrameDeleter([&](){
-    vkDestroySampler(_device->Get(), _sampler, nullptr);
-    // });
+    _deleter->PushDeleter([&](){
+        vkDestroySampler(_device->Get(), _sampler, nullptr);
+    });
 
     VkSamplerCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -72,9 +74,9 @@ void VulkanSampler::Update() {
 }
 
 VulkanSampler::~VulkanSampler() {
-    // _device->PushFrameDeleter([&](){
-    vkDestroySampler(_device->Get(), _sampler, nullptr);
-    // });
+    _deleter->PushDeleter([&](){
+        vkDestroySampler(_device->Get(), _sampler, nullptr);
+    });
 }
 
 VkSampler VulkanSampler::Get() const {
@@ -84,41 +86,50 @@ VkSampler VulkanSampler::Get() const {
 void VulkanSampler::SetFilters(VkFilter magFilter, VkFilter minFilter) {
     _magFilter = magFilter;
     _minFilter = minFilter;
+    Update();
 }
 
 void VulkanSampler::SetMipmapMode(VkSamplerMipmapMode mode) {
     _mipmapMode = mode;
+    Update();
 }
 
 void VulkanSampler::SetAddressMode(VkSamplerAddressMode mode) {
     _addressMode = mode;
+    Update();
 }
 
 void VulkanSampler::SetMipLodBias(float bias) {
     _mipLodBias = bias;
+    Update();
 }
 
 void VulkanSampler::SetAnisotropy(bool enableAnisotropy, float maxAnisotropy) {
     _enableAnisotropy = enableAnisotropy;
     _maxAnisotropy = maxAnisotropy;
+    Update();
 }
 
 void VulkanSampler::SetCompare(bool compareEnable, VkCompareOp op) {
     _compareEnable = compareEnable;
     _compareOp = op;
+    Update();
 }
 
 void VulkanSampler::SetLodMinMax(float min, float max) {
     _minLod = min;
     _maxLod = max;
+    Update();
 }
 
 void VulkanSampler::SetBorderColor(VkBorderColor color) {
     _borderColor = color;
+    Update();
 }
 
 void VulkanSampler::SetUnnormalizedCoordinates(VkBool32 unnormalizedCoordinates) {
     _unnormalizedCoordinates = unnormalizedCoordinates;
+    Update();
 }
 
 std::size_t VulkanSampler::GetHash() const {

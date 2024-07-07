@@ -5,11 +5,12 @@
 #include "Vulkan.h"
 #include "VulkanConfig.h"
 #include "VulkanPhysicalDevice.h"
+#include "Window/WindowPlatform.h"
 
 namespace bl 
 {
 
-/** @brief Used to choose physical device using an instance to create an @ref GfxDevice. */
+/// @brief Vulkan instance object, used to create a vulkan device and choose physical devices.
 class VulkanInstance : public NonCopyable {
 public:
 
@@ -24,26 +25,41 @@ public:
     /// @param appVersion The version of your application.
     /// @param appName The name of your application.
     /// @param enableValidation Enables Vulkan validation layers on your device.
-    VulkanInstance(Version appVersion, std::string_view appName, bool enableValidation);
-    ~VulkanInstance(); /** @brief Destructor*/
+    VulkanInstance(WindowPlatformInterface* windowPlatform, Version appVersion, std::string_view appName, bool enableValidation);
+    
+    /// @brief Destructor
+    ~VulkanInstance();
 
-    VkInstance Get() const; /** @brief Returns the underlying VkInstance object. */
-    bool GetValidationEnabled() const; /** @brief Returns true if validation layers are enabled. */
-    std::vector<const VulkanPhysicalDevice*> GetPhysicalDevices() const; /** @brief Returns the physical devices to choose from. */    
-    const VulkanPhysicalDevice* ChoosePhysicalDevice() const; /** @brief Magically chooses a physical device that might be a good choice to use for device creation. */
+    /// @brief Returns the underlying VkInstance object.
+    VkInstance Get() const;
+
+    /// @brief Returns true if validation layers were used when creating this instance.
+    bool GetValidationEnabled() const;
+
+    /// @brief Returns all physical devices available to choose from.
+    std::vector<const VulkanPhysicalDevice*> GetPhysicalDevices() const;
+
+    /// @brief Chooses a physical device automagically and returns the best candidate for device creation. 
+    const VulkanPhysicalDevice* ChoosePhysicalDevice() const;
 
 private:
-    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData); /** @brief Vulkan debug callback from VkDebugUtilsMessengerEXT. */
-    std::vector<const char*> GetExtensionsForSDL(); /** @brief Gets a list of extensions used by SDL for window creation.  */
-    std::vector<const char*> GetExtensions(); /** @brief Gets a list of extensions used by this engine for various usages.  */
-    std::vector<const char*> GetValidationLayers(); /** @brief Gets a list of validation layers used by this engine.  */
-    void CreateInstance(Version appVersion, std::string_view appName); /** @brief Creates the underlying VkInstance object. */
-    void EnumeratePhysicalDevices(); /** @brief Creates the array of GraphicsPhysicalDevices from VkPhysicalDevices. */
+    /// @brief Vulkan debug callback from VkDebugUtilsMessengerEXT.
+    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
+
+    /// @brief Gets a list of extensions used by this engine for various usages.
+    std::vector<const char*> GetExtensions();
+
+    /// @brief Gets a list of validation layers used by this engine.
+    std::vector<const char*> GetValidationLayers();
+
+    /// @brief Creates the underlying VkInstance object.
+    void CreateInstance(Version appVersion, std::string_view appName);
+
+    /// @brief Creates the array of GraphicsPhysicalDevices from VkPhysicalDevices.
+    void EnumeratePhysicalDevices();
 
     VkInstance _instance;
     bool _enableValidation;
-    PFN_vkCreateDebugUtilsMessengerEXT _createDebugUtilsMessengerEXT;
-    PFN_vkDestroyDebugUtilsMessengerEXT _destroyDebugUtilsMessengerEXT;
     VkDebugUtilsMessengerEXT _messenger;
     std::vector<VulkanPhysicalDevice> _physicalDevices;
 };

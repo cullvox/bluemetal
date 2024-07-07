@@ -2,20 +2,30 @@
 
 #include "Precompiled.h"
 #include "Core/NonCopyable.h"
-#include "Graphics/Vulkan.h"
+#include "Vulkan.h"
+#include "VulkanMutable.h"
+#include "VulkanDevice.h"
+#include "WindowInterface.h"
 
 namespace bl {
 
-class VulkanDevice;
-class VulkanPhysicalDevice;
-class VulkanWindow;
-
-/** @brief Swap present images for rendering multiple frames at a time. */
-class VulkanSwapchain : public NonCopyable {
+/// @brief Swap present images for rendering multiple frames at a time.
+class VulkanSwapchain : public NonCopyable, public VulkanMutable {
 public:
+
+    /// @brief Default Constructor
     VulkanSwapchain();
+
+    /// @brief Move Construtor
     VulkanSwapchain(VulkanSwapchain&& other);
-    VulkanSwapchain(VulkanDevice* device, VulkanWindow* window);
+
+    /// @brief Swapchain Constructor
+    ///
+    /// @brief[in] device The vulkan device to create this swapchain with.
+    /// @brief[in] surface A renderable vulkan surface.
+    VulkanSwapchain(const VulkanDevice* device, VkSurfaceKHR surface);
+    
+    /// @brief Destructor
     ~VulkanSwapchain();
 
     VkFormat GetFormat() const; /** @brief Returns the format that the swapchain images are using. */
@@ -23,35 +33,50 @@ public:
     uint32_t GetImageCount() const; /** @brief Returns the number of images being swapped. */
     VkPresentModeKHR GetPresentMode() const; /** @brief Returns the present mode the swapchain is using. */
     VkSurfaceFormatKHR GetSurfaceFormat() const; /** @brief Returns the surface format the swapchain is using. */
-    VkSwapchainKHR Get() const; /** @brief Returns the swapchain object. */
     std::vector<VkImage> GetImages() const; /** @brief Returns the handles to images that are being swapped. */
     std::vector<VkImageView> GetImageViews() const; /** @brief Returns handles to image views of the swapchain images from @ref getImages. */
+    VkSwapchainKHR Get() const; /** @brief Returns the swapchain object. */
+    uint32_t GetImageIndex() const; /** @brief Returns the index of current swapchain image. */
     bool GetMailboxSupported() const; /** @brief Returns true on VK_PRESENT_MODE_MAILBOX being supported on current physical device. */
     bool GetImmediateSupported() const; /** @brief Returns true on VK_PRESENT_MODE_IMMEDIATE being supported on current physical device. */
 
-    /** @brief Gets the next image in the chain.
-     *
-     *  @returns The value from WasRecreated(), if the swapchain was recreated before the acquire it will also return true as from WasRecreated().
-     */
+    void SetSurfaceFormat(VkSurfaceFormatKHR format);
+    void SetPresentMode(VkPresentModeKHR mode);
+    void Resize(VkExtent2D extent);
     bool AcquireNext(VkSemaphore semaphore, VkFence fence); 
-    uint32_t GetImageIndex() const; /** @brief Returns the index of the swapchain image to render to. */
     bool QueuePresent(VkSemaphore semaphore); /** Presents the image at GetImageIndex() to the screen. */
-    void Recreate(std::optional<VkPresentModeKHR> presentMode = std::nullopt, std::optional<VkSurfaceFormatKHR> surfaceFormat = std::nullopt); /** @brief Forces a swapchain recreation. */
-    bool WasRecreated() const;
+    void Destroy();
+
+    virtual std::size_t GetHash() const override;
 
 private:
-    void EnsureSurfaceSupported(); /** @brief Throws if a surface isn't supported for some strange reason. */
-    void ChooseImageCount(); /** @brief Returns true if an image count was chosen successfully. */
-    void ChooseFormat(); /** @brief Returns true if the surface format was properly found. */
-    void ChoosePresentMode(); /** @brief Returns true if the present mode was properly found. */
-    void ChooseExtent(); /** @brief Returns true if an extent was found. */
-    void ObtainImages(); /** @brief Returns true if swapchain images could be obtained. */
-    void CreateImageViews(); /** @brief Creates image views for frame buffers. */
-    void DestroyImageViews(); /** @brief Destroys all the swapchain's image views. */
+    /// @brief Throws if a surface isn't supported for some strange reason.
+    void EnsureSurfaceSupported();
+
+    /// @brief Returns true if an image count was chosen successfully.
+    void ChooseImageCount();
+
+    /// @brief Returns true if the surface format was properly found.
+    void ChooseFormat();
+
+    /// @brief Returns true if the present mode was properly found.
+    void ChoosePresentMode();
+
+    /// @brief Returns true if an extent was found.
+    void ChooseExtent();
+
+    /// @brief Returns true if swapchain images could be obtained.
+    void ObtainImages();
+
+    /// @brief Creates image views for frame buffers.
+    void CreateImageViews();
+
+    /// @brief Destroys all the swapchain's image views.
+    void DestroyImageViews();
     
-    VulkanDevice* _device;
+    const VulkanDevice* _device;
     const VulkanPhysicalDevice* _physicalDevice;
-    VulkanWindow* _window;
+    VkSurfaceKHR _surface;
     uint32_t _imageCount;
     VkSurfaceFormatKHR _surfaceFormat;
     VkPresentModeKHR _presentMode;
@@ -62,7 +87,7 @@ private:
     uint32_t _imageIndex;
     bool _isMailboxSupported;
     bool _isImmediateSupported;
-    bool _wasRecreated;
+    std::size_t _hash;
 };
 
 } // namespace bl

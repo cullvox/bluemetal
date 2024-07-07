@@ -47,23 +47,23 @@ VulkanPipelineLayoutCache::~VulkanPipelineLayoutCache()
 
 VkPipelineLayout VulkanPipelineLayoutCache::Acquire(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges)
 {
+
+    // Create cache data and copy the parameters, store it up front since it's used in every branch.
     VulkanPipelineLayoutCacheData data = {};
     data.layouts.assign(layouts.begin(), layouts.end());
     data.ranges.assign(ranges.begin(), ranges.end());
 
-    // std::sort(data.layouts.begin(), data.layouts.end()); // Turns out that descriptor set layouts are ordered in only some drivers.
+    // Turns out that descriptor set layouts are required to be ordered in only some drivers.
+    // std::sort(data.layouts.begin(), data.layouts.end());
 
     // Sort each value to ensure stability when hashing.
-    std::sort(data.ranges.begin(), data.ranges.end(), 
-        [](VkPushConstantRange& a, VkPushConstantRange& b){
-            return a.offset < b.offset;
-        });
+    std::sort(data.ranges.begin(), data.ranges.end(), [](const VkPushConstantRange& a, const VkPushConstantRange& b){ return a.offset < b.offset; });
 
-    // Check if the layout is in our cache.
     auto it = _cache.find(data);
     if (it != _cache.end())
-        return (*it).second;
+        return (*it).second; // Return an already created and cached pipeline layout.
 
+    // Create a pipeline layout to cache and return it.
     VkPipelineLayoutCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     createInfo.pNext = nullptr;

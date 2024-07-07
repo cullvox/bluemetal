@@ -1,15 +1,14 @@
 #pragma once
 
-namespace bl
-{
+#include "Chunk.h"
 
-class Generator
-{
+namespace bl {
+
+class GeneratorInterface {
 public:
-    Generator();
-    ~Generator();
+    virtual ~GeneratorInterface() = default;
 
-    
+    virtual void Generate(Chunk& chunk);
 };
 
 } // namespace bl

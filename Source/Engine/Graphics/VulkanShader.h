@@ -1,6 +1,7 @@
 #pragma once
 
 #include <spirv_reflect.h>
+#include <nlohmann/json.hpp>
 
 #include "Resource/Resource.h"
 #include "VulkanDevice.h"
@@ -8,14 +9,13 @@
 namespace bl  {
 
 /** @brief A single unit of a shader pipeline. */
-class VulkanShader : public Resource
-{
+class VulkanShader : public Resource {
 public:
     VulkanShader(const nlohmann::json& json, VulkanDevice* device);  /** @brief Constructor */
     ~VulkanShader(); /** @brief Destructor */
 
-    virtual void Load();
-    virtual void Unload();
+    virtual void Load() override;
+    virtual void Unload() override;
 
     VkShaderStageFlagBits GetStage() const; /** @brief Returns the shader stage created with. */
     const SpvReflectShaderModule& GetReflection() const; /** @brief Returns the reflection module. */

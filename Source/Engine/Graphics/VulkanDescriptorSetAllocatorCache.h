@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Precompiled.h"
-#include "Vulkan.h"
+#include "VulkanDevice.h"
 
 namespace bl {
 
@@ -34,23 +33,41 @@ struct VulkanDescriptorRatio {
     }
 };
 
-/** @brief Tracks descriptor sets that aren't being used anymore.
- *  Will allocate more from a growable descriptor set pool as needed.
- */
-class VulkanDescriptorSetCache {
+/// @brief Tracks descriptor sets that aren't being used anymore.
+/// Will allocate more from a growable descriptor set pool as needed.
+class VulkanDescriptorSetAllocatorCache {
 public:
-    VulkanDescriptorSetCache(VulkanDevice* device, uint32_t maxSets, std::span<VulkanDescriptorRatio> ratios); /** @brief Constructor */
-    ~VulkanDescriptorSetCache(); /** @brief Destructor */
 
-    VkDescriptorSet Allocate(VkDescriptorSetLayout layout); /** @brief Allocates/retrieves a descriptor set created with this layout. */
-    void Free(VkDescriptorSetLayout layout, VkDescriptorSet set); /** @brief Frees the descriptor set back into the cache. */
+    /// @brief Descriptor Set Cache Constructor
+    /// @param[in] device The device used to create descriptor sets.
+    VulkanDescriptorSetAllocatorCache(
+        const VulkanDevice* device, 
+        uint32_t maxSets, 
+        std::span<VulkanDescriptorRatio> ratios);
+
+    /// @brief Destructor
+    ~VulkanDescriptorSetAllocatorCache();
+
+    /// @brief Allocates/retrieves a descriptor set created with this layout.
+    VkDescriptorSet Allocate(VkDescriptorSetLayout layout);
+
+    /// @brief Frees the descriptor set back into the cache.
+    void Free(VkDescriptorSetLayout layout, VkDescriptorSet set);
+
+    /// @brief Completely resets every descriptor set in every pool, use before destroying resources.  */
+    void ResetPools();
 
 private:
-    VkDescriptorPool GrabPool(); /** Grabs us a new pool allocating as required. */
-    VkDescriptorPool CreatePool(uint32_t setCount); /** @brief Creates a new pool after the previous one was used up. */
-    void ResetPools(); /** @brief Completely resets every descriptor set in every pool, not very useful right now. */
+    
+    /// @brief Grabs us a new pool allocating as required.
+    VkDescriptorPool GrabPool();
 
-    VulkanDevice* _device;
+    /// @brief Creates a new pool after the previous one was used up.
+    VkDescriptorPool CreatePool(uint32_t setCount); 
+
+
+
+    const VulkanDevice* _device;
     std::unordered_map<VkDescriptorSetLayout, std::unordered_set<VkDescriptorSet>> _freeSets;
     uint32_t _setsPerPool;
     std::vector<VulkanDescriptorRatio> _ratios;

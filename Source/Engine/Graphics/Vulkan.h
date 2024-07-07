@@ -7,7 +7,7 @@
 #pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
 #endif
 
-#include "vk_mem_alloc.h"
+#include <vk_mem_alloc.h>
 
 #ifdef BLUEMETAL_COMPILER_APPLE_CLANG
 #pragma clang diagnostic pop

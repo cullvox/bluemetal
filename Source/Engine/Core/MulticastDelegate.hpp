@@ -4,8 +4,8 @@
 
 namespace bl {
 
-template <typename TReturn, typename... TArgs>
-class CallbackList;
+template <typename... TArgs>
+class MulticastDelegate;
 
 /** \brief Custom doubly linked list containing std::function's with a specific signature.
  *
@@ -16,22 +16,14 @@ class CallbackList;
  * \since BloodLust 1.0.0
  *
  */
-template <typename TReturn, typename... TArgs>
-class CallbackList<TReturn(TArgs...)> {
-    using _Callback = std::function<TReturn(TArgs...)>;
-    using _Handle = std::list<_Callback>::iterator;
-
-    std::list<_Callback> _callbacks;
-
+template <typename... TArgs>
+class MulticastDelegate<void(TArgs...)> {
 public:
     /** \brief A callback function type. */
-    using Callback = _Callback;
+    using Func = std::function<void(TArgs...)>;
 
-    /** \brief A handle is defined as an iterator of the list giving a value to remove. */
-    using Handle = _Handle;
-
-    blCallbackList() = default;
-    ~blCallbackList() = default;
+    MulticastDelegate() = default;
+    ~MulticastDelegate() = default;
 
     /** \brief Runs all the callbacks with the following arguments.
      *
@@ -44,26 +36,9 @@ public:
      * \since BloodLust 1.0.0
      *
      */
-    void operator()(TArgs... args) const
-    {
+    void operator()(TArgs... args) const {
         for (const auto& cb : _callbacks)
             cb(std::forward<TArgs>(args)...);
-    }
-
-    /** \brief Run a specific callback.
-     *
-     * Using the callbacks handle and given arguments, this interpretation
-     * of the operator() also returns properly from the callback.
-     *
-     * \param handle The iterator handle of the callback.
-     * \param args Arguments to forward to the callback.
-     *
-     * \since BloodLust 1.0.0
-     *
-     */
-    TReturn operator()(Handle handle, TArgs... args) const
-    {
-        return (*handle)(std::forward<TArgs>(args)...);
     }
 
     /** \brief Adds a new callback to the list.
@@ -73,23 +48,21 @@ public:
      *
      *
      */
-    Handle add(const Callback& cb) noexcept
-    {
+    void add(const Func& cb) noexcept {
         _callbacks.push_back(cb);
-
-        auto it = _callbacks.end();
-        it--;
-
-        return it;
     }
 
-    /** \brief Removes a callback from the list, must be a valid handle. */
-    void remove(Handle handle) noexcept { _callbacks.erase(handle); }
+    void operator+=(const Func& cb) {
+        add(cb);
+    }
 
     /** \brief Clears all callbacks, invalidates all handles. */
     void clear() noexcept { _callbacks.clear(); }
 
     size_t size() const noexcept { return _callbacks.size(); }
+
+private:
+    std::list<Func> _callbacks;
 };
 
 } // namespace bl

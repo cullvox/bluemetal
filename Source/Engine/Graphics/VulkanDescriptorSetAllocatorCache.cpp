@@ -1,12 +1,9 @@
-#include "VulkanDevice.h"
-#include "VulkanDescriptorSetCache.h"
+#include "VulkanDescriptorSetAllocatorCache.h"
 
-namespace bl
-{
+namespace bl {
 
-VulkanDescriptorSetCache::VulkanDescriptorSetCache(VulkanDevice* device, uint32_t maxSets, std::span<VulkanDescriptorRatio> ratios)
-    : _device(device)
-{
+VulkanDescriptorSetAllocatorCache::VulkanDescriptorSetAllocatorCache(const VulkanDevice* device, uint32_t maxSets, std::span<VulkanDescriptorRatio> ratios)
+    : _device(device) {
     for (auto ratio : ratios)
         _ratios.push_back(ratio);
 
@@ -16,15 +13,14 @@ VulkanDescriptorSetCache::VulkanDescriptorSetCache(VulkanDevice* device, uint32_
     _freePools.push_back(pool);
 }
 
-VulkanDescriptorSetCache::~VulkanDescriptorSetCache()
-{
+VulkanDescriptorSetAllocatorCache::~VulkanDescriptorSetAllocatorCache() {
     for (auto pool : _freePools)
         vkDestroyDescriptorPool(_device->Get(), pool, nullptr);
     for (auto pool : _usedPools)
         vkDestroyDescriptorPool(_device->Get(), pool, nullptr);
 }
 
-VkDescriptorSet VulkanDescriptorSetCache::Allocate(VkDescriptorSetLayout layout)
+VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayout layout)
 {
 
     // Check if there is already a free set from the same layout.
@@ -79,12 +75,12 @@ VkDescriptorSet VulkanDescriptorSetCache::Allocate(VkDescriptorSetLayout layout)
     return set;
 }
 
-void VulkanDescriptorSetCache::Free(VkDescriptorSetLayout layout, VkDescriptorSet set)
+void VulkanDescriptorSetAllocatorCache::Free(VkDescriptorSetLayout layout, VkDescriptorSet set)
 {
     _freeSets[layout].insert(set);
 }
 
-VkDescriptorPool VulkanDescriptorSetCache::GrabPool()
+VkDescriptorPool VulkanDescriptorSetAllocatorCache::GrabPool()
 {
     VkDescriptorPool pool;
 
@@ -107,7 +103,7 @@ VkDescriptorPool VulkanDescriptorSetCache::GrabPool()
     return pool;
 }
 
-VkDescriptorPool VulkanDescriptorSetCache::CreatePool(uint32_t setCount)
+VkDescriptorPool VulkanDescriptorSetAllocatorCache::CreatePool(uint32_t setCount)
 {
     std::vector<VkDescriptorPoolSize> poolSizes;
     for (const auto& ratio : _ratios)
@@ -128,7 +124,7 @@ VkDescriptorPool VulkanDescriptorSetCache::CreatePool(uint32_t setCount)
     return pool;
 }
 
-void VulkanDescriptorSetCache::ResetPools()
+void VulkanDescriptorSetAllocatorCache::ResetPools()
 {
     for (auto pool : _freePools)
         VK_CHECK(vkResetDescriptorPool(_device->Get(), pool, 0))

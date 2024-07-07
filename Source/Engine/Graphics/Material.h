@@ -12,16 +12,94 @@
 
 namespace bl {
 
-class MaterialInstance;
 
-
-/// @brief Basic data used in a material but not copied into instances.
-class MaterialPipeline {
+class Parameter {
 public:
+    
+};
+
+/// @brief Creates a pipeline and interprets reflection data 
+class MaterialPipeline : public VulkanPipeline {
+public:
+    MaterialPipeline(
+        VulkanDevice* device, 
+        VkRenderPass pass, 
+        uint32_t subpass, 
+        const VulkanPipelineStateInfo& state, 
+        uint32_t materialSet = 1);
+
+    ~MaterialPipeline();
+
+protected:
+    friend class MaterialInstance;
+    
+    /// @brief Returns the device that this pipeline was created with.
+    /// Makes it easier if we are friends with an instance. 
+    const VulkanDevice* GetDevice();
+    const std::map<std::string, VulkanBlockVariable>& GetUniforms() const { return _uniforms; }
+    const std::map<std::string, uint32_t>& GetSamplers() const { return _samplers; }
+    VkDescriptorSetLayout GetDescriptorSetLayout() const { return _layout; }
+
+private:
     std::map<std::string, VulkanBlockVariable> _uniforms; 
     std::map<std::string, uint32_t> _samplers; /** @brief Name -> Binding */
     VkDescriptorSetLayout _layout;
-    VulkanPipeline _pipeline;
+};
+
+class Material;
+
+
+
+class MaterialInstance {
+public:
+    MaterialInstance(Material* material);
+    ~MaterialInstance();
+
+    void SetBool(const std::string& name, bool value);
+    void SetInteger(const std::string& name, int value);
+    void SetScaler(const std::string& name, float value);
+    void SetVector2(const std::string& name, glm::vec2 value);
+    void SetVector3(const std::string& name, glm::vec3 value);
+    void SetVector4(const std::string& name, glm::vec4 value);
+    void SetMatrix(const std::string& name, glm::mat4 value);
+    void SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image);
+    void UpdateUniforms(); /** @brief This function must be called before the renderer starts rendering the frame. */
+
+    void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */
+    void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
+
+private:
+    void BuildPerFrameBindings(VkDescriptorSetLayout layout);
+    void SetBindingDirty(uint32_t binding);
+    size_t CalculateDynamicAlignment(size_t uboSize);
+
+    template<typename T> 
+    void SetGenericUniform(const std::string& name, T value);
+
+    /// @brief Material data that needs to be changed every frame.
+    ///
+    /// Descriptor sets cannot be changed while bounded in a command buffer. 
+    /// Effectively making them useless while rendering. To solve this we use 
+    /// multiple descriptor sets for a material to ensure that we are never using 
+    /// a descriptor set while it's bound. 
+    struct PerFrameData {
+        VkDescriptorSet set;
+        std::map<uint32_t, bool> dirty; /// @brief If a binding is dirty it must be updated somehow.
+    };
+
+    /// @brief Combined sampler and image.
+    struct SampledImage {
+        VulkanMutableReference<VulkanSampler> sampler;
+        VulkanImage* image;
+    };
+
+    using BindingData = std::variant<VulkanBuffer, SampledImage>;
+
+    Material* _pipeline;
+    uint32_t _materialSet;
+    uint32_t _currentFrame;
+    std::map<uint32_t, BindingData> _bindings;
+    std::array<PerFrameData, VulkanConfig::numFramesInFlight> _perFrameData;
 };
 
 /** @brief Shader uniforms merged together in an uncomfortably useful unison.
@@ -38,16 +116,8 @@ public:
  * global and instance rendering data respectively. 
  * 
  */
-class Material
-{
+class Material : public MaterialPipeline, public MaterialInstance {
 public:
-
-    /// @brief Constructor
-    /// This constructor creates a basic copy of per frame descriptor set data.
-    /// Only use this for material instancing. 
-    ///
-    Material();
-
     /// @brief Material Constructor
     /// This constructor creates a whole material object.
     ///
@@ -56,98 +126,55 @@ public:
     /// @param subpass The render passes subpass to use.
     /// @param state Pipeline state info.
     /// @param materialSet Descriptor set to use for material operations.
-    Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, const VulkanPipelineStateInfo& state, uint32_t materialSet = 1);
+    Material(
+        VulkanDevice* device, 
+        VkRenderPass pass, 
+        uint32_t subpass, 
+        const VulkanPipelineStateInfo& state, 
+        uint32_t materialSet = 1);
 
     /// @brief Destructor
     ~Material();
 
-    void SetBoolean(const std::string& name, bool value);
-    void SetInteger(const std::string& name, int value);
-    void SetScaler(const std::string& name, float value);
-    void SetVector2(const std::string& name, glm::vec2 value);
-    void SetVector3(const std::string& name, glm::vec3 value);
-    void SetVector4(const std::string& name, glm::vec4 value);
-    void SetMatrix(const std::string& name, glm::mat4 value);
-    void SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image);
-    void UpdateUniforms(); /** @brief This function must be called before the renderer starts rendering the frame. */
 
-    void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */
-    void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
+    void SetRasterizerState();
 
+    // Allows you to change recompilable options of the pipeline.
 private:
+    VulkanDescriptorSetCache _descriptorSetCache;
 
-    /// @brief Material data that needs to be changed every frame.
-    ///
-    /// Descriptor sets cannot be changed while bounded in a command buffer. 
-    /// Effectively making them useless while rendering. To solve this we use 
-    /// multiple descriptor sets for a material to ensure that we are never using 
-    /// a descriptor set while it's bound. 
-    struct PerFrameData {
-        VkDescriptorSet set;
-        std::map<uint32_t, bool> dirty; /// @brief If a binding is dirty it must be updated somehow.
-    };
-
-    /// @brief Combined sampler and image.
-    struct SampledImage {
-        VulkanMutableResourceReference<VulkanSampler> sampler;
-        VulkanImage* image;
-    };
-
-    using BindingData = std::variant<VulkanBuffer, SampledImage>;
-
-    void BuildPerFrameBindings(VkDescriptorSetLayout layout);
-    void SetBindingDirty(uint32_t binding);
-    
-    size_t CalculateDynamicAlignment(size_t uboSize);
-    template<typename T> 
-    void SetGenericUniform(const std::string& name, T value);
-
-    VulkanDevice* _device;
-    std::unique_ptr<BaseData> _data;
-    uint32_t _materialSet;
-    uint32_t _currentFrame;
-    std::map<uint32_t, BindingData> _data;
-    std::array<PerFrameData, VulkanConfig::numFramesInFlight> _perFrameData;
-};
-
-class MaterialInstance : public Material {
-public:
-    MaterialInstance(Material* base);
-    ~MaterialInstance();
-
-    Material* GetBaseMaterial();
-
-private:
-    Material* _base;
 };
 
 template<typename T>
-void Material::SetGenericUniform(const std::string& name, T value)
-{
-    if (!GetUniformMetadata().contains(name))
-    {
-        blError("Could not set material uniform as it does not exist!");
+void MaterialInstance::SetGenericUniform(const std::string& name, T value) {
+    const auto& uniforms = _pipeline->GetUniforms();
+    if (!uniforms.contains(name)) {
+        blError("Could not set material uniform, it does not exist!");
         return;
     }
 
-    auto meta = GetUniformMetadata().at(name);
-    assert(sizeof(T) == meta.GetSize() && "Type must be the same as the uniform size!");
+    const VulkanBlockVariable& variable = uniforms.at(name);
+    assert(sizeof(T) == variable.GetSize() && "Type must be the same as the uniform size!");
 
-    auto& buffer = std::get<VulkanBuffer>(_data[meta.GetBinding()]);
+    VulkanBuffer& buffer = std::get<VulkanBuffer>(_bindings[variable.GetBinding()]);
     VkDeviceSize blockSize = buffer.GetSize() / VulkanConfig::numFramesInFlight;
-    // uint32_t previousFrame = (_currentFrame - 1) % GraphicsConfig::numFramesInFlight;
 
-    auto offset = (blockSize * _currentFrame) + meta.GetOffset();
+    auto offset = (blockSize * _currentFrame) + variable.GetOffset();
 
     char* uniform = nullptr;
     buffer.Map((void**)&uniform);
+
+    // Offset the uniform to where the variable is located and copy to.
     uniform += offset;
     std::memcpy(uniform, &value, sizeof(T));
-    buffer.Unmap();
 
+    // The uniform data has been changed, unmap and flush.
+    buffer.Unmap();
     buffer.Flush(offset, sizeof(T));
 
-    SetBindingDirty(meta.GetBinding()); /* The buffer data must be copied to the other parts of the dynamic uniform buffer. */
+    // The buffer data is marked dirty so when available the changed data 
+    // will be copied to other parts of the buffer.
+    SetBindingDirty(variable.GetBinding()); 
 }
 
 } // namespace bl

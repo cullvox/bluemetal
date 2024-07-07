@@ -5,17 +5,14 @@
 
 namespace bl {
 
-VulkanPipelineReflection::VulkanPipelineReflection() = default;
-VulkanPipelineReflection::VulkanPipelineReflection(const VulkanPipelineReflection& other) = default;
-VulkanPipelineReflection::VulkanPipelineReflection(VulkanPipelineReflection&& other) = default;
-VulkanPipelineReflection::VulkanPipelineReflection(const VulkanPipelineStateInfo& state) {
-    std::array<VulkanShader*, 2> shaders = { state.stages.vert.Get(), state.stages.frag.Get() };
+VulkanPipelineReflection::VulkanPipelineReflection(const VulkanPipelineStateInfo::StageState& state) {
+    const auto& shaders = state.shaders;
 
     // Obtain reflection data from shaders to build the pipeline layout.
     for (size_t i = 0; i < shaders.size(); i++) {
 
         // Reflect each descriptor binding to build descriptor set layouts.
-        auto shader = shaders[i];
+        VulkanShader* shader = shaders[i].Get();
         auto reflection = shader->GetReflection();
 
         for (uint32_t j = 0; j < reflection.descriptor_binding_count; j++)
@@ -76,10 +73,6 @@ VulkanPipelineReflection::VulkanPipelineReflection(const VulkanPipelineStateInfo
         }
     }
 }
-
-VulkanPipelineReflection::~VulkanPipelineReflection() {}
-VulkanPipelineReflection& VulkanPipelineReflection::operator=(const VulkanPipelineReflection& rhs) = default;
-VulkanPipelineReflection& VulkanPipelineReflection::operator=(VulkanPipelineReflection&& rhs) = default;
 
 std::map<uint32_t, VulkanDescriptorSetReflection>& VulkanPipelineReflection::GetDescriptorSetReflections() {
     return _descriptorSetMetadata;
@@ -162,14 +155,13 @@ void VulkanPipelineReflection::ReflectMembers(VulkanBlockReflection& meta, uint3
 VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanPipelineReflection* reflection)
     : _device(device) {
     
-
-    _reflection = reflection ? *reflection : VulkanPipelineReflection{state};
+    _reflection = reflection ? *reflection : VulkanPipelineReflection{state.stageState};
 
     std::array<VkPipelineShaderStageCreateInfo, 2> stages;
     std::array<VulkanShader*, 2> shaders = { state.stages.vert.Get(), state.stages.frag.Get() };
 
     // Build the pipelines shader stage create info.
-    for (size_t i = 0; i < shaders.size(); i++) {
+    for (size_t i = 0; i < state.stageState.shaders.size(); i++) {
         auto shader = shaders[i];
         stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         stages[i].pNext = nullptr;
@@ -214,17 +206,17 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputState.pNext = nullptr;
     vertexInputState.flags = 0;
-    vertexInputState.vertexBindingDescriptionCount = (uint32_t)state.vertexInput.vertexInputBindings.size();
-    vertexInputState.pVertexBindingDescriptions = state.vertexInput.vertexInputBindings.data();
-    vertexInputState.vertexAttributeDescriptionCount = (uint32_t)state.vertexInput.vertexInputAttribs.size();
-    vertexInputState.pVertexAttributeDescriptions = state.vertexInput.vertexInputAttribs.data();
+    vertexInputState.vertexBindingDescriptionCount = (uint32_t)state.vertexState.vertexInputBindings.size();
+    vertexInputState.pVertexBindingDescriptions = state.vertexState.vertexInputBindings.data();
+    vertexInputState.vertexAttributeDescriptionCount = (uint32_t)state.vertexState.vertexInputAttribs.size();
+    vertexInputState.pVertexAttributeDescriptions = state.vertexState.vertexInputAttribs.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
     inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssemblyState.pNext = nullptr;
     inputAssemblyState.flags = 0;
-    inputAssemblyState.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    inputAssemblyState.primitiveRestartEnable = VK_FALSE;
+    inputAssemblyState.topology = state.vertexState.topology;
+    inputAssemblyState.primitiveRestartEnable = state.vertexState.primitiveRestartEnable;
 
     VkPipelineTessellationStateCreateInfo tessellationState = {};
     tessellationState.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
@@ -244,16 +236,16 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     VkPipelineRasterizationStateCreateInfo rasterizationState = {};
     rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rasterizationState.flags = 0;
-    rasterizationState.depthClampEnable = VK_FALSE;
-    rasterizationState.rasterizerDiscardEnable = VK_FALSE;
-    rasterizationState.polygonMode = VK_POLYGON_MODE_FILL;
-    rasterizationState.cullMode = VK_CULL_MODE_BACK_BIT;
-    rasterizationState.frontFace = VK_FRONT_FACE_CLOCKWISE;
-    rasterizationState.depthBiasEnable = VK_FALSE;
-    rasterizationState.depthBiasConstantFactor = 0.0f;
-    rasterizationState.depthBiasClamp = 0.0f;
-    rasterizationState.depthBiasSlopeFactor = 0.0f;
-    rasterizationState.lineWidth = 1.0f;
+    rasterizationState.depthClampEnable = state.rasterizerState.depthClampEnable;
+    rasterizationState.rasterizerDiscardEnable = state.rasterizerState.rasterizerDiscardEnable;
+    rasterizationState.polygonMode = state.rasterizerState.polygonMode;
+    rasterizationState.cullMode = state.rasterizerState.cullMode;
+    rasterizationState.frontFace = state.rasterizerState.frontFace;
+    rasterizationState.depthBiasEnable = state.rasterizerState.depthBiasEnable;
+    rasterizationState.depthBiasConstantFactor = state.rasterizerState.depthBiasConstantFactor;
+    rasterizationState.depthBiasClamp = state.rasterizerState.depthBiasClamp;
+    rasterizationState.depthBiasSlopeFactor = state.rasterizerState.depthBiasSlopeFactor;
+    rasterizationState.lineWidth = state.rasterizerState.lineWidth;
 
     VkPipelineMultisampleStateCreateInfo multisampleState = {};
     multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;

@@ -1,5 +1,5 @@
 #include "Core/Print.h"
-#include "Graphics/VulkanPhysicalDevice.h"
+#include "VulkanPhysicalDevice.h"
 #include "Window.h"
 #include "VulkanInstance.h"
 
@@ -38,10 +38,10 @@ std::vector<const VulkanPhysicalDevice*> VulkanInstance::GetPhysicalDevices() co
 const VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice() const {
     auto physicalDevices = GetPhysicalDevices();
     auto it = std::find_if(physicalDevices.begin(), physicalDevices.end(), 
-                [](const auto& pd)
-                { 
-                    return pd->GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; 
-                });
+        [](const auto& pd)
+        { 
+            return pd->GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; 
+        });
                     
     if (it != physicalDevices.end()) { 
         return *it;
