@@ -1,21 +1,47 @@
 #pragma once
 
+#include "Precompiled.h"
 #include "Core/Flags.h"
 
 namespace bl {
 
-enum class KeyModifierFlagBits {
-    Control   = 0x00000001,
-    Shift     = 0x00000002,
-    Alternate = 0x00000004,
-    Meta      = 0x00000008,
+/// @brief Key Modifiers
+///
+/// Keyboard modifiers are simple ways to change the functionality of keys 
+/// by using a modification button. Control, Shift are examples of such keys.
+/// The program can change behavior of functionality depending on modifiers.
+///
+enum class KeyboardModifierFlagBits : uint32_t {
+    Ctrl  = 0x00000001,
+    Shift = 0x00000002,
+    Alt   = 0x00000004,
+    Meta  = 0x00000008,
 };
 
-using KeyModifierFlags = uint32_t;
+using KeyboardModifierFlags = uint32_t;
 
-/// @brief Keyboard Usb Codes
+static inline KeyboardModifierFlags operator|(KeyboardModifierFlags modifiers, KeyboardModifierFlagBits bit) {
+    return (uint32_t)modifiers | (uint32_t)bit;
+}
+
+static inline KeyboardModifierFlags operator|=(KeyboardModifierFlags modifiers, KeyboardModifierFlagBits bit) {
+    return (uint32_t)modifiers |= (uint32_t)bit;
+}
+
+/// @brief Keyboard USB Scancodes
+///
+/// Scancodes pertaining to standard USB positioning of keys. Because they are
+/// standardised it makes it easy in games to use them for binding positions.
+/// When displaying to the user they should be translated into their literal 
+/// names from the system to give an accurate representation of their 
+/// keyboard layout. Users can and will have different keyboard layouts other 
+/// than QWERTY because of locale or desire.
+///
+/// To translate a scancode to a key name use Keyboard::ScancodeToLocalKeyName.
+/// Here comes a long list of scancodes...
+///
 enum class Scancode {
-    A,
+    A = 0,
     B,
     C,
     D,
@@ -257,14 +283,56 @@ enum class Scancode {
     App2,
     AudioRewind,
     AudioFastForward,
+
+    Count,
 };
 
 class Keyboard {
 public:
+
+    /// @brief Destructor
     virtual ~Keyboard() = default;
-    virtual bool IsKeyDown(Scancode key) = 0;
-    virtual void ScancodeToKeycode();
-    virtual KeyModifierFlagBits GetKeyModifiers() = 0;
+
+    /// @brief Checks if a scancode was pressed between poll time.
+    ///
+    /// At poll time the keyboard internal class state may change and upade
+    /// it's internal state array. Use this function to check if the state
+    /// of the keyboard's state has changed.
+    ///
+    /// @param key The scancode to check.
+    ///
+    /// @return True if the scancode/key was pressed.
+    ///
+    virtual bool IsKeyDown(Scancode code) = 0;
+
+    /// @brief Returns the name of the key on the users keyboard.
+    /// 
+    /// Scancodes are based on position their position cannot be changed
+    /// but the usage of the key can change depending on the users keyboard 
+    /// layout or locale.
+    ///
+    /// @param key The key to check.
+    ///
+    /// @return The name of the key from scancode.
+    ///
+    virtual std::string ScancodeToLocalKeyName(Scancode key) = 0;
+    
+    /// @brief An easy way to check what modifiers are currently down.
+    ///
+    /// @return The modifier bit flags.
+    ///
+    virtual KeyboardModifierFlags GetKeyModifiers() {
+        KeyboardModifierFlags flags;
+        if (IsKeyDown(Scancode::LeftCtrl) || IsKeyDown(Scancode::RightCtrl)) 
+            flags |= KeyboardModifierFlagBits::Ctrl;
+        if (IsKeyDown(Scancode::LeftShift) || IsKeyDown(Scancode::RightShift))
+            flags |= KeyboardModifierFlagBits::Shift;
+        if (IsKeyDown(Scancode::LeftAlt) || IsKeyDown(Scancode::RightAlt))
+            flags |= KeyboardModifierFlagBits::Alt;
+        if (IsKeyDown(Scancode::LeftMeta) || IsKeyDown(Scancode::RightMeta))
+            flags |= KeyboardModifierFlagBits::Meta;
+        return flags;
+    }
 };
 
 } // namespace bl

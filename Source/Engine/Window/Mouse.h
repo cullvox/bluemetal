@@ -18,7 +18,7 @@ enum class MouseInputMode {
     Normal, ///<! Uses whatever mouse data the system gives us.
     Hidden, ///<! Hides the cursor over our applications windows.
     HiddenLocked, ///<! Hidden + locks the cursor to the center of the window. 
-    Raw, ///<! Hides the cursor and an Uses raw mouse input directly from the device, no accleration is applied.
+    Raw, ///<! Hides the cursor and an Uses raw mouse input directly from the device, no accleration is applied. This input mode acts a lot like HiddenLocked.
 };
 
 class Mouse {

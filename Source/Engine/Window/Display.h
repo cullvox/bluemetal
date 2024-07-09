@@ -3,20 +3,23 @@
 #include "Precompiled.h"
 #include "Math/Extent.h"
 #include "Math/Rect.h"
-#include "VideoMode.h"
 
 namespace bl {
 
 
-struct VideoMode  {
+struct VideoMode {
     VideoMode(int32_t redBits, int32_t greenBits, int32_t blueBits, Rect2D rect, int refreshRate)
-        : redBits(redBits), greenBits(greenBits), blueBits(blueBits), rect(rect), refreshRate(refreshRate) {}
+        : redBits(redBits)
+        , greenBits(greenBits)
+        , blueBits(blueBits)
+        , rect(rect)
+        , refreshRate(refreshRate) {}
 
-    int32_t redBits; ///!< 
-    int32_t greenBits;
-    int32_t blueBits;
-    Rect2D rect; /// @brief Size of the display mode in pixels.
-    int refreshRate; /// @brief Refresh rate of the monitor in hz. 
+    uint32_t redBits; ///!< 
+    uint32_t greenBits;
+    uint32_t blueBits;
+    Extent2D extent; /// @brief Size of the display mode in pixels.
+    uint32_t refreshRate; /// @brief Refresh rate of the monitor in hz. 
 };
 
 /// @brief 
