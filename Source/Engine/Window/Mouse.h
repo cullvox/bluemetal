@@ -69,7 +69,7 @@ public:
     /// @brief Returns the delta of scroll movement.
     ///
     /// Many platforms provide two dimensional scrolling especially laptops 
-    /// and computers with trackpads or trackballs. Whereas the typical mouse
+    /// and computers with track-pads or track-balls. Whereas the typical mouse
     /// only proves vertical scrolling.
     ///
     /// @returns The delta of the mouse scroll.

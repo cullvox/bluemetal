@@ -23,4 +23,4 @@ CPMAddPackage("gh:zeux/volk#1.3.270")
 CPMAddPackage("gh:gpuopen-librariesandsdks/vulkanmemoryallocator@3.1.0")
 CPMAddPackage("gh:cullvox/qoixx#cmake_and_windows_fix")
 
-add_subdirectory("fmod") # FMOD is specificly 
+add_subdirectory("fmod") # FMOD is special

@@ -14,7 +14,7 @@ using RenderFunction = std::function<void(VkCommandBuffer cmd, uint32_t currentF
 
 class Renderer {
 public:
-    Renderer(const VulkanDevice* device, WindowInterface* window); /** @brief Constructor */
+    Renderer(const VulkanDevice* device, Window* window); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
     VkRenderPass GetRenderPass() const;

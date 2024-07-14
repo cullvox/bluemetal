@@ -45,6 +45,9 @@ public:
 public:
     virtual ~WindowPlatform() = 0;
 
+    /// @brief Returns the input object to interact with this platform's input devices.
+    virtual Input& GetInput() = 0;
+
     /// @brief Returns the displays currently connected to the device.
     ///
     /// Displays may change in real time after a poll event any display may
@@ -68,8 +71,7 @@ public:
         Rect2D           rect = {{0, 0}, {1080, 720}},
         FullscreenMode   mode = FullscreenMode::Windowed) = 0;
 
-    /// @brief Returns the input object to interact with this platform's input devices.
-    virtual Input& GetInput() = 0;
+    
 
     /// @brief Returns the required vulkan instance extensions for this platform.
     virtual std::vector<const char*> GetVulkanInstanceExtensions() = 0;

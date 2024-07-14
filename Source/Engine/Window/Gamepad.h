@@ -59,11 +59,11 @@ public:
 
     /// @brief Most gamepads are modeled after the Xbox controller.
     ///
-    /// Some players may have different types of gamepads being used. We can
+    /// Some players may have different types of game pads being used. We can
     /// differentiate what kinds of controls to show the players on a per 
     /// gamepad basis rather than a per console basis. This is particularly 
     /// useful for sit down/live streamed gaming sessions with friends who all
-    /// may use different types of gamepads. 
+    /// may use different types of game pads. 
     ///
     enum class Type {
         Generic, ///!< Generic control display 
@@ -82,11 +82,74 @@ public:
     /// @brief Destructor
     virtual ~Gamepad() = default;
 
-    /// @brief 
-    /// @return 
+    /// @brief Gets the name of the gamepad vendor.
+    ///
+    /// Returns a user readable name of the gamepad vendor.
+    ///
+    /// @return The vendor of this gamepad.
+    ///
+    virtual std::string_view GetVendor() = 0;
+    
+    /// @brief Gets the name of the gamepad.
+    ///
+    /// Returns a user readable name for this gamepad.
+    ///
+    /// @return The name of this gamepad.
+    ///
+    virtual std::string_view GetName() = 0;
+
+    /// @brief Returns the type of this gamepad.
+    ///
+    /// Makes it easy to determine what type of gamepad the player has. Use
+    /// this function for showing icons to players relating to gamepad buttons.
+    /// For example if a player has an Xbox controller it would make sense to 
+    /// show 'A', 'B' and 'X', 'Y' buttons, on the other hand if the player has 
+    /// a PS5 controller it would make sense to show them the shape buttons.
+    ///
+    /// @returns The type of this gamepad.
+    ///
+    virtual Type GetType() = 0;
+
+    /// @brief Sets a player index to controller input.
+    ///
+    /// Players can be assigned controllers, an easy way to do this is to 
+    /// create a UI element describing to press 'A' on your controller to
+    /// join game. Then find the controller that presses 'A' and set the 
+    /// player index.
+    ///
+    /// If a player is not assigned the default value is '-1'.
+    ///
+    /// @param[in] index The players id.
+    ///
+    virtual void SetPlayer(int32_t index) = 0;
+
+    /// @brief Gets the player assigned to this controller.
+    ///
+    /// If a player has not been assigned to this controller this function 
+    /// will return '-1', meaning unassigned.
+    ///
+    /// @return This controllers player id.
+    ///
+    virtual int32_t GetPlayer() = 0;
+
+    /// @brief Gets if the controller is currently connected.
+    ///
+    /// Players can disconnect and reconnect controllers at will. When a 
+    /// controller is disconnected the player assignment will be reset along
+    /// with any other settings.
+    ///
+    /// @return True if the controller is connected.
+    ///
     virtual bool IsConnected() = 0;
 
-    /// @brief Returns the state of a button
+    /// @brief Gets the state of any gamepad button.
+    ///
+    /// At poll if a button is considered 'down' the internal state of the 
+    /// gamepad is changed. Using this function you can query if a button was
+    /// pressed in between polls.
+    ///
+    /// @returns True if the button was down.
+    ///
     virtual bool GetButtonDown(Button button) = 0;
 
     /// @brief Returns an analog joystick input from a gamepad.
@@ -107,7 +170,7 @@ public:
     /// triggered and a full one being pressed all the way down. If the trigger 
     /// is near zero this function will return a zero value.
     ///
-    /// @param trigger The trigger to read from.
+    /// @param[in] trigger The trigger to read from.
     ///
     /// @returns The analog value from the trigger.
     ///
@@ -123,7 +186,7 @@ public:
     ///
     /// @return True if the gamepad has rumble support.
     ///
-    virtual bool HasRumble() = 0; 
+    virtual bool HasRumble() = 0;
 
     /// @brief Actives a rumble effect on the motors of a gamepad.
     ///

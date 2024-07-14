@@ -35,7 +35,6 @@ list(APPEND Sources
   "Graphics/Texture2D.cpp"
   "Graphics/GraphicsSystem.cpp"
 
-
   # ImGui
   "ImGui/imgui.cpp"
   "ImGui/imgui_demo.cpp"
