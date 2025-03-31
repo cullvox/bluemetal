@@ -12,7 +12,7 @@ list(APPEND Sources
   "Audio/Sound.cpp"
 
   "Graphics/Display.cpp"
-  "Graphics/Window.cpp"
+  #"Graphics/Window.cpp"
   "Graphics/VulkanInstance.cpp"
   "Graphics/VulkanPhysicalDevice.cpp"
   "Graphics/VulkanDevice.cpp"
@@ -26,7 +26,7 @@ list(APPEND Sources
   "Graphics/VulkanPushConstantReflection.cpp"
   "Graphics/VulkanPipelineLayoutCache.cpp"
   "Graphics/VulkanPipeline.cpp"
-  "Graphics/VulkanDescriptorSetCache.cpp"
+  "Graphics/VulkanDescriptorSetAllocatorCache.cpp"
   "Graphics/VulkanSwapchain.cpp"
   "Graphics/Material.cpp"
   "Graphics/Mesh.cpp"
@@ -64,7 +64,7 @@ target_link_libraries(Bluemetal PUBLIC
   ${Vulkan_LIBRARY} 
   glm::glm
   spirv-reflect-static 
-  SDL2::SDL2 
+  SDL3::SDL3 
   fmt::fmt
   FMOD
   spng_static

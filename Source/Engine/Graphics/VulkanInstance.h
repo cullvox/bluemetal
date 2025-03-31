@@ -25,7 +25,7 @@ public:
     /// @param appVersion The version of your application.
     /// @param appName The name of your application.
     /// @param enableValidation Enables Vulkan validation layers on your device.
-    VulkanInstance(WindowPlatformInterface* windowPlatform, Version appVersion, std::string_view appName, bool enableValidation);
+    VulkanInstance(Version appVersion, std::string_view appName, bool enableValidation);
     
     /// @brief Destructor
     ~VulkanInstance();

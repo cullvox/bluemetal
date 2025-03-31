@@ -12,7 +12,7 @@ set(SPNG_SHARED OFF)
 
 CPMAddPackage("gh:p-ranav/argparse@3.0")
 CPMAddPackage("gh:g-truc/glm#1.0.1")
-CPMAddPackage("gh:libsdl-org/sdl#release-2.30.4")
+CPMAddPackage("gh:libsdl-org/sdl#release-3.2.8")
 CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 CPMAddPackage("gh:khronosgroup/spirv-reflect#vulkan-sdk-1.3.283.0")
 CPMAddPackage("gh:nlohmann/json@3.11.3")

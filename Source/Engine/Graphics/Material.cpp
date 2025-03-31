@@ -164,7 +164,7 @@ void Material::UpdateUniforms() {
                 descriptorCopy.dstArrayElement = 0;
                 descriptorCopy.descriptorCount = 1;
                 descriptorCopies.push_back(descriptorCopy);
-            } break;
+                break;
             }
 
             binding.second = false; // No longer dirty.
