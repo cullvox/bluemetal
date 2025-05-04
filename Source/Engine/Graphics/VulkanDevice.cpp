@@ -115,7 +115,7 @@ void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& r
     beginInfo.pInheritanceInfo = nullptr;
 
     // Record the commands onto the buffer.
-    VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo));
+    VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo))
     recorder(cmd);
     VK_CHECK(vkEndCommandBuffer(cmd))
 
@@ -274,7 +274,7 @@ void VulkanDevice::CreateDevice(VkSurfaceKHR surface) {
 
     // Get the graphics and present queue objects.
     vkGetDeviceQueue(_device, _graphicsFamilyIndex, 0, &_graphicsQueue);
-    vkGetDeviceQueue(_device,  _presentFamilyIndex, 0, &_presentQueue);
+    vkGetDeviceQueue(_device, _presentFamilyIndex, 0, &_presentQueue);
 
     blInfo("Created the Vulkan device using: {}", _physicalDevice->GetDeviceName());
 }

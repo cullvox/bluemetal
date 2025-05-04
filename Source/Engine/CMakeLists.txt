@@ -11,7 +11,6 @@ list(APPEND Sources
   "Audio/Listener.cpp"
   "Audio/Sound.cpp"
 
-  "Graphics/Display.cpp"
   #"Graphics/Window.cpp"
   "Graphics/VulkanInstance.cpp"
   "Graphics/VulkanPhysicalDevice.cpp"
@@ -34,6 +33,9 @@ list(APPEND Sources
   "Graphics/Texture.cpp"
   "Graphics/Texture2D.cpp"
   "Graphics/GraphicsSystem.cpp"
+
+  "Window/Display.cpp"
+  "Window/Window.cpp"
 
   # ImGui
   "ImGui/imgui.cpp"
@@ -70,6 +72,7 @@ target_link_libraries(Bluemetal PUBLIC
   spng_static
   volk
   GPUOpen::VulkanMemoryAllocator
+  nlohmann_json
   qoixx::qoixx)
 
 target_precompile_headers(Bluemetal PUBLIC "Precompiled.h")

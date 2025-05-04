@@ -27,14 +27,12 @@ std::size_t VulkanPipelineLayoutCacheHasher::operator()(const VulkanPipelineLayo
         hash_combine(seed, layout);
 
     for (const auto& range : data.ranges)
-    {
         hash_combine(seed, range.stageFlags, range.offset, range.size);
-    }
 
     return seed;
 }
 
-VulkanPipelineLayoutCache::VulkanPipelineLayoutCache(VulkanDevice* device)
+VulkanPipelineLayoutCache::VulkanPipelineLayoutCache(const VulkanDevice* device)
     : _device(device)
 {
 }

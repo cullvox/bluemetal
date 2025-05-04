@@ -92,7 +92,7 @@ int main(int argc, const char** argv)
 		6, 7, 3
     };
 
-    auto mesh = std::make_shared<bl::Mesh>(graphics->GetDevice(), cubeVertices, cubeIndices);
+    auto mesh = std::make_shared<bl::StaticMesh>(graphics->GetDevice(), cubeVertices, cubeIndices);
 
 
 

@@ -1,7 +1,7 @@
 #include "Core/Print.h"
 #include "Core/Hash.h"
-#include "Graphics/VulkanConfig.h"
-#include "Window.h"
+#include "Window/Window.h"
+#include "VulkanConfig.h"
 #include "VulkanDevice.h"
 #include "VulkanSwapchain.h"
 

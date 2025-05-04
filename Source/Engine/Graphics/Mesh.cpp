@@ -5,7 +5,7 @@
 
 namespace bl {
 
-void Mesh::setIndices(const std::vector<uint32_t>& indices)
+void StaticMesh::setIndices(const std::vector<uint32_t>& indices)
 {
     // create the staging buffer
     size_t ibSize = sizeof(uint32_t) * indices.size();
@@ -16,7 +16,7 @@ void Mesh::setIndices(const std::vector<uint32_t>& indices)
     _indexCount = (uint32_t)indices.size();
 }
 
-void Mesh::bind(VkCommandBuffer cmd)
+void StaticMesh::bind(VkCommandBuffer cmd)
 {
     VkDeviceSize offset = 0;
     VkBuffer buffer = _vertexBuffer.Get();
@@ -24,7 +24,7 @@ void Mesh::bind(VkCommandBuffer cmd)
     vkCmdBindIndexBuffer(cmd, _indexBuffer.Get(), 0, VK_INDEX_TYPE_UINT32);
 }
 
-void Mesh::draw(VkCommandBuffer cmd)
+void StaticMesh::draw(VkCommandBuffer cmd)
 {
     vkCmdDrawIndexed(cmd, _indexCount, 1, 0, 0, 0);
 }

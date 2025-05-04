@@ -88,7 +88,7 @@ public:
     void Transition(VkImageLayout layout);
 
 private:
-    const VulkanDevice* _device;
+    VulkanDevice* _device;
     VkExtent3D _extent;
     VkImageType _type;
     VkFormat _format;

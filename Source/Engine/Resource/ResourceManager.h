@@ -1,8 +1,10 @@
 #pragma once
 
+
 #include "Precompiled.h"
-#include "Core/Json.h"
 #include "Resource.h"
+
+#include <nlohmann/json.hpp>
 
 namespace bl
 {

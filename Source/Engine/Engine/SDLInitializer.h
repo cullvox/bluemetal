@@ -1,8 +1,8 @@
 #pragma once
 
 #define SDL_MAIN_HANDLED
-#include <SDL.h>
-#include <SDL_vulkan.h>
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
 
 namespace bl 
 {
@@ -17,4 +17,4 @@ public:
 } /* namespace bl*/
 
 #define SDL_CHECK(result) \
-    if ((result) != 0) { throw std::runtime_error(SDL_GetError()); }
+    if ((result) == false) { throw std::runtime_error(SDL_GetError()); }

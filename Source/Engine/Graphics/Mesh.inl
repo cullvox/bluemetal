@@ -5,7 +5,7 @@ namespace bl
 {
 
 template<typename TVertex>
-Mesh::Mesh(VulkanDevice* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices)
+StaticMesh::StaticMesh(VulkanDevice* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices)
     : _device(device)
 {
     setVertices(vertices);
@@ -14,7 +14,7 @@ Mesh::Mesh(VulkanDevice* device, const std::vector<TVertex>& vertices, const std
     
 
 template<typename TVertex>
-void Mesh::setVertices(const std::vector<TVertex>& vertices)
+void StaticMesh::setVertices(const std::vector<TVertex>& vertices)
 {
     // Create the vertex and index buffers
     size_t vbSize = sizeof(TVertex) * vertices.size();

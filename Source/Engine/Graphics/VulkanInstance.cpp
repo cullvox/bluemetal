@@ -1,33 +1,38 @@
 #include "Core/Print.h"
+#include "Window/Window.h"
 #include "VulkanPhysicalDevice.h"
-#include "Window.h"
 #include "VulkanInstance.h"
 
 namespace bl {
 
 VulkanInstance::VulkanInstance(Version appVersion, std::string_view appName, bool enableValidation)
-    : _enableValidation(enableValidation) {
+    : _enableValidation(enableValidation) 
+{
     CreateInstance(appVersion, appName);
     EnumeratePhysicalDevices();
 }
 
-VulkanInstance::~VulkanInstance() {
+VulkanInstance::~VulkanInstance() 
+{
     if (_enableValidation)
         vkDestroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);
-    
+
     vkDestroyInstance(_instance, nullptr);
     volkFinalize();
 }
 
-VkInstance VulkanInstance::Get() const {
+VkInstance VulkanInstance::Get() const 
+{
     return _instance;
 }
 
-bool VulkanInstance::GetValidationEnabled() const {
+bool VulkanInstance::GetValidationEnabled() const 
+{
     return _enableValidation;
 }
 
-std::vector<const VulkanPhysicalDevice*> VulkanInstance::GetPhysicalDevices() const {
+std::vector<const VulkanPhysicalDevice*> VulkanInstance::GetPhysicalDevices() const 
+{
     std::vector<const VulkanPhysicalDevice*> out;
     for (const auto& pd : _physicalDevices)
         out.push_back(&pd);
@@ -35,7 +40,8 @@ std::vector<const VulkanPhysicalDevice*> VulkanInstance::GetPhysicalDevices() co
     return out;
 }
 
-const VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice() const {
+const VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice() const 
+{
     auto physicalDevices = GetPhysicalDevices();
     auto it = std::find_if(physicalDevices.begin(), physicalDevices.end(), 
         [](const auto& pd)
@@ -51,23 +57,11 @@ const VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice() const {
     } 
 }
 
-std::vector<const char*> VulkanInstance::GetExtensionsForSDL() {
-    // Enumerate the instance extensions from SDL.
-    std::vector<const char*> extensions;
-    unsigned int extensionsCount = 0;
-
-    VulkanWindow::UseTemporaryWindow([&extensions, &extensionsCount](SDL_Window* window){    
-        SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, nullptr);
-        extensions.resize(extensionsCount);
-        SDL_Vulkan_GetInstanceExtensions(window, &extensionsCount, extensions.data());
-    });
-
-    return extensions;
-}
-
-std::vector<const char*> VulkanInstance::GetExtensions() {
+std::vector<const char*> VulkanInstance::GetExtensions() 
+{
     // Add required instance extensions below...
-    std::vector<const char*> extensions = {
+    std::vector<const char*> extensions = 
+    {
 #ifdef BLUEMETAL_VULKAN_PORTABILITY
         VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
 #endif
@@ -77,7 +71,7 @@ std::vector<const char*> VulkanInstance::GetExtensions() {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
     // Add the SDL surface extensions to the list of extensions.
-    std::vector<const char*> surfaceExtensions = GetExtensionsForSDL();
+    auto surfaceExtensions = Window::GetVulkanExtensions();
     extensions.insert(extensions.end(), surfaceExtensions.begin(), surfaceExtensions.end());
 
     // Get all the current vulkan instance extensions.
@@ -89,11 +83,13 @@ std::vector<const char*> VulkanInstance::GetExtensions() {
     VK_CHECK(vkEnumerateInstanceExtensionProperties(nullptr, &propertiesCount, extensionProperties.data()));
 
     // Make sure all the extensions wanted are present.
-    for (const char* name : extensions) {
+    for (const char* name : extensions) 
+    {
         if (!std::any_of(extensionProperties.begin(), extensionProperties.end(), 
             [name](const auto& properties){ 
                 return strcmp(name, properties.extensionName) == 0; 
-            })) {
+            })) 
+        {
             throw std::runtime_error("Could not find a required instance extension!");
         }
     }

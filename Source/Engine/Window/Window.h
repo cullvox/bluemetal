@@ -1,16 +1,31 @@
 #pragma once
 
+#include "Precompiled.h"
 #include "Math/Rect.h"
+#include "Display.h"
 #include "Graphics/Vulkan.h"
+
+#include <SDL3/SDL.h>
 
 namespace bl {
 
+class WindowData
+{
+    WindowData() = default;
+    virtual ~WindowData() = 0;
+
+    virtual OnCreate() = 0;
+    virtual OnDestroy() = 0;
+};
+
 /// @brief A window object from the device's platform.
-class Window {
+class Window
+{
 public:
+    Window(const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen);
 
     /// @brief Destructor
-    virtual ~Window() = default;
+    ~Window();
 
     /// @brief Gets the window rect.
     ///
@@ -22,15 +37,35 @@ public:
     ///
     virtual Rect2D GetRect() = 0;
 
-    /// @brief Creates a Vulkan surface for this window.
-    /// This surface object is not maintained by the window itself, whoever 
-    /// creates this surface object is the owner of it.
-    ///
-    /// @param[in] instance The Vulkan instance used to create the surface.
-    ///
-    /// @return The new vulkan surface.
-    ///
-    virtual VkSurfaceKHR CreateVulkanSurface(VkInstance instance) = 0;
+    /// @brief Returns the underlying window handle.
+    SDL_Window* Get() const;
+
+    /// @brief Returns a Vulkan usable extent for swapchain.
+    Extent2D GetExtent() const; 
+
+    /// @brief Returns the current video mode.
+    VideoMode GetCurrentVideoMode() const; 
+
+    /// @brief Returns a set user data, set by the renderer.
+    WindowData* GetWindowData();
+
+    /// @brief Changes the title displayed on the top of a windowed window.
+    void SetTitle(const std::string& title);
+
+    /// @brief Changes the windows dimensions and video mode.
+    void SetVideoMode(const VideoMode& mode);
+
+    VkSurfaceKHR CreateSurface(VkInstance instance);
+
+    /// @brief The renderer sets the user pointer for surface/swapchain data.
+    void SetWindowData(WindowData* windowData);
+
+    /// @brief Returns an array of extensions the vulkan device needs.
+    static std::span<const char*> GetVulkanExtensions(); 
+
+private:
+    SDL_Window* _window;
+    VkSurfaceKHR surface;
 };
 
 } // namespace bl

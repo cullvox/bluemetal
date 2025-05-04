@@ -2,10 +2,10 @@
 
 #include "Precompiled.h"
 #include "Core/NonCopyable.h"
+#include "Window/Window.h"
 #include "Vulkan.h"
 #include "VulkanMutable.h"
 #include "VulkanDevice.h"
-#include "WindowInterface.h"
 
 namespace bl {
 

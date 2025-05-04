@@ -7,7 +7,7 @@
 #include "VulkanSwapchain.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineLayoutCache.h"
-#include "Renderer.h".
+#include "Renderer.h"
 
 namespace bl {
 

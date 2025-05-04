@@ -33,14 +33,14 @@ public:
     uint32_t GetSize() const;
     std::string GetName() const;
 private:
+    std::string _name;
     uint32_t _binding;
     VulkanBlockVariableType _type; /** @brief  */
     uint32_t _offset; /** @brief Offset of  */
     uint32_t _size; /** @brief Size of structure in bytes. */
-    std::string _name;
 };
 
-class VulkanBlockReflection
+class VulkanReflectionBlock
 {
 public:
     VulkanBlockVariable& operator[](const std::string& name);

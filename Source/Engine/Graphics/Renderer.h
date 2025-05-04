@@ -47,7 +47,7 @@ private:
     std::vector<VulkanImage> _depthImages;
     std::vector<VkFramebuffer> _framebuffers;
 
-    VulkanDescriptorSetCache _descriptorSetCache;
+    VulkanDescriptorSetAllocatorCache _descriptorSetCache;
 };
 
 } // namespace bl

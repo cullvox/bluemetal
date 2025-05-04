@@ -11,10 +11,10 @@ std::span<const std::byte> vector_as_bytes(const std::vector<T>& vec) {
     return std::span<const std::byte>{data_ptr, size};
 }
 
-class Mesh {
+class StaticMesh {
 public:
     template<typename TVertex>
-    Mesh(VulkanDevice* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices);
+    StaticMesh(VulkanDevice* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices);
 
     template<typename TVertex>
     void setVertices(const std::vector<TVertex>& vertices);

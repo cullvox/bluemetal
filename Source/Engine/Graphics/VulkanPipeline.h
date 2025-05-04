@@ -111,7 +111,6 @@ public:
     ///             at runtime for this.
     VulkanPipeline(
         VulkanDevice* device,
-        VulkanDeleterQueue* deleter,
         const VulkanPipelineStateInfo& info, 
         VkRenderPass renderPass,
         uint32_t subpass,

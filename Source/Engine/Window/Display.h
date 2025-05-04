@@ -4,21 +4,23 @@
 #include "Math/Extent.h"
 #include "Math/Rect.h"
 
+#include <SDL3/SDL.h>
+
 namespace bl {
 
 struct VideoMode {
-    VideoMode(int32_t redBits, int32_t greenBits, int32_t blueBits, Extent2D extent, int refreshRate)
+    VideoMode(int32_t redBits, int32_t greenBits, int32_t blueBits, Extent2D extent, float refreshRate)
         : redBits(redBits)
         , greenBits(greenBits)
         , blueBits(blueBits)
         , extent(extent)
-        , refreshRate(refreshRate) { }
+        , refreshRate(refreshRate) {}
 
     uint32_t redBits; ///!< 
     uint32_t greenBits;
     uint32_t blueBits;
     Extent2D extent; /// @brief Size of the display mode in pixels.
-    uint32_t refreshRate; /// @brief Refresh rate of the monitor in hz. 
+    float refreshRate; /// @brief Refresh rate of the monitor in hz. 
 };
 
 /// @brief A display object.
@@ -26,8 +28,21 @@ struct VideoMode {
 /// A monitor connected to the system.
 ///
 class Display {
+private:
+    Display(SDL_DisplayID displayId);
 public:
-    virtual ~Display() = default;
+    ~Display() = default;
+
+    static std::vector<Display> GetDisplays();
+
+    /// @brief Returns this displays unique ID.
+    ///
+    /// Displays are referenced on an integer uid basis and this function will 
+    /// return that unique identifier.
+    ///
+    /// @returns The displays unique ID.
+    ///
+    SDL_DisplayID GetDisplayID() const;
 
     /// @brief Gets this monitors human readable name.
     ///
@@ -37,7 +52,9 @@ public:
     ///
     /// @returns A user legible name for this monitor.
     ///
-    virtual std::string_view GetName() = 0;
+    std::string_view GetName() const;
+
+    Offset2D GetDisplayPixelCoords() const;
 
     /// @brief Gets the virtual space offset and extent of the display.
     ///
@@ -47,7 +64,7 @@ public:
     ///
     /// @returns The position and extent for the display.
     ///
-    virtual Rect2D GetRect() = 0;
+    Rect2D GetRect();
 
     /// @brief Returns the size of the display excluding the system taskbar.
     ///
@@ -57,7 +74,7 @@ public:
     ///
     /// @returns The position and extent of the display excluding the taskbar.
     ///
-    virtual Rect2D GetWorkAreaRect() = 0;
+    Rect2D GetWorkAreaRect();
 
     /// @brief Gets all video modes available on this display.
     ///
@@ -67,7 +84,13 @@ public:
     ///
     /// @returns All video modes supported by this display.
     ///
-    virtual std::vector<VideoMode> GetVideoModes() = 0;
+    std::vector<VideoMode> GetVideoModes();
+
+    VideoMode GetDesktopMode();
+
+private:
+    static VideoMode ConvertSDLDisplayMode(const SDL_DisplayMode* mode);
+    SDL_DisplayID _displayId;
 };
 
 } // namespace bl

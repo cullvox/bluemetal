@@ -12,11 +12,11 @@ public:
     ~StaticMeshComponent();
 
     void SetMaterial(MaterialInstance* material);
-    void SetMesh(Mesh* mesh);
+    void SetMesh(StaticMesh* mesh);
 
 private:
     MaterialInstance* _material;
-    Mesh* _mesh;
+    StaticMesh* _mesh;
 };
 
 } // namespace bl

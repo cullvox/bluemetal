@@ -8,7 +8,7 @@
 #include "VulkanImage.h"
 #include "VulkanRenderData.h"
 #include "VulkanPipeline.h"
-#include "VulkanDescriptorSetCache.h"
+#include "VulkanDescriptorSetAllocatorCache.h"
 
 namespace bl {
 
@@ -125,13 +125,13 @@ public:
     /// @param pass Render pass the material's pipeline is using from the render.  
     /// @param subpass The render passes subpass to use.
     /// @param state Pipeline state info.
-    /// @param materialSet Descriptor set to use for material operations.
+    /// @param descriptorSetIndex Descriptor set to use for material operations, usually [1].
     Material(
-        VulkanDevice* device, 
-        VkRenderPass pass, 
-        uint32_t subpass, 
-        const VulkanPipelineStateInfo& state, 
-        uint32_t materialSet = 1);
+        VulkanDevice* device,
+        VkRenderPass pass,
+        uint32_t subpass,
+        const VulkanPipelineStateInfo& state,
+        uint32_t descriptorSetIndex = 1);
 
     /// @brief Destructor
     ~Material();
@@ -142,7 +142,6 @@ public:
     // Allows you to change recompilable options of the pipeline.
 private:
     VulkanDescriptorSetCache _descriptorSetCache;
-
 };
 
 template<typename T>

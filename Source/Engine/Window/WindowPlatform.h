@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Precompiled.h"
-#include "Core/Singleton.h"
 #include "Display.h"
 #include "Window.h"
 
@@ -22,7 +21,7 @@ enum class FullscreenMode {
 };
 
 /// @brief Generic control for window systems.
-class WindowPlatform : public Singleton<WindowPlatform> {
+class WindowPlatform {
 public:
 
     /// @brief Returns the recommended available window platform api on this device. 
@@ -46,7 +45,7 @@ public:
     virtual ~WindowPlatform() = 0;
 
     /// @brief Returns the input object to interact with this platform's input devices.
-    virtual Input& GetInput() = 0;
+    //virtual Input& GetInput() = 0;
 
     /// @brief Returns the displays currently connected to the device.
     ///

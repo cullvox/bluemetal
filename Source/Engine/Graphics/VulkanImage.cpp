@@ -153,7 +153,7 @@ void VulkanImage::UploadData(std::span<const std::byte> data, VkImageLayout fina
 
     // Create a staging buffer.
     VmaAllocationInfo allocInfo = {};
-    VulkanBuffer stagingBuffer{_device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, data.size(), &allocInfo, true};
+    VulkanBuffer stagingBuffer{_device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, (VkDeviceSize)data.size(), &allocInfo, true};
 
     // Copy image memory to the staging buffer.
     std::memcpy(allocInfo.pMappedData, data.data(), data.size());
@@ -161,7 +161,7 @@ void VulkanImage::UploadData(std::span<const std::byte> data, VkImageLayout fina
     _device->ImmediateSubmit([&](VkCommandBuffer cmd){
         Transition(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-        VkBufferImageCopy region = {};
+        VkBufferImageCopy region{};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
         region.bufferImageHeight = 0;

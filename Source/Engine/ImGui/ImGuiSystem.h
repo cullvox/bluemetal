@@ -4,7 +4,8 @@
 // Headers
 ///////////////////////////////
 
-#include "Graphics/Window.h"
+#include "Window/Window.h"
+
 #define IMGUI_IMPL_VULKAN_NO_PROTOTYPES
 #include "imgui.h"
 

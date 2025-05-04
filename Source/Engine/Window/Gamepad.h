@@ -72,12 +72,6 @@ public:
         Steam, ///!< Show Steam controls
     };
 
-    struct Info {
-        std::string vendor;
-        std::string name;
-        Type type;
-    };
-
 public:
     /// @brief Destructor
     virtual ~Gamepad() = default;

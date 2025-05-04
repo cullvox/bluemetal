@@ -43,7 +43,8 @@ VulkanPipelineReflection::VulkanPipelineReflection(const VulkanPipelineStateInfo
                 }
             }
 
-            binding.AddStageFlags(shader->GetStage())
+            binding
+                .AddStageFlags(shader->GetStage())
                 .SetSize(reflectBinding.block.size);
         }
 
@@ -63,9 +64,7 @@ VulkanPipelineReflection::VulkanPipelineReflection(const VulkanPipelineStateInfo
                 // Add the stage to the existing push constant range.
                 auto& refl = (*it);
                 refl.AddStageFlags(shader->GetStage());
-            }
-            else
-            {
+            } else {
                 // This block wasn't added yet.
                 auto& pcm =_pushConstantMetadata.emplace_back(shader->GetStage(), offset, size);
                 ReflectMembers(pcm, 0, block);
@@ -143,11 +142,13 @@ void VulkanPipelineReflection::ReflectMembers(VulkanBlockReflection& meta, uint3
         }
 
         std::string name = fmt::format("{}.{}", structName, blockVariable.name);
-        meta[name].SetBinding(binding)
+        
+        meta[name]
+            .SetName(name);
+            .SetBinding(binding)
             .SetOffset(blockVariable.offset)
             .SetType(type)
             .SetSize(blockVariable.size)
-            .SetName(name);
     }
 }
 
