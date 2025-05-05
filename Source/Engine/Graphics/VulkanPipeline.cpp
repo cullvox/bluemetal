@@ -1,11 +1,11 @@
 #include "Core/Print.h"
-#include "Graphics/VulkanBlockReflection.h"
+#include "Graphics/VulkanDescriptorSetLayoutCache.h"
+#include "VulkanReflectedBlock.h"
 #include "VulkanPipeline.h"
-#include "vulkan/vulkan_core.h"
 
 namespace bl {
 
-VulkanPipelineReflection::VulkanPipelineReflection(const VulkanPipelineStateInfo::StageState& state) {
+VulkanReflectedPipeline::VulkanReflectedPipeline(const VulkanPipelineStateInfo::Stages& state) {
     const auto& shaders = state.shaders;
 
     // Obtain reflection data from shaders to build the pipeline layout.
@@ -73,23 +73,23 @@ VulkanPipelineReflection::VulkanPipelineReflection(const VulkanPipelineStateInfo
     }
 }
 
-std::map<uint32_t, VulkanDescriptorSetReflection>& VulkanPipelineReflection::GetDescriptorSetReflections() {
+std::map<uint32_t, VulkanReflectedDescriptorSet>& VulkanReflectedPipeline::GetReflectedDescriptorSets() {
     return _descriptorSetMetadata;
 }
 
-std::vector<VulkanPushConstantReflection>& VulkanPipelineReflection::GetPushConstantReflections() {
+std::vector<VulkanReflectedPushConstant>& VulkanReflectedPipeline::GetReflectedPushConstants() {
     return _pushConstantMetadata;
 }
 
-const std::map<uint32_t, VulkanDescriptorSetReflection>& VulkanPipelineReflection::GetDescriptorSetReflections() const {
+const std::map<uint32_t, VulkanReflectedDescriptorSet>& VulkanReflectedPipeline::GetReflectedDescriptorSets() const {
     return _descriptorSetMetadata;
 }
 
-const std::vector<VulkanPushConstantReflection>& VulkanPipelineReflection::GetPushConstantReflections() const {
+const std::vector<VulkanReflectedPushConstant>& VulkanReflectedPipeline::GetReflectedPushConstants() const {
     return _pushConstantMetadata;
 }
 
-void VulkanPipelineReflection::ReflectMembers(VulkanBlockReflection& meta, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent)
+void VulkanReflectedPipeline::ReflectMembers(VulkanReflectedBlock& meta, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent)
 {
     std::string structName;
     if (parent.empty()) {
@@ -105,7 +105,7 @@ void VulkanPipelineReflection::ReflectMembers(VulkanBlockReflection& meta, uint3
         auto& blockVariable = block.members[j];
         auto& numericTraits = blockVariable.numeric;
         auto typeDescription = blockVariable.type_description;
-        VulkanBlockVariableType type;
+        VulkanVariableBlockType type = VulkanVariableBlockType::eScalarInt;
 
         if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_STRUCT) {
             ReflectMembers(meta, binding, blockVariable, meta.GetName());
@@ -123,7 +123,7 @@ void VulkanPipelineReflection::ReflectMembers(VulkanBlockReflection& meta, uint3
                 blWarning("Only float vectors are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
                 continue;
             }
-            std::array types = { VulkanBlockVariableType::eVector2, VulkanBlockVariableType::eVector3, VulkanBlockVariableType::eVector4 };
+            std::array types = { VulkanVariableBlockType::eVector2, VulkanVariableBlockType::eVector3, VulkanVariableBlockType::eVector4 };
             type = types[numericTraits.vector.component_count - 2];
         } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_MATRIX) {
 
@@ -132,37 +132,43 @@ void VulkanPipelineReflection::ReflectMembers(VulkanBlockReflection& meta, uint3
                 blWarning("Only 4x4 matrices are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
                 continue;
             }
-            type = VulkanBlockVariableType::eMatrix4;
+            type = VulkanVariableBlockType::eMatrix4;
         } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) {
-            type = VulkanBlockVariableType::eScalarBool;
+            type = VulkanVariableBlockType::eScalarBool;
         } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
-            type = VulkanBlockVariableType::eScalarInt;
+            type = VulkanVariableBlockType::eScalarInt;
         } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
-            type = VulkanBlockVariableType::eScalarFloat;
+            type = VulkanVariableBlockType::eScalarFloat;
         }
 
         std::string name = fmt::format("{}.{}", structName, blockVariable.name);
         
         meta[name]
-            .SetName(name);
+            .SetName(name)
             .SetBinding(binding)
             .SetOffset(blockVariable.offset)
             .SetType(type)
-            .SetSize(blockVariable.size)
+            .SetSize(blockVariable.size);
     }
 }
 
 
-VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanPipelineReflection* reflection)
+VulkanPipeline::VulkanPipeline(VulkanDevice* device, VulkanDescriptorSetLayoutCache* descriptorSetLayoutCache, VulkanPipelineLayoutCache* pipelineLayoutCache, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanReflectedPipeline* reflection)
     : _device(device) {
     
-    _reflection = reflection ? *reflection : VulkanPipelineReflection{state.stageState};
+    // Depending on circumstances the reflection of the pipeline can be edited by the user.
+    // To enable this we don't instantaneously preform reflection, we check to see if the user
+    // did it for us.
+    if (reflection)
+        _reflection = *reflection;
+    else
+        _reflection = VulkanReflectedPipeline{state.stages};
 
-    std::array<VkPipelineShaderStageCreateInfo, 2> stages;
-    std::array<VulkanShader*, 2> shaders = { state.stages.vert.Get(), state.stages.frag.Get() };
+    std::vector<VkPipelineShaderStageCreateInfo> stages{state.stages.shaders.size()};
+    std::vector<VulkanShader*> shaders = {  };
 
     // Build the pipelines shader stage create info.
-    for (size_t i = 0; i < state.stageState.shaders.size(); i++) {
+    for (size_t i = 0; i < state.stages.shaders.size(); i++) {
         auto shader = shaders[i];
         stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         stages[i].pNext = nullptr;
@@ -173,13 +179,13 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
         stages[i].pSpecializationInfo = nullptr;
     }
 
-    const auto& descriptorSetMetadata = _reflection.GetDescriptorSetReflections();
-    const auto& pushConstantMetadata = _reflection.GetPushConstantReflections();
+    const auto& descriptorSetMetadata = _reflection.GetReflectedDescriptorSets();
+    const auto& pushConstantMetadata = _reflection.GetReflectedPushConstants();
 
     // Use the descriptor set layout cache to acquire layouts for each set.
     std::vector<VkDescriptorSetLayout> layouts;
     layouts.reserve( descriptorSetMetadata.size());
-    _descriptorSetLayouts.reserve(descriptorSetMetadata.size());
+    // _descriptorSetLayouts.reserve(descriptorSetMetadata.size());
 
     // Extract descriptor set layout bindings and create a layout.
     for (auto& pair : descriptorSetMetadata) {
@@ -187,7 +193,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
 
         // Acquire a layout from cache or create a new descriptor set layout.
         auto sortedBindings = meta.GetSortedBindings();
-        auto layout = _device->CacheDescriptorSetLayout(sortedBindings);
+        auto layout = descriptorSetLayoutCache->Acquire(sortedBindings);
         _descriptorSetLayouts.emplace(meta.GetLocation(), layout);
         layouts.push_back(layout);
     }
@@ -201,7 +207,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     }
 
     // Acquire our layout using the pipeline layout cache.
-    _layout = _device->CachePipelineLayout(layouts, pushConstants);
+    _layout = pipelineLayoutCache->Acquire(layouts, pushConstants);
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
@@ -326,7 +332,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     pipelineCreateInfo.layout = _layout;
     pipelineCreateInfo.renderPass = pass;
     pipelineCreateInfo.subpass = subpass;
-    pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; /* No vendor actually uses derivative pipelines. 😿 */
+    pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // No vendor actually uses derivative pipelines. 😿
     pipelineCreateInfo.basePipelineIndex = 0;
 
     VK_CHECK(vkCreateGraphicsPipelines(_device->Get(), VK_NULL_HANDLE, 1, &pipelineCreateInfo, nullptr, &_pipeline))
@@ -337,7 +343,7 @@ VulkanPipeline::~VulkanPipeline()
     vkDestroyPipeline(_device->Get(), _pipeline, nullptr);
 }
 
-const VulkanPipelineReflection& VulkanPipeline::GetReflection() const {
+const VulkanReflectedPipeline& VulkanPipeline::GetReflection() const {
     return _reflection;
 }
 
@@ -351,10 +357,9 @@ VkPipeline VulkanPipeline::Get() const
     return _pipeline; 
 }
 
-const std::unordered_map<uint32_t, VkDescriptorSetLayout>& VulkanPipeline::GetDescriptorSetLayouts() const
+const std::map<uint32_t, VkDescriptorSetLayout>& VulkanPipeline::GetDescriptorSetLayouts() const
 {
     return _descriptorSetLayouts;
 }
-
 
 } // namespace bl

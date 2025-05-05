@@ -6,6 +6,7 @@
 #include "Vulkan.h"
 #include "VulkanMutable.h"
 #include "VulkanDevice.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -22,8 +23,8 @@ public:
     /// @brief Swapchain Constructor
     ///
     /// @brief[in] device The vulkan device to create this swapchain with.
-    /// @brief[in] surface A renderable vulkan surface.
-    VulkanSwapchain(const VulkanDevice* device, VkSurfaceKHR surface);
+    /// @brief[in] window A valid vulkan window.
+    VulkanSwapchain(VulkanDevice* device, VulkanWindow* window);
     
     /// @brief Destructor
     ~VulkanSwapchain();
@@ -43,6 +44,7 @@ public:
     void SetSurfaceFormat(VkSurfaceFormatKHR format);
     void SetPresentMode(VkPresentModeKHR mode);
     void Resize(VkExtent2D extent);
+    void Recreate(std::optional<VkPresentModeKHR> presentMode = VK_PRESENT_MODE_FIFO_KHR, std::optional<VkSurfaceFormatKHR> surfaceFormat = {});
     bool AcquireNext(VkSemaphore semaphore, VkFence fence); 
     bool QueuePresent(VkSemaphore semaphore); /** Presents the image at GetImageIndex() to the screen. */
     void Destroy();
@@ -74,9 +76,9 @@ private:
     /// @brief Destroys all the swapchain's image views.
     void DestroyImageViews();
     
-    const VulkanDevice* _device;
-    const VulkanPhysicalDevice* _physicalDevice;
-    VkSurfaceKHR _surface;
+    VulkanDevice* _device;
+    VulkanPhysicalDevice* _physicalDevice;
+    VulkanWindow* _window;
     uint32_t _imageCount;
     VkSurfaceFormatKHR _surfaceFormat;
     VkPresentModeKHR _presentMode;

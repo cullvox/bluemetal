@@ -13,8 +13,8 @@ VulkanImage::VulkanImage()
     , _format(VK_FORMAT_UNDEFINED)
     , _usage(0)
     , _aspectMask(VK_IMAGE_ASPECT_NONE)
-    , _layout(VK_IMAGE_LAYOUT_UNDEFINED)
-    , _mipLevels(0) {}
+    , _mipLevels(0) 
+    , _layout(VK_IMAGE_LAYOUT_UNDEFINED) {}
 
 VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, VkImageLayout initialLayout, uint32_t mipLevels)
     : _device(device)
@@ -23,8 +23,8 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     , _format(format)
     , _usage(usage)
     , _aspectMask(aspectMask)
-    , _layout(initialLayout)
-    , _mipLevels(mipLevels) {
+    , _mipLevels(mipLevels) 
+    , _layout(initialLayout) {
     auto graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
 
     VkImageCreateInfo imageCreateInfo = {};

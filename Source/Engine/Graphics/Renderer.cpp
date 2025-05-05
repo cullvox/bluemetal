@@ -1,7 +1,6 @@
 #include "Core/Print.h"
-#include "VulkanDescriptorSetCache.h"
+#include "VulkanDescriptorSetAllocatorCache.h"
 #include "Renderer.h"
-#include <exception>
 
 namespace bl {
 
@@ -285,10 +284,6 @@ void Renderer::CreateRenderPasses() {
 
 void Renderer::DestroyRenderPasses() {
     vkDestroyRenderPass(_device->Get(), _pass, nullptr);
-}
-
-VulkanDescriptorSetCache* Renderer::GetDescriptorSetCache() {
-    return &_descriptorSetCache;
 }
 
 } // namespace bl

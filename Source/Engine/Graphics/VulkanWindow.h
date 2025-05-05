@@ -3,9 +3,10 @@
 #include "Precompiled.h"
 #include "Core/NonCopyable.h"
 #include "Engine/SDLInitializer.h"
-#include "Display.h"
-#include "VideoMode.h"
+#include "Window/Display.h"
 #include "VulkanSwapchain.h"
+#include "Window/Window.h"
+#include <SDL3/SDL_vulkan.h>
 
 namespace bl {
 
@@ -13,18 +14,18 @@ class VulkanInstance;
 class VulkanDevice;
 class VulkanSwapchain;
 
-struct VulkanWindowData final : public WindowData {
+class VulkanWindow final : public Window {
 public:
-    VulkanRenderWindow(VulkanDevice* device);
-    ~VulkanRenderWindow();
+    VulkanWindow(VulkanDevice* device);
+    ~VulkanWindow();
 
-    virtual void OnCreate();
-    virtual void OnDestroy();
+    VkSurfaceKHR GetSurface();
+    VulkanSwapchain* GetSwapchain();
 
 private:
-    VulkanDevice* device;
-    VkSurfaceKHR surface;
-    VulkanSwapchain swapchain;
+    VulkanDevice* _device;
+    VkSurfaceKHR _surface;
+    std::unique_ptr<VulkanSwapchain> _swapchain;
 
 };
 

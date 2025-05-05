@@ -9,15 +9,6 @@
 
 namespace bl {
 
-class WindowData
-{
-    WindowData() = default;
-    virtual ~WindowData() = 0;
-
-    virtual OnCreate() = 0;
-    virtual OnDestroy() = 0;
-};
-
 /// @brief A window object from the device's platform.
 class Window
 {
@@ -35,7 +26,7 @@ public:
     ///
     /// @returns The window rect.
     ///
-    virtual Rect2D GetRect() = 0;
+    Rect2D GetRect();
 
     /// @brief Returns the underlying window handle.
     SDL_Window* Get() const;
@@ -46,9 +37,6 @@ public:
     /// @brief Returns the current video mode.
     VideoMode GetCurrentVideoMode() const; 
 
-    /// @brief Returns a set user data, set by the renderer.
-    WindowData* GetWindowData();
-
     /// @brief Changes the title displayed on the top of a windowed window.
     void SetTitle(const std::string& title);
 
@@ -56,9 +44,6 @@ public:
     void SetVideoMode(const VideoMode& mode);
 
     VkSurfaceKHR CreateSurface(VkInstance instance);
-
-    /// @brief The renderer sets the user pointer for surface/swapchain data.
-    void SetWindowData(WindowData* windowData);
 
     /// @brief Returns an array of extensions the vulkan device needs.
     static std::span<const char*> GetVulkanExtensions(); 

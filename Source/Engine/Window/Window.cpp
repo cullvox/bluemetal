@@ -2,6 +2,7 @@
 #include "Window.h"
 
 #include <SDL3/SDL_vulkan.h>
+#include <cstddef>
 
 namespace bl  {
 
@@ -74,12 +75,13 @@ VkSurfaceKHR Window::CreateSurface(VkInstance instance)
     return surface;
 }
 
-static std::span<const char*> Window::GetVulkanExtensions() {
+std::span<const char*> Window::GetVulkanExtensions() {
 
-    uint32_t extensionCount = 0;
-    const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
+    static uint32_t extensionCount = 0;
+    static const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
+    static std::vector<const char*> ext{extensions, extensions + extensionCount};
 
-    return std::span<const char*>{extensions};
+    return std::span<const char*>{ext.begin(), ext.end()};
 }
 
 } // namespace bl

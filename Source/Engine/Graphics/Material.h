@@ -36,12 +36,12 @@ protected:
     /// @brief Returns the device that this pipeline was created with.
     /// Makes it easier if we are friends with an instance. 
     const VulkanDevice* GetDevice();
-    const std::map<std::string, VulkanBlockVariable>& GetUniforms() const { return _uniforms; }
+    const std::map<std::string, VulkanVariableBlock>& GetUniforms() const { return _uniforms; }
     const std::map<std::string, uint32_t>& GetSamplers() const { return _samplers; }
     VkDescriptorSetLayout GetDescriptorSetLayout() const { return _layout; }
 
 private:
-    std::map<std::string, VulkanBlockVariable> _uniforms; 
+    std::map<std::string, VulkanVariableBlock> _uniforms; 
     std::map<std::string, uint32_t> _samplers; /** @brief Name -> Binding */
     VkDescriptorSetLayout _layout;
 };
@@ -141,7 +141,8 @@ public:
 
     // Allows you to change recompilable options of the pipeline.
 private:
-    VulkanDescriptorSetCache _descriptorSetCache;
+    VulkanDevice* _device;
+    VulkanDescriptorSetAllocatorCache _descriptorSetCache;
 };
 
 template<typename T>
@@ -152,7 +153,7 @@ void MaterialInstance::SetGenericUniform(const std::string& name, T value) {
         return;
     }
 
-    const VulkanBlockVariable& variable = uniforms.at(name);
+    const VulkanVariableBlock& variable = uniforms.at(name);
     assert(sizeof(T) == variable.GetSize() && "Type must be the same as the uniform size!");
 
     VulkanBuffer& buffer = std::get<VulkanBuffer>(_bindings[variable.GetBinding()]);

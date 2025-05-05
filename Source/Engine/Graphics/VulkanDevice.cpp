@@ -1,7 +1,7 @@
 #include "Core/Print.h"
 #include "VulkanDevice.h"
 #include "VulkanDescriptorSetLayoutCache.h"
-#include "VulkanDescriptorSetCache.h"
+#include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanPipelineLayoutCache.h"
 
 // VMA has a lot of warnings on a lot of different platforms.
@@ -41,7 +41,7 @@
 namespace bl 
 {
 
-VulkanDevice::VulkanDevice(VulkanInstance* instance, const VulkanPhysicalDevice* physicalDevice, VkSurfaceKHR temporarySurface)
+VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, VkSurfaceKHR temporarySurface)
     : _instance(instance)
     , _physicalDevice(physicalDevice) {
     CreateDevice(temporarySurface);
@@ -55,11 +55,11 @@ VulkanDevice::~VulkanDevice() {
     vkDestroyDevice(_device, nullptr);
 }
 
-const VulkanInstance* VulkanDevice::GetInstance() const {
+VulkanInstance* VulkanDevice::GetInstance() const {
     return _instance;
 }
 
-const VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() const {
+VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() const {
     return _physicalDevice;
 }
 

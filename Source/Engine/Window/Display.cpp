@@ -1,14 +1,13 @@
 #include "Display.h"
 #include "Core/Print.h"
 #include "Engine/SDLInitializer.h"
+#include <cstddef>
 
 namespace bl 
 {
 
 Display::Display(SDL_DisplayID displayId)
     : _displayId(displayId) {}
-
-Display::~Display() = default;
 
 SDL_DisplayID Display::GetDisplayID() const 
 { 
@@ -41,7 +40,7 @@ std::vector<VideoMode> Display::GetVideoModes()
     int sdlModeCount = 0;
     auto sdlModes = SDL_GetFullscreenDisplayModes(_displayId, &sdlModeCount);
 
-    std::vector<VideoMode> modes{sdlModeCount};
+    std::vector<VideoMode> modes{static_cast<std::size_t>(sdlModeCount)};
     for (int i = 0; i < sdlModeCount; i++) 
         modes.emplace_back(ConvertSDLDisplayMode(sdlModes[i]));
 
@@ -54,7 +53,7 @@ VideoMode Display::GetDesktopMode()
     return ConvertSDLDisplayMode(mode);
 }
 
-static VideoMode ConvertSDLDisplayMode(const SDL_DisplayMode* mode)
+VideoMode Display::ConvertSDLDisplayMode(const SDL_DisplayMode* mode)
 {
     auto formatDetails = SDL_GetPixelFormatDetails(mode->format);
     return VideoMode{

@@ -5,9 +5,9 @@
 namespace bl
 {
 
-class VulkanBlockReflection;
+class VulkanReflectedBlock;
 
-enum class VulkanBlockVariableType
+enum class VulkanVariableBlockType
 {
     eScalarBool,
     eScalarInt,
@@ -18,39 +18,39 @@ enum class VulkanBlockVariableType
     eMatrix4,
 };
 
-class VulkanBlockVariable
+class VulkanVariableBlock
 {
 public:
-    VulkanBlockVariable& SetBinding(uint32_t binding);
-    VulkanBlockVariable& SetType(VulkanBlockVariableType type);
-    VulkanBlockVariable& SetOffset(uint32_t offset);
-    VulkanBlockVariable& SetSize(uint32_t size);
-    VulkanBlockVariable& SetName(const std::string& name);
+    VulkanVariableBlock& SetBinding(uint32_t binding);
+    VulkanVariableBlock& SetType(VulkanVariableBlockType type);
+    VulkanVariableBlock& SetOffset(uint32_t offset);
+    VulkanVariableBlock& SetSize(uint32_t size);
+    VulkanVariableBlock& SetName(const std::string& name);
 
     uint32_t GetBinding() const;
-    VulkanBlockVariableType GetType() const;
+    VulkanVariableBlockType GetType() const;
     uint32_t GetOffset() const;
     uint32_t GetSize() const;
     std::string GetName() const;
 private:
     std::string _name;
     uint32_t _binding;
-    VulkanBlockVariableType _type; /** @brief  */
+    VulkanVariableBlockType _type; /** @brief  */
     uint32_t _offset; /** @brief Offset of  */
     uint32_t _size; /** @brief Size of structure in bytes. */
 };
 
-class VulkanReflectionBlock
+class VulkanReflectedBlock
 {
 public:
-    VulkanBlockVariable& operator[](const std::string& name);
+    VulkanVariableBlock& operator[](const std::string& name);
 
-    std::vector<VulkanBlockVariable> GetMembers() const;
+    std::vector<VulkanVariableBlock> GetMembers() const;
     std::string GetName() const;
     uint32_t GetSize() const;
 
-    VulkanBlockReflection& SetName(const std::string& name);
-    VulkanBlockReflection& SetSize(uint32_t size);
+    VulkanReflectedBlock& SetName(const std::string& name);
+    VulkanReflectedBlock& SetSize(uint32_t size);
 private:
     std::string _name;
     uint32_t _size;
@@ -82,7 +82,7 @@ private:
      * would look like this: "mat.light.position"
      * 
      */
-    std::unordered_map<std::string, VulkanBlockVariable> _variables;
+    std::unordered_map<std::string, VulkanVariableBlock> _variables;
 };
 
 } // namespace bl

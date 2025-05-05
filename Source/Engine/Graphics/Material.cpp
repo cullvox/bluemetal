@@ -6,51 +6,45 @@ namespace bl {
 
 // ========== MaterialBase ========== //
 
-Material::Material(Material* material) 
+MaterialInstance::MaterialInstance(Material* material) 
     : _device(material->_device)
     , _materialSet(material->_materialSet)
     , _currentFrame(material->_currentFrame)
     , 
 {
-
 }
 
-Material::Material(VulkanDevice* device, uint32_t materialSet)
-    : _materialSet(materialSet)
-    , _currentFrame(0)
-    , _device(device)  {}
+MaterialInstance::~MaterialInstance() {}
 
-Material::~Material() {}
-
-void Material::SetBoolean(const std::string& name, bool value) {
+void MaterialInstance::SetBoolean(const std::string& name, bool value) {
     SetGenericUniform(name, value);
 }
 
-void Material::SetInteger(const std::string& name, int value) {
+void MaterialInstance::SetInteger(const std::string& name, int value) {
     SetGenericUniform(name, value);
 }
 
-void Material::SetScaler(const std::string& name, float value) {
+void MaterialInstance::SetScaler(const std::string& name, float value) {
     SetGenericUniform(name, value);
 }
 
-void Material::SetVector2(const std::string& name, glm::vec2 value) {
+void MaterialInstance::SetVector2(const std::string& name, glm::vec2 value) {
     SetGenericUniform(name, value);
 }
 
-void Material::SetVector3(const std::string& name, glm::vec3 value) {
+void MaterialInstance::SetVector3(const std::string& name, glm::vec3 value) {
     SetGenericUniform(name, value);
 }
 
-void Material::SetVector4(const std::string& name, glm::vec4 value) {
+void MaterialInstance::SetVector4(const std::string& name, glm::vec4 value) {
     SetGenericUniform(name, value);
 }
 
-void Material::SetMatrix(const std::string& name, glm::mat4 value) {
+void MaterialInstance::SetMatrix(const std::string& name, glm::mat4 value) {
     SetGenericUniform(name, value);
 }
 
-void Material::Bind(VulkanRenderData& rd) {
+void MaterialInstance::Bind(VulkanRenderData& rd) {
     PerFrameData& currentFrameData = _perFrameData[rd.currentFrame];
 
     // Compute the dynamic offsets for each uniform buffer.
@@ -71,7 +65,7 @@ void Material::Bind(VulkanRenderData& rd) {
     _currentFrame = (rd.currentFrame + 1) % VulkanConfig::numFramesInFlight;
 }
 
-void Material::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image) {
+void MaterialInstance::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image) {
     if (!GetSamplerMetadata().contains(name)) {
         blError("Material does not contain sampler \"{}\"!", name);
         return;
@@ -100,10 +94,10 @@ void Material::SetSampledImage2D(const std::string& name, VulkanSampler* sampler
     SetBindingDirty(binding);
 }
 
-void Material::PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t size, const void* data) {
+void MaterialInstance::PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t size, const void* data) {
 
     // Find the shader stage that uses the offset and size.
-    auto pushConstantReflections = _pipeline->GetReflection().GetPushConstantReflections();
+    auto pushConstantReflections = _pipeline->GetReflection().GetReflectedPushConstants();
     
     auto it = std::find_if(pushConstantReflections.begin(), pushConstantReflections.end(), 
         [offset, size](const auto& pcr){
@@ -120,7 +114,7 @@ void Material::PushConstant(VkCommandBuffer cmd, uint32_t offset, uint32_t size,
     vkCmdPushConstants(cmd, GetPipeline()->GetLayout(), pcr.GetStages(), offset, size, data);
 }
 
-void Material::UpdateUniforms() {
+void MaterialInstance::UpdateUniforms() {
     uint32_t previousFrame = (_currentFrame - 1) % VulkanConfig::numFramesInFlight;
 
     PerFrameData& currentFrameData = _perFrameData[_currentFrame];
@@ -176,7 +170,7 @@ void Material::UpdateUniforms() {
     }
 }
 
-void Material::BuildPerFrameData(VkDescriptorSetLayout layout) {
+void MaterialInstance::BuildPerFrameData(VkDescriptorSetLayout layout) {
 
     // Allocate the per frame descriptor sets.
     for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) {

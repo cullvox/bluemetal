@@ -1,12 +1,12 @@
 #pragma once
 
 #include "Vertex.h"
-#include "VulkanBlockReflection.h"
 #include "VulkanMutable.h"
 #include "VulkanDevice.h"
 #include "VulkanShader.h"
-#include "VulkanDescriptorSetReflection.h"
-#include "VulkanPushConstantReflection.h"
+#include "VulkanReflectedBlock.h"
+#include "VulkanReflectedDescriptorSet.h"
+#include "VulkanReflectedPushConstant.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineLayoutCache.h"
 
@@ -78,23 +78,24 @@ struct VulkanPipelineStateInfo {
 
 };
 
-class VulkanPipelineReflection {
+class VulkanReflectedPipeline {
 public:
 
     /// @brief Reflection Constructor
     /// Organizes shader reflection data.
-    VulkanPipelineReflection(const VulkanPipelineStateInfo::Stages& stages);
+    VulkanReflectedPipeline() = default;
+    VulkanReflectedPipeline(const VulkanPipelineStateInfo::Stages& stages);
 
-    std::map<uint32_t, VulkanDescriptorSetReflection>& GetDescriptorSetReflections();
-    std::vector<VulkanPushConstantReflection>& GetPushConstantReflections();
-    const std::map<uint32_t, VulkanDescriptorSetReflection>& GetDescriptorSetReflections() const;
-    const std::vector<VulkanPushConstantReflection>& GetPushConstantReflections() const;
+    std::map<uint32_t, VulkanReflectedDescriptorSet>& GetReflectedDescriptorSets();
+    const std::map<uint32_t, VulkanReflectedDescriptorSet>& GetReflectedDescriptorSets() const;
+    std::vector<VulkanReflectedPushConstant>& GetReflectedPushConstants();
+    const std::vector<VulkanReflectedPushConstant>& GetReflectedPushConstants() const;
 
 private:
-    void ReflectMembers(VulkanBlockReflection& reflection, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent = "");
+    void ReflectMembers(VulkanReflectedBlock& reflection, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent = "");
 
-    std::map<uint32_t, VulkanDescriptorSetReflection> _descriptorSetMetadata;
-    std::vector<VulkanPushConstantReflection> _pushConstantMetadata;
+    std::map<uint32_t, VulkanReflectedDescriptorSet> _descriptorSetMetadata;
+    std::vector<VulkanReflectedPushConstant> _pushConstantMetadata;
 };
 
 /// @brief A program consisting of shaders designed to run on the GPU.
@@ -111,15 +112,17 @@ public:
     ///             at runtime for this.
     VulkanPipeline(
         VulkanDevice* device,
+        VulkanDescriptorSetLayoutCache* descriptorSetLayoutCache,
+        VulkanPipelineLayoutCache* pipelineLayoutCache,
         const VulkanPipelineStateInfo& info, 
         VkRenderPass renderPass,
         uint32_t subpass,
-        const VulkanPipelineReflection* reflection = nullptr);
+        const VulkanReflectedPipeline* reflection = nullptr);
 
     /// @brief Destructor
     ~VulkanPipeline();
 
-    const VulkanPipelineReflection& GetReflection() const;
+    const VulkanReflectedPipeline& GetReflection() const;
     VkPipelineLayout GetLayout() const;
     VkPipeline Get() const;
     const std::map<uint32_t, VkDescriptorSetLayout>& GetDescriptorSetLayouts() const;
@@ -137,7 +140,7 @@ private:
     void Recompile();
 
     VulkanDevice* _device;
-    VulkanPipelineReflection _reflection;
+    VulkanReflectedPipeline _reflection;
     VkPipelineLayout _layout;
     VkPipeline _pipeline;
     std::map<uint32_t, VkDescriptorSetLayout> _descriptorSetLayouts;

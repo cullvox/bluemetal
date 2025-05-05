@@ -2,15 +2,15 @@
 
 #include "Precompiled.h"
 #include "Vulkan.h"
-#include "VulkanBlockReflection.h"
+#include "VulkanReflectedBlock.h"
 
 namespace bl {
 
-class VulkanPushConstantReflection : public VulkanBlockReflection {
+class VulkanReflectedPushConstant : public VulkanReflectedBlock {
 public:
-    VulkanPushConstantReflection() = default;
-    VulkanPushConstantReflection(VkShaderStageFlags stages, uint32_t offset, uint32_t size);
-    ~VulkanPushConstantReflection() = default;
+    VulkanReflectedPushConstant() = default;
+    VulkanReflectedPushConstant(VkShaderStageFlags stages, uint32_t offset, uint32_t size);
+    ~VulkanReflectedPushConstant() = default;
 
     void SetRange(VkShaderStageFlags stages, uint32_t offset, uint32_t size);
     void AddStageFlags(VkShaderStageFlags stages);

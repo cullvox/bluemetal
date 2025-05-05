@@ -1,14 +1,16 @@
 #include "Core/Print.h"
 #include "Core/Hash.h"
-#include "Window/Window.h"
+#include "VulkanWindow.h"
 #include "VulkanConfig.h"
 #include "VulkanDevice.h"
+#include <cstdint>
+#include <vulkan/vulkan_core.h>
 #include "VulkanSwapchain.h"
 
 namespace bl {
 
 VulkanSwapchain::VulkanSwapchain(
-    const VulkanDevice* device,
+    VulkanDevice* device,
     VulkanWindow* window)
     : _device(device)
     , _physicalDevice(_device->GetPhysicalDevice())
@@ -138,7 +140,7 @@ void VulkanSwapchain::ChooseImageCount() {
 
 void VulkanSwapchain::ChooseFormat() {
     // Get the surface formats from the physical device.
-    std::vector<VkSurfaceFormatKHR> formats = _physicalDevice->GetSurfaceFormats(_window->GetSurface());
+    std::vector<VkSurfaceFormatKHR> formats = _physicalDevice->GetSurfaceFormats(_window);
 
     // Look for the desired surface format.
     if (std::any_of(formats.begin(), formats.end(), [](auto sf) {
@@ -157,7 +159,7 @@ void VulkanSwapchain::ChooseFormat() {
 
 void VulkanSwapchain::ChoosePresentMode() {
     // Obtain the present modes from the physical device.
-    std::vector<VkPresentModeKHR> modes = _physicalDevice->GetPresentModes(_surface);
+    std::vector<VkPresentModeKHR> modes = _physicalDevice->GetPresentModes(_window);
 
     // Find the quick supported checks.
     _isMailboxSupported = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_MAILBOX_KHR) != modes.end();
@@ -177,12 +179,12 @@ void VulkanSwapchain::ChoosePresentMode() {
 void VulkanSwapchain::ChooseExtent() {
     VkSurfaceCapabilitiesKHR capabilities = {};
 
-    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->Get(), _surface, &capabilities))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->Get(), _window->GetSurface(), &capabilities))
 
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         _extent = capabilities.currentExtent;
     } else {
-        VkExtent2D extent = _window->GetExtent();
+        auto extent = _window->GetExtent();
         _extent = { 
             std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
             std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
@@ -272,7 +274,7 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.pNext = nullptr;
     createInfo.flags = 0;
-    createInfo.surface = _surface;
+    createInfo.surface = _window->GetSurface();
     createInfo.minImageCount = _imageCount;
     createInfo.imageFormat = format.format;
     createInfo.imageColorSpace = format.colorSpace;
@@ -297,8 +299,8 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     // Update the hash for mutable reference checking.
     _hash = BL_HASH_DEFAULT_SEED;
     bl::hash_combine(
-        _hash, _surface, _imageCount, 
-        _surfaceFormat.format, _surfaceFormat.colorSpace, _extent, 
+        _hash, _imageCount, 
+        _surfaceFormat.format, _surfaceFormat.colorSpace, 
         imageSharingMode, present, oldSwapchain, _swapchain);
 
     if (oldSwapchain) {

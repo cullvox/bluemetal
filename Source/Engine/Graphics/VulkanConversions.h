@@ -1,7 +1,7 @@
 #pragma once
 
+#include "Math/Extent.h"
 #include "Vulkan.h"
-#include "vulkan/vulkan_core.h"
 
 namespace bl {
 

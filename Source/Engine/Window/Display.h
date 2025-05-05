@@ -9,6 +9,7 @@
 namespace bl {
 
 struct VideoMode {
+    VideoMode() = default;
     VideoMode(int32_t redBits, int32_t greenBits, int32_t blueBits, Extent2D extent, float refreshRate)
         : redBits(redBits)
         , greenBits(greenBits)
