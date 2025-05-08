@@ -12,12 +12,6 @@
 
 namespace bl {
 
-
-class Parameter {
-public:
-    
-};
-
 /// @brief Creates a pipeline and interprets reflection data 
 class MaterialPipeline : public VulkanPipeline {
 public:
@@ -30,12 +24,8 @@ public:
 
     ~MaterialPipeline();
 
-protected:
-    friend class MaterialInstance;
-    
     /// @brief Returns the device that this pipeline was created with.
     /// Makes it easier if we are friends with an instance. 
-    const VulkanDevice* GetDevice();
     const std::map<std::string, VulkanVariableBlock>& GetUniforms() const { return _uniforms; }
     const std::map<std::string, uint32_t>& GetSamplers() const { return _samplers; }
     VkDescriptorSetLayout GetDescriptorSetLayout() const { return _layout; }
@@ -48,11 +38,11 @@ private:
 
 class Material;
 
-
-
+/// @brief An independent material data for sampled images and uniform buffer bindings.
+///
+///
 class MaterialInstance {
 public:
-    MaterialInstance(Material* material);
     ~MaterialInstance();
 
     void SetBool(const std::string& name, bool value);
@@ -68,7 +58,15 @@ public:
     void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */
     void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
 
-private:
+protected:
+    /// @brief Creates an independent instance of material data and copies from parent.
+    ///
+    ///
+    MaterialInstance(
+        VulkanDevice* device,
+        Material* material);
+
+protected:
     void BuildPerFrameBindings(VkDescriptorSetLayout layout);
     void SetBindingDirty(uint32_t binding);
     size_t CalculateDynamicAlignment(size_t uboSize);
@@ -76,6 +74,7 @@ private:
     template<typename T> 
     void SetGenericUniform(const std::string& name, T value);
 
+private:
     /// @brief Material data that needs to be changed every frame.
     ///
     /// Descriptor sets cannot be changed while bounded in a command buffer. 
@@ -95,7 +94,8 @@ private:
 
     using BindingData = std::variant<VulkanBuffer, SampledImage>;
 
-    Material* _pipeline;
+    VulkanDevice* _device;
+    Material* _material;
     uint32_t _materialSet;
     uint32_t _currentFrame;
     std::map<uint32_t, BindingData> _bindings;
@@ -136,10 +136,16 @@ public:
     /// @brief Destructor
     ~Material();
 
+    MaterialInstance* CreateInstance();
 
     void SetRasterizerState();
 
     // Allows you to change recompilable options of the pipeline.
+
+protected:
+    friend class MaterialInstance;
+    VulkanDescriptorSetAllocatorCache* GetDescriptorSetCache();
+
 private:
     VulkanDevice* _device;
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;

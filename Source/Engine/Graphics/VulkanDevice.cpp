@@ -38,8 +38,7 @@
 #pragma warning(pop)
 #endif
 
-namespace bl 
-{
+namespace bl {
 
 VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, VkSurfaceKHR temporarySurface)
     : _instance(instance)

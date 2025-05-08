@@ -320,7 +320,7 @@ int main(int argc, const char** argv)
         
         material->UpdateUniforms();
 
-        renderer->Render([&](VkCommandBuffer cmd, uint32_t currentFrame){
+        renderer->Render([&](VulkanRenderData& rd){
 
             auto extent = window->GetExtent();
 
@@ -341,7 +341,7 @@ int main(int argc, const char** argv)
             vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
 
             vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline()->GetLayout(), 0, 1, &globalSet, 0, nullptr);
-            material->Bind(cmd, currentFrame);
+            material->Bind(rd);
             material->PushConstant(cmd, 0, sizeof(bl::ObjectPC), &object);
             mesh->bind(cmd);
             mesh->draw(cmd);

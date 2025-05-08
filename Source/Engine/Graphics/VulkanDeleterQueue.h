@@ -31,7 +31,7 @@ public:
         auto& queue = _queues[_frameTracker.Get()];
         
         // Run the deleter functions and pop until the queue is empty.
-        for (; not queue.empty(); queue.pop())
+        for (; !queue.empty(); queue.pop())
             queue.front()();
     }
 

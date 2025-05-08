@@ -65,4 +65,6 @@ private:
     std::size_t _currentHash;
 };
 
+using VkMutable = VulkanMutableReference;
+
 } // namespace bl

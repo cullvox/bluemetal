@@ -347,12 +347,12 @@ const VulkanReflectedPipeline& VulkanPipeline::GetReflection() const {
     return _reflection;
 }
 
-VkPipelineLayout VulkanPipeline::GetLayout() const 
+VkPipelineLayout VulkanPipeline::GetPipelineLayout() const 
 {
     return _layout; 
 }
 
-VkPipeline VulkanPipeline::Get() const 
+VkPipeline VulkanPipeline::GetPipeline() const 
 {
     return _pipeline; 
 }

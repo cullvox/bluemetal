@@ -123,8 +123,8 @@ public:
     ~VulkanPipeline();
 
     const VulkanReflectedPipeline& GetReflection() const;
-    VkPipelineLayout GetLayout() const;
-    VkPipeline Get() const;
+    VkPipelineLayout GetPipelineLayout() const;
+    VkPipeline GetPipeline() const;
     const std::map<uint32_t, VkDescriptorSetLayout>& GetDescriptorSetLayouts() const;
 
     void SetVertexInputState(
