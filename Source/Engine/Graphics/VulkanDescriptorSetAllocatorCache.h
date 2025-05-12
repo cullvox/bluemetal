@@ -4,8 +4,6 @@
 
 namespace bl {
 
-class VulkanDevice;
-
 struct VulkanDescriptorRatio {
     VulkanDescriptorRatio(VkDescriptorType type, float ratio)
         : type(type), ratio(ratio) {}
@@ -64,8 +62,6 @@ private:
 
     /// @brief Creates a new pool after the previous one was used up.
     VkDescriptorPool CreatePool(uint32_t setCount); 
-
-
 
     const VulkanDevice* _device;
     std::unordered_map<VkDescriptorSetLayout, std::unordered_set<VkDescriptorSet>> _freeSets;

@@ -11,7 +11,8 @@ namespace bl
 {
 
 /// @brief Vulkan instance object, used to create a vulkan device and choose physical devices.
-class VulkanInstance : public NonCopyable {
+class VulkanInstance : public NonCopyable 
+{
 public:
 
     /// @brief Default Constructor
@@ -29,6 +30,8 @@ public:
     
     /// @brief Destructor
     ~VulkanInstance();
+
+    VulkanInstance& operator=(VulkanInstance&& move) noexcept;
 
     /// @brief Returns the underlying VkInstance object.
     VkInstance Get() const;

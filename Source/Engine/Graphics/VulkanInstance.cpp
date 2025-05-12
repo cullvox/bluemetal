@@ -21,6 +21,15 @@ VulkanInstance::~VulkanInstance()
     volkFinalize();
 }
 
+VulkanInstance& VulkanInstance::operator=(VulkanInstance&& move) noexcept
+{
+    _instance = move._instance;
+    _enableValidation = move._enableValidation;
+    _messenger = move._messenger;
+    _physicalDevices = std::move(move._physicalDevices);
+    return *this;
+}
+
 VkInstance VulkanInstance::Get() const 
 {
     return _instance;
@@ -49,9 +58,12 @@ const VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice() const
             return pd->GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; 
         });
                     
-    if (it != physicalDevices.end()) { 
+    if (it != physicalDevices.end()) 
+    { 
         return *it;
-    } else {
+    } 
+    else 
+    {
         blWarning("Using physical device zero because user does not have a discrete card!");
         return physicalDevices[0];
     } 
@@ -100,7 +112,8 @@ std::vector<const char*> VulkanInstance::GetExtensions()
 std::vector<const char*> VulkanInstance::GetValidationLayers()
 {
     // The engines required validation layers.
-    std::vector<const char*> layers = {
+    std::vector<const char*> layers = 
+    {
         "VK_LAYER_KHRONOS_validation",
     };
 
@@ -113,11 +126,14 @@ std::vector<const char*> VulkanInstance::GetValidationLayers()
     VK_CHECK(vkEnumerateInstanceLayerProperties(&propertiesCount, properties.data()));
 
     // Ensure that the requested layers are present on the system.
-    for (const char* name : layers) {
+    for (const char* name : layers) 
+    {
         if (!std::any_of(properties.begin(), properties.end(), 
-            [name](const auto& properties){ 
+            [name](const auto& properties)
+            { 
                 return strcmp(name, properties.layerName) == 0; 
-            })) {
+            })) 
+        {
             blError("User requested validation layers but none were found! Is the Vulkan SDK installed?");
             _enableValidation = false;
         }
@@ -133,7 +149,8 @@ void VulkanInstance::CreateInstance(Version appVersion, std::string_view appName
     std::vector<const char*> extensions = GetExtensions();
     std::vector<const char*> layers{};
 
-    if (_enableValidation) layers = GetValidationLayers();
+    if (_enableValidation) 
+        layers = GetValidationLayers();
 
     VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo = {};
     debugMessengerCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -179,7 +196,8 @@ void VulkanInstance::CreateInstance(Version appVersion, std::string_view appName
     blDebug("Finshed creating the Vulkan instance.");
 }
 
-void VulkanInstance::EnumeratePhysicalDevices() {
+void VulkanInstance::EnumeratePhysicalDevices() 
+{
     uint32_t physicalDeviceCount = 0;
     std::vector<VkPhysicalDevice> physicalDevices{};
 
@@ -194,13 +212,15 @@ void VulkanInstance::EnumeratePhysicalDevices() {
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
 {
-    if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
+    if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) 
         blError("{}", pCallbackData->pMessage);
-    } else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+
+    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) 
         blWarning("{}", pCallbackData->pMessage);
-    } else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+    
+    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) 
         blInfo("{}", pCallbackData->pMessage);
-    }
+
     return false;
 }
 

@@ -3,9 +3,10 @@
 #include "Precompiled.h"
 #include "Core/Hash.h"
 #include "Vulkan.h"
-#include "VulkanDevice.h"
 
 namespace bl {
+
+class VulkanDevice;
 
 /// @brief Data used by the descriptor set layout cache.
 struct VulkanDescriptorLayoutCacheData {

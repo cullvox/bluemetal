@@ -3,6 +3,8 @@
 #include "Vulkan.h"
 #include "VulkanInstance.h"
 #include "VulkanPhysicalDevice.h"
+#include "VulkanDescriptorSetLayoutCache.h"
+#include "VulkanPipelineLayoutCache.h"
 
 namespace bl {
 
@@ -28,6 +30,8 @@ public:
     /// @brief Destructor
     ~VulkanDevice(); /** @brief Destructor. */
 
+    VulkanDevice& operator=(VulkanDevice&& move) noexcept;
+
     VulkanInstance* GetInstance() const; /** @brief Returns the instance that this device was created with. */
     VulkanPhysicalDevice* GetPhysicalDevice() const; /** @brief Returns the physical device this device was crated with. */
     uint32_t GetGraphicsFamilyIndex() const; /** @brief Returns the index used for graphics queue operations. */
@@ -43,6 +47,9 @@ public:
     /// @brief Waits for an undefined amount of time for the device to finish whatever it may be doing.
     void WaitForDevice() const;
 
+    VkDescriptorSetLayout AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings);
+    VkPipelineLayout AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges);
+
 private:
     std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
     std::vector<const char*> GetExtensions(); /** @brief Gets the device's extensions required for the engine. */
@@ -57,6 +64,8 @@ private:
     VkQueue _graphicsQueue, _presentQueue;
     VkCommandPool _commandPool;
     VmaAllocator _allocator;
+    VulkanDescriptorSetLayoutCache _descriptorSetLayoutCache;
+    VulkanPipelineLayoutCache _pipelineLayoutCache;
 };
 
 } // namespace bl

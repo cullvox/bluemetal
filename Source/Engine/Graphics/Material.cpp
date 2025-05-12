@@ -3,22 +3,8 @@
 #include "VulkanBuffer.h"
 #include "Material.h"
 
-namespace bl {
-
-MaterialPipeline::MaterialPipeline(
-    VulkanDevice* device, 
-    VkRenderPass pass, 
-    uint32_t subpass, 
-    const VulkanPipelineStateInfo& state, 
-    uint32_t materialSet = 1)
-    : VulkanPipeline(device, )
+namespace bl 
 {
-
-}
-
-~MaterialPipeline();
-
-// ========== MaterialBase ========== //
 
 MaterialInstance::MaterialInstance(
     VulkanDevice* device,
@@ -30,7 +16,9 @@ MaterialInstance::MaterialInstance(
 {
 }
 
-MaterialInstance::~MaterialInstance() {}
+MaterialInstance::~MaterialInstance() 
+{    
+}
 
 void MaterialInstance::SetBool(const std::string& name, bool value) 
 {
@@ -84,8 +72,8 @@ void MaterialInstance::Bind(VulkanRenderData& rd)
         }
     }
 
-    vkCmdBindPipeline(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->GetPipeline());
-    vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->GetPipelineLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
+    vkCmdBindPipeline(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline.GetPipeline());
+    vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline.GetPipelineLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
 
     // Save the next frame number for when updating what bindings are dirty/not updated.
     _currentFrame = (rd.currentFrame + 1) % VulkanConfig::numFramesInFlight;
@@ -128,7 +116,7 @@ void MaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset, uint3
 {
 
     // Find the shader stage that uses the offset and size.
-    const auto& pushConstantReflections = _material->GetReflection().GetReflectedPushConstants();
+    const auto& pushConstantReflections = _material->_pipeline.GetReflection().GetReflectedPushConstants();
     
     auto it = std::find_if(pushConstantReflections.begin(), pushConstantReflections.end(), 
         [offset, size](const auto& pcr)
@@ -144,7 +132,7 @@ void MaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset, uint3
 
     auto pcr = (*it);
 
-    vkCmdPushConstants(rd.cmd, _material->GetPipelineLayout(), pcr.GetStages(), offset, size, data);
+    vkCmdPushConstants(rd.cmd, _material->_pipeline.GetPipelineLayout(), pcr.GetStages(), offset, size, data);
 }
 
 void MaterialInstance::UpdateUniforms() 
@@ -183,7 +171,8 @@ void MaterialInstance::UpdateUniforms()
 
                     buffer.Unmap();
                     buffer.Flush(blockSize * _currentFrame, blockSize);
-                } break;
+                    break;
+                }
                 case 1: 
                 { // sampler type
                     VkCopyDescriptorSet descriptorCopy = {};
@@ -220,7 +209,7 @@ void MaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
         _perFrameData[i].set = _material->GetDescriptorSetCache()->Allocate(layout);
     }
 
-    const auto& reflection = _material->GetReflection();
+    const auto& reflection = _material->_pipeline.GetReflection();
     const auto& sets = reflection.GetReflectedDescriptorSets();
     const auto& set = sets.at(_materialSet);
 
@@ -255,13 +244,11 @@ void MaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
                 write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
                 write.pBufferInfo = &bufferInfos.back();
                 writes.push_back(write);
-            } break;
-
-            case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: 
-            {
+                break;
+            }
+            case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
                 _bindings[binding.GetLocation()] = MaterialInstance::SampledImage{};
-            } break; // An image/sampler must be written to before being rendering.
-
+                break; // An image/sampler must be written to before being rendering.
             default:
                 break;
         }
@@ -301,12 +288,11 @@ size_t MaterialInstance::CalculateDynamicAlignment(size_t uboSize)
 // ========== Material ========== //
 
 Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, const VulkanPipelineStateInfo& state, uint32_t materialSet)
-    : MaterialPipeline(device, pass, subpass, state, materialSet)
-    , MaterialInstance(device, this)
+    : MaterialInstance(device, this)
     , _descriptorSetCache(device, 1024, VulkanDescriptorRatio::Default()) 
 {
 
-    // Get the descriptor set metadata and dedicated set for this material.
+    // Preform reflection on the pipeline shaders to retrieve detailed descriptor set info.
     VulkanReflectedPipeline reflection = {state.stages};
 
     auto& sets = reflection.GetReflectedDescriptorSets();
@@ -328,7 +314,7 @@ Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, co
     }
 
     // Construct the pipeline.
-    BuildPerFrame(GetDescriptorSetLayout());
+    BuildPerFrameBindings(GetDescriptorSetLayout());
 
     // Create buffers/sampler uniform data.
     auto metaBindings = meta.GetMetaBindings();
@@ -342,13 +328,14 @@ Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, co
                 auto blocks = binding.GetMembers();
 
                 // Get each uniform members block for its offsets.
-                for (const auto& variable : blocks) {
-                    _uniformMetadata[variable.GetName()] = variable;
+                for (const auto& variable : blocks) 
+                {
+                    _uniforms[variable.GetName()] = variable;
                 }
                 break;
             }
             case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-                _samplerMetadata[binding.GetName()] = binding.GetLocation();
+                _samplers[binding.GetName()] = binding.GetLocation();
                 break;
             default:
                 break;
@@ -356,40 +343,8 @@ Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, co
     }
 }
 
-Material::~Material() { }
-
-const std::map<std::string, VulkanBlockVariable>& Material::GetUniformMetadata() {
-    return _uniformMetadata;
-}
-
-const std::map<std::string, uint32_t>& Material::GetSamplerMetadata() {
-    return _samplerMetadata;
-}
-
-VulkanPipeline* Material::GetPipeline() {
-    return _pipeline.get();
-}
-
-// ========== MaterialInstance ========== //
-
-MaterialInstance::MaterialInstance(Material* material)
-    : Material(material) {
-    
-    BuildMaterialData(material->_layout);
-}
-
-MaterialInstance::~MaterialInstance() {}
-
-const std::map<std::string, VulkanBlockVariable>& MaterialInstance::GetUniformMetadata() {
-    return _material->GetUniformMetadata();
-}
-
-const std::map<std::string, uint32_t>& MaterialInstance::GetSamplerMetadata() {
-    return _material->GetSamplerMetadata();
-}
-
-VulkanPipeline* MaterialInstance::GetPipeline() {
-    return _material->GetPipeline();
+Material::~Material()
+{
 }
 
 } // namespace bl

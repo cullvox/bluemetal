@@ -1,9 +1,11 @@
+#include "VulkanDevice.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 
 namespace bl {
 
 VulkanDescriptorSetAllocatorCache::VulkanDescriptorSetAllocatorCache(const VulkanDevice* device, uint32_t maxSets, std::span<VulkanDescriptorRatio> ratios)
-    : _device(device) {
+    : _device(device) 
+{
     for (auto ratio : ratios)
         _ratios.push_back(ratio);
 
@@ -13,7 +15,8 @@ VulkanDescriptorSetAllocatorCache::VulkanDescriptorSetAllocatorCache(const Vulka
     _freePools.push_back(pool);
 }
 
-VulkanDescriptorSetAllocatorCache::~VulkanDescriptorSetAllocatorCache() {
+VulkanDescriptorSetAllocatorCache::~VulkanDescriptorSetAllocatorCache() 
+{
     for (auto pool : _freePools)
         vkDestroyDescriptorPool(_device->Get(), pool, nullptr);
     for (auto pool : _usedPools)

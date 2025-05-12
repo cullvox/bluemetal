@@ -1,5 +1,8 @@
 #include "Engine/Engine.h"
 #include "Core/Print.h"
+#include "Graphics/Renderer.h"
+#include "Math/Rect.h"
+#include <memory>
 
 namespace bl 
 {
@@ -14,9 +17,9 @@ Engine::Engine()
     _graphics = std::make_unique<GraphicsSystem>(this);
 
 
-    auto displays = _graphics->GetDisplays();
-    _window = _graphics->CreateWindow("Maginvox", displays[0]->GetDesktopMode(), false);
-    _renderer = _graphics->CreateRenderer(_window.get());
+    auto displays = Display::GetDisplays();
+    _window = _graphics->CreateWindow("Maginvox", Rect2D{{}, displays[0].GetDesktopMode().extent}, false);
+    _renderer = std::make_unique<Renderer>(_window.get());
     _imgui = std::make_unique<ImGuiSystem>(this, _window.get(), _renderer.get());
 
     _resourceManager->RegisterBuilder({"Shader", "Texture"}, _graphics.get());
@@ -53,7 +56,7 @@ ImGuiSystem* Engine::GetImGui()
     return _imgui.get();
 }
 
-VulkanWindow* Engine::GetWindow()
+Window* Engine::GetWindow()
 {
     return _window.get();
 }

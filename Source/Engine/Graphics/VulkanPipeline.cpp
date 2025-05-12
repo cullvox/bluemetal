@@ -153,7 +153,7 @@ void VulkanReflectedPipeline::ReflectMembers(VulkanReflectedBlock& meta, uint32_
 }
 
 
-VulkanPipeline::VulkanPipeline(VulkanDevice* device, VulkanDescriptorSetLayoutCache* descriptorSetLayoutCache, VulkanPipelineLayoutCache* pipelineLayoutCache, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanReflectedPipeline* reflection)
+VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanReflectedPipeline* reflection)
     : _device(device) {
     
     // Depending on circumstances the reflection of the pipeline can be edited by the user.
@@ -193,7 +193,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, VulkanDescriptorSetLayoutCa
 
         // Acquire a layout from cache or create a new descriptor set layout.
         auto sortedBindings = meta.GetSortedBindings();
-        auto layout = descriptorSetLayoutCache->Acquire(sortedBindings);
+        auto layout = device->AcquireDescriptorSetLayout(sortedBindings);
         _descriptorSetLayouts.emplace(meta.GetLocation(), layout);
         layouts.push_back(layout);
     }
@@ -207,7 +207,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, VulkanDescriptorSetLayoutCa
     }
 
     // Acquire our layout using the pipeline layout cache.
-    _layout = pipelineLayoutCache->Acquire(layouts, pushConstants);
+    _layout = _device->AcquirePipelineLayout(layouts, pushConstants);
 
     VkPipelineVertexInputStateCreateInfo vertexInputState = {};
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

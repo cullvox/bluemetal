@@ -9,6 +9,7 @@
 #include "VulkanReflectedPushConstant.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineLayoutCache.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -76,6 +77,7 @@ struct VulkanPipelineStateInfo {
         std::array<float, 4> blendConstants = {0.0f, 0.0f, 0.0f, 0.0f};
     } colorBlendState;
 
+    std::vector<VkDynamicState> dynamicStates;
 };
 
 class VulkanReflectedPipeline {
@@ -99,7 +101,7 @@ private:
 };
 
 /// @brief A program consisting of shaders designed to run on the GPU.
-class VulkanPipeline : public VulkanMutable {
+class VulkanPipeline {
 public:
 
     /// @brief Constructs a Vulkan pipeline object.
@@ -112,24 +114,21 @@ public:
     ///             at runtime for this.
     VulkanPipeline(
         VulkanDevice* device,
-        VulkanDescriptorSetLayoutCache* descriptorSetLayoutCache,
-        VulkanPipelineLayoutCache* pipelineLayoutCache,
         const VulkanPipelineStateInfo& info, 
         VkRenderPass renderPass,
         uint32_t subpass,
         const VulkanReflectedPipeline* reflection = nullptr);
 
-    /// @brief Destructor
+    VulkanPipeline(VulkanPipeline&& move) noexcept;
     ~VulkanPipeline();
+
+    VulkanPipeline& operator=(VulkanPipeline&& move) noexcept;
 
     const VulkanReflectedPipeline& GetReflection() const;
     VkPipelineLayout GetPipelineLayout() const;
     VkPipeline GetPipeline() const;
     const std::map<uint32_t, VkDescriptorSetLayout>& GetDescriptorSetLayouts() const;
 
-    void SetVertexInputState(
-
-    );
     void SetRasterizerState(const VulkanPipelineStateInfo::RasterizerState& state);
     void SetMultisampleState(const VulkanPipelineStateInfo::MultisampleState& state);
     void SetDepthStencilState(const VulkanPipelineStateInfo::DepthStencilState& state);

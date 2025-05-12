@@ -12,30 +12,6 @@
 
 namespace bl {
 
-/// @brief Creates a pipeline and interprets reflection data 
-class MaterialPipeline : public VulkanPipeline {
-public:
-    MaterialPipeline(
-        VulkanDevice* device, 
-        VkRenderPass pass, 
-        uint32_t subpass, 
-        const VulkanPipelineStateInfo& state, 
-        uint32_t materialSet = 1);
-
-    ~MaterialPipeline();
-
-    /// @brief Returns the device that this pipeline was created with.
-    /// Makes it easier if we are friends with an instance. 
-    const std::map<std::string, VulkanVariableBlock>& GetUniforms() const { return _uniforms; }
-    const std::map<std::string, uint32_t>& GetSamplers() const { return _samplers; }
-    VkDescriptorSetLayout GetDescriptorSetLayout() const { return _layout; }
-
-private:
-    std::map<std::string, VulkanVariableBlock> _uniforms; 
-    std::map<std::string, uint32_t> _samplers; /** @brief Name -> Binding */
-    VkDescriptorSetLayout _layout;
-};
-
 class Material;
 
 /// @brief An independent material data for sampled images and uniform buffer bindings.
@@ -116,7 +92,7 @@ private:
  * global and instance rendering data respectively. 
  * 
  */
-class Material : public MaterialPipeline, public MaterialInstance {
+class Material : public MaterialInstance {
 public:
     /// @brief Material Constructor
     /// This constructor creates a whole material object.
@@ -136,6 +112,10 @@ public:
     /// @brief Destructor
     ~Material();
 
+    const std::map<std::string, VulkanVariableBlock>& GetUniforms() const { return _uniforms; }
+    const std::map<std::string, uint32_t>& GetSamplers() const { return _samplers; }
+    VkDescriptorSetLayout GetDescriptorSetLayout() const { return _layout; }
+
     MaterialInstance* CreateInstance();
 
     void SetRasterizerState();
@@ -146,14 +126,19 @@ protected:
     friend class MaterialInstance;
     VulkanDescriptorSetAllocatorCache* GetDescriptorSetCache();
 
+
 private:
+    std::map<std::string, VulkanVariableBlock> _uniforms; 
+    std::map<std::string, uint32_t> _samplers; /** @brief Name -> Binding */
+    VkDescriptorSetLayout _layout;
     VulkanDevice* _device;
+    VulkanPipeline _pipeline;
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
 };
 
 template<typename T>
 void MaterialInstance::SetGenericUniform(const std::string& name, T value) {
-    const auto& uniforms = _pipeline->GetUniforms();
+    const auto& uniforms = _material->GetUniforms();
     if (!uniforms.contains(name)) {
         blError("Could not set material uniform, it does not exist!");
         return;

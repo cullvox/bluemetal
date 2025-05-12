@@ -42,59 +42,89 @@ namespace bl {
 
 VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, VkSurfaceKHR temporarySurface)
     : _instance(instance)
-    , _physicalDevice(physicalDevice) {
+    , _physicalDevice(physicalDevice)
+    , _descriptorSetLayoutCache(this)
+    , _pipelineLayoutCache(this) 
+{
     CreateDevice(temporarySurface);
     CreateCommandPool();
     CreateAllocator();
 }
 
-VulkanDevice::~VulkanDevice() { 
+VulkanDevice::~VulkanDevice() 
+{ 
     vmaDestroyAllocator(_allocator);
     vkDestroyCommandPool(_device, _commandPool, nullptr);
     vkDestroyDevice(_device, nullptr);
 }
 
-VulkanInstance* VulkanDevice::GetInstance() const {
+
+VulkanDevice& VulkanDevice::operator=(VulkanDevice&& move) noexcept
+{
+    _instance = move._instance;
+    _physicalDevice = move._physicalDevice;
+    _presentFamilyIndex = move._presentFamilyIndex;
+    _device = move._device;
+    _presentQueue = move._presentQueue;
+    _commandPool = move._commandPool;
+    _allocator = move._allocator;
+    _descriptorSetLayoutCache = std::move(move._descriptorSetLayoutCache);
+    _pipelineLayoutCache = std::move(move._pipelineLayoutCache);
+    return *this;
+}
+
+VulkanInstance* VulkanDevice::GetInstance() const 
+{
     return _instance;
 }
 
-VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() const {
+VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() const 
+{
     return _physicalDevice;
 }
 
-uint32_t VulkanDevice::GetGraphicsFamilyIndex() const {
+uint32_t VulkanDevice::GetGraphicsFamilyIndex() const 
+{
     return _graphicsFamilyIndex;
 }
 
-uint32_t VulkanDevice::GetPresentFamilyIndex() const {
+uint32_t VulkanDevice::GetPresentFamilyIndex() const 
+{
     return _presentFamilyIndex;
 }
 
-bool VulkanDevice::GetAreQueuesSame() const {
+bool VulkanDevice::GetAreQueuesSame() const 
+{
     return _graphicsFamilyIndex == _presentFamilyIndex;
 }
 
-VkQueue VulkanDevice::GetGraphicsQueue() const {
+VkQueue VulkanDevice::GetGraphicsQueue() const 
+{
     return _graphicsQueue;
 }
 
-VkQueue VulkanDevice::GetPresentQueue() const {
+VkQueue VulkanDevice::GetPresentQueue() const 
+{
     return _presentQueue;
 }
 
-VkDevice VulkanDevice::Get() const {
+VkDevice VulkanDevice::Get() const 
+{
     return _device;
 }
 
-VkCommandPool VulkanDevice::GetCommandPool() const {
+VkCommandPool VulkanDevice::GetCommandPool() const 
+{
     return _commandPool;
 }
 
-VmaAllocator VulkanDevice::GetAllocator() const {
+VmaAllocator VulkanDevice::GetAllocator() const 
+{
     return _allocator;
 }
 
-void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder) const {
+void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder) const 
+{
     // Allocate the command buffer used to record the submission.
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -135,11 +165,23 @@ void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& r
     WaitForDevice();
 }
 
-void VulkanDevice::WaitForDevice() const { 
+void VulkanDevice::WaitForDevice() const
+{ 
     vkDeviceWaitIdle(_device); 
 }
 
-std::vector<const char*> VulkanDevice::GetValidationLayers() {
+VkDescriptorSetLayout VulkanDevice::AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings)
+{
+    return _descriptorSetLayoutCache.Acquire(bindings);
+}
+
+VkPipelineLayout VulkanDevice::AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges)
+{
+    return _pipelineLayoutCache.Acquire(layouts, ranges);
+}
+
+std::vector<const char*> VulkanDevice::GetValidationLayers() 
+{
     const auto& layers = VulkanConfig::validationLayers;
 
     // Get the systems validation layers.
@@ -151,11 +193,13 @@ std::vector<const char*> VulkanDevice::GetValidationLayers() {
     VK_CHECK(vkEnumerateDeviceLayerProperties(_physicalDevice->Get(), &propertiesCount, properties.data()))
 
     // Ensure that the requested layers are present on the system.
-    for (const char* name : layers) {
+    for (const char* name : layers) 
+    {
         if (!std::any_of(properties.begin(), properties.end(), 
-                [name](const auto& properties){ 
-                    return strcmp(name, properties.layerName) == 0; 
-                })) {
+            [name](const auto& properties){ 
+                return strcmp(name, properties.layerName) == 0; 
+            })) 
+        {
             throw std::runtime_error("Could not find a required device layer!");
         }
     }
@@ -163,9 +207,11 @@ std::vector<const char*> VulkanDevice::GetValidationLayers() {
     return layers;
 }
 
-std::vector<const char*> VulkanDevice::GetExtensions() {
+std::vector<const char*> VulkanDevice::GetExtensions() 
+{
     // The engines required device extensions.
-    std::vector requiredExtensions = { 
+    std::vector requiredExtensions = 
+    { 
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
         "VK_EXT_extended_dynamic_state",
 #ifdef BLUEMETAL_VULKAN_PORTABILITY
@@ -182,11 +228,14 @@ std::vector<const char*> VulkanDevice::GetExtensions() {
     VK_CHECK(vkEnumerateDeviceExtensionProperties(_physicalDevice->Get(), nullptr, &propertyCount, properties.data()))
 
     // Ensure the required extensions are available.
-    for (const char* pName : requiredExtensions) {
+    for (const char* pName : requiredExtensions) 
+    {
         if (!std::any_of(properties.begin(), properties.end(), 
-                [pName](const auto& properties){ 
-                    return std::strcmp(pName, properties.extensionName) == 0; 
-                })) {
+            [pName](const auto& properties)
+            { 
+                return std::strcmp(pName, properties.extensionName) == 0; 
+            })) 
+        {
             throw std::runtime_error("Could not find a required device extension!");
         }
     }
@@ -194,7 +243,8 @@ std::vector<const char*> VulkanDevice::GetExtensions() {
     return requiredExtensions;
 }
 
-void VulkanDevice::CreateDevice(VkSurfaceKHR surface) {
+void VulkanDevice::CreateDevice(VkSurfaceKHR surface) 
+{
     std::vector<const char*> extensions = GetExtensions();
     std::vector<const char*> layers{};
 
@@ -210,22 +260,26 @@ void VulkanDevice::CreateDevice(VkSurfaceKHR surface) {
 
     // Determine what families will be dedicated to graphics and present.
     uint32_t i = 0;
-    for (const VkQueueFamilyProperties& properties : queueProperties) {
-        if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+    for (const VkQueueFamilyProperties& properties : queueProperties) 
+    {
+        if (properties.queueFlags & VK_QUEUE_GRAPHICS_BIT) 
+        {
             _graphicsFamilyIndex = i;
         }
         
         VkBool32 surfaceSupported = VK_FALSE;
         VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->Get(), i, surface, &surfaceSupported))
         
-        if (surfaceSupported) {
+        if (surfaceSupported) 
+        {
             _presentFamilyIndex = i;
         }
         i++;
     }
 
     const float queuePriorities[] = { 1.0f, 1.0f };
-    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos {
+    std::vector<VkDeviceQueueCreateInfo> queueCreateInfos 
+    {
         {
             VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO, // sType
             nullptr, // pNext,
@@ -278,7 +332,8 @@ void VulkanDevice::CreateDevice(VkSurfaceKHR surface) {
     blInfo("Created the Vulkan device using: {}", _physicalDevice->GetDeviceName());
 }
 
-void VulkanDevice::CreateCommandPool() {
+void VulkanDevice::CreateCommandPool() 
+{
     VkCommandPoolCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     createInfo.pNext = nullptr;
@@ -288,7 +343,8 @@ void VulkanDevice::CreateCommandPool() {
     VK_CHECK(vkCreateCommandPool(_device, &createInfo, nullptr, &_commandPool))
 }
 
-void VulkanDevice::CreateAllocator() {
+void VulkanDevice::CreateAllocator() 
+{
     VmaVulkanFunctions functions = {};
     functions.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
     functions.vkGetDeviceProcAddr = vkGetDeviceProcAddr;

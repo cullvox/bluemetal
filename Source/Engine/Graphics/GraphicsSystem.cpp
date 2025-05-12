@@ -1,5 +1,6 @@
 #include "Core/Print.h"
 #include "Engine/Engine.h"
+#include "Graphics/VulkanInstance.h"
 #include "VulkanShader.h"
 #include "Texture2D.h" 
 #include "GraphicsSystem.h"
@@ -10,8 +11,8 @@ namespace bl
 GraphicsSystem::GraphicsSystem(Engine* engine)
     : _engine(engine)
 {
-    _instance = {Version{}, "Maginvox", true};
-    _physicalDevice = _instance->ChoosePhysicalDevice();
+    _instance = {{}, "Maginvox", true};
+    _physicalDevice = _instance.ChoosePhysicalDevice();
     _device = {&_instance, _physicalDevice};
     _descriptorSetLayoutCache = { &_device };
     _pipelineLayoutCache = { _device.Get() };
@@ -60,7 +61,7 @@ std::vector<Display*> GraphicsSystem::GetDisplays()
     return temp;
 }
 
-std::unique_ptr<VulkanWindow> GraphicsSystem::CreateWindow(const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
+std::unique_ptr<Window> GraphicsSystem::CreateWindow(const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
 {
     return std::make_unique<VulkanWindow>(_device.get(), title, videoMode, fullscreen);
 }
