@@ -130,7 +130,7 @@ VmaAllocator VulkanDevice::GetAllocator() const
     return _allocator;
 }
 
-void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder) const 
+void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder)
 {
     // Allocate the command buffer used to record the submission.
     VkCommandBufferAllocateInfo allocateInfo = {};
@@ -172,7 +172,7 @@ void VulkanDevice::ImmediateSubmit(const std::function<void(VkCommandBuffer)>& r
     WaitForDevice();
 }
 
-void VulkanDevice::WaitForDevice() const
+void VulkanDevice::WaitForDevice()
 { 
     vkDeviceWaitIdle(_device); 
 }
@@ -334,6 +334,8 @@ void VulkanDevice::CreateDevice()
     vkGetDeviceQueue(_device, _presentFamilyIndex, 0, &_presentQueue);
 
     blInfo("Created the Vulkan device using: {}", _physicalDevice->GetDeviceName());
+
+    WaitForDevice();
 }
 
 void VulkanDevice::CreateCommandPool() 

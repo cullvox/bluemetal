@@ -18,12 +18,14 @@ Engine::Engine()
 
 
     auto displays = Display::GetDisplays();
+
+    _graphics->GetDevice()->WaitForDevice();
     _window = _graphics->CreateWindow("Maginvox", Rect2D{{}, displays[0].GetDesktopMode().extent}, false);
 
     _renderer = _graphics->CreateRenderer(_window.get());
 
-    auto vulkanWindow = dynamic_cast<VulkanWindow*>(_window.get());
-    _imgui = std::make_unique<ImGuiSystem>(this, vulkanWindow, _renderer.get());
+    //auto vulkanWindow = dynamic_cast<VulkanWindow*>(_window.get());
+    //_imgui = std::make_unique<ImGuiSystem>(this, vulkanWindow, _renderer.get());
 
     _resourceManager->RegisterBuilder({"Shader", "Texture"}, _graphics.get());
     _resourceManager->RegisterBuilder({"Sound"}, _audio.get());

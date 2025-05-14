@@ -51,6 +51,7 @@ protected:
     void SetGenericUniform(const std::string& name, T value);
 
 private:
+    friend class Material;
     /// @brief Material data that needs to be changed every frame.
     ///
     /// Descriptor sets cannot be changed while bounded in a command buffer. 
@@ -113,7 +114,7 @@ public:
     ~Material();
 
 
-    VulkanPipeline* GetPipeline() { return &_pipeline; }
+    VulkanPipeline* GetPipeline() { return _pipeline.get(); }
     const std::map<std::string, VulkanVariableBlock>& GetUniforms() const { return _uniforms; }
     const std::map<std::string, uint32_t>& GetSamplers() const { return _samplers; }
 
@@ -133,7 +134,7 @@ private:
     std::map<std::string, uint32_t> _samplers; /** @brief Name -> Binding */
     VkDescriptorSetLayout _layout;
     VulkanDevice* _device;
-    VulkanPipeline _pipeline;
+    std::unique_ptr<VulkanPipeline> _pipeline;
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
 };
 

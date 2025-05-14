@@ -41,10 +41,10 @@ public:
     VkDevice Get() const; /** @brief Returns the underlying Vulkan device. */
     VkCommandPool GetCommandPool() const; /** @brief Returns the default Vulkan command pool. */
     VmaAllocator GetAllocator() const; /** @brief Returns the Vulkan Memory Allocator object. */
-    void ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder) const; /** @brief Submits commands to the graphics queue on the double. */
+    void ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder); /** @brief Submits commands to the graphics queue on the double. */
 
     /// @brief Waits for an undefined amount of time for the device to finish whatever it may be doing.
-    void WaitForDevice() const;
+    void WaitForDevice();
 
     VkDescriptorSetLayout AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings);
     VkPipelineLayout AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges);

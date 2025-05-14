@@ -72,8 +72,8 @@ void MaterialInstance::Bind(VulkanRenderData& rd)
         }
     }
 
-    vkCmdBindPipeline(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline.GetPipeline());
-    vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline.GetPipelineLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
+    vkCmdBindPipeline(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipeline());
+    vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
 
     // Save the next frame number for when updating what bindings are dirty/not updated.
     _currentFrame = (rd.currentFrame + 1) % VulkanConfig::numFramesInFlight;
@@ -116,7 +116,7 @@ void MaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset, uint3
 {
 
     // Find the shader stage that uses the offset and size.
-    const auto& pushConstantReflections = _material->_pipeline.GetReflection().GetReflectedPushConstants();
+    const auto& pushConstantReflections = _material->_pipeline->GetReflection().GetReflectedPushConstants();
     
     auto it = std::find_if(pushConstantReflections.begin(), pushConstantReflections.end(), 
         [offset, size](const auto& pcr)
@@ -132,7 +132,7 @@ void MaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset, uint3
 
     auto pcr = (*it);
 
-    vkCmdPushConstants(rd.cmd, _material->_pipeline.GetPipelineLayout(), pcr.GetStages(), offset, size, data);
+    vkCmdPushConstants(rd.cmd, _material->_pipeline->GetPipelineLayout(), pcr.GetStages(), offset, size, data);
 }
 
 void MaterialInstance::UpdateUniforms() 
@@ -204,12 +204,13 @@ void MaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
 {
 
     // Allocate the per frame descriptor sets.
+
     for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) 
     {
         _perFrameData[i].set = _material->GetDescriptorSetCache()->Allocate(layout);
     }
 
-    const auto& reflection = _material->_pipeline.GetReflection();
+    const auto& reflection = _material->_pipeline->GetReflection();
     const auto& sets = reflection.GetReflectedDescriptorSets();
     const auto& set = sets.at(_materialSet);
 
@@ -291,6 +292,7 @@ Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, co
     : MaterialInstance(device, this)
     , _descriptorSetCache(device, 1024, VulkanDescriptorRatio::Default()) 
 {
+    _materialSet = materialSet;
 
     // Preform reflection on the pipeline shaders to retrieve detailed descriptor set info.
     VulkanReflectedPipeline reflection = {state.stages};
@@ -314,9 +316,9 @@ Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, co
     }
 
     // Construct the pipeline.
-    _pipeline = VulkanPipeline{device, state, pass, subpass, &reflection};
+    _pipeline = std::make_unique<VulkanPipeline>(device, state, pass, subpass, &reflection);
 
-    const auto& pipelineDescriptorSetLayouts = _pipeline.GetDescriptorSetLayouts();
+    const auto& pipelineDescriptorSetLayouts = _pipeline->GetDescriptorSetLayouts();
     _layout = pipelineDescriptorSetLayouts.at(materialSet);
 
     BuildPerFrameBindings(_layout);

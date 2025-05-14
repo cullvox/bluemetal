@@ -8,6 +8,7 @@
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineLayoutCache.h"
 #include "Renderer.h"
+#include <memory>
 
 namespace bl 
 {
@@ -37,7 +38,7 @@ private:
     Engine* _engine;
     VulkanInstance _instance;
     const VulkanPhysicalDevice* _physicalDevice;
-    VulkanDevice _device;
+    std::unique_ptr<VulkanDevice> _device;
 };
 
 } // namespace bl

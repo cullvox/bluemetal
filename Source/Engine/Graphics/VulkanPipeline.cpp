@@ -169,12 +169,12 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
 
     // Build the pipelines shader stage create info.
     for (size_t i = 0; i < state.stages.shaders.size(); i++) {
-        auto shader = shaders[i];
+        auto shader = state.stages.shaders[i];
         stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         stages[i].pNext = nullptr;
         stages[i].flags = 0;
-        stages[i].stage = shader->GetStage();
-        stages[i].module = shader->Get();
+        stages[i].stage = shader.Get()->GetStage();
+        stages[i].module = shader.Get()->Get();
         stages[i].pName = "main";
         stages[i].pSpecializationInfo = nullptr;
     }

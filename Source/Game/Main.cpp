@@ -53,7 +53,7 @@ int main(int argc, const char** argv)
     source->Play();
 
     auto graphics = engine.GetGraphics();
-    auto imgui = engine.GetImGui();
+    //auto imgui = engine.GetImGui();
     
     auto vert = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.frag.spv");
@@ -101,7 +101,7 @@ int main(int argc, const char** argv)
     bl::VulkanPipelineStateInfo psi{};
     psi.stages.shaders = { vert.Get(), frag.Get() };
 
-    auto material = std::make_unique<bl::Material>(graphics->GetDevice(), renderer->GetRenderPass(), 0, psi);
+    auto material = std::make_unique<bl::Material>(graphics->GetDevice(), renderer->GetRenderPass(), 0, psi, 1);
     material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
     
     auto window = engine.GetWindow();
@@ -219,7 +219,7 @@ int main(int argc, const char** argv)
                 mouseRelativeMovement.y = (float)event.motion.yrel;
             }
 
-            imgui->Process(event);
+            //imgui->Process(event);
         }
 
         SDL_PumpEvents();
@@ -343,6 +343,7 @@ int main(int argc, const char** argv)
             mesh->bind(rd.cmd);
             mesh->draw(rd.cmd);
 
+            /*
             imgui->BeginFrame();
 
             ImGui::Begin("Debug Info");
@@ -430,6 +431,7 @@ int main(int argc, const char** argv)
             ImGui::ShowDemoWindow();
 
             imgui->EndFrame(rd.cmd);
+            */
         });
         }
 

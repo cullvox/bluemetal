@@ -99,6 +99,8 @@ void ImGuiSystem::Init()
     auto window = _window;
     auto renderPass = _renderer->GetRenderPass();
 
+    device->WaitForDevice();
+
     std::array poolSizes = { 
         VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
         VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
@@ -125,7 +127,7 @@ void ImGuiSystem::Init()
     ImGui::CreateContext();
 
     VkInstance inst = instance->Get();
-    ImGui_ImplVulkan_LoadFunctions([](const char *function_name, void *vulkan_instance) {
+    ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [](const char *function_name, void *vulkan_instance) {
         return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance *>(vulkan_instance)), function_name);
     }, &inst);
 
