@@ -125,7 +125,8 @@
         "execution": "cpp",
         "strstream": "cpp",
         "zconf.h": "c",
-        "ciso646": "cpp"
+        "ciso646": "cpp",
+        "volk.h": "c"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",

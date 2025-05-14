@@ -6,10 +6,11 @@
 #include "VulkanImage.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanWindow.h"
+#include "VulkanRenderData.h"
 
 namespace bl {
 
-using RenderFunction = std::function<void(VkCommandBuffer cmd, uint32_t currentFrame)>;
+using RenderFunction = std::function<void(VulkanRenderData& rd)>;
 
 class Renderer {
 public:

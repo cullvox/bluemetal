@@ -122,7 +122,7 @@ void Renderer::RecreateImages() {
     }
 }
 
-void Renderer::Render(std::function<void(VkCommandBuffer, uint32_t)> func)
+void Renderer::Render(RenderFunction func)
 {
     if (!_swapchain->Get()) // Swapchain must be valid.
         return;
@@ -174,7 +174,8 @@ void Renderer::Render(std::function<void(VkCommandBuffer, uint32_t)> func)
     vkCmdBeginRenderPass(cmd, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // Render all the frame data to the gbuffer.
-    func(cmd, _currentFrame);
+    VulkanRenderData rd = {cmd, imageIndex};
+    func(rd);
     
     vkCmdEndRenderPass(cmd);
 

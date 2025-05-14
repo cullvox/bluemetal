@@ -1,3 +1,4 @@
+#include <SDL3/SDL_vulkan.h>
 #include "Core/Print.h"
 #include "VulkanDevice.h"
 #include "VulkanDescriptorSetLayoutCache.h"
@@ -40,13 +41,19 @@
 
 namespace bl {
 
-VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice, VkSurfaceKHR temporarySurface)
+VulkanDevice::VulkanDevice()
+    : _descriptorSetLayoutCache(this)
+    , _pipelineLayoutCache(this) 
+{
+}
+
+VulkanDevice::VulkanDevice(VulkanInstance* instance, const VulkanPhysicalDevice* physicalDevice)
     : _instance(instance)
     , _physicalDevice(physicalDevice)
     , _descriptorSetLayoutCache(this)
     , _pipelineLayoutCache(this) 
 {
-    CreateDevice(temporarySurface);
+    CreateDevice();
     CreateCommandPool();
     CreateAllocator();
 }
@@ -78,7 +85,7 @@ VulkanInstance* VulkanDevice::GetInstance() const
     return _instance;
 }
 
-VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() const 
+const VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() const 
 {
     return _physicalDevice;
 }
@@ -243,7 +250,7 @@ std::vector<const char*> VulkanDevice::GetExtensions()
     return requiredExtensions;
 }
 
-void VulkanDevice::CreateDevice(VkSurfaceKHR surface) 
+void VulkanDevice::CreateDevice() 
 {
     std::vector<const char*> extensions = GetExtensions();
     std::vector<const char*> layers{};
@@ -267,10 +274,7 @@ void VulkanDevice::CreateDevice(VkSurfaceKHR surface)
             _graphicsFamilyIndex = i;
         }
         
-        VkBool32 surfaceSupported = VK_FALSE;
-        VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->Get(), i, surface, &surfaceSupported))
-        
-        if (surfaceSupported) 
+        if (SDL_Vulkan_GetPresentationSupport(_instance->Get(), _physicalDevice->Get(), i)) 
         {
             _presentFamilyIndex = i;
         }

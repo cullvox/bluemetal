@@ -25,7 +25,7 @@ public:
     virtual ~GraphicsSystem(); /** @brief Destructor */
 
     VulkanInstance* GetInstance();
-    VulkanPhysicalDevice* GetPhysicalDevice();
+    const VulkanPhysicalDevice* GetPhysicalDevice() const;
     VulkanDevice* GetDevice();
 
     std::unique_ptr<Window> CreateWindow(const std::string& title, Rect2D rect, bool fullscreen = true);

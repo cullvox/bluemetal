@@ -213,10 +213,10 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     vertexInputState.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     vertexInputState.pNext = nullptr;
     vertexInputState.flags = 0;
-    vertexInputState.vertexBindingDescriptionCount = (uint32_t)state.vertexState.vertexInputBindings.size();
-    vertexInputState.pVertexBindingDescriptions = state.vertexState.vertexInputBindings.data();
-    vertexInputState.vertexAttributeDescriptionCount = (uint32_t)state.vertexState.vertexInputAttribs.size();
-    vertexInputState.pVertexAttributeDescriptions = state.vertexState.vertexInputAttribs.data();
+    vertexInputState.vertexBindingDescriptionCount = (uint32_t)state.vertexState.inputBindings.size();
+    vertexInputState.pVertexBindingDescriptions = state.vertexState.inputBindings.data();
+    vertexInputState.vertexAttributeDescriptionCount = (uint32_t)state.vertexState.inputAttribs.size();
+    vertexInputState.pVertexAttributeDescriptions = state.vertexState.inputAttribs.data();
 
     VkPipelineInputAssemblyStateCreateInfo inputAssemblyState = {};
     inputAssemblyState.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -341,6 +341,16 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
 VulkanPipeline::~VulkanPipeline()
 { 
     vkDestroyPipeline(_device->Get(), _pipeline, nullptr);
+}
+
+VulkanPipeline& VulkanPipeline::operator=(VulkanPipeline&& move) noexcept
+{
+    _device = move._device;
+    _reflection = std::move(move._reflection);
+    _layout = move._layout;
+    _pipeline = move._pipeline;
+    _descriptorSetLayouts = move._descriptorSetLayouts;
+    return *this;
 }
 
 const VulkanReflectedPipeline& VulkanPipeline::GetReflection() const {

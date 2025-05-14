@@ -314,7 +314,12 @@ Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, co
     }
 
     // Construct the pipeline.
-    BuildPerFrameBindings(GetDescriptorSetLayout());
+    _pipeline = VulkanPipeline{device, state, pass, subpass, &reflection};
+
+    const auto& pipelineDescriptorSetLayouts = _pipeline.GetDescriptorSetLayouts();
+    _layout = pipelineDescriptorSetLayouts.at(materialSet);
+
+    BuildPerFrameBindings(_layout);
 
     // Create buffers/sampler uniform data.
     auto metaBindings = meta.GetMetaBindings();
@@ -345,6 +350,11 @@ Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, co
 
 Material::~Material()
 {
+}
+
+VulkanDescriptorSetAllocatorCache* Material::GetDescriptorSetCache()
+{
+    return &_descriptorSetCache;
 }
 
 } // namespace bl

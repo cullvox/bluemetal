@@ -4,7 +4,7 @@
 
 #include "Engine/Engine.h"
 #include "ImGui/imgui.h"
-#include "ImGui/imgui_impl_sdl2.h"
+#include "ImGui/imgui_impl_sdl3.h"
 #include "ImGui/imgui_impl_vulkan.h"
 #include "ImGui/ImGuiSystem.h"
 
@@ -87,7 +87,7 @@ void ImGuiSystem::ApplyStyle()
 
 void ImGuiSystem::Process(const SDL_Event& event)
 {
-    ImGui_ImplSDL2_ProcessEvent(&event);
+    ImGui_ImplSDL3_ProcessEvent(&event);
 }
 
 void ImGuiSystem::Init()
@@ -129,7 +129,7 @@ void ImGuiSystem::Init()
         return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance *>(vulkan_instance)), function_name);
     }, &inst);
 
-    ImGui_ImplSDL2_InitForVulkan(window->Get());
+    ImGui_ImplSDL3_InitForVulkan(window->Get());
 
     // Initialize ImGui for Vulkan, pass created objects.
     ImGui_ImplVulkan_InitInfo initInfo = {};
@@ -173,7 +173,7 @@ void ImGuiSystem::Unload()
     auto device = graphics->GetDevice();
 
     device->WaitForDevice();
-    ImGui_ImplSDL2_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
     ImGui_ImplVulkan_Shutdown();
 
     vkDestroyDescriptorPool(device->Get(), _descriptorPool, nullptr);
@@ -182,7 +182,7 @@ void ImGuiSystem::Unload()
 void ImGuiSystem::BeginFrame()
 {
     ImGui_ImplVulkan_NewFrame();
-    ImGui_ImplSDL2_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 }
 

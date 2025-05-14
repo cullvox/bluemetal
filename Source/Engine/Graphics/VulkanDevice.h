@@ -21,8 +21,7 @@ public:
     /// @param[in] temporarySurface Used only to find a present queue used in the device, can be destroyed after construction.
     VulkanDevice(
         VulkanInstance* instance, 
-        VulkanPhysicalDevice* physicalDevice, 
-        VkSurfaceKHR temporarySurface);
+        const VulkanPhysicalDevice* physicalDevice);
     
     /// @brief Move Constructor
     VulkanDevice(VulkanDevice&& other) = default;
@@ -33,7 +32,7 @@ public:
     VulkanDevice& operator=(VulkanDevice&& move) noexcept;
 
     VulkanInstance* GetInstance() const; /** @brief Returns the instance that this device was created with. */
-    VulkanPhysicalDevice* GetPhysicalDevice() const; /** @brief Returns the physical device this device was crated with. */
+    const VulkanPhysicalDevice* GetPhysicalDevice() const; /** @brief Returns the physical device this device was crated with. */
     uint32_t GetGraphicsFamilyIndex() const; /** @brief Returns the index used for graphics queue operations. */
     uint32_t GetPresentFamilyIndex() const; /** @brief Returns the index used for present queue operations. */
     bool GetAreQueuesSame() const; /** @brief Returns true if the graphics family index and present family index are the same. */
@@ -53,12 +52,12 @@ public:
 private:
     std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
     std::vector<const char*> GetExtensions(); /** @brief Gets the device's extensions required for the engine. */
-    void CreateDevice(VkSurfaceKHR temporarySurface); /** @brief Creates the Vulkan device. */
+    void CreateDevice(); /** @brief Creates the Vulkan device. */
     void CreateCommandPool(); /** @brief Creates a command pool for allocating command buffers. */
     void CreateAllocator(); /** @brief Creates an instance of the Vulkan Memory Allocator */
 
     VulkanInstance* _instance;
-    VulkanPhysicalDevice* _physicalDevice;
+    const VulkanPhysicalDevice* _physicalDevice;
     uint32_t _graphicsFamilyIndex, _presentFamilyIndex;
     VkDevice _device;
     VkQueue _graphicsQueue, _presentQueue;

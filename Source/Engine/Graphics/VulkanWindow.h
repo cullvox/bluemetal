@@ -16,7 +16,7 @@ class VulkanSwapchain;
 
 class VulkanWindow final : public Window {
 public:
-    VulkanWindow(VulkanDevice* device);
+    VulkanWindow(VulkanDevice* device, const std::string& title, Rect2D rect, bool fullscreen);
     ~VulkanWindow();
 
     VkSurfaceKHR GetSurface();

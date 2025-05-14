@@ -64,4 +64,16 @@ VideoMode Display::ConvertSDLDisplayMode(const SDL_DisplayMode* mode)
         mode->refresh_rate};
 }
 
+std::vector<Display> Display::GetDisplays()
+{
+    int displayCount = 0;
+    SDL_DisplayID* displayIds = SDL_GetDisplays(&displayCount);
+
+    std::vector<Display> displays;
+    for (int i = 0; i < displayCount; i++)
+        displays.emplace_back(Display{displayIds[i]});
+
+    return displays;
+}
+
 } // namespace bl

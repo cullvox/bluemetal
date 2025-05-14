@@ -5,7 +5,6 @@ namespace bl {
 
 VulkanSampler::VulkanSampler(
     VulkanDevice* device,
-    VulkanDeleterQueue* deleter,
     VkFilter magFilter,
     VkFilter minFilter,
     VkSamplerMipmapMode mipmapMode,
@@ -20,7 +19,6 @@ VulkanSampler::VulkanSampler(
     VkBorderColor borderColor,
     VkBool32 unnormalizedCoordinates)
     : _device(device)
-    , _deleter(deleter)
     , _sampler(VK_NULL_HANDLE)
     , _magFilter(magFilter)
     , _minFilter(minFilter)
@@ -40,9 +38,7 @@ VulkanSampler::VulkanSampler(
 
 void VulkanSampler::Update() {
 
-    _deleter->PushDeleter([&](){
-        vkDestroySampler(_device->Get(), _sampler, nullptr);
-    });
+    vkDestroySampler(_device->Get(), _sampler, nullptr);
 
     VkSamplerCreateInfo createInfo{};
     createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -74,9 +70,7 @@ void VulkanSampler::Update() {
 }
 
 VulkanSampler::~VulkanSampler() {
-    _deleter->PushDeleter([&](){
-        vkDestroySampler(_device->Get(), _sampler, nullptr);
-    });
+    vkDestroySampler(_device->Get(), _sampler, nullptr);
 }
 
 VkSampler VulkanSampler::Get() const {

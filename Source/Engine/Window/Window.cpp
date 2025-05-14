@@ -6,24 +6,14 @@
 
 namespace bl  {
 
-Window::Window(const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen)
+Window::Window(const std::string& title, Rect2D rect, bool fullscreen)
 {
     auto flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
     if (fullscreen)
         flags |= SDL_WINDOW_FULLSCREEN;
 
-    auto w = 1080;
-    auto h = 720;
-
-    if (videoMode) 
-    {
-        auto mode = videoMode.value();
-        w = mode.extent.width;
-        h = mode.extent.height;
-    }
-
-    _window = SDL_CreateWindow(title.c_str(), w, h, flags);
+    _window = SDL_CreateWindow(title.c_str(), rect.extent.width, rect.extent.height, flags);
     if (!_window) 
     {
         throw std::runtime_error("Could not create an SDL window!");

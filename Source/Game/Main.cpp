@@ -99,15 +99,15 @@ int main(int argc, const char** argv)
     auto renderer = engine.GetRenderer();
 
     bl::VulkanPipelineStateInfo psi{};
-    psi.vertexInput.vertexInputBindings = bl::Vertex::GetBindingDescriptions();
-    psi.vertexInput.vertexInputAttribs = bl::Vertex::GetBindingAttributeDescriptions();
-    psi.stages = { vert.Get(), frag.Get() };
+    psi.stages.shaders = { vert.Get(), frag.Get() };
 
     auto material = std::make_unique<bl::Material>(graphics->GetDevice(), renderer->GetRenderPass(), 0, psi);
     material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
     
     auto window = engine.GetWindow();
-    auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(window);
+
+    auto vulkanWindow = dynamic_cast<bl::VulkanWindow*>(window);
+    auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(vulkanWindow);
 
     auto globalBuffer = std::make_unique<bl::VulkanBuffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO));
 
@@ -121,9 +121,11 @@ int main(int argc, const char** argv)
     bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     bindings[0].pImmutableSamplers = nullptr;
 
-    auto layout = graphics->GetDevice()->CacheDescriptorSetLayout(bindings);
+    auto layout = graphics->GetDevice()->AcquireDescriptorSetLayout(bindings);
 
-    VkDescriptorSet globalSet = graphics->GetDevice()->AllocateDescriptorSet(layout);
+    bl::VulkanDescriptorSetAllocatorCache descriptorCache = {graphics->GetDevice(), 8, bl::VulkanDescriptorRatio::Default()};
+
+    VkDescriptorSet globalSet = descriptorCache.Allocate(layout);
 
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.buffer = globalBuffer->Get();
@@ -197,27 +199,22 @@ int main(int argc, const char** argv)
         {
             switch (event.type) 
             {
-            case SDL_WINDOWEVENT:
-                switch (event.window.event) 
-                {
-                case SDL_WINDOWEVENT_CLOSE:
-                    running = false;
-                    break;
-                case SDL_WINDOWEVENT_MINIMIZED:
-                    minimized = true;
-                    break;
-                case SDL_WINDOWEVENT_RESTORED:
-                    minimized = false;
-                    break;
-                case SDL_WINDOWEVENT_FOCUS_GAINED:
-                    windowFocused = true;
-                    break;
-                case SDL_WINDOWEVENT_FOCUS_LOST:
-                    windowFocused = false;
-                    break;
-                }
+            case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+                running = false;
                 break;
-            case SDL_MOUSEMOTION:
+            case SDL_EVENT_WINDOW_MINIMIZED:
+                minimized = true;
+                break;
+            case SDL_EVENT_WINDOW_RESTORED:
+                minimized = false;
+                break;
+            case SDL_EVENT_WINDOW_FOCUS_GAINED:
+                windowFocused = true;
+                break;
+            case SDL_EVENT_WINDOW_FOCUS_LOST:
+                windowFocused = false;
+                break;
+            case SDL_EVENT_MOUSE_MOTION:
                 mouseRelativeMovement.x = (float)event.motion.xrel;
                 mouseRelativeMovement.y = (float)event.motion.yrel;
             }
@@ -227,7 +224,7 @@ int main(int argc, const char** argv)
 
         SDL_PumpEvents();
 
-        const uint8_t* keystate = SDL_GetKeyboardState(NULL);    
+        const bool* keystate = SDL_GetKeyboardState(NULL);    
         if(keystate[SDL_SCANCODE_W])
             cameraPos += -walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
         if (keystate[SDL_SCANCODE_S])
@@ -239,16 +236,16 @@ int main(int argc, const char** argv)
         if (keystate[SDL_SCANCODE_ESCAPE])
         {
             mouseCaptured = false;
-            SDL_SetRelativeMouseMode(SDL_FALSE);
+            SDL_SetWindowRelativeMouseMode(window->Get(), false);
         }
 
-        glm::ivec2 mouse;
+        glm::vec2 mouse;
         uint32_t buttons = SDL_GetMouseState(&mouse.x, &mouse.y);
 
-        if (buttons & SDL_BUTTON(SDL_BUTTON_LEFT) && windowFocused && !ImGui::GetIO().WantCaptureMouse)
+        if (buttons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT) && windowFocused && !ImGui::GetIO().WantCaptureMouse)
         {
             mouseCaptured = true;
-            SDL_SetRelativeMouseMode(SDL_TRUE);
+            SDL_SetWindowRelativeMouseMode(window->Get(), true);
         }
 
         if (mouseCaptured)
@@ -320,7 +317,7 @@ int main(int argc, const char** argv)
         
         material->UpdateUniforms();
 
-        renderer->Render([&](VulkanRenderData& rd){
+        renderer->Render([&](bl::VulkanRenderData& rd){
 
             auto extent = window->GetExtent();
 
@@ -331,20 +328,20 @@ int main(int argc, const char** argv)
             viewport.height = (float)extent.height;
             viewport.minDepth = 0.0f;
             viewport.maxDepth = 1.0f;
-            vkCmdSetViewport(cmd, 0, 1, &viewport);
+            vkCmdSetViewport(rd.cmd, 0, 1, &viewport);
 
             VkRect2D scissor;
             scissor.offset = {0, 0};
-            scissor.extent = extent;
+            scissor.extent = {extent.width, extent.height};
 
-            vkCmdSetViewportWithCountEXT(cmd, 1, &viewport);
-            vkCmdSetScissorWithCountEXT(cmd, 1, &scissor);
+            vkCmdSetViewportWithCountEXT(rd.cmd, 1, &viewport);
+            vkCmdSetScissorWithCountEXT(rd.cmd, 1, &scissor);
 
-            vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline()->GetLayout(), 0, 1, &globalSet, 0, nullptr);
+            vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline()->GetPipelineLayout(), 0, 1, &globalSet, 0, nullptr);
             material->Bind(rd);
-            material->PushConstant(cmd, 0, sizeof(bl::ObjectPC), &object);
-            mesh->bind(cmd);
-            mesh->draw(cmd);
+            material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
+            mesh->bind(rd.cmd);
+            mesh->draw(rd.cmd);
 
             imgui->BeginFrame();
 
@@ -382,11 +379,11 @@ int main(int argc, const char** argv)
                 ImGui::Text("MS/F: %.2f", frameCounter.GetMillisecondsPerFrame()); 
                 ImGui::Text("Average F/S (Over 10 Seconds): %.1f", frameCounter.GetAverageFramesPerSecond(10));
                 ImGui::Text("Average MS/F (Over 144 Frames): %.2f", frameCounter.GetAverageMillisecondsPerFrame(144)); 
-                ImGui::Text("Present Mode: %s", bl::vk::ToString(window->GetSwapchain()->GetPresentMode())); 
+                ImGui::Text("Present Mode: %s", bl::vk::ToString(vulkanWindow->GetSwapchain()->GetPresentMode())); 
                 // ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
 
                 if (ImGui::TreeNode("Physical Devices")) {
-                    auto physicalDevices = graphics->GetPhysicalDevices();
+                    auto physicalDevices = graphics->GetInstance()->GetPhysicalDevices();
 
                     for (size_t i = 0; i < physicalDevices.size(); i++) {
                         auto& physicalDevice = physicalDevices[i];
@@ -409,7 +406,7 @@ int main(int argc, const char** argv)
                             }
 
                             if (ImGui::TreeNode("Present Modes")) {
-                                for (VkPresentModeKHR mode : physicalDevice->GetPresentModes(window))
+                                for (VkPresentModeKHR mode : physicalDevice->GetPresentModes(vulkanWindow))
                                     ImGui::Text("%s", bl::vk::ToString(mode));
 
                                 ImGui::TreePop();
@@ -432,7 +429,7 @@ int main(int argc, const char** argv)
 
             ImGui::ShowDemoWindow();
 
-            imgui->EndFrame(cmd);
+            imgui->EndFrame(rd.cmd);
         });
         }
 

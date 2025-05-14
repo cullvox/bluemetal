@@ -13,7 +13,7 @@ SDLInitializer::SDLInitializer()
         SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | 
         SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS;
 
-    if (SDL_Init(flags) != 0) 
+    if (SDL_Init(flags) == false) 
     {
         throw std::runtime_error("Could not initialize SDL!");
     }

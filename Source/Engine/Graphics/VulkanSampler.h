@@ -11,7 +11,6 @@ class VulkanSampler : public VulkanMutable {
 public:
     VulkanSampler(
         VulkanDevice* device,
-        VulkanDeleterQueue* deleterQueue,
         VkFilter magFilter = VK_FILTER_LINEAR,
         VkFilter minFilter = VK_FILTER_LINEAR,
         VkSamplerMipmapMode mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
@@ -45,7 +44,6 @@ private:
     void Update();
 
     VulkanDevice* _device;
-    VulkanDeleterQueue* _deleter;
     VkSampler _sampler;
     VkFilter _magFilter;
     VkFilter _minFilter;

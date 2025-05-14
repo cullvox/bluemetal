@@ -64,7 +64,7 @@ private:
 
     /// @brief Combined sampler and image.
     struct SampledImage {
-        VulkanMutableReference<VulkanSampler> sampler;
+        VulkanSampler* sampler;
         VulkanImage* image;
     };
 
@@ -112,9 +112,10 @@ public:
     /// @brief Destructor
     ~Material();
 
+
+    VulkanPipeline* GetPipeline() { return &_pipeline; }
     const std::map<std::string, VulkanVariableBlock>& GetUniforms() const { return _uniforms; }
     const std::map<std::string, uint32_t>& GetSamplers() const { return _samplers; }
-    VkDescriptorSetLayout GetDescriptorSetLayout() const { return _layout; }
 
     MaterialInstance* CreateInstance();
 

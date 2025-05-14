@@ -1,9 +1,15 @@
+#include <SDL3/SDL_vulkan.h>
 #include "Core/Print.h"
 #include "Window/Window.h"
 #include "VulkanPhysicalDevice.h"
 #include "VulkanInstance.h"
 
-namespace bl {
+namespace bl 
+{
+
+VulkanInstance::VulkanInstance()
+{
+}
 
 VulkanInstance::VulkanInstance(Version appVersion, std::string_view appName, bool enableValidation)
     : _enableValidation(enableValidation) 
@@ -14,6 +20,8 @@ VulkanInstance::VulkanInstance(Version appVersion, std::string_view appName, boo
 
 VulkanInstance::~VulkanInstance() 
 {
+    if (!_instance) return;
+
     if (_enableValidation)
         vkDestroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);
 
@@ -27,6 +35,10 @@ VulkanInstance& VulkanInstance::operator=(VulkanInstance&& move) noexcept
     _enableValidation = move._enableValidation;
     _messenger = move._messenger;
     _physicalDevices = std::move(move._physicalDevices);
+
+    move._instance = VK_NULL_HANDLE;
+    move._messenger = VK_NULL_HANDLE;
+
     return *this;
 }
 
@@ -144,7 +156,8 @@ std::vector<const char*> VulkanInstance::GetValidationLayers()
 
 void VulkanInstance::CreateInstance(Version appVersion, std::string_view appName)
 {
-    volkInitialize();
+    SDL_Vulkan_LoadLibrary(NULL);
+    volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
 
     std::vector<const char*> extensions = GetExtensions();
     std::vector<const char*> layers{};

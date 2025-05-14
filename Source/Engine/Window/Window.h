@@ -13,10 +13,10 @@ namespace bl {
 class Window
 {
 public:
-    Window(const std::string& title, std::optional<VideoMode> videoMode, bool fullscreen);
+    Window(const std::string& title, Rect2D rect, bool fullscreen);
 
     /// @brief Destructor
-    ~Window();
+    virtual ~Window();
 
     /// @brief Gets the window rect.
     ///

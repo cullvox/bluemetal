@@ -11,7 +11,7 @@ list(APPEND Sources
   "Audio/Listener.cpp"
   "Audio/Sound.cpp"
 
-  #"Graphics/Window.cpp"
+  "Graphics/VulkanWindow.cpp"
   "Graphics/VulkanInstance.cpp"
   "Graphics/VulkanPhysicalDevice.cpp"
   "Graphics/VulkanDevice.cpp"
@@ -63,7 +63,6 @@ set_property(TARGET Bluemetal PROPERTY CXX_STANDARD 20)
 target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(Bluemetal PUBLIC 
-  ${Vulkan_LIBRARY} 
   glm::glm
   spirv-reflect-static 
   SDL3::SDL3 

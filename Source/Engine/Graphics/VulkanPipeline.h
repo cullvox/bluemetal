@@ -21,8 +21,8 @@ struct VulkanPipelineStateInfo {
     } stages;
 
     struct VertexState {
-        std::vector<VkVertexInputBindingDescription> vertexInputBindings = Vertex::GetBindingDescriptions();
-        std::vector<VkVertexInputAttributeDescription> vertexInputAttribs = Vertex::GetBindingAttributeDescriptions();
+        std::vector<VkVertexInputBindingDescription> inputBindings = Vertex::GetBindingDescriptions();
+        std::vector<VkVertexInputAttributeDescription> inputAttribs = Vertex::GetBindingAttributeDescriptions();
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         bool primitiveRestartEnable = VK_FALSE;
     } vertexState;
@@ -103,6 +103,8 @@ private:
 /// @brief A program consisting of shaders designed to run on the GPU.
 class VulkanPipeline {
 public:
+
+    VulkanPipeline() = default;
 
     /// @brief Constructs a Vulkan pipeline object.
     /// @param[in] device Vukan device to create pipeline with.
