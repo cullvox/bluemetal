@@ -53,7 +53,7 @@ int main(int argc, const char** argv)
     source->Play();
 
     auto graphics = engine.GetGraphics();
-    //auto imgui = engine.GetImGui();
+    auto imgui = engine.GetImGui();
     
     auto vert = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.frag.spv");
@@ -343,7 +343,7 @@ int main(int argc, const char** argv)
             mesh->bind(rd.cmd);
             mesh->draw(rd.cmd);
 
-            /*
+            
             imgui->BeginFrame();
 
             ImGui::Begin("Debug Info");
@@ -431,7 +431,6 @@ int main(int argc, const char** argv)
             ImGui::ShowDemoWindow();
 
             imgui->EndFrame(rd.cmd);
-            */
         });
         }
 

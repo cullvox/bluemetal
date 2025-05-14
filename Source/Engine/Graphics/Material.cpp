@@ -12,7 +12,7 @@ MaterialInstance::MaterialInstance(
     : _device(device)
     , _material(material)
     , _materialSet(material->_materialSet)
-    , _currentFrame(material->_currentFrame)
+    , _currentFrame(0)
 {
 }
 
