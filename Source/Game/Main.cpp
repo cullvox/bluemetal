@@ -219,7 +219,7 @@ int main(int argc, const char** argv)
                 mouseRelativeMovement.y = (float)event.motion.yrel;
             }
 
-            //imgui->Process(event);
+            imgui->Process(event);
         }
 
         SDL_PumpEvents();
@@ -280,11 +280,11 @@ int main(int argc, const char** argv)
         blInfo("Mouse: {}, {}, {}", mouse.x, mouse.y, firstMouse);
         blInfo("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
 
-        auto extent = window->GetExtent();
-        auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
+        extent = window->GetExtent();
+        extentf = glm::vec2{(float)extent.width, (float)extent.height};
         // auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
-        bl::GlobalUBO globalUBO = {
+        globalUBO = {
             0.0f,
             0.0f,
             extentf,
@@ -295,7 +295,7 @@ int main(int argc, const char** argv)
 
         std::memcpy(globalBufferMap, &globalUBO, sizeof(globalUBO));
 
-        // object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
+        object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
 
         glm::vec3 position{ sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
         glm::vec3 velocity{ cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
@@ -348,29 +348,40 @@ int main(int argc, const char** argv)
 
             ImGui::Begin("Debug Info");
 
-            ImGui::Text("bluemetal");
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", bl::to_string(bl::engineVersion).c_str());
+            if (ImGui::CollapsingHeader("Version"))
+            {
+                ImGui::Text("Compiled " __DATE__ " " __TIME__);
+                ImGui::Text("C++ " BL_STRINGIFY(__cplusplus));
 
-            ImGui::Text("sdl2");
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION));
+                ImGui::Text("Bluemetal");
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", bl::to_string(bl::engineVersion).c_str());
 
-            ImGui::Text("vulkan header");
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%d", VK_HEADER_VERSION);
+                ImGui::Text("SDL");
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION));
 
-            ImGui::Text("imgui");
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", ImGui::GetVersion());
+                ImGui::Text("Vulkan Header");
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%d", VK_HEADER_VERSION);
+                
+                ImGui::Text("Vulkan Version");
+                ImGui::SameLine();
+                auto instanceVersion = volkGetInstanceVersion();
+                ImGui::TextColored(ImVec4{0.7f, 0.1f, 0.1f, 1.0f}, "%d.%d.%d", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
+
+                ImGui::Text("ImGui");
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", ImGui::GetVersion());
+            }
 
             if (ImGui::CollapsingHeader("Input"))
             {
                 ImGui::Text("Camera Direction: %f, %f, %f", direction.x, direction.y, direction.z);
                 ImGui::Text("Mouse Relative: %f, %f", mouseRelativeMovement.x, mouseRelativeMovement.y);
+                ImGui::Text("x: %f, y: %f, z: %f", cameraPos.x, cameraPos.y, cameraPos.z);
             }
 
-            ImGui::Text("x: %f, y: %f, z: %f", cameraPos.x, cameraPos.y, cameraPos.z);
 
             if (ImGui::CollapsingHeader("Graphics")) {
 

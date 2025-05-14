@@ -5,6 +5,7 @@ namespace bl
 
 VulkanWindow::VulkanWindow(VulkanDevice* device, const std::string& title, Rect2D rect, bool fullscreen)
     : Window(title, rect, fullscreen)
+    , _device(device)
 {
     if (!SDL_Vulkan_CreateSurface(Get(), device->GetInstance()->Get(), nullptr, &_surface))
     {
@@ -16,6 +17,7 @@ VulkanWindow::VulkanWindow(VulkanDevice* device, const std::string& title, Rect2
 
 VulkanWindow::~VulkanWindow()
 {
+    vkDestroySurfaceKHR(_device->GetInstance()->Get(), _surface, nullptr);
 }
 
 VkSurfaceKHR VulkanWindow::GetSurface()

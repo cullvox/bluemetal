@@ -15,8 +15,6 @@ GraphicsSystem::GraphicsSystem(Engine* engine)
     _instance = {{}, "Maginvox", true};
     _physicalDevice = _instance.ChoosePhysicalDevice();
     _device = std::make_unique<VulkanDevice>(&_instance, _physicalDevice);
-
-    _device->WaitForDevice();
 }
 
 GraphicsSystem::~GraphicsSystem()
