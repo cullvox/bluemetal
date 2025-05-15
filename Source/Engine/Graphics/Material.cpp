@@ -81,7 +81,6 @@ void MaterialInstance::Bind(VulkanRenderData& rd)
 
 void MaterialInstance::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image) 
 {
-    
     const auto& samplers = _material->GetSamplers();
     if (!samplers.contains(name)) 
     {

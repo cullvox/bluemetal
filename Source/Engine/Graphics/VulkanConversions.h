@@ -275,7 +275,7 @@ static inline const char* ToString(VkPresentModeKHR presentMode) {
     case VK_PRESENT_MODE_FIFO_RELAXED_KHR: return "FIFO Relaxed";
     case VK_PRESENT_MODE_SHARED_DEMAND_REFRESH_KHR: return "Shared Demand Refresh";
     case VK_PRESENT_MODE_SHARED_CONTINUOUS_REFRESH_KHR: return "Shared Continuous Refresh";
-    default: return "UNDEFINED";
+    default: return "(Unsupported Extension)";
     }
 }
 

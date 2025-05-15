@@ -57,6 +57,7 @@ int main(int argc, const char** argv)
     
     auto vert = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.frag.spv");
+    auto model = resourceMgr->Load<bl::Model>("Resources/Models/")
 
     std::vector<bl::Vertex> cubeVertices{
         // front
@@ -151,7 +152,7 @@ int main(int argc, const char** argv)
     object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, 0.0f});
 
     auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/fox.png");
-    auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_NEAREST};
+    auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_LINEAR};
 
     
     material->SetSampledImage2D("image", &sampler, texture.Get()->GetImage());
@@ -224,7 +225,7 @@ int main(int argc, const char** argv)
 
         SDL_PumpEvents();
 
-        const bool* keystate = SDL_GetKeyboardState(NULL);    
+        const bool* keystate = SDL_GetKeyboardState(NULL);
         if(keystate[SDL_SCANCODE_W])
             cameraPos += -walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
         if (keystate[SDL_SCANCODE_S])
@@ -343,7 +344,6 @@ int main(int argc, const char** argv)
             mesh->bind(rd.cmd);
             mesh->draw(rd.cmd);
 
-            
             imgui->BeginFrame();
 
             ImGui::Begin("Debug Info");
@@ -351,7 +351,6 @@ int main(int argc, const char** argv)
             if (ImGui::CollapsingHeader("Version"))
             {
                 ImGui::Text("Compiled " __DATE__ " " __TIME__);
-                ImGui::Text("C++ " BL_STRINGIFY(__cplusplus));
                 ImGui::Text("Compiler ");
                 ImGui::SameLine();
                 ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", bl::compiler.c_str());
