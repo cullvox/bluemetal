@@ -72,6 +72,7 @@ target_link_libraries(Bluemetal PUBLIC
   volk
   GPUOpen::VulkanMemoryAllocator
   nlohmann_json
-  qoixx::qoixx)
+  qoixx::qoixx
+  tinygltf)
 
 target_precompile_headers(Bluemetal PUBLIC "Precompiled.h")

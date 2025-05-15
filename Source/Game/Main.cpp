@@ -12,6 +12,8 @@
 #include "Graphics/Texture2D.h"
 #include "Material/UniformData.h"
 
+#include <tiny_gltf.h>
+
 #include "Math/Transform.h"
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -57,7 +59,14 @@ int main(int argc, const char** argv)
     
     auto vert = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.frag.spv");
-    auto model = resourceMgr->Load<bl::Model>("Resources/Models/")
+
+    tinygltf::TinyGLTF loader;
+    tinygltf::Model model;
+    loader.LoadBinaryFromFile(&model, nullptr, nullptr, "Resources/Models/fox.glb");
+
+    model.meshes[0].
+
+    // auto model = resourceMgr->Load<bl::Model>("Resources/Models/")
 
     std::vector<bl::Vertex> cubeVertices{
         // front
