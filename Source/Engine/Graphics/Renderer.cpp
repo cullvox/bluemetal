@@ -8,6 +8,7 @@ Renderer::Renderer(VulkanDevice* device, VulkanWindow* window)
     : _device(device)
     , _window(window)
     , _swapchain(window->GetSwapchain())
+    , _imageIndex(0)
     , _currentFrame(0)
     , _descriptorSetCache(_device, 1024, VulkanDescriptorRatio::Default()) {
     _commandBuffers.resize(VulkanConfig::numFramesInFlight);
@@ -45,7 +46,7 @@ void Renderer::CreateSyncObjects() {
     allocateInfo.pNext = nullptr;
     allocateInfo.commandPool = _device->GetCommandPool();
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocateInfo.commandBufferCount = VulkanConfig::numFramesInFlight;
+    allocateInfo.commandBufferCount = _swapchain->GetImageCount();
 
     VK_CHECK(vkAllocateCommandBuffers(_device->Get(), &allocateInfo, _commandBuffers.data()))
 
@@ -59,7 +60,7 @@ void Renderer::CreateSyncObjects() {
     fenceInfo.pNext = nullptr;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) {
+    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
         VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]))
         VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
         VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_inFlightFences[i]))
@@ -67,7 +68,7 @@ void Renderer::CreateSyncObjects() {
 }
 
 void Renderer::DestroySyncObjects() {
-    for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) {
+    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
         vkDestroySemaphore(_device->Get(), _imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(_device->Get(), _inFlightFences[i], nullptr);
@@ -94,7 +95,8 @@ void Renderer::RecreateImages() {
     _depthImages.reserve(_imageCount);
     auto imageExtent = VkExtent3D{extent.width, extent.height, 1};
 
-    for (uint32_t i = 0; i < _imageCount; i++) {
+    for (uint32_t i = 0; i < _imageCount; i++) 
+    {
         _depthImages.emplace_back(_device, VK_IMAGE_TYPE_2D, imageExtent, _depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
     }
 
@@ -137,7 +139,7 @@ void Renderer::Render(RenderFunction func)
         return; // skip this frame!
     }
 
-    auto imageIndex = _swapchain->GetImageIndex();
+    _imageIndex = _swapchain->GetImageIndex();
 
     // Reset the fence for this image so it can signal when it's done.
     VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
@@ -166,7 +168,7 @@ void Renderer::Render(RenderFunction func)
     passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     passBeginInfo.pNext = nullptr;
     passBeginInfo.renderPass = _pass;
-    passBeginInfo.framebuffer = _framebuffers[imageIndex];
+    passBeginInfo.framebuffer = _framebuffers[_imageIndex];
     passBeginInfo.renderArea = renderArea;
     passBeginInfo.clearValueCount = (uint32_t)clearColors.size();
     passBeginInfo.pClearValues = clearColors.data();
@@ -174,7 +176,7 @@ void Renderer::Render(RenderFunction func)
     vkCmdBeginRenderPass(cmd, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // Render all the frame data to the gbuffer.
-    VulkanRenderData rd = {cmd, imageIndex};
+    VulkanRenderData rd = {cmd, _currentFrame, _imageIndex};
     func(rd);
     
     vkCmdEndRenderPass(cmd);
@@ -200,11 +202,12 @@ void Renderer::Render(RenderFunction func)
 
     VK_CHECK(vkQueueSubmit(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
 
-    if (_swapchain->QueuePresent(_renderFinishedSemaphores[_currentFrame])) {
+    if (_swapchain->QueuePresent(_renderFinishedSemaphores[_currentFrame]))
+    {
         RecreateImages();
     }
 
-    _currentFrame = (_currentFrame + 1) % VulkanConfig::numFramesInFlight;
+    _currentFrame = (_currentFrame + 1) % _imageCount;
 }
 
 void Renderer::CreateRenderPasses() {

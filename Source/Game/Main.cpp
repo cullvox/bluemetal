@@ -100,13 +100,13 @@ int main(int argc, const char** argv)
 
     bl::VulkanPipelineStateInfo psi{};
     psi.stages.shaders = { vert.Get(), frag.Get() };
-
-    auto material = std::make_unique<bl::Material>(graphics->GetDevice(), renderer->GetRenderPass(), 0, psi, 1);
-    material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
     
     auto window = engine.GetWindow();
-
     auto vulkanWindow = dynamic_cast<bl::VulkanWindow*>(window);
+
+    auto material = std::make_unique<bl::Material>(graphics->GetDevice(), renderer->GetRenderPass(), 0, psi, vulkanWindow->GetSwapchain()->GetImageCount(), 1);
+    material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
+
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(vulkanWindow);
 
     auto globalBuffer = std::make_unique<bl::VulkanBuffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO));
@@ -352,6 +352,9 @@ int main(int argc, const char** argv)
             {
                 ImGui::Text("Compiled " __DATE__ " " __TIME__);
                 ImGui::Text("C++ " BL_STRINGIFY(__cplusplus));
+                ImGui::Text("Compiler ");
+                ImGui::SameLine();
+                ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", bl::compiler.c_str());
 
                 ImGui::Text("Bluemetal");
                 ImGui::SameLine();

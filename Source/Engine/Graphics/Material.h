@@ -76,7 +76,7 @@ private:
     uint32_t _materialSet;
     uint32_t _currentFrame;
     std::map<uint32_t, BindingData> _bindings;
-    std::array<PerFrameData, VulkanConfig::numFramesInFlight> _perFrameData;
+    std::vector<PerFrameData> _perFrameData;
 };
 
 /** @brief Shader uniforms merged together in an uncomfortably useful unison.
@@ -108,6 +108,7 @@ public:
         VkRenderPass pass,
         uint32_t subpass,
         const VulkanPipelineStateInfo& state,
+        uint32_t imageCount,
         uint32_t descriptorSetIndex = 1);
 
     /// @brief Destructor
@@ -132,6 +133,7 @@ protected:
 private:
     std::map<std::string, VulkanVariableBlock> _uniforms; 
     std::map<std::string, uint32_t> _samplers; /** @brief Name -> Binding */
+    uint32_t _imageCount;
     VkDescriptorSetLayout _layout;
     VulkanDevice* _device;
     std::unique_ptr<VulkanPipeline> _pipeline;

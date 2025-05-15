@@ -35,6 +35,7 @@ private:
 
     // Frame Synchronization
     uint32_t _imageCount;
+    uint32_t _imageIndex;
     uint32_t _currentFrame;
     std::vector<VkCommandBuffer> _commandBuffers;
     std::vector<VkSemaphore> _imageAvailableSemaphores;

@@ -18,3 +18,14 @@
 #else
 	#error Unknown Operating System, BloodLust cannot properly build on it yet.
 #endif
+
+namespace bl
+{
+#if defined(BLUEMETAL_COMPILER_GNU)
+	static inline std::string compiler = "GNU GCC";
+#elif defined(BLUEMETAL_COMPILER_MSVC)
+	static inline std::string compiler = "MSVC";
+#else
+	static inline std::string compiler = "Unknown";
+#endif
+}

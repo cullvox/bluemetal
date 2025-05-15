@@ -67,7 +67,7 @@ void MaterialInstance::Bind(VulkanRenderData& rd)
         {
             auto& variant = _bindings[binding.first];
             VulkanBuffer& buffer = std::get<VulkanBuffer>(variant);
-            uint32_t blockSize = (uint32_t)buffer.GetSize() / VulkanConfig::numFramesInFlight;
+            uint32_t blockSize = (uint32_t)buffer.GetSize() / _material->_imageCount;
             offsets.push_back(blockSize * rd.currentFrame);
         }
     }
@@ -76,7 +76,7 @@ void MaterialInstance::Bind(VulkanRenderData& rd)
     vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
 
     // Save the next frame number for when updating what bindings are dirty/not updated.
-    _currentFrame = (rd.currentFrame + 1) % VulkanConfig::numFramesInFlight;
+    _currentFrame = (rd.currentFrame + 1) % _material->_imageCount;
 }
 
 void MaterialInstance::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image) 
@@ -137,7 +137,7 @@ void MaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset, uint3
 
 void MaterialInstance::UpdateUniforms() 
 {
-    uint32_t previousFrame = (_currentFrame - 1) % VulkanConfig::numFramesInFlight;
+    uint32_t previousFrame = (_currentFrame - 1) % _material->_imageCount;
 
     PerFrameData& currentFrameData = _perFrameData[_currentFrame];
     PerFrameData& previousFrameData = _perFrameData[previousFrame];
@@ -159,7 +159,7 @@ void MaterialInstance::UpdateUniforms()
                 case 0: 
                 { // buffer type
                     VulkanBuffer& buffer = std::get<VulkanBuffer>(variant);
-                    VkDeviceSize blockSize = buffer.GetSize() / VulkanConfig::numFramesInFlight;
+                    VkDeviceSize blockSize = buffer.GetSize() / _material->_imageCount;
 
                     void* mapped = nullptr;
                     buffer.Map(&mapped);
@@ -204,8 +204,8 @@ void MaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
 {
 
     // Allocate the per frame descriptor sets.
-
-    for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) 
+    _perFrameData.resize(_material->_imageCount);
+    for (uint32_t i = 0; i < _material->_imageCount; i++) 
     {
         _perFrameData[i].set = _material->GetDescriptorSetCache()->Allocate(layout);
     }
@@ -231,7 +231,7 @@ void MaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
             case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: 
             {
                 auto dynamicAlignment = CalculateDynamicAlignment(binding.GetSize());
-                auto bufferSize = dynamicAlignment * VulkanConfig::numFramesInFlight;
+                auto bufferSize = dynamicAlignment * _material->_imageCount;
                 auto& variant = (_bindings[binding.GetLocation()] = VulkanBuffer{_device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, bufferSize, nullptr});
 
                 bufferInfo.buffer = std::get<VulkanBuffer>(variant).Get();
@@ -255,7 +255,7 @@ void MaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
         }
     }
 
-    for (uint32_t i = 0; i < VulkanConfig::numFramesInFlight; i++) 
+    for (uint32_t i = 0; i < _material->_imageCount; i++) 
     {
         for (auto& write_ : writes)
             write_.dstSet = _perFrameData[i].set;
@@ -269,7 +269,7 @@ void MaterialInstance::SetBindingDirty(uint32_t binding)
     assert(_bindings.contains(binding) && "Binding must exist to set it dirty!");
 
     _perFrameData[_currentFrame].dirty[binding] = false; /* This current frame is now the current data and is no longer dirty. */
-    for (uint32_t i = (_currentFrame + 1) % VulkanConfig::numFramesInFlight; i != _currentFrame; i = (i + 1) % VulkanConfig::numFramesInFlight) 
+    for (uint32_t i = (_currentFrame + 1) % _material->_imageCount; i != _currentFrame; i = (i + 1) % _material->_imageCount) 
     {
         _perFrameData[i].dirty[binding] = true;
     }
@@ -288,8 +288,9 @@ size_t MaterialInstance::CalculateDynamicAlignment(size_t uboSize)
 
 // ========== Material ========== //
 
-Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, const VulkanPipelineStateInfo& state, uint32_t materialSet)
+Material::Material(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, const VulkanPipelineStateInfo& state, uint32_t imageCount, uint32_t materialSet)
     : MaterialInstance(device, this)
+    , _imageCount(imageCount)
     , _descriptorSetCache(device, 1024, VulkanDescriptorRatio::Default()) 
 {
     _materialSet = materialSet;
