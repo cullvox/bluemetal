@@ -52,16 +52,16 @@ bool VulkanInstance::GetValidationEnabled() const
     return _enableValidation;
 }
 
-std::vector<const VulkanPhysicalDevice*> VulkanInstance::GetPhysicalDevices() const 
+std::vector<VulkanPhysicalDevice*> VulkanInstance::GetPhysicalDevices()
 {
-    std::vector<const VulkanPhysicalDevice*> out;
-    for (const auto& pd : _physicalDevices)
+    std::vector<VulkanPhysicalDevice*> out;
+    for (auto& pd : _physicalDevices)
         out.push_back(&pd);
-    
+
     return out;
 }
 
-const VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice() const 
+VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice() 
 {
     auto physicalDevices = GetPhysicalDevices();
     auto it = std::find_if(physicalDevices.begin(), physicalDevices.end(), 
@@ -69,16 +69,16 @@ const VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice() const
         { 
             return pd->GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; 
         });
-                    
+
     if (it != physicalDevices.end()) 
-    { 
+    {
         return *it;
-    } 
-    else 
+    }
+    else
     {
         blWarning("Using physical device zero because user does not have a discrete card!");
         return physicalDevices[0];
-    } 
+    }
 }
 
 std::vector<const char*> VulkanInstance::GetExtensions() 

@@ -40,10 +40,10 @@ public:
     bool GetValidationEnabled() const;
 
     /// @brief Returns all physical devices available to choose from.
-    std::vector<const VulkanPhysicalDevice*> GetPhysicalDevices() const;
+    std::vector<VulkanPhysicalDevice*> GetPhysicalDevices();
 
     /// @brief Chooses a physical device automagically and returns the best candidate for device creation. 
-    const VulkanPhysicalDevice* ChoosePhysicalDevice() const;
+    VulkanPhysicalDevice* ChoosePhysicalDevice();
 
 private:
     /// @brief Vulkan debug callback from VkDebugUtilsMessengerEXT.

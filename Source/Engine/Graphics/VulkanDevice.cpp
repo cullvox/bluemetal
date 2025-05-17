@@ -47,7 +47,7 @@ VulkanDevice::VulkanDevice()
 {
 }
 
-VulkanDevice::VulkanDevice(VulkanInstance* instance, const VulkanPhysicalDevice* physicalDevice)
+VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice)
     : _instance(instance)
     , _physicalDevice(physicalDevice)
     , _descriptorSetLayoutCache(this)
@@ -85,7 +85,7 @@ VulkanInstance* VulkanDevice::GetInstance() const
     return _instance;
 }
 
-const VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() const 
+VulkanPhysicalDevice* VulkanDevice::GetPhysicalDevice() const 
 {
     return _physicalDevice;
 }

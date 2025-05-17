@@ -10,18 +10,20 @@ set(ZLIB_INSTALL ON)
 
 set(SPNG_SHARED OFF)
 
+set(ASSIMP_BUILD_ZLIB ON)
+set(ASSIMP_BUILD_TESTS OFF)
+set(ASSIMP_INSTALL OFF)
+
 CPMAddPackage("gh:p-ranav/argparse@3.0")
 CPMAddPackage("gh:g-truc/glm#1.0.1")
 CPMAddPackage("gh:libsdl-org/sdl#release-3.2.8")
 CPMAddPackage("gh:fmtlib/fmt#10.2.1")
 CPMAddPackage("gh:khronosgroup/spirv-reflect#vulkan-sdk-1.3.283.0")
 CPMAddPackage("gh:nlohmann/json@3.11.3")
-CPMAddPackage("gh:jimmy-park/zlib-cmake#1.3.1")
-CPMAddPackage("gh:randy408/libspng@0.7.4")
+CPMAddPackage("gh:assimp/assimp#@5.4.3")
 CPMAddPackage("gh:auburn/fastnoise2@0.10.0-alpha")
 CPMAddPackage("gh:zeux/volk#1.4.304")
 CPMAddPackage("gh:gpuopen-librariesandsdks/vulkanmemoryallocator@3.1.0")
 CPMAddPackage("gh:cullvox/qoixx#cmake_and_windows_fix")
-CPMAddPackage("gh:syoyo/tinygltf#v2.9.5")
 
 add_subdirectory("fmod") # FMOD is special

@@ -19,7 +19,11 @@
             "Stage": "Fragment"
         },
         {
-            "Path": "Resources/Textures/fox.png",
+            "Path": "Resources/Textures/Bricks_Albedo.jpg",
+            "Type": "Texture"
+        },
+        {
+            "Path": "Resources/Textures/furry.qoi",
             "Type": "Texture"
         }
     ]

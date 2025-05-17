@@ -47,11 +47,13 @@ public:
 
     /// @brief GetPresentModes
     /// @returns Available present modes when using this device.
-    std::vector<VkPresentModeKHR> GetPresentModes(VulkanWindow* window) const;
+    const std::vector<VkPresentModeKHR>& GetPresentModes(VulkanWindow* window);
 
     /// @brief GetSurfaceFormats
     /// @returns Available surface formats when using this device.
-    std::vector<VkSurfaceFormatKHR> GetSurfaceFormats(VulkanWindow* window) const;
+    const std::vector<VkSurfaceFormatKHR>& GetSurfaceFormats(VulkanWindow* window);
+
+    std::optional<VkImageFormatProperties2> GetImageFormatProperties(const VkPhysicalDeviceImageFormatInfo2& info);
 
     /// @brief FindSupportedFormat
     /// @param candidates[in] List of possible formats to choose from.
@@ -67,6 +69,8 @@ public:
 private:
     VkPhysicalDevice _physicalDevice;
     VkPhysicalDeviceProperties _properties;
+    std::vector<VkPresentModeKHR> _presentModes;
+    std::vector<VkSurfaceFormatKHR> _surfaceFormats;
 };
 
 } // namespace bl

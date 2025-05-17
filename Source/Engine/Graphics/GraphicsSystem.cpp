@@ -26,7 +26,7 @@ VulkanInstance* GraphicsSystem::GetInstance()
     return &_instance;
 }
 
-const VulkanPhysicalDevice* GraphicsSystem::GetPhysicalDevice() const
+VulkanPhysicalDevice* GraphicsSystem::GetPhysicalDevice() const
 { 
     return _physicalDevice; 
 }

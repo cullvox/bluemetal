@@ -26,7 +26,7 @@ public:
     virtual ~GraphicsSystem(); /** @brief Destructor */
 
     VulkanInstance* GetInstance();
-    const VulkanPhysicalDevice* GetPhysicalDevice() const;
+    VulkanPhysicalDevice* GetPhysicalDevice() const;
     VulkanDevice* GetDevice();
 
     std::unique_ptr<Window> CreateWindow(const std::string& title, Rect2D rect, bool fullscreen = true);
@@ -37,7 +37,7 @@ public:
 private:
     Engine* _engine;
     VulkanInstance _instance;
-    const VulkanPhysicalDevice* _physicalDevice;
+    VulkanPhysicalDevice* _physicalDevice;
     std::unique_ptr<VulkanDevice> _device;
 };
 

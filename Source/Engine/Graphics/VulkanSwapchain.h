@@ -77,7 +77,7 @@ private:
     void DestroyImageViews();
     
     VulkanDevice* _device;
-    const VulkanPhysicalDevice* _physicalDevice;
+    VulkanPhysicalDevice* _physicalDevice;
     VulkanWindow* _window;
     uint32_t _imageCount;
     VkSurfaceFormatKHR _surfaceFormat;

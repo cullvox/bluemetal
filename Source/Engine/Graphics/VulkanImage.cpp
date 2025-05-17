@@ -25,7 +25,25 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     , _aspectMask(aspectMask)
     , _mipLevels(mipLevels) 
     , _layout(initialLayout) {
+
+    auto physicalDevice = _device->GetPhysicalDevice();
+
+    // Ensure that the format is supported.
+    VkPhysicalDeviceImageFormatInfo2 imageFormatInfo{};
+    imageFormatInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2;
+    imageFormatInfo.pNext = nullptr;
+    imageFormatInfo.flags = 0;
+    imageFormatInfo.format = format;
+    imageFormatInfo.usage = usage;
+    imageFormatInfo.type = type;
+    imageFormatInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+
+    auto imageFormatProperties = physicalDevice->GetImageFormatProperties(imageFormatInfo);
+    if (!imageFormatProperties.has_value())
+        throw std::runtime_error("Image format is not supported!");
+
     auto graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
+
 
     VkImageCreateInfo imageCreateInfo = {};
     imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -169,7 +187,7 @@ void VulkanImage::UploadData(std::span<const std::byte> data, VkImageLayout fina
         region.imageSubresource.mipLevel = 0;
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = 1;
-        region.imageOffset = {0, 0};
+        region.imageOffset = {0, 0, 0};
         region.imageExtent = _extent;
 
         vkCmdCopyBufferToImage(cmd, stagingBuffer.Get(), _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);

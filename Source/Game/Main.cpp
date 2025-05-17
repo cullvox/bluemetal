@@ -57,7 +57,7 @@ int main(int argc, const char** argv)
     
     auto vert = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.frag.spv");
-    auto model = resourceMgr->Load<bl::Model>("Resources/Models/")
+    // auto model = resourceMgr->Load<bl::Model>("Resources/Models/")
 
     std::vector<bl::Vertex> cubeVertices{
         // front
@@ -151,7 +151,7 @@ int main(int argc, const char** argv)
     object.model = glm::identity<glm::mat4>();
     object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, 0.0f});
 
-    auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/fox.png");
+    auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Bricks_Albedo.jpg");
     auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_LINEAR};
 
     

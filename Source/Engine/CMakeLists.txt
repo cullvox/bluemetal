@@ -59,19 +59,18 @@ add_library(Bluemetal STATIC ${Sources})
 
 set_property(TARGET Bluemetal PROPERTY CXX_STANDARD 20)
 
-
 target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRENT_SOURCE_DIR}")
 
 target_link_libraries(Bluemetal PUBLIC 
-  glm::glm
+  glm::glm-header-only
   spirv-reflect-static 
   SDL3::SDL3 
   fmt::fmt
   FMOD
-  spng_static
   volk
   GPUOpen::VulkanMemoryAllocator
   nlohmann_json
-  qoixx::qoixx)
+  qoixx::qoixx
+  assimp)
 
 target_precompile_headers(Bluemetal PUBLIC "Precompiled.h")

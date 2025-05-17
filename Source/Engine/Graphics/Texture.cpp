@@ -2,8 +2,10 @@
 #include "Graphics/Mesh.h"
 #include "Texture.h"
 
-#include <spng.h>
 #include "qoixx.hpp"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 namespace bl {
 
@@ -33,7 +35,7 @@ void Texture::Load() {
     std::transform(extension.begin(), extension.end(), extension.begin(), 
         [](unsigned char c){ return std::tolower(c); });
 
-    if (extension == ".png") {
+    if (extension == ".png" || extension == ".jpg") {
         DecodePNG(buffer);
     } else if (extension == ".qoi") {
         DecodeQOI(buffer);
@@ -66,27 +68,18 @@ std::span<const std::byte> Texture::GetImageData() const {
 }
 
 void Texture::DecodePNG(const std::vector<std::byte>& data) {
-    
+    int x = 0, y = 0, channels = 0;
+    stbi_uc* image = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(data.data()), (int)data.size(), &x, &y, &channels, STBI_rgb_alpha);
 
-    
-    spng_ctx* ctx = spng_ctx_new(0);
-    spng_set_png_buffer(ctx, data.data(), data.size());
-    spng_set_srgb(ctx, true);
+    std::size_t byteCount = x * y * 4;
+    _imageData.resize(byteCount);
+    std::memcpy(_imageData.data(), image, byteCount);
 
-    size_t decodedSize = 0;
-    spng_decoded_image_size(ctx, SPNG_FMT_RGBA8, &decodedSize);
-
-    _imageData.resize(decodedSize);
-    spng_decode_image(ctx, _imageData.data(), _imageData.size(), SPNG_FMT_RGBA8, 0);
     _format = TextureFormat::eRGBA;
-
-    spng_ihdr header = {};
-    spng_get_ihdr(ctx, &header);
-
     _colorSpace = TextureColorSpace::eSRGB;
-    _extent = {header.width, header.height};
+    _extent = {(uint32_t)x, (uint32_t)y};
 
-    spng_ctx_free(ctx);
+    stbi_image_free(image);
 }
 
 void Texture::DecodeQOI(const std::vector<std::byte>& data) {

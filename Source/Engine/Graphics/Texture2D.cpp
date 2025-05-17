@@ -23,14 +23,20 @@ Texture2D::~Texture2D() {}
 void Texture2D::Load() {
     Texture::Load();
 
-    //auto extent2 = GetExtent();
-    //VkExtent3D extent = {extent2.width, extent2.height, 1};
-
     VkFormat format = VK_FORMAT_UNDEFINED;
-    switch (GetColorSpace()) {
-        case TextureColorSpace::eSRGB: format = VK_FORMAT_R8G8B8A8_SRGB;
-        case TextureColorSpace::eLinear: format = VK_FORMAT_R8G8B8A8_UNORM;
-    }
+
+    static VkFormat formatConversion[2][2] = {
+        {
+            VK_FORMAT_R8G8B8_SRGB,
+            VK_FORMAT_R8G8B8A8_SRGB
+        },
+        {
+            VK_FORMAT_R8G8B8_UNORM,
+            VK_FORMAT_R8G8B8A8_UNORM
+        }
+    };
+
+    format = formatConversion[(int)GetColorSpace()][(int)GetFormat()];
 
     _image = VulkanImage{
         _device, 
