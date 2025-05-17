@@ -12,6 +12,8 @@
 #include "Graphics/Texture2D.h"
 #include "Material/UniformData.h"
 
+#include <tiny_gltf.h>
+
 #include "Math/Transform.h"
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
