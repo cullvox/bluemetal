@@ -78,8 +78,9 @@ std::optional<VkImageFormatProperties2> VulkanPhysicalDevice::GetImageFormatProp
         return std::nullopt;
     else if (result == VK_SUCCESS)
         return properties;
-    else 
-        VK_CHECK(result)
+
+    VK_CHECK(result)
+    return std::nullopt;
 }
 
 VkFormat VulkanPhysicalDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const 

@@ -12,8 +12,6 @@
 #include "Graphics/Texture2D.h"
 #include "Material/UniformData.h"
 
-#include <tiny_gltf.h>
-
 #include "Math/Transform.h"
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -176,7 +174,7 @@ int main(int argc, const char** argv)
     auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
     view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
-    auto projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 1.0f, 100.0f);
+    auto projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.1f, 100.0f);
 
     bl::GlobalUBO globalUBO = {
         0.0f,
@@ -285,6 +283,7 @@ int main(int argc, const char** argv)
 
         extent = window->GetExtent();
         extentf = glm::vec2{(float)extent.width, (float)extent.height};
+        projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.1f, 100.0f);
         // auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
         globalUBO = {
@@ -298,7 +297,7 @@ int main(int argc, const char** argv)
 
         std::memcpy(globalBufferMap, &globalUBO, sizeof(globalUBO));
 
-        object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
+        // object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
 
         glm::vec3 position{ sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
         glm::vec3 velocity{ cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
@@ -414,7 +413,7 @@ int main(int argc, const char** argv)
                             }
 
                             ImGui::SameLine();
-                            ImGui::TextColored(ImVec4{0.2f, 0.8f, 0.4f, 1.0f}, "%s", deviceType);
+                            ImGui::TextColored({0.2f, 0.8f, 0.4f, 1.0f}, "%s", deviceType);
 
                             if (physicalDevice == graphics->GetPhysicalDevice()) {
                                 ImGui::SameLine();
@@ -451,6 +450,8 @@ int main(int argc, const char** argv)
 
         frameCounter.EndFrame();
     }
+
+    graphics->GetDevice()->WaitForDevice();
 
     globalBuffer->Unmap();
 

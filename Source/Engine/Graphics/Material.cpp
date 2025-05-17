@@ -73,7 +73,12 @@ void MaterialInstance::Bind(VulkanRenderData& rd)
     }
 
     vkCmdBindPipeline(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipeline());
-    vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), 1, 1, &currentFrameData.set, (uint32_t)offsets.size(), offsets.data());
+
+    std::array<VkDescriptorSet, 2> descriptorSets{ rd.globalSet, currentFrameData.set };
+    auto firstSet = rd.globalSet ? 0 : 1;
+    auto descriptorSetCount = rd.globalSet ? 2 : 1;
+    auto sets = rd.globalSet ? descriptorSets.data() : &descriptorSets[1];
+    vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), firstSet, descriptorSetCount, sets, (uint32_t)offsets.size(), offsets.data());
 
     // Save the next frame number for when updating what bindings are dirty/not updated.
     _currentFrame = (rd.currentFrame + 1) % _material->_imageCount;

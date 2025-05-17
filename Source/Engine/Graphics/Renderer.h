@@ -1,7 +1,5 @@
 #pragma once
 
-#include "VulkanFrameTracker.h"
-#include "VulkanConfig.h"
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
