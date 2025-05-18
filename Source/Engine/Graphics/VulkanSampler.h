@@ -4,6 +4,7 @@
 #include "VulkanDevice.h"
 #include "VulkanMutable.h"
 #include "VulkanDeleterQueue.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -14,7 +15,7 @@ public:
         VkFilter magFilter = VK_FILTER_LINEAR,
         VkFilter minFilter = VK_FILTER_LINEAR,
         VkSamplerMipmapMode mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-        VkSamplerAddressMode addressMode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE,
+        VkSamplerAddressMode addressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT,
         float mipLodBias = 0.0f,
         bool enableAnisotropy = VK_FALSE,
         float maxAnisotropy = 0.0f,

@@ -25,6 +25,10 @@
         {
             "Path": "Resources/Textures/furry.qoi",
             "Type": "Texture"
+        },
+        {
+            "Path": "Resources/Models/red_fox_skull.glb",
+            "Type": "Model"
         }
     ]
 }

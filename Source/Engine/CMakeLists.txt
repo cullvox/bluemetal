@@ -29,6 +29,7 @@ list(APPEND Sources
   "Graphics/VulkanSwapchain.cpp"
   "Graphics/Material.cpp"
   "Graphics/Mesh.cpp"
+  "Graphics/Model.cpp"
   "Graphics/Renderer.cpp"
   "Graphics/Texture.cpp"
   "Graphics/Texture2D.cpp"
@@ -70,6 +71,7 @@ target_link_libraries(Bluemetal PUBLIC
   volk
   GPUOpen::VulkanMemoryAllocator
   nlohmann_json
+  zlibstatic
   qoixx::qoixx
   assimp)
 

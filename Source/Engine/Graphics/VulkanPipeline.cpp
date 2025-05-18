@@ -1,6 +1,7 @@
 #include "Core/Print.h"
 #include "Graphics/VulkanDescriptorSetLayoutCache.h"
 #include "VulkanReflectedBlock.h"
+#include <vulkan/vulkan_core.h>
 #include "VulkanPipeline.h"
 
 namespace bl {
@@ -271,7 +272,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     depthStencilState.flags = 0;
     depthStencilState.depthTestEnable = VK_TRUE;
     depthStencilState.depthWriteEnable = VK_TRUE;
-    depthStencilState.depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
+    depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS;
     depthStencilState.depthBoundsTestEnable = VK_FALSE;
     depthStencilState.stencilTestEnable = VK_FALSE;
     depthStencilState.front = {}; // unused

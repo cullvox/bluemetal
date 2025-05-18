@@ -2,6 +2,7 @@
 #include "Core/FrameCounter.h"
 #include "Core/Print.h"
 #include "Engine/Engine.h"
+#include "Graphics/Model.h"
 #include "Graphics/VulkanShader.h"
 #include "Graphics/VulkanPhysicalDevice.h"
 #include "Graphics/VulkanPipeline.h"
@@ -13,6 +14,7 @@
 #include "Material/UniformData.h"
 
 #include "Math/Transform.h"
+#include <vulkan/vulkan_core.h>
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see
@@ -57,7 +59,7 @@ int main(int argc, const char** argv)
     
     auto vert = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.frag.spv");
-    // auto model = resourceMgr->Load<bl::Model>("Resources/Models/")
+    auto model = resourceMgr->Load<bl::Model>("Resources/Models/red_fox_skull.glb");
 
     std::vector<bl::Vertex> cubeVertices{
         // front
@@ -100,6 +102,7 @@ int main(int argc, const char** argv)
     auto renderer = engine.GetRenderer();
 
     bl::VulkanPipelineStateInfo psi{};
+    psi.rasterizerState.cullMode = VK_CULL_MODE_BACK_BIT;
     psi.stages.shaders = { vert.Get(), frag.Get() };
     
     auto window = engine.GetWindow();
@@ -283,7 +286,7 @@ int main(int argc, const char** argv)
 
         extent = window->GetExtent();
         extentf = glm::vec2{(float)extent.width, (float)extent.height};
-        projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.1f, 100.0f);
+        projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.1f, 1000.0f);
         // auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
         globalUBO = {
@@ -344,6 +347,8 @@ int main(int argc, const char** argv)
             material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
             mesh->bind(rd.cmd);
             mesh->draw(rd.cmd);
+
+            model.Get()->Draw(material.get(), rd);
 
             imgui->BeginFrame();
 

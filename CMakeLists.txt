@@ -47,7 +47,37 @@ bl_message("Found Vulkan - ${Vulkan_INCLUDE_DIR}")
 
 include(CMake/CPM.cmake)
 
-add_subdirectory("ThirdParty")
+include(FetchContent)
+
+set(SDL_TEST OFF)
+set(SPIRV_REFLECT_EXAMPLES OFF CACHE BOOL "")
+set(SPIRV_REFLECT_STATIC_LIB ON CACHE BOOL "")
+
+set(BUILD_SHARED_LIBS OFF)
+set(SPNG_SHARED OFF)
+
+set(ASSIMP_BUILD_ZLIB ON)
+set(ASSIMP_BUILD_TESTS OFF)
+set(ASSIMP_INSTALL OFF)
+set(ZLIB_LIBRARIES zlibstatic)
+
+
+add_subdirectory("ThirdParty/zlib")
+add_subdirectory("ThirdParty/fmod") # FMOD is special
+
+
+CPMAddPackage("gh:p-ranav/argparse@3.0")
+CPMAddPackage("gh:g-truc/glm#1.0.1")
+CPMAddPackage("gh:libsdl-org/sdl#release-3.2.8")
+CPMAddPackage("gh:fmtlib/fmt#10.2.1")
+CPMAddPackage("gh:khronosgroup/spirv-reflect#vulkan-sdk-1.3.283.0")
+CPMAddPackage("gh:nlohmann/json@3.11.3")
+CPMAddPackage("gh:assimp/assimp#@5.4.3")
+CPMAddPackage("gh:auburn/fastnoise2@0.10.0-alpha")
+CPMAddPackage("gh:zeux/volk#1.4.304")
+CPMAddPackage("gh:gpuopen-librariesandsdks/vulkanmemoryallocator@3.1.0")
+CPMAddPackage("gh:cullvox/qoixx#cmake_and_windows_fix")
+
 
 #===============================================================================
 # add bluemetal compile options

@@ -156,9 +156,7 @@ void Renderer::Render(RenderFunction func)
     
     std::array clearColors = {
         VkClearValue{ .color = {{0.96f, 0.97f, 0.96f, 1.0f}}}, // Swapchain Image Clear Color
-        VkClearValue{ .color = {{0.0f, 0.0f, 0.0f, 0.0f}}}, // Position Clear Color
-        VkClearValue{ .color = {{0.0f, 0.0f, 0.0f, 1.0f}}}, // Albedo Clear Color
-        VkClearValue{ .color = {{0.0f, 0.0f, 0.0f, 0.0f}}} // Normal/Specular Clear Color
+        VkClearValue{.depthStencil = {1.0f, 0}}
     };
 
     VkRect2D renderArea{ { 0, 0 }, _swapchain->GetExtent() };

@@ -16,7 +16,6 @@ Engine::Engine()
     _audio = std::make_unique<AudioSystem>(this);
     _graphics = std::make_unique<GraphicsSystem>(this);
 
-
     auto displays = Display::GetDisplays();
 
     _graphics->GetDevice()->WaitForDevice();
@@ -27,7 +26,7 @@ Engine::Engine()
     auto vulkanWindow = dynamic_cast<VulkanWindow*>(_window.get());
     _imgui = std::make_unique<ImGuiSystem>(this, vulkanWindow, _renderer.get());
 
-    _resourceManager->RegisterBuilder({"Shader", "Texture"}, _graphics.get());
+    _resourceManager->RegisterBuilder({"Shader", "Texture", "Model"}, _graphics.get());
     _resourceManager->RegisterBuilder({"Sound"}, _audio.get());
 }
 
