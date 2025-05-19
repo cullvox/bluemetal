@@ -61,8 +61,10 @@ set(ASSIMP_BUILD_TESTS OFF)
 set(ASSIMP_INSTALL OFF)
 set(ZLIB_LIBRARIES zlibstatic)
 
+#set(ZLIB_FOUND TRUE)
+#set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/zlib")
 
-add_subdirectory("ThirdParty/zlib")
+# add_subdirectory("ThirdParty/zlib")
 add_subdirectory("ThirdParty/fmod") # FMOD is special
 
 

@@ -56,7 +56,7 @@ int main(int argc, const char** argv)
 
     auto graphics = engine.GetGraphics();
     auto imgui = engine.GetImGui();
-    
+
     auto vert = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.frag.spv");
     auto model = resourceMgr->Load<bl::Model>("Resources/Models/red_fox_skull.glb");

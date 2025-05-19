@@ -72,7 +72,21 @@
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
-            "console": "externalTerminal"
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "AssetProcessor Windows Debug Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Source/AssetProcessor/Debug/AssetProcessor.exe",
+            "args": [
+                "-m", "${workspaceFolder}/Resources/Manifest.json",
+                "-o", "${workspaceFolder}/Baked/"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
         }
 
     ]

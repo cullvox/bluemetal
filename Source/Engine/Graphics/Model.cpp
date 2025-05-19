@@ -33,14 +33,14 @@ Model::~Model()
 
 void Model::Load()
 {
-    Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(GetPath().c_str(), aiProcess_Triangulate | aiProcess_GenSmoothNormals | aiProcess_CalcTangentSpace);
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        blError("ERROR::ASSIMP::{}", importer.GetErrorString());
-        throw std::runtime_error("Could not load model!");
-    }
+    // Assimp::Importer importer;
+    // const aiScene* scene = importer.ReadFile(GetPath().string(), aiProcess_Triangulate);
+    // if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
+    //     blError("ERROR::ASSIMP::{}", importer.GetErrorString());
+    //     throw std::runtime_error("Could not load model!");
+    // }
 
-    ProcessNodes(scene->mRootNode, scene);
+    // ProcessNodes(scene->mRootNode, scene);
 }
 
 void Model::Unload()
@@ -62,75 +62,6 @@ void Model::Draw(MaterialInstance* mat, VulkanRenderData& rd)
     }
 }
 
-void Model::ProcessNodes(const aiNode* node, const aiScene* scene)
-{
-    _transforms.push_back(ConvertMatrixToGLMFormat(node->mTransformation));
-    
-    for (unsigned int j = 0; j < node->mNumMeshes; j++)
-    {
-        ProcessMesh(scene->mMeshes[node->mMeshes[j]], scene);
-        _meshTransformIndicies.push_back(_transforms.size()-1);
-    }
 
-
-    for (unsigned int i = 0; i < node->mNumChildren; i++)
-    {
-        ProcessNodes(node->mChildren[i], scene);
-    }
-}
-
-void Model::ProcessMesh(const aiMesh* mesh, const aiScene* scene)
-{
-
-    int numIndices = 0;
-    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-    {
-        numIndices += mesh->mFaces[i].mNumIndices;
-    }
-
-    std::vector<Vertex> vertices;
-    std::vector<uint32_t> indices;
-
-    vertices.reserve(mesh->mNumVertices);
-    vertices.reserve(numIndices);
-    
-    for (unsigned int i = 0; i < mesh->mNumVertices; i++)
-    {
-        Vertex vertex{};
-    
-        auto& p = mesh->mVertices[i];
-
-        vertex.position.x = p.x;
-        vertex.position.y = p.y;
-        vertex.position.z = p.z;
-
-        if (mesh->HasNormals())
-        {
-            auto& n = mesh->mNormals[i];
-            vertex.normal.x = n.x;
-            vertex.normal.y = n.y;
-            vertex.normal.z = n.z;
-        }
-
-        if (mesh->HasTextureCoords(0))
-        {
-            auto& t = mesh->mTextureCoords[0][i];
-            vertex.texCoords.x = t.x;
-            vertex.texCoords.y = t.y;
-        }
-
-        vertices.push_back(vertex);
-    }
-
-    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
-    {
-        auto& face = mesh->mFaces[i];
-        for (unsigned int j = 0; j < face.mNumIndices; j++) {
-            indices.push_back(face.mIndices[j]);
-        }
-    }
-
-    _meshes.emplace_back(_device, vertices, indices);
-}
 
 }

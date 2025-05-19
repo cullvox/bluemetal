@@ -29,8 +29,8 @@ public:
     ResourceLoadOp GetLoadOp() const;
     ResourceState GetState() const;
 
-    virtual void Load();
-    virtual void Unload();
+    virtual void Load() = 0;
+    virtual void Unload() = 0;
 
 protected:
     friend class ResourceManager;
