@@ -27,7 +27,7 @@ Engine::Engine()
     _imgui = std::make_unique<ImGuiSystem>(this, vulkanWindow, _renderer.get());
 
     _resourceManager->RegisterBuilder({"Shader", "Texture", "Model"}, _graphics.get());
-    _resourceManager->RegisterBuilder({"Sound"}, _audio.get());
+    _resourceManager->RegisterBuilder({"Audio"}, _audio.get());
 }
 
 Engine::~Engine() 
