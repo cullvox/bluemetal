@@ -10,7 +10,7 @@ namespace bl
 Engine::Engine()
     : _sdl()
 {
-    blInfo("Constructing bluemetal engine {}", bl::to_string(bl::engineVersion));
+    bl::Log::Info("Constructing bluemetal engine {}", bl::to_string(bl::engineVersion));
 
     _resourceManager = std::make_unique<ResourceManager>();
     _audio = std::make_unique<AudioSystem>(this);

@@ -10,8 +10,8 @@ Resource::Resource(ResourceManager* manager, const nlohmann::json&)
 
 Resource::~Resource() 
 {
-    if (_state == ResourceState::eLoaded)
-        Unload();
+    //if (_state == ResourceState::eLoaded)
+        //Unload();
 }
 
 const std::string& Resource::GetName() const

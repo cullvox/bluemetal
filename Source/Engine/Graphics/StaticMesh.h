@@ -20,6 +20,7 @@ public:
     template<typename TVertex>
     void SetVertices(const std::vector<TVertex>& vertices);
     void SetIndices(const std::vector<uint32_t>& indices);
+    void Bind(VkCommandBuffer cmd);
     void Draw(VkCommandBuffer cmd, uint32_t numInstances=1);
 
 private:
@@ -27,7 +28,6 @@ private:
     VulkanBuffer _vertexBuffer;
     VulkanBuffer _indexBuffer;
     uint32_t _indexCount;
-    VulkanMaterialInstance* _material;
 };
 
 } // namespace bl

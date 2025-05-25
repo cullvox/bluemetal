@@ -2,7 +2,6 @@
 
 #include "Resource/Resource.h"
 #include "VulkanMaterial.h"
-#include "MaterialInstance.h"
 
 namespace bl
 {
@@ -15,6 +14,8 @@ public:
 
     virtual void Load() override;
     virtual void Unload() override;
+private:
+    VulkanMaterial _material;
 };
 
 }

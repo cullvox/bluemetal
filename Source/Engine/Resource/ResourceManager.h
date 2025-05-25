@@ -53,7 +53,7 @@ ResourceRef<T> ResourceManager::Load(const std::string& path)
 template<typename T>
 ResourceRef<T> ResourceManager::AddRuntimeResource(const std::string& path, const std::string& type, const nlohmann::json& data)
 {
-    auto it = _resource.find(path);
+    auto it = _resources.find(path);
     if (it != _resources.end())
     {
         throw std::runtime_error("Could not add a runtime resource as the path already exists!");

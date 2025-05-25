@@ -4,7 +4,7 @@
 #include "Graphics/VulkanInstance.h"
 #include "VulkanShader.h"
 #include "Texture2D.h" 
-#include "Model.h"
+#include "StaticModel.h"
 #include "GraphicsSystem.h"
 
 namespace bl 
@@ -62,7 +62,7 @@ std::unique_ptr<Resource> GraphicsSystem::BuildResource(ResourceManager* manager
     } 
     else if (type == "Model")
     {
-        return std::make_unique<Model>(manager, json, _device.get());
+        return std::make_unique<StaticModel>(manager, json, _device.get());
     }
     else 
     {

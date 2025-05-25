@@ -64,7 +64,7 @@ VulkanBuffer::~VulkanBuffer() {
 
 VulkanBuffer& VulkanBuffer::operator=(VulkanBuffer&& rhs) {
     if (_buffer != VK_NULL_HANDLE) {
-        blWarning("Moving buffer into already created buffer, this isn't expected behavior.");
+        Log::Warn("Moving buffer into already created buffer, this isn't expected behavior.");
         Cleanup();
     }
 
@@ -113,7 +113,7 @@ void VulkanBuffer::Unmap()
 void VulkanBuffer::Upload(std::span<const std::byte> data)
 {
     if (data.size() != _size) {
-        blError("Buffer upload is not the same size as it's buffer.");
+        Log::Error("Buffer upload is not the same size as it's buffer.");
         return;
     }
 

@@ -3,12 +3,11 @@
 #include "Core/Print.h"
 #include "Math/Transform.h"
 #include "Engine/Engine.h"
-#include "Graphics/Model.h"
+#include "Graphics/StaticModel.h"
 #include "Graphics/VulkanShader.h"
 #include "Graphics/VulkanPhysicalDevice.h"
 #include "Graphics/VulkanPipeline.h"
 #include "Graphics/Vertex.h"
-#include "Graphics/Mesh.h"
 #include "Graphics/Material.h"
 #include "Graphics/VulkanConversions.h"
 #include "Graphics/Texture2D.h"
@@ -59,7 +58,7 @@ int main(int argc, const char** argv)
 
     auto vert = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.frag.spv");
-    auto model = resourceMgr->Load<bl::Model>("Models/red_fox_skull.bmm");
+    auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.bmm");
     auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
 
     auto renderer = engine.GetRenderer();

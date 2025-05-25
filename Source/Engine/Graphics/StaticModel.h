@@ -2,9 +2,10 @@
 
 #include "Graphics/MaterialInstance.h"
 #include "Graphics/VulkanDevice.h"
+#include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanRenderData.h"
 #include "Resource/Resource.h"
-#include "Mesh.h"
+#include "StaticMesh.h"
 
 namespace bl
 {
@@ -18,7 +19,7 @@ public:
     virtual void Load() override;
     virtual void Unload() override;
 
-    void Draw(VulkanRenderData& rd);
+    void Draw(VulkanRenderData& rd, VulkanMaterialInstance* material);
 
 private:
 

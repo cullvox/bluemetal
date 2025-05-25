@@ -1,12 +1,9 @@
 #pragma once
 
-#include "Graphics/VulkanConfig.h"
-#include "Math/Math.h"
+#include "Core/Print.h"
+#include "VulkanConfig.h"
 #include "VulkanDevice.h"
 #include "VulkanBuffer.h"
-#include "VulkanSampler.h"
-#include "VulkanImage.h"
-#include "VulkanRenderData.h"
 #include "VulkanPipeline.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanMaterialInstance.h"
@@ -76,7 +73,7 @@ template<typename T>
 void VulkanMaterialInstance::SetGenericUniform(const std::string& name, T value) {
     const auto& uniforms = _material->GetUniforms();
     if (!uniforms.contains(name)) {
-        blError("Could not set material uniform, it does not exist!");
+        Log::Error("Could not set material uniform, it does not exist!");
         return;
     }
 

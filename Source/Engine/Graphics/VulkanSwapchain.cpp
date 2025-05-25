@@ -152,7 +152,7 @@ void VulkanSwapchain::ChooseFormat() {
     } 
     else // As fallback use the first format available.
     {    
-        blWarning("Surface format not found, using default.");
+        Log::Warn("Surface format not found, using default.");
         _surfaceFormat = formats.front();
     }
 }
@@ -172,20 +172,25 @@ void VulkanSwapchain::ChoosePresentMode() {
     }
 
     // If our mode wasn't found just use FIFO, as it's reliable and always available.
-    blWarning("Present mode is unavailable, using VK_PRESENT_MODE_FIFO_KHR.");
+    Log::Warn("Present mode is unavailable, using VK_PRESENT_MODE_FIFO_KHR.");
     _presentMode = VK_PRESENT_MODE_FIFO_KHR;
 }
 
-void VulkanSwapchain::ChooseExtent() {
+void VulkanSwapchain::ChooseExtent() 
+{
     VkSurfaceCapabilitiesKHR capabilities = {};
 
     VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->Get(), _window->GetSurface(), &capabilities))
 
-    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
+    if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) 
+    {
         _extent = capabilities.currentExtent;
-    } else {
+    } 
+    else 
+    {
         auto extent = _window->GetExtent();
-        _extent = { 
+        _extent = 
+        { 
             std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
             std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
         };
@@ -199,10 +204,12 @@ void VulkanSwapchain::ObtainImages()
     VK_CHECK(vkGetSwapchainImagesKHR(_device->Get(), _swapchain, &_imageCount, _swapImages.data()))
 }
 
-void VulkanSwapchain::CreateImageViews() {
+void VulkanSwapchain::CreateImageViews() 
+{
     _swapImageViews.resize(_imageCount);
 
-    for (uint32_t i = 0; i < _imageCount; i++) {
+    for (uint32_t i = 0; i < _imageCount; i++) 
+    {
         VkComponentMapping componentMapping = {};
         componentMapping.r = VK_COMPONENT_SWIZZLE_IDENTITY;
         componentMapping.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -230,18 +237,20 @@ void VulkanSwapchain::CreateImageViews() {
     }
 }
 
-void VulkanSwapchain::DestroyImageViews() {
+void VulkanSwapchain::DestroyImageViews() 
+{
     for (VkImageView iv : _swapImageViews)
         vkDestroyImageView(_device->Get(), iv, nullptr);
 
     _swapImageViews.clear();
 }
 
-void VulkanSwapchain::Destroy() {
-
+void VulkanSwapchain::Destroy() 
+{
 }
 
-void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optional<VkSurfaceFormatKHR> surfaceFormat) {
+void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optional<VkSurfaceFormatKHR> surfaceFormat) 
+{
     // Since recreating the swapchain is a big operation, just wait for any processes to sync.
     _device->WaitForDevice();
 
@@ -249,7 +258,8 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     ChooseImageCount();
     ChooseExtent();
 
-    if (_extent.width == 0 || _extent.height == 0) {
+    if (_extent.width == 0 || _extent.height == 0) 
+    {
         throw std::runtime_error("Cannot create a swapchain at an invalid extent!");
     }
     
@@ -303,7 +313,8 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
         _surfaceFormat.format, _surfaceFormat.colorSpace, 
         imageSharingMode, present, oldSwapchain, _swapchain);
 
-    if (oldSwapchain) {
+    if (oldSwapchain) 
+    {
         vkDestroySwapchainKHR(_device->Get(), oldSwapchain, nullptr);
     }
 
@@ -311,7 +322,8 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     CreateImageViews();
 }
 
-std::size_t VulkanSwapchain::GetHash() const {
+std::size_t VulkanSwapchain::GetHash() const 
+{
     return _hash;
 }
 

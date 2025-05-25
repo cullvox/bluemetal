@@ -115,13 +115,13 @@ void VulkanReflectedPipeline::ReflectMembers(VulkanReflectedBlock& meta, uint32_
 
         // We are a little specific about our supported material uniform block types.
         if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_ARRAY) {
-            blWarning("Arrays are not supported in pipelines, it will not be parameterized.");
+            Log::Warn("Arrays are not supported in pipelines, it will not be parameterized.");
             continue;
         } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_VECTOR) {
 
             // We only support floating vector types.
             if (!(typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT)) {
-                blWarning("Only float vectors are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
+                Log::Warn("Only float vectors are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
                 continue;
             }
             std::array types = { VulkanVariableBlockType::eVector2, VulkanVariableBlockType::eVector3, VulkanVariableBlockType::eVector4 };
@@ -130,7 +130,7 @@ void VulkanReflectedPipeline::ReflectMembers(VulkanReflectedBlock& meta, uint32_
 
             // We only support 4x4 matrices. 
             if (numericTraits.matrix.column_count != 4 || numericTraits.matrix.row_count != 4) {
-                blWarning("Only 4x4 matrices are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
+                Log::Warn("Only 4x4 matrices are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
                 continue;
             }
             type = VulkanVariableBlockType::eMatrix4;

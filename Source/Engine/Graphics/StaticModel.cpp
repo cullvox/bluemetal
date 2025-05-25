@@ -2,6 +2,7 @@
 #include <assimp/postprocess.h>
 
 #include "Core/FileByte.h"
+#include "Graphics/VulkanMaterialInstance.h"
 #include "Resource/Resource.h"
 #include "Material.h"
 #include "Vertex.h"
@@ -36,7 +37,7 @@ StaticModel::~StaticModel()
 void StaticModel::Load()
 {
     std::ifstream modelFile(GetPath());
-    auto  bl::ReadT<uint32_t>(modelFile);
+    // auto value = bl::ReadT<uint32_t>(modelFile);
 }
 
 void StaticModel::Unload()
@@ -44,7 +45,7 @@ void StaticModel::Unload()
     _meshes.clear();
 }
 
-void StaticModel::Draw(MaterialInstance* mat, VulkanRenderData& rd)
+void StaticModel::Draw(VulkanRenderData& rd, VulkanMaterialInstance* instance)
 {
     for (int i = 0; i < (int)_meshes.size(); i++)
     {
@@ -52,9 +53,9 @@ void StaticModel::Draw(MaterialInstance* mat, VulkanRenderData& rd)
         ObjectPC obj;
         obj.model = _transforms[_meshTransformIndicies[i]];
 
-        mat->PushConstant(rd, 0, sizeof(ObjectPC), &obj);
-        mesh.bind(rd.cmd);
-        mesh.draw(rd.cmd);
+        instance->PushConstant(rd, 0, sizeof(ObjectPC), &obj);
+        mesh.Bind(rd.cmd);
+        mesh.Draw(rd.cmd);
     }
 }
 

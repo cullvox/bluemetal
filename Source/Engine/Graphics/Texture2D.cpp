@@ -1,5 +1,4 @@
 #include "Texture2D.h"
-#include "Graphics/Mesh.h"
 #include "Graphics/Texture.h"
 #include "Graphics/VulkanImage.h"
 #include "Resource/Resource.h"

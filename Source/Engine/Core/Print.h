@@ -7,34 +7,72 @@
 #include <fmt/chrono.h>
 #include <fmt/compile.h>
 #include <fmt/format.h>
+#include <source_location>
 
 #include "PathUtils.h"
 
 namespace bl 
 {
 
-namespace logging 
+class Log
 {
-    void enableVerboseLogging(bool enable);
-    bool isVerboseLogging();
-}
+public:
+    struct FormatWithLocation 
+    {
+        std::string_view value;
+        std::source_location location;
 
-extern bool useVerboseLogging;
+        template <typename TString>
+        FormatWithLocation(const TString &s, const std::source_location &location = std::source_location::current())
+            : value{s}, location{location} 
+        {
+        }
+    };
 
-#define blDebug(FORMAT, ...) \
-    fmt::print(fg(fmt::color::orange), "DEBUG {} {} {} : {}\n", bl::PathUtils::GetFilename(__FILE__), __LINE__, __func__, fmt::format(FMT_COMPILE(FORMAT) __VA_OPT__(,) __VA_ARGS__))
+    static void EnableVerboseLogging(bool enable);
+    static bool IsVerboseLogging();
 
-#define blVerbose(FORMAT, ...) \
-    if (bl::logging::isVerboseLogging()) \
-        fmt::print(fg(fmt::color::blanched_almond), "VERBOSE {} {} {} : {}\n", bl::PathUtils::GetFilename(__FILE__), __LINE__, __func__, fmt::format(FMT_COMPILE(FORMAT) __VA_OPT__(,) __VA_ARGS__))
+    static void VLog(const FormatWithLocation& format, const fmt::text_style& style, fmt::format_args args) 
+    {
+        const auto& loc = format.location;
+        fmt::print(style, "{}:{}: ", bl::PathUtils::GetFilename(loc.file_name()), loc.line());
+        fmt::vprint(stdout, style,format.value, args);
+    }
 
-#define blInfo(FORMAT, ...) \
-    fmt::print(fg(fmt::color::white), "INFO {} {} {} : {}\n", bl::PathUtils::GetFilename(__FILE__), __LINE__, __func__, fmt::format(FMT_COMPILE(FORMAT) __VA_OPT__(,) __VA_ARGS__))
+    template<typename...TArgs>
+    static void Verbose(FormatWithLocation fmt, TArgs&&... args)
+    {
+        if (IsVerboseLogging())
+            VLog(fmt, fg(fmt::color::cyan), fmt::make_format_args(args...));
+    }
 
-#define blWarning(FORMAT, ...) \
-    fmt::print(fg(fmt::color::yellow), "WARNING {} {} {} : {}\n", bl::PathUtils::GetFilename(__FILE__), __LINE__, __func__, fmt::format(FMT_COMPILE(FORMAT) __VA_OPT__(,) __VA_ARGS__))
 
-#define blError(FORMAT, ...) \
-    fmt::print(bg(fmt::color::red), "ERROR {} {} {} : {}\n", bl::PathUtils::GetFilename(__FILE__), __LINE__, __func__, fmt::format(FMT_COMPILE(FORMAT) __VA_OPT__(,) __VA_ARGS__))
+    template<typename...TArgs>
+    static void Debug(FormatWithLocation fmt, TArgs&&... args)
+    {
+        VLog(fmt, fg(fmt::color::orange), fmt::make_format_args(args...));
+    }
+
+    template<typename...TArgs>
+    static void Info(FormatWithLocation fmt, TArgs&&... args)
+    {
+        VLog(fmt, fg(fmt::color::white), fmt::make_format_args(args...));
+    }
+
+    template<typename...TArgs>
+    static void Warn(FormatWithLocation fmt, TArgs&&... args)
+    {
+        VLog(fmt, fg(fmt::color::yellow), fmt::make_format_args(args...));
+    }
+
+    template<typename...TArgs>
+    static void Error(FormatWithLocation fmt, TArgs&&... args)
+    {
+        VLog(fmt, fg(fmt::color::red), fmt::make_format_args(args...));
+    }
+
+private:
+    static bool useVerboseLogging;
+};
 
 } // namespace bl

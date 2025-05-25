@@ -1,11 +1,10 @@
-#include "Core/Print.h"
-#include "Graphics/Mesh.h"
-#include "Texture.h"
-
 #include "qoixx.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+#include "Core/Print.h"
+#include "Texture.h"
 
 namespace bl {
 
@@ -50,7 +49,7 @@ void Texture::Load()
     } 
     else 
     {
-        blError("Invalid texture extension cannot parse image: {}", path.string());
+        Log::Error("Invalid texture extension cannot parse image: {}", path.string());
         return;
     }
 

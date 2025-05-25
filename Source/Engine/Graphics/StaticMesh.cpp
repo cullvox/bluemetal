@@ -1,4 +1,4 @@
-#include "Graphics/Mesh.h"
+#include "Graphics/StaticMesh.h"
 #include "Graphics/VulkanBuffer.h"
 #include <cstddef>
 

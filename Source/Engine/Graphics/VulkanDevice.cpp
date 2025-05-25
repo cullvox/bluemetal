@@ -333,7 +333,7 @@ void VulkanDevice::CreateDevice()
     vkGetDeviceQueue(_device, _graphicsFamilyIndex, 0, &_graphicsQueue);
     vkGetDeviceQueue(_device, _presentFamilyIndex, 0, &_presentQueue);
 
-    blInfo("Created the Vulkan device using: {}", _physicalDevice->GetDeviceName());
+    Log::Info("Created the Vulkan device using: {}", _physicalDevice->GetDeviceName());
 
     WaitForDevice();
 }

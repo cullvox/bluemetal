@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Resource/Resource.h"
-#include "VulkanMaterialInstance.h"
 #include "Material.h"
 
 namespace bl

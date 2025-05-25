@@ -79,9 +79,9 @@ int main(int argc, const char** argv)
     {
         parser.parse_args(argc, argv);
     }
-    catch (std::exception e)
+    catch (const std::exception& e)
     {
-        blError("{}, {}", e.what(), parser);
+        bl::Log::Error("{}, {}", e.what(), parser);
         std::exit(EXIT_FAILURE);
     }
 
@@ -94,8 +94,8 @@ int main(int argc, const char** argv)
 
     if (parser.get<bool>("verbose"))
     {
-        bl::logging::enableVerboseLogging(true);
-        blVerbose("Enabling verbose logging.");
+        bl::Log::EnableVerboseLogging(true);
+        bl::Log::Verbose("Enabling verbose logging.");
     }
 
     std::filesystem::path manifestRoot = state.manifestPath.parent_path();
@@ -117,7 +117,7 @@ int main(int argc, const char** argv)
             // Ensure that the path doesn't exist yet.
             if (state.resourceChecker.find(resource.relativePath) != state.resourceChecker.end())
             {
-                blError("{}: Already exists, two resources cannot have the same path! Skipping...", resource.relativePath);
+                bl::Log::Error("{}: Already exists, two resources cannot have the same path! Skipping...", resource.relativePath);
                 continue;
             }
 
@@ -127,7 +127,7 @@ int main(int argc, const char** argv)
     } 
     catch(...)
     {
-        blError("Could not parse the manifest file!");
+        bl::Log::Error("Could not parse the manifest file!");
         exit(EXIT_FAILURE);
     }
 
@@ -137,11 +137,11 @@ int main(int argc, const char** argv)
         if (!std::filesystem::exists(resource.absolutePath) ||
             !std::filesystem::is_regular_file(resource.absolutePath))
         {
-            blError("Resource does not exist or is not a file: {}", resource.absolutePath);
+            bl::Log::Error("Resource does not exist or is not a file: {}", resource.absolutePath);
             continue;
         }
 
-        blVerbose("Beginning processing of: {}", resource.relativePath);
+        bl::Log::Verbose("Beginning processing of: {}", resource.relativePath);
         bool status = false;
 
         if (resource.type == "Shader")
@@ -162,9 +162,9 @@ int main(int argc, const char** argv)
         }
 
         if (status)
-            blInfo("{}: Processed successfully.", resource.relativePath);
+            bl::Log::Info("{}: Processed successfully.", resource.relativePath);
         else
-            blError("{}: Could not be processed.", resource.relativePath);
+            bl::Log::Error("{}: Could not be processed.", resource.relativePath);
     }
 
     return EXIT_SUCCESS;
@@ -185,9 +185,9 @@ bool ProcessShader(ProcessorState& state, ResourceFile& resource)
     std::string cmd = fmt::format("glslc {} -o {}", resource.absolutePath.string(), exportedPath.string());
     if (std::system(cmd.c_str()) != EXIT_SUCCESS)
     {
-        blError("{}: Could not compile shader resource.", resource.relativePath);
-        blWarning("This asset will not be added to the engine manifest.");
-        blWarning("Please ensure that you have the Vulkan SDK Installed.");
+        bl::Log::Error("{}: Could not compile shader resource.", resource.relativePath);
+        bl::Log::Warn("This asset will not be added to the engine manifest.");
+        bl::Log::Warn("Please ensure that you have the Vulkan SDK Installed.");
         return false;
     }
 
@@ -207,7 +207,7 @@ bool ProcessTexture(ProcessorState& state, ResourceFile& resource)
 
     if (resource.absolutePath.extension() == ".qoi")
     {
-        blInfo("{}: Already in QOI format, not baking.", relativeExportedPath.string());
+        bl::Log::Info("{}: Already in QOI format, not baking.", relativeExportedPath.string());
         resource.bakedPath.clear();
         return true;
     }
@@ -216,7 +216,7 @@ bool ProcessTexture(ProcessorState& state, ResourceFile& resource)
         resource.absolutePath.extension() != ".jpg" &&
         resource.absolutePath.extension() != ".jpeg")
     {
-        blError("{}: Invalid texture file type, please convert it manually.", resource.relativePath);
+        bl::Log::Error("{}: Invalid texture file type, please convert it manually.", resource.relativePath);
         return false;
     }
 
@@ -225,7 +225,7 @@ bool ProcessTexture(ProcessorState& state, ResourceFile& resource)
 
     if (data == nullptr)
     {
-        blError("{}: Could not load this texture.", resource.absolutePath.string());
+        bl::Log::Error("{}: Could not load this texture.", resource.absolutePath.string());
         return false;
     }
 
@@ -384,13 +384,13 @@ bool ProcessModel(ProcessorState& state, ResourceFile& resource)
     const aiScene* scene = importer.ReadFile(resource.absolutePath.string(), aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_OptimizeMeshes);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) 
     {
-        blError("ERROR::ASSIMP::{}", importer.GetErrorString());
+        bl::Log::Error("ERROR::ASSIMP::{}", importer.GetErrorString());
         return false;
     }
 
     if (scene->hasSkeletons() || scene->HasAnimations())
     {
-        blWarning("{}: Cannot process model with animations or skeletons yet.", resource.relativePath);
+        bl::Log::Warn("{}: Cannot process model with animations or skeletons yet.", resource.relativePath);
         // return false;
     }
 
