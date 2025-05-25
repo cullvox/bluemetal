@@ -4,8 +4,8 @@
 namespace bl 
 {
 
-Sound::Sound(const nlohmann::json& json, AudioSystem* system)
-    : Resource(json)
+Sound::Sound(ResourceManager* manager, const nlohmann::json& json, AudioSystem* system)
+    : Resource(manager, json)
     , _system(system)
 {
 }

@@ -6,19 +6,13 @@
 
 namespace bl {
 
-class Texture2D : public Texture { 
+class Texture2D : public Texture 
+{ 
 public:
-
-    /// @brief Texture Constructor
-    Texture2D(const nlohmann::json& data, VulkanDevice* device);
-    
-    /// @brief Destructor
+    Texture2D(ResourceManager* manager, const nlohmann::json& data, VulkanDevice* device);
     ~Texture2D();
 
-    /// @brief Loads the texture into GPU memory.
     virtual void Load() override;
-
-    /// @brief Unloads the texture from GPU memory.
     virtual void Unload() override;
 
     VulkanImage* GetImage();

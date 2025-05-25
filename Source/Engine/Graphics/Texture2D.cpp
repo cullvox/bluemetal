@@ -14,15 +14,18 @@ VkExtent3D Make3D(VkExtent2D ex, uint32_t depth = 1) {
 
 }
 
-Texture2D::Texture2D(const nlohmann::json& data, VulkanDevice* device)
-    : Texture(data)
-    , _device(device) {}
+Texture2D::Texture2D(ResourceManager* manager, const nlohmann::json& data, VulkanDevice* device)
+    : Texture(manager, data)
+    , _device(device) 
+{
+}
 
-Texture2D::~Texture2D() {}
+Texture2D::~Texture2D() 
+{
+}
 
-void Texture2D::Load() {
-    Texture::Load();
-
+void Texture2D::Load() 
+{
     VkFormat format = VK_FORMAT_UNDEFINED;
 
     static VkFormat formatConversion[2][2] = {

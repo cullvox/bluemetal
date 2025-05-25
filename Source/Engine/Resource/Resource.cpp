@@ -3,50 +3,59 @@
 namespace bl
 {
 
-Resource::Resource(const nlohmann::json&) {}
+Resource::Resource(ResourceManager* manager, const nlohmann::json&) 
+    : _manager(manager)
+{
+}
 
-Resource::~Resource() {
+Resource::~Resource() 
+{
     if (_state == ResourceState::eLoaded)
         Unload();
 }
 
-std::filesystem::path Resource::GetPath() const {
+const std::string& Resource::GetName() const
+{
+    return _name;
+}
+
+const std::filesystem::path& Resource::GetPath() const 
+{
     return _path;
 }
 
-uint64_t Resource::GetVersion() const {
-    return _version;
-}
-
-ResourceLoadOp Resource::GetLoadOp() const {
+ResourceLoadOp Resource::GetLoadOp() const 
+{
     return _loadOp;
 }
 
-ResourceState Resource::GetState() const {
+ResourceState Resource::GetState() const 
+{
     return _state;
 }
 
-void Resource::Load() {
+void Resource::Load() 
+{
     _state = ResourceState::eLoaded;
 }
 
-void Resource::Unload() {
+void Resource::Unload() 
+{
     _state = ResourceState::eUnloaded;
 }
 
-void Resource::SetPath(const std::filesystem::path& path) {
+void Resource::SetPath(const std::filesystem::path& path) 
+{
     _path = path;
 }
 
-void Resource::SetVersion(uint64_t version) {
-    _version = version;
-}
-
-void Resource::SetLoadOp(ResourceLoadOp op) {
+void Resource::SetLoadOp(ResourceLoadOp op) 
+{
     _loadOp = op;
 }
 
-void Resource::SetState(ResourceState state) {
+void Resource::SetState(ResourceState state) 
+{
     _state = state;
 }
 

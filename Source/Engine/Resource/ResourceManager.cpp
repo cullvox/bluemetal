@@ -36,7 +36,7 @@ void ResourceManager::LoadFromManifest(const std::filesystem::path& manifest)
             throw std::runtime_error("Could not find a builder!");
         }
 
-        auto resource = builder->second->BuildResource(type, path, data);
+        auto resource = builder->second->BuildResource(this, type, path, data);
         resource->SetPath(path);
         resource->SetLoadOp(ResourceLoadOp::eFile);
         resource->SetState(ResourceState::eUnloaded);

@@ -1,6 +1,7 @@
 #include "Core/Time.h"
 #include "Core/FrameCounter.h"
 #include "Core/Print.h"
+#include "Math/Transform.h"
 #include "Engine/Engine.h"
 #include "Graphics/Model.h"
 #include "Graphics/VulkanShader.h"
@@ -11,10 +12,8 @@
 #include "Graphics/Material.h"
 #include "Graphics/VulkanConversions.h"
 #include "Graphics/Texture2D.h"
-#include "Material/UniformData.h"
+#include "Graphics/UniformData.h"
 
-#include "Math/Transform.h"
-#include <vulkan/vulkan_core.h>
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see
@@ -40,14 +39,15 @@ int main(int argc, const char** argv)
     (void)argc;
     (void)argv;
     
-    try {
+    try 
+    {
     bl::Engine engine;
 
     auto resourceMgr = engine.GetResourceManager();
-    resourceMgr->LoadFromManifest("Resources/Manifest.json");
+    resourceMgr->LoadFromManifest("Baked/Manifest.json");
 
     auto audio = engine.GetAudio();
-    auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Taswell.flac");
+    auto sound = resourceMgr->Load<bl::Sound>("Audio/Music/Taswell.flac");
     auto listener = audio->CreateListener();
     auto source = audio->CreateSource();
 
@@ -57,47 +57,10 @@ int main(int argc, const char** argv)
     auto graphics = engine.GetGraphics();
     auto imgui = engine.GetImGui();
 
-    auto vert = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.vert.spv");
-    auto frag = resourceMgr->Load<bl::VulkanShader>("Resources/Shaders/Default.frag.spv");
-    auto model = resourceMgr->Load<bl::Model>("Resources/Models/red_fox_skull.glb");
-
-    std::vector<bl::Vertex> cubeVertices{
-        // front
-        { {-1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {1.0f, 0.0f} },
-        { {1.0f, -1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 1.0f} },
-        { {-1.0f,  1.0f,  1.0f }, { 0.0f, 0.0f, 0.0f }, {1.0f, 1.0f} },
-        // back
-        { {-1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {1.0f, 0.0f} },
-        { {1.0f, -1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 0.0f} },
-        { {1.0f,  1.0f, -1.0f }, { 0.0f, 0.0f, 0.0f }, {0.0f, 1.0f} },
-        { {-1.0f,  1.0f, -1.f }, { 0.0f, 0.0f, 0.0f }, {1.0f, 1.0f} },
-    };
-
-    std::vector<uint32_t> cubeIndices{
-        // front
-		0, 1, 2,
-		2, 3, 0,
-		// right
-		1, 5, 6,
-		6, 2, 1,
-		// back
-		7, 6, 5,
-		5, 4, 7,
-		// left
-		4, 0, 3,
-		3, 7, 4,
-		// bottom
-		4, 5, 1,
-		1, 0, 4,
-		// top
-		3, 2, 6,
-		6, 7, 3
-    };
-
-    auto mesh = std::make_shared<bl::StaticMesh>(graphics->GetDevice(), cubeVertices, cubeIndices);
-
-
+    auto vert = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.vert.spv");
+    auto frag = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.frag.spv");
+    auto model = resourceMgr->Load<bl::Model>("Models/red_fox_skull.bmm");
+    auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
 
     auto renderer = engine.GetRenderer();
 
@@ -157,7 +120,6 @@ int main(int argc, const char** argv)
     auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Bricks_Albedo.jpg");
     auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_LINEAR};
 
-    
     material->SetSampledImage2D("image", &sampler, texture.Get()->GetImage());
 
     bool firstMouse = true;
@@ -195,7 +157,6 @@ int main(int argc, const char** argv)
     while (running) 
     {
         frameCounter.BeginFrame();
-
 
         glm::vec2 mouseRelativeMovement = {};
         SDL_Event event;
@@ -338,15 +299,11 @@ int main(int argc, const char** argv)
             VkRect2D scissor;
             scissor.offset = {0, 0};
             scissor.extent = {extent.width, extent.height};
-
-            vkCmdSetViewportWithCountEXT(rd.cmd, 1, &viewport);
-            vkCmdSetScissorWithCountEXT(rd.cmd, 1, &scissor);
+            vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
 
             vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline()->GetPipelineLayout(), 0, 1, &globalSet, 0, nullptr);
             material->Bind(rd);
             material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
-            mesh->bind(rd.cmd);
-            mesh->draw(rd.cmd);
 
             model.Get()->Draw(material.get(), rd);
 
@@ -372,7 +329,7 @@ int main(int argc, const char** argv)
                 ImGui::Text("Vulkan Header");
                 ImGui::SameLine();
                 ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%d", VK_HEADER_VERSION);
-                
+
                 ImGui::Text("Vulkan Version");
                 ImGui::SameLine();
                 auto instanceVersion = volkGetInstanceVersion();
@@ -460,7 +417,9 @@ int main(int argc, const char** argv)
 
     globalBuffer->Unmap();
 
-    } catch (std::exception& e) {
+    } 
+    catch (std::exception& e) 
+    {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Exception Error", e.what(), nullptr);
         return EXIT_FAILURE;
     }

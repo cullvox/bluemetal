@@ -32,7 +32,7 @@ public:
     std::unique_ptr<Window> CreateWindow(const std::string& title, Rect2D rect, bool fullscreen = true);
     std::unique_ptr<Renderer> CreateRenderer(Window* window);
 
-    virtual std::unique_ptr<Resource> BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& data);
+    virtual std::unique_ptr<Resource> BuildResource(ResourceManager* manager, const std::string& type, const std::filesystem::path& path, const nlohmann::json& data);
 
 private:
     Engine* _engine;

@@ -2,30 +2,39 @@
 #include "VulkanConversions.h"
 #include "VulkanShader.h"
 
-namespace bl {
+namespace bl 
+{
 
-VulkanShader::VulkanShader(const nlohmann::json& json, VulkanDevice* device)
-    : Resource(json)
+VulkanShader::VulkanShader(ResourceManager* manager, const nlohmann::json& json, VulkanDevice* device)
+    : Resource(manager, json)
     , _device(device)
     , _reflect()
-    , _module(VK_NULL_HANDLE) {
+    , _module(VK_NULL_HANDLE) 
+{
     // Determine the shaders stage from the json
     auto stage = json["Stage"].get<std::string>();
 
-    if (stage == "Vertex") {
+    if (stage == "Vertex") 
+    {
         _stage = VK_SHADER_STAGE_VERTEX_BIT;
-    } else if (stage == "Fragment") {
+    } 
+    else if (stage == "Fragment") 
+    {
         _stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    } else {
+    } 
+    else 
+    {
         throw std::runtime_error("Invalid shader stage!");
     }
 }
 
-VulkanShader::~VulkanShader() { 
+VulkanShader::~VulkanShader() 
+{
     Unload();
 }
 
-void VulkanShader::Load() {
+void VulkanShader::Load() 
+{
     // Load the shader binary into memory.
     std::ifstream file(GetPath(), std::ios::ate | std::ios::binary);
 
@@ -41,7 +50,8 @@ void VulkanShader::Load() {
     file.close();
 
     // Create the reflection module for pipeline usage.
-    if (spvReflectCreateShaderModule(buffer.size(), buffer.data(), &_reflect) != SPV_REFLECT_RESULT_SUCCESS) {
+    if (spvReflectCreateShaderModule(buffer.size(), buffer.data(), &_reflect) != SPV_REFLECT_RESULT_SUCCESS) 
+    {
         throw std::runtime_error("Could not preform reflection on a shader module!");
     }
 
@@ -54,26 +64,30 @@ void VulkanShader::Load() {
     moduleCreateInfo.pCode = reinterpret_cast<const uint32_t*>(buffer.data());
 
     VK_CHECK(vkCreateShaderModule(_device->Get(), &moduleCreateInfo, nullptr, &_module))
+    Resource::Load();
 }
 
-void VulkanShader::Unload() {
-    Resource::Unload();
-
+void VulkanShader::Unload() 
+{
     if (_module == VK_NULL_HANDLE) return;
 
     vkDestroyShaderModule(_device->Get(), _module, nullptr); 
     spvReflectDestroyShaderModule(&_reflect);
+    Resource::Unload();
 }
 
-VkShaderStageFlagBits VulkanShader::GetStage() const {
+VkShaderStageFlagBits VulkanShader::GetStage() const 
+{
     return _stage; 
 }
 
-const SpvReflectShaderModule& VulkanShader::GetReflection() const {
+const SpvReflectShaderModule& VulkanShader::GetReflection() const 
+{
     return _reflect;
 }
 
-VkShaderModule VulkanShader::Get() const {
+VkShaderModule VulkanShader::Get() const 
+{
     return _module;
 }
 

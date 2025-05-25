@@ -33,26 +33,15 @@ enum class TextureColorSpace {
 /// unload this resource.
 class Texture : public Resource {
 public:
-
-    /// @brief Texture Constructor
-    Texture(const nlohmann::json& data);
-
-    /// @brief Destructor
+    Texture(ResourceManager* manager, const nlohmann::json& data);
     virtual ~Texture();
 
-    /// @brief Loads the texture file into memory.
     virtual void Load() override;
-
-    /// @brief Unloads the texture file from memory.
     virtual void Unload() override;
 
-    /// @brief GetExtent
-    /// @returns The size of the texture in pixels.
     VkExtent2D GetExtent() const;
-
     TextureFormat GetFormat() const;
     TextureColorSpace GetColorSpace() const;
-
     std::span<const std::byte> GetImageData() const;
 
 private:

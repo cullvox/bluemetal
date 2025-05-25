@@ -1,34 +1,34 @@
 {
-    "Resources": [
+    "resources": [
         {
-            "Path": "Audio/Music/Taswell.flac",
-            "Type": "Audio"
+            "path": "Audio/Music/Taswell.flac",
+            "type": "Audio"
         },
         {
-            "Path": "Audio/Music/Mutation.flac",
-            "Type": "Audio"
+            "path": "Audio/Music/Mutation.flac",
+            "type": "Audio"
         },
         {
-            "Path": "Shaders/Default.vert",
-            "Type": "Shader",
-            "Stage": "Vertex"
+            "path": "Shaders/Default.vert",
+            "type": "Shader",
+            "stage": "Vertex"
         },
         {
-            "Path": "Shaders/Default.frag",
-            "Type": "Shader",
-            "Stage": "Fragment"
+            "path": "Shaders/Default.frag",
+            "type": "Shader",
+            "stage": "Fragment"
         },
         {
-            "Path": "Textures/Bricks_Albedo.jpg",
-            "Type": "Texture"
+            "path": "Textures/Bricks_Albedo.jpg",
+            "type": "Texture"
         },
         {
-            "Path": "Textures/furry.qoi",
-            "Type": "Texture"
+            "path": "Textures/furry.qoi",
+            "type": "Texture"
         },
         {
-            "Path": "Models/red_fox_skull.glb",
-            "Type": "Model"
+            "path": "Models/red_fox_skull.glb",
+            "type": "Model"
         }
     ]
 }

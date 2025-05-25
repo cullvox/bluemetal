@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Graphics/Material.h"
+#include "Graphics/MaterialInstance.h"
 #include "Graphics/VulkanDevice.h"
 #include "Graphics/VulkanRenderData.h"
 #include "Resource/Resource.h"
@@ -9,21 +9,22 @@
 namespace bl
 {
 
-class Model : public Resource
+class StaticModel : public Resource
 {
 public:
-    Model(const nlohmann::json& data, VulkanDevice* device);
-    ~Model();
+    StaticModel(ResourceManager* manager, const nlohmann::json& data, VulkanDevice* device);
+    ~StaticModel();
 
     virtual void Load() override;
     virtual void Unload() override;
 
-    void Draw(MaterialInstance* material, VulkanRenderData& rd);
+    void Draw(VulkanRenderData& rd);
 
 private:
 
     VulkanDevice* _device;
     std::vector<StaticMesh> _meshes;
+    std::vector<ResourceRef<MaterialInstance>> _materials;
     std::vector<glm::mat4> _transforms;
     std::vector<int> _meshTransformIndicies;
 };

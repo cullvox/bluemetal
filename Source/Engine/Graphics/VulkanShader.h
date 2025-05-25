@@ -11,7 +11,7 @@ namespace bl  {
 /** @brief A single unit of a shader pipeline. */
 class VulkanShader : public Resource {
 public:
-    VulkanShader(const nlohmann::json& json, VulkanDevice* device);  /** @brief Constructor */
+    VulkanShader(ResourceManager* manager, const nlohmann::json& json, VulkanDevice* device);  /** @brief Constructor */
     ~VulkanShader(); /** @brief Destructor */
 
     virtual void Load() override;

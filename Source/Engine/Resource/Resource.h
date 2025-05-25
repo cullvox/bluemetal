@@ -8,24 +8,29 @@
 namespace bl 
 {
 
-enum class ResourceLoadOp {
+class ResourceManager;
+
+enum class ResourceLoadOp 
+{
     eFile, /** @brief This resource can be loaded in and out at runtime as needed. */
     eRuntime, /** @brief Will delete the resource after it's unloaded. */
-    eNoUnload, /** @brief Will not unload even if there are no references. */
+    ePersistent, /** @brief Will not unload automatically unless deleted. */
 };
 
-enum class ResourceState {
+enum class ResourceState 
+{
     eLoaded,
     eUnloaded,
 };
 
-class Resource : public ReferenceCounted {
+class Resource : public ReferenceCounted 
+{
 public:
-    Resource(const nlohmann::json& data);
+    Resource(ResourceManager* manager, const nlohmann::json& data);
     virtual ~Resource();
 
-    std::filesystem::path GetPath() const;
-    uint64_t GetVersion() const;
+    const std::string& GetName() const;
+    const std::filesystem::path& GetPath() const;
     ResourceLoadOp GetLoadOp() const;
     ResourceState GetState() const;
 
@@ -35,14 +40,15 @@ public:
 protected:
     friend class ResourceManager;
 
+    void SetName(const std::string& name);
     void SetPath(const std::filesystem::path& path);
-    void SetVersion(uint64_t version);
     void SetLoadOp(ResourceLoadOp op);
     void SetState(ResourceState state);
 
 private:
+    ResourceManager* _manager;
+    std::string _name;
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem. Name of the resource as described in the manifest, must be unique. */
-    uint64_t _version; /** @brief Version of this resource, can change between versions of end software with patches. */
     ResourceLoadOp _loadOp;
     ResourceState _state;
 };

@@ -1,11 +1,13 @@
-#include "Model.h"
-#include "Graphics/Material.h"
-#include "Graphics/Vertex.h"
-#include "Graphics/VulkanDevice.h"
-#include "Material/UniformData.h"
-#include "Resource/Resource.h"
 #include <assimp/config.h>
 #include <assimp/postprocess.h>
+
+#include "Core/FileByte.h"
+#include "Resource/Resource.h"
+#include "Material.h"
+#include "Vertex.h"
+#include "VulkanDevice.h"
+#include "UniformData.h"
+#include "StaticModel.h"
 
 namespace bl
 {
@@ -21,34 +23,28 @@ static inline glm::mat4 ConvertMatrixToGLMFormat(const aiMatrix4x4& from)
     return to;
 }
 
-Model::Model(const nlohmann::json& json, VulkanDevice* device)
-    : Resource(json)
+StaticModel::StaticModel(ResourceManager* manager, const nlohmann::json& json, VulkanDevice* device)
+    : Resource(manager, json)
     , _device(device)
 {
 }
 
-Model::~Model()
+StaticModel::~StaticModel()
 {
 }
 
-void Model::Load()
+void StaticModel::Load()
 {
-    // Assimp::Importer importer;
-    // const aiScene* scene = importer.ReadFile(GetPath().string(), aiProcess_Triangulate);
-    // if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-    //     blError("ERROR::ASSIMP::{}", importer.GetErrorString());
-    //     throw std::runtime_error("Could not load model!");
-    // }
-
-    // ProcessNodes(scene->mRootNode, scene);
+    std::ifstream modelFile(GetPath());
+    auto  bl::ReadT<uint32_t>(modelFile);
 }
 
-void Model::Unload()
+void StaticModel::Unload()
 {
     _meshes.clear();
 }
 
-void Model::Draw(MaterialInstance* mat, VulkanRenderData& rd)
+void StaticModel::Draw(MaterialInstance* mat, VulkanRenderData& rd)
 {
     for (int i = 0; i < (int)_meshes.size(); i++)
     {

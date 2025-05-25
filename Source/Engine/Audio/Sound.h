@@ -12,7 +12,7 @@ class AudioSystem;
 class Sound : public Resource
 {
 public:
-    Sound(const nlohmann::json& data, AudioSystem* system);
+    Sound(ResourceManager* manager, const nlohmann::json& data, AudioSystem* system);
     ~Sound();
 
     virtual void Load(); /** @brief From Resource, loads the sound file into memory. */

@@ -9,17 +9,22 @@
 
 namespace bl {
 
-Texture::Texture(const nlohmann::json& data)
-    : Resource(data) {}
+Texture::Texture(ResourceManager* manager, const nlohmann::json& data)
+    : Resource(manager, data) 
+{
+}
 
-Texture::~Texture() {}
+Texture::~Texture() 
+{
+}
 
-void Texture::Load() {
+void Texture::Load() 
+{
     std::filesystem::path path = GetPath();
-    
+
     // Readin the image file to a buffer.
     std::ifstream file{path, std::ios::binary};
-    
+
     file.seekg(0, std::ios::end);
     std::size_t size = file.tellg();
     file.seekg(0, std::ios::beg);
@@ -35,11 +40,16 @@ void Texture::Load() {
     std::transform(extension.begin(), extension.end(), extension.begin(), 
         [](unsigned char c){ return std::tolower(c); });
 
-    if (extension == ".png" || extension == ".jpg") {
+    if (extension == ".png" || extension == ".jpg") 
+    {
         DecodePNG(buffer);
-    } else if (extension == ".qoi") {
+    } 
+    else if (extension == ".qoi") 
+    {
         DecodeQOI(buffer);
-    } else {
+    } 
+    else 
+    {
         blError("Invalid texture extension cannot parse image: {}", path.string());
         return;
     }
@@ -47,8 +57,10 @@ void Texture::Load() {
     Resource::Load(); // Set the resource state as loaded.
 }
 
-void Texture::Unload() {
+void Texture::Unload() 
+{
     _imageData.resize(0);
+    Resource::Unload();
 }
 
 VkExtent2D Texture::GetExtent() const {

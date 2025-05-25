@@ -50,19 +50,19 @@ std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(Window* window)
     return std::make_unique<Renderer>(_device.get(), vulkanWindow);
 }
 
-std::unique_ptr<Resource> GraphicsSystem::BuildResource(const std::string& type, const std::filesystem::path& path, const nlohmann::json& json)
+std::unique_ptr<Resource> GraphicsSystem::BuildResource(ResourceManager* manager, const std::string& type, const std::filesystem::path& path, const nlohmann::json& json)
 {
     if (type == "Shader") 
     {
-        return std::make_unique<VulkanShader>(json, _device.get());
+        return std::make_unique<VulkanShader>(manager, json, _device.get());
     } 
     else if (type == "Texture") 
     {
-        return std::make_unique<Texture2D>(json, _device.get());
+        return std::make_unique<Texture2D>(manager, json, _device.get());
     } 
     else if (type == "Model")
     {
-        return std::make_unique<Model>(json, _device.get());
+        return std::make_unique<Model>(manager, json, _device.get());
     }
     else 
     {
