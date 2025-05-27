@@ -35,8 +35,27 @@ Renderer::~Renderer()  {
     DestroySyncObjects();
 }
 
-VkRenderPass Renderer::GetRenderPass() const { 
-    return _pass;
+bool Renderer::GetRenderPass(const std::string& name, VkRenderPass& pass, uint32_t& subpass) const 
+{
+    pass = _pass;
+
+    if (name == "geometry")
+    {
+        subpass = 0;
+        return true;
+    }
+    else if (name == "lighting")
+    {
+        subpass = 1;
+        return true;
+    }
+    else
+    {
+        Log::Error("Could not parse render pass as \"{}\" is not a valid render pass.");
+        return false;
+    }
+
+    return false;
 }
 
 void Renderer::CreateSyncObjects() {
@@ -84,26 +103,32 @@ void Renderer::DestroyImagesAndFramebuffers() {
     _depthImages.clear();
 }
 
-void Renderer::RecreateImages() {
+void Renderer::RecreateImages() 
+{
     _imageCount = _swapchain->GetImageCount();
-    VkExtent2D extent = _swapchain->GetExtent();
-    
+    auto extent = _swapchain->GetExtent();
+
     DestroyImagesAndFramebuffers();
 
-    // Construct all the buffers for the passes.
+    // Construct all the image buffers for the passes.
     _depthImages.reserve(_imageCount);
+    _positionImages.reserve(_imageCount);
+
     auto imageExtent = VkExtent3D{extent.width, extent.height, 1};
 
     for (uint32_t i = 0; i < _imageCount; i++) 
     {
         _depthImages.emplace_back(_device, VK_IMAGE_TYPE_2D, imageExtent, _depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_IMAGE_ASPECT_DEPTH_BIT);
+        _positionImages.emplace_back(_device, VK_IMAGE_TYPE_2D, imageExtent, _positionFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VK_IMAGE_ASPECT_COLOR_BIT);
     }
 
     _framebuffers.resize(_imageCount);
 
     auto swapchainImageViews = _swapchain->GetImageViews();
-    for (uint32_t i = 0; i < _imageCount; i++) {
-        std::array attachments = {
+    for (uint32_t i = 0; i < _imageCount; i++) 
+    {
+        std::array attachments = 
+        {
             swapchainImageViews[i],
             _depthImages[i].GetView()
         };
@@ -133,7 +158,8 @@ void Renderer::Render(RenderFunction func)
 
     // Acquire the next image in the swapchain and update all render pass
     // images if the swapchain was recreated within the previous frame.
-    if (_swapchain->AcquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE)) {
+    if (_swapchain->AcquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE)) 
+    {
         RecreateImages();
         return; // skip this frame!
     }
@@ -159,7 +185,11 @@ void Renderer::Render(RenderFunction func)
         VkClearValue{.depthStencil = {1.0f, 0}}
     };
 
-    VkRect2D renderArea{ { 0, 0 }, _swapchain->GetExtent() };
+    VkRect2D renderArea
+    { 
+        { 0, 0 }, 
+        _swapchain->GetExtent() 
+    };
 
     VkRenderPassBeginInfo passBeginInfo = {};
     passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -169,13 +199,19 @@ void Renderer::Render(RenderFunction func)
     passBeginInfo.renderArea = renderArea;
     passBeginInfo.clearValueCount = (uint32_t)clearColors.size();
     passBeginInfo.pClearValues = clearColors.data();
-    
+
     vkCmdBeginRenderPass(cmd, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // Render all the frame data to the gbuffer.
-    VulkanRenderData rd = {cmd, _currentFrame, _imageIndex};
+    VulkanRenderData rd = 
+    {
+        cmd, 
+        _currentFrame, 
+        _imageIndex
+    };
+
     func(rd);
-    
+
     vkCmdEndRenderPass(cmd);
 
     VK_CHECK(vkEndCommandBuffer(cmd))
@@ -207,15 +243,17 @@ void Renderer::Render(RenderFunction func)
     _currentFrame = (_currentFrame + 1) % _imageCount;
 }
 
-void Renderer::CreateRenderPasses() {
+void Renderer::CreateRenderPasses() 
+{
 
     // Find the formats for each image in the pass.
     auto physicalDevice = _device->GetPhysicalDevice();
-    _depthFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, 0);
+    _depthFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+    _positionFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_R32G32B32_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 
     // Build the renderpasses attachment data.
-    std::array<VkAttachmentDescription, 2> attachments = {};
-    
+    std::array<VkAttachmentDescription, 3> attachments = {};
+
     // Swapchain Present Attachment (Final Image)
     attachments[0].flags = 0;
     attachments[0].format = _swapchain->GetFormat();
@@ -238,14 +276,27 @@ void Renderer::CreateRenderPasses() {
     attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
-    std::array<VkSubpassDescription, 1> subpasses;
+    attachments[2].flags = 0;
+    attachments[2].format = _positionFormat;
+    attachments[2].samples = VK_SAMPLE_COUNT_1_BIT;
+    attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // stencil may be used later
+    attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachments[2].finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    std::array<VkSubpassDescription, 1> subpasses = {};
 
     // Forward Subpass
-    std::array<VkAttachmentReference, 1> forwardColorReferences = {{
+    std::array<VkAttachmentReference, 2> forwardColorReferences = 
+    {{
         {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+        {2, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL}
     }};
 
-    VkAttachmentReference forwardDepthReference = {
+    VkAttachmentReference forwardDepthReference = 
+    {
         1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL 
     };
 
@@ -283,7 +334,8 @@ void Renderer::CreateRenderPasses() {
     VK_CHECK(vkCreateRenderPass(_device->Get(), &createInfo, nullptr, &_pass))
 }
 
-void Renderer::DestroyRenderPasses() {
+void Renderer::DestroyRenderPasses() 
+{
     vkDestroyRenderPass(_device->Get(), _pass, nullptr);
 }
 

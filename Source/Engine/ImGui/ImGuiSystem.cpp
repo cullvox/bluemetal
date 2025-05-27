@@ -97,7 +97,10 @@ void ImGuiSystem::Init()
     auto instance = graphics->GetInstance();
     auto physicalDevice = graphics->GetPhysicalDevice();
     auto window = _window;
-    auto renderPass = _renderer->GetRenderPass();
+    
+    VkRenderPass pass;
+    uint32_t subpass;
+    auto renderPass = _renderer->GetRenderPass("geometry", pass, subpass);
 
     device->WaitForDevice();
 
@@ -142,8 +145,8 @@ void ImGuiSystem::Init()
     initInfo.Queue = device->GetGraphicsQueue();
     initInfo.PipelineCache = VK_NULL_HANDLE;
     initInfo.DescriptorPool = _descriptorPool;
-    initInfo.RenderPass = renderPass;
-    initInfo.Subpass = 0;
+    initInfo.RenderPass = pass;
+    initInfo.Subpass = subpass;
     initInfo.MinImageCount = 3;
     initInfo.ImageCount = 3;
     initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;

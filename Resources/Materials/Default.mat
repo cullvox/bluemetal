@@ -1,7 +1,13 @@
 {
-    "Shaders": {
-        "Vertex": "Resources/Shaders/Default.vert",
-        "Fragment": "Resources/Shaders/Default.frag"
+    "renderPass": "geometry",
+    "shaders": {
+        "vertex": "Resources/Shaders/Default.vert",
+        "fragment": "Resources/Shaders/Default.frag"
     },
-    ""
+    "state": {
+        "inputBindings": {
+            
+        }
+    },
+    "properties": {}
 }

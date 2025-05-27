@@ -4,6 +4,7 @@
 #include "VulkanMutable.h"
 #include "VulkanDevice.h"
 #include "VulkanShader.h"
+#include "VulkanConversions.h"
 #include "VulkanReflectedBlock.h"
 #include "VulkanReflectedDescriptorSet.h"
 #include "VulkanReflectedPushConstant.h"
@@ -16,18 +17,21 @@ namespace bl {
 /** @brief Create info for pipeline objects. */
 struct VulkanPipelineStateInfo {
 
-    struct Stages {
+    struct Stages 
+    {
         std::vector<ResourceRef<VulkanShader>> shaders;
     } stages;
 
-    struct VertexState {
+    struct VertexState 
+    {
         std::vector<VkVertexInputBindingDescription> inputBindings = Vertex::GetBindingDescriptions();
         std::vector<VkVertexInputAttributeDescription> inputAttribs = Vertex::GetBindingAttributeDescriptions();
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         bool primitiveRestartEnable = VK_FALSE;
     } vertexState;
 
-    struct RasterizerState {
+    struct RasterizerState 
+    {
         VkBool32 depthClampEnable = VK_FALSE;
         VkBool32 rasterizerDiscardEnable = VK_FALSE;
         VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
@@ -40,16 +44,17 @@ struct VulkanPipelineStateInfo {
         float lineWidth = 1.0f;
     } rasterizerState;
     
-    struct MultisampleState {
+    struct MultisampleState 
+    {
         VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
         VkBool32 sampleShadingEnable = VK_FALSE;
-        float minSampleShading = 1.0f;
-        const VkSampleMask* pSampleMask = nullptr;
+        float minSampleShading = 0.2f;
         VkBool32 alphaToCoverageEnable = VK_FALSE;
         VkBool32 alphaToOneEnable = VK_FALSE;
     } multisampleState;
 
-    struct DepthStencilState {
+    struct DepthStencilState 
+    {
         VkBool32 depthTestEnable = VK_TRUE;
         VkBool32 depthWriteEnable = VK_TRUE;
         VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
@@ -61,10 +66,12 @@ struct VulkanPipelineStateInfo {
         float maxDepthBounds = 1.0f;
     } depthStencilState;
 
-    struct ColorBlendState {
+    struct ColorBlendState 
+    {
         VkBool32 logicOpEnable = VK_FALSE;
         VkLogicOp logicOp = VK_LOGIC_OP_COPY;
-        std::vector<VkPipelineColorBlendAttachmentState> attachments = {{
+        std::vector<VkPipelineColorBlendAttachmentState> attachments = 
+        {{
             .blendEnable = VK_TRUE,
             .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
             .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -74,10 +81,16 @@ struct VulkanPipelineStateInfo {
             .alphaBlendOp = VK_BLEND_OP_ADD,
             .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
         }};
-        std::array<float, 4> blendConstants = {0.0f, 0.0f, 0.0f, 0.0f};
+        std::array<float, 4> blendConstants = 
+        {
+            0.0f, 0.0f, 0.0f, 0.0f
+        };
     } colorBlendState;
 
     std::vector<VkDynamicState> dynamicStates;
+
+    bool Parse(nlohmann::json json);
+    nlohmann::json Save();
 };
 
 class VulkanReflectedPipeline {
@@ -146,6 +159,14 @@ private:
     VkPipeline _pipeline;
     std::map<uint32_t, VkDescriptorSetLayout> _descriptorSetLayouts;
 };
+
+// NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::Stages, shaders)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::VertexState, inputBindings, inputAttribs, topology, primitiveRestartEnable)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::RasterizerState, depthClampEnable, rasterizerDiscardEnable, polygonMode, cullMode, frontFace, depthBiasEnable, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor, lineWidth)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::MultisampleState, rasterizationSamples, sampleShadingEnable, minSampleShading, alphaToCoverageEnable, alphaToOneEnable)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::DepthStencilState, depthTestEnable, depthWriteEnable, depthCompareOp, depthBoundsTestEnable, stencilTestEnable, front, back, minDepthBounds, maxDepthBounds)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::ColorBlendState,logicOpEnable, logicOp, attachments, blendConstants)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo, /* stages, */ vertexState, rasterizerState, multisampleState, depthStencilState, colorBlendState, dynamicStates)
 
 } // namespace bl
 

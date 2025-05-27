@@ -1,10 +1,97 @@
 #include "Core/Print.h"
-#include "Graphics/VulkanDescriptorSetLayoutCache.h"
+#include "VulkanConversions.h"
+#include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanReflectedBlock.h"
-#include <vulkan/vulkan_core.h>
 #include "VulkanPipeline.h"
 
-namespace bl {
+namespace bl 
+{
+
+nlohmann::json VulkanPipelineStateInfo::Save()
+{
+    auto out = nlohmann::json{};
+
+    auto& vertexStateOut = out.at("vertexState");
+    for (auto& binding : vertexState.inputBindings)
+    {
+        vertexStateOut.at("vertexBindings").push_back({
+            {"binding", binding.binding},
+            {"stride", binding.stride},
+            {"inputRate", binding.inputRate}
+        });
+    }
+
+    for (auto& attrib : vertexState.inputAttribs)
+    {
+        vertexStateOut.at("inputAttribs").push_back({
+            {"location", attrib.location},
+            {"binding", attrib.binding},
+            {"format", attrib.format},
+            {"pffset", attrib.offset}
+        });
+    }
+
+    vertexStateOut["topology"] = vertexState.topology;
+    vertexStateOut["primitiveRestartEnable"] = vertexState.primitiveRestartEnable;
+
+    out["rasterizerState"] = 
+    {
+        {"depthClampEnable", rasterizerState.depthClampEnable},
+        {"rasterizerDiscardEnable", rasterizerState.rasterizerDiscardEnable},
+        {"polygonMode", rasterizerState.polygonMode},
+        {"cullMode", rasterizerState.cullMode},
+        {"frontFace", rasterizerState.frontFace},
+        {"depthBiasEnable", rasterizerState.depthBiasEnable},
+        {"depthBiasConstantFactor", rasterizerState.depthBiasConstantFactor},
+        {"depthBiasClamp", rasterizerState.depthBiasClamp},
+        {"depthBiasSlopeFactor", rasterizerState.depthBiasSlopeFactor},
+        {"lineWidth", rasterizerState.lineWidth},
+    };
+
+    out["multisampleState"] = 
+    {
+        {"rasterizationSamples", multisampleState.rasterizationSamples},
+        {"sampleShadingEnable", multisampleState.sampleShadingEnable},
+        {"minSampleShading", multisampleState.minSampleShading},
+        {"alphaToCoverageEnable", multisampleState.alphaToCoverageEnable},
+        {"alphaToOneEnable", multisampleState.alphaToOneEnable},
+    };
+
+    out["depthStencilState"] =
+    {
+        {"depthTestEnable", depthStencilState.depthTestEnable},
+        {"depthWriteEnable", depthStencilState.depthWriteEnable},
+        {"depthCompareOp", depthStencilState.depthCompareOp},
+        {"depthBoundsTestEnable", depthStencilState.depthBoundsTestEnable},
+        {"stencilTestEnable", depthStencilState.stencilTestEnable},
+        {"front", {
+            {"failOp", depthStencilState.front.failOp},
+            {"passOp", depthStencilState.front.passOp},
+            {"depthFailOp", depthStencilState.front.depthFailOp},
+            {"compareOp", depthStencilState.front.compareOp},
+            {"compareMask", depthStencilState.front.compareMask},
+            {"writeMask", depthStencilState.front.writeMask},
+            {"reference", depthStencilState.front.reference},
+        }},
+        {"back", {
+            {"failOp", depthStencilState.back.failOp},
+            {"passOp", depthStencilState.back.passOp},
+            {"depthFailOp", depthStencilState.back.depthFailOp},
+            {"compareOp", depthStencilState.back.compareOp},
+            {"compareMask", depthStencilState.back.compareMask},
+            {"writeMask", depthStencilState.back.writeMask},
+            {"reference", depthStencilState.back.reference},
+        }},
+        {"minDepthBounds", depthStencilState.minDepthBounds},
+        {"maxDepthBounds", depthStencilState.maxDepthBounds},
+    };
+
+    out["colorBlendState"] =
+    {
+        {"logicOpEnable", colorBlendState.logicOpEnable},
+        {"logicOp", colorBlendState.logicOp}
+    };
+}
 
 VulkanReflectedPipeline::VulkanReflectedPipeline(const VulkanPipelineStateInfo::Stages& state) {
     const auto& shaders = state.shaders;

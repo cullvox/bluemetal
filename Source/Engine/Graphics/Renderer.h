@@ -6,18 +6,27 @@
 #include "VulkanWindow.h"
 #include "VulkanRenderData.h"
 
-namespace bl {
+namespace bl 
+{
 
 using RenderFunction = std::function<void(VulkanRenderData& rd)>;
 
-class Renderer {
+enum class RenderPass : uint32_t
+{
+    eGeometry = 0,
+    eLighting = 1
+};
+
+class Renderer 
+{
 public:
     Renderer(VulkanDevice* device, VulkanWindow* window); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
-    VkRenderPass GetRenderPass() const;
+    uint32_t GetSwapchainImageCount() { return _imageCount; }
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::numFramesInFlight - 1. */
     void Render(RenderFunction func);
+    bool GetRenderPass(const std::string& name, VkRenderPass& pass, uint32_t& subpass) const;
 
 private:
     void CreateSyncObjects();
@@ -41,8 +50,9 @@ private:
     std::vector<VkFence> _inFlightFences;
 
     // Render Pass Data
-    VkFormat _depthFormat;
+    VkFormat _depthFormat, _positionFormat;
     VkRenderPass _pass;
+    std::vector<VulkanImage> _positionImages;
     std::vector<VulkanImage> _depthImages;
     std::vector<VkFramebuffer> _framebuffers;
 
