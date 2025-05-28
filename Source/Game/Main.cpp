@@ -59,7 +59,7 @@ int main(int argc, const char** argv)
     auto vert = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.frag.spv");
     auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.bmm");
-    // auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
+    auto material_res = resourceMgr->Load<bl::Material>("Materials/Default.mat");
 
     auto renderer = engine.GetRenderer();
 
@@ -74,7 +74,7 @@ int main(int argc, const char** argv)
     uint32_t subpass = 0;
     renderer->GetRenderPass("geometry", pass, subpass);
 
-    auto material = std::make_unique<bl::Material>(graphics->GetDevice(), pass, subpass, psi, vulkanWindow->GetSwapchain()->GetImageCount(), 1);
+    // auto material = std::make_unique<bl::Material>(graphics->GetDevice(), pass, subpass, psi, vulkanWindow->GetSwapchain()->GetImageCount(), 1);
     material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
 
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(vulkanWindow);
