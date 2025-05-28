@@ -88,9 +88,6 @@ struct VulkanPipelineStateInfo {
     } colorBlendState;
 
     std::vector<VkDynamicState> dynamicStates;
-
-    bool Parse(nlohmann::json json);
-    nlohmann::json Save();
 };
 
 class VulkanReflectedPipeline {

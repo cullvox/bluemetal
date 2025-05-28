@@ -59,7 +59,7 @@ int main(int argc, const char** argv)
     auto vert = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.frag.spv");
     auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.bmm");
-    auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
+    // auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
 
     auto renderer = engine.GetRenderer();
 
@@ -70,7 +70,11 @@ int main(int argc, const char** argv)
     auto window = engine.GetWindow();
     auto vulkanWindow = dynamic_cast<bl::VulkanWindow*>(window);
 
-    auto material = std::make_unique<bl::Material>(graphics->GetDevice(), renderer->GetRenderPass(), 0, psi, vulkanWindow->GetSwapchain()->GetImageCount(), 1);
+    VkRenderPass pass = VK_NULL_HANDLE;
+    uint32_t subpass = 0;
+    renderer->GetRenderPass("geometry", pass, subpass);
+
+    auto material = std::make_unique<bl::Material>(graphics->GetDevice(), pass, subpass, psi, vulkanWindow->GetSwapchain()->GetImageCount(), 1);
     material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
 
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(vulkanWindow);
@@ -236,13 +240,13 @@ int main(int argc, const char** argv)
             direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
             cameraFront = glm::normalize(direction);
 
-            blInfo("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
+            bl::Log::Info("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
         }
 
         view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
 
-        blInfo("Mouse: {}, {}, {}", mouse.x, mouse.y, firstMouse);
-        blInfo("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
+        bl::Log::Info("Mouse: {}, {}, {}", mouse.x, mouse.y, firstMouse);
+        bl::Log::Info("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
 
         extent = window->GetExtent();
         extentf = glm::vec2{(float)extent.width, (float)extent.height};
