@@ -65,6 +65,11 @@ public:
         return _value;
     }
 
+    T* operator->()
+    {
+        return _value;
+    }
+
 private:
     T* _value; /** @brief A reference to our counted resource, should never be nullptr. */
 };

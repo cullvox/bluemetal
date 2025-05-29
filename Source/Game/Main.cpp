@@ -59,7 +59,7 @@ int main(int argc, const char** argv)
     auto vert = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.frag.spv");
     auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.bmm");
-    auto material_res = resourceMgr->Load<bl::Material>("Materials/Default.mat");
+    auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
 
     auto renderer = engine.GetRenderer();
 
@@ -70,9 +70,7 @@ int main(int argc, const char** argv)
     auto window = engine.GetWindow();
     auto vulkanWindow = dynamic_cast<bl::VulkanWindow*>(window);
 
-    VkRenderPass pass = VK_NULL_HANDLE;
-    uint32_t subpass = 0;
-    renderer->GetRenderPass("geometry", pass, subpass);
+    // auto [pass, subpass] = renderer->GetRenderPass(bl::RenderPassType::eGeometry);
 
     // auto material = std::make_unique<bl::Material>(graphics->GetDevice(), pass, subpass, psi, vulkanWindow->GetSwapchain()->GetImageCount(), 1);
     material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
@@ -266,8 +264,8 @@ int main(int argc, const char** argv)
 
         // object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
 
-        glm::vec3 position{ sinf(bl::Time::current() / 1000.f) * 10.f, 0.0f, 10.0f };
-        glm::vec3 velocity{ cosf(bl::Time::current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
+        glm::vec3 position{ sinf(bl::Time::Current() / 1000.f) * 10.f, 0.0f, 10.0f };
+        glm::vec3 velocity{ cosf(bl::Time::Current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
 
         glm::vec4 color = { 1.f, 0.5f, 0.f, 1.0f };
         
@@ -308,7 +306,7 @@ int main(int argc, const char** argv)
             material->Bind(rd);
             material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
 
-            model.Get()->Draw(material.get(), rd);
+            model.Get()->Draw(rd, material->GetMaterial());
 
             imgui->BeginFrame();
 
@@ -359,7 +357,7 @@ int main(int argc, const char** argv)
                 ImGui::Text("MS/F: %.2f", frameCounter.GetMillisecondsPerFrame()); 
                 ImGui::Text("Average F/S (Over 10 Seconds): %.1f", frameCounter.GetAverageFramesPerSecond(10));
                 ImGui::Text("Average MS/F (Over 144 Frames): %.2f", frameCounter.GetAverageMillisecondsPerFrame(144)); 
-                ImGui::Text("Present Mode: %s", bl::vk::ToString(vulkanWindow->GetSwapchain()->GetPresentMode())); 
+                ImGui::Text("Present Mode: %s", bl::ToString(vulkanWindow->GetSwapchain()->GetPresentMode()).data()); 
                 // ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
 
                 if (ImGui::TreeNode("Physical Devices")) {
@@ -387,7 +385,7 @@ int main(int argc, const char** argv)
 
                             if (ImGui::TreeNode("Present Modes")) {
                                 for (VkPresentModeKHR mode : physicalDevice->GetPresentModes(vulkanWindow))
-                                    ImGui::Text("%s", bl::vk::ToString(mode));
+                                    ImGui::Text("%s", bl::ToString(mode).data());
 
                                 ImGui::TreePop();
                             }

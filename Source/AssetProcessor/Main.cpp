@@ -29,6 +29,7 @@
 #include "Graphics/stb_image.h"
 #include "Graphics/Vertex.h"
 
+
 struct ResourceFile
 {
     std::string type;
@@ -81,7 +82,7 @@ int main(int argc, const char** argv)
     }
     catch (const std::exception& e)
     {
-        bl::Log::Error("{}, {}", e.what(), parser);
+        bl::Log::Error("{}, {}", e.what(), parser.help().str());
         std::exit(EXIT_FAILURE);
     }
 

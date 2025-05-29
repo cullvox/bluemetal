@@ -16,7 +16,7 @@ namespace bl
 class Time
 {
 public:
-    static float current()
+    static float Current()
     {
         auto now = std::chrono::high_resolution_clock::now();
         std::chrono::duration<float, std::milli> dt = now - start;

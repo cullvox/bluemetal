@@ -1,5 +1,7 @@
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
@@ -11,10 +13,13 @@ namespace bl
 
 using RenderFunction = std::function<void(VulkanRenderData& rd)>;
 
-enum class RenderPass : uint32_t
+class Material;
+
+enum class RenderPassType : uint32_t
 {
     eGeometry = 0,
-    eLighting = 1
+    eLighting = 1,
+    eUI = 2, 
 };
 
 class Renderer 
@@ -26,7 +31,12 @@ public:
     uint32_t GetSwapchainImageCount() { return _imageCount; }
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::numFramesInFlight - 1. */
     void Render(RenderFunction func);
-    bool GetRenderPass(const std::string& name, VkRenderPass& pass, uint32_t& subpass) const;
+    std::tuple<VkRenderPass, uint32_t> GetRenderPass(RenderPassType pass) const;
+
+protected:
+    friend class Material;
+    void AddMaterial(Material* material);
+    void RemoveMaterial(Material* material);
 
 private:
     void CreateSyncObjects();
@@ -57,6 +67,14 @@ private:
     std::vector<VkFramebuffer> _framebuffers;
 
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
+
+    std::unordered_set<Material*> _materials;
 };
+
+NLOHMANN_JSON_SERIALIZE_ENUM(RenderPassType, {
+    {RenderPassType::eGeometry, "geometry"},
+    {RenderPassType::eLighting, "lighting"},
+    {RenderPassType::eUI, "ui"},
+});
 
 } // namespace bl

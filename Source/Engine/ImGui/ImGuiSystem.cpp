@@ -3,6 +3,7 @@
 ///////////////////////////////
 
 #include "Engine/Engine.h"
+#include "Graphics/Renderer.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl3.h"
 #include "ImGui/imgui_impl_vulkan.h"
@@ -98,9 +99,7 @@ void ImGuiSystem::Init()
     auto physicalDevice = graphics->GetPhysicalDevice();
     auto window = _window;
     
-    VkRenderPass pass;
-    uint32_t subpass;
-    auto renderPass = _renderer->GetRenderPass("geometry", pass, subpass);
+    auto [pass, subpass] = _renderer->GetRenderPass(RenderPassType::eUI);
 
     device->WaitForDevice();
 

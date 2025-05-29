@@ -1,5 +1,6 @@
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "Renderer.h"
+#include "Material.h"
 
 namespace bl {
 
@@ -35,27 +36,15 @@ Renderer::~Renderer()  {
     DestroySyncObjects();
 }
 
-bool Renderer::GetRenderPass(const std::string& name, VkRenderPass& pass, uint32_t& subpass) const 
+std::tuple<VkRenderPass, uint32_t> Renderer::GetRenderPass(RenderPassType passType) const 
 {
-    pass = _pass;
-
-    if (name == "geometry")
+    switch (passType)
     {
-        subpass = 0;
-        return true;
+    case RenderPassType::eGeometry: return std::make_tuple(_pass, 0);
+    case RenderPassType::eLighting: return std::make_tuple(_pass, 0);
+    case RenderPassType::eUI: return std::make_tuple(_pass, 0);
+    default: throw std::runtime_error("Invalid render pass type!");
     }
-    else if (name == "lighting")
-    {
-        subpass = 1;
-        return true;
-    }
-    else
-    {
-        Log::Error("Could not parse render pass as \"{}\" is not a valid render pass.");
-        return false;
-    }
-
-    return false;
 }
 
 void Renderer::CreateSyncObjects() {
@@ -153,6 +142,7 @@ void Renderer::Render(RenderFunction func)
     if (!_swapchain->Get()) // Swapchain must be valid.
         return;
 
+
     // Wait for the current image up coming in the chain to finish.
     VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
 
@@ -165,6 +155,11 @@ void Renderer::Render(RenderFunction func)
     }
 
     _imageIndex = _swapchain->GetImageIndex();
+
+
+    // Update all material buffers.
+    for (auto material : _materials)
+        material->UpdateUniforms();
 
     // Reset the fence for this image so it can signal when it's done.
     VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
@@ -338,5 +333,16 @@ void Renderer::DestroyRenderPasses()
 {
     vkDestroyRenderPass(_device->Get(), _pass, nullptr);
 }
+
+void Renderer::AddMaterial(Material* material)
+{
+    _materials.emplace(material);
+}
+
+void Renderer::RemoveMaterial(Material* material)
+{
+    _materials.erase(material);
+}
+
 
 } // namespace bl

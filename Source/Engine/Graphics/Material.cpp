@@ -8,37 +8,110 @@ Material::Material(ResourceManager* manager, const nlohmann::json& data, VulkanD
     : Resource(manager, data)
 {
 
-    auto path = data["path"].get<std::string>();
-    std::ifstream materialFile(path);
 
-    std::string renderPass;
+
+    
+}
+
+Material::~Material()
+{
+    
+}
+
+void Material::Load()
+{
+    std::ifstream materialFile(GetPath());
+
     std::string vertexPath, fragmentPath;
     nlohmann::json json;
     VulkanPipelineStateInfo info;
+    RenderPassType passType;
+
     try
     {
         json = nlohmann::json::parse(materialFile);
 
-        renderPass = json["renderPass"].get<std::string>();
+        passType = json["renderPass"];
         vertexPath = json["shaders"]["vertex"].get<std::string>();
         fragmentPath = json["shaders"]["fragment"].get<std::string>();
         info = json["state"];
+
     }
     catch (const std::exception& e)
     {
         Log::Error("Could not parse material json: {}", e.what());
     }
 
-    VkRenderPass pass;
-    uint32_t subpass;
-    renderer->GetRenderPass(renderPass, pass, subpass);
+    auto [pass, subpass] = _renderer->GetRenderPass(passType);
 
-    _material = std::make_unique<VulkanMaterial>(device, pass, subpass, info, renderer->GetSwapchainImageCount());
+    _material = std::make_unique<VulkanMaterial>(_device, pass, subpass, info, _renderer->GetSwapchainImageCount());
+
+    _renderer->AddMaterial(this); // Ensures that the material buffers get properly cleaned updated every frame.
 }
 
-Material::~Material()
+void Material::Unload()
 {
+    _renderer->RemoveMaterial(this);
+}
 
+void Material::SetBool(const std::string& name, bool value)
+{
+    _material->SetBool(name, value);
+}
+
+void Material::SetInteger(const std::string& name, int value)
+{
+    _material->SetInteger(name, value);
+}
+
+void Material::SetScaler(const std::string& name, float value)
+{
+    _material->SetScaler(name, value);
+}
+
+void Material::SetVector2(const std::string& name, glm::vec2 value)
+{
+    _material->SetVector2(name, value);
+}
+
+void Material::SetVector3(const std::string& name, glm::vec3 value)
+{
+    _material->SetVector3(name, value);
+}
+
+void Material::SetVector4(const std::string& name, glm::vec4 value)
+{
+    _material->SetVector4(name, value);
+}
+
+void Material::SetMatrix(const std::string& name, glm::mat4 value)
+{
+    _material->SetMatrix(name, value);
+}
+
+void Material::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image)
+{
+    _material->SetSampledImage2D(name, sampler, image);
+}
+
+void Material::UpdateUniforms()
+{
+    _material->UpdateUniforms();
+}
+
+void Material::Bind(VulkanRenderData& rd)
+{
+    _material->Bind(rd);
+}
+
+void Material::PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value)
+{
+    _material->PushConstant(rd, offset, size, value);
+}
+
+VulkanPipeline* Material::GetPipeline()
+{
+    return _material->GetPipeline();
 }
 
 }

@@ -29,8 +29,12 @@ public:
     void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */
     void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
 
+    VulkanMaterial* GetMaterial() { return _material.get(); }
+    VulkanPipeline* GetPipeline();
+
 private:
-    Property 
+    Renderer* _renderer;
+    VulkanDevice* _device;
     std::unique_ptr<VulkanMaterial> _material;
 };
 

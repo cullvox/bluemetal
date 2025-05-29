@@ -15,7 +15,7 @@ inline void to_json(BasicJsonType& j, const FLAG_TYPE& flags) \
     static const std::pair<FLAG_TYPE, BasicJsonType> m[] = __VA_ARGS__; \
     for (const auto& [flag, value] : m) \
     { \
-        if (flags & flag) json.push_back(value); \
+        if (flags & flag) j.push_back(value); \
     } \
 } \
 template<typename BasicJsonType> \
@@ -38,10 +38,10 @@ class VulkanConversions
 {
 public:
     static uint32_t GetFormatSize(VkFormat format);
-    static VkFormat VkFormatFromString(const std::string& str, VkFormat default = VK_FORMAT_UNDEFINED);
-    static VkVertexInputRate VkVertexInputRateFromString(const std::string& str, VkVertexInputRate default = VK_VERTEX_INPUT_RATE_VERTEX);
-    static VkPrimitiveTopology VkPrimitiveTopologyFromString(const std::string& str, VkPrimitiveTopology default = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
-    static VkPolygonMode VkPolygonModeFromString(const std::string& str, VkPolygonMode default = VK_POLYGON_MODE_FILL);
+    static VkFormat VkFormatFromString(const std::string& str, VkFormat def = VK_FORMAT_UNDEFINED);
+    static VkVertexInputRate VkVertexInputRateFromString(const std::string& str, VkVertexInputRate def = VK_VERTEX_INPUT_RATE_VERTEX);
+    static VkPrimitiveTopology VkPrimitiveTopologyFromString(const std::string& str, VkPrimitiveTopology def = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+    static VkPolygonMode VkPolygonModeFromString(const std::string& str, VkPolygonMode def = VK_POLYGON_MODE_FILL);
 };
 
 std::string_view ToString(VkFormat format);
