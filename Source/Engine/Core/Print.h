@@ -38,6 +38,7 @@ public:
         const auto& loc = format.location;
         fmt::print(style, "{}:{}: ", bl::PathUtils::GetFilename(loc.file_name()), loc.line());
         fmt::vprint(stdout, style,format.value, args);
+        fmt::print("\n");
     }
 
     template<typename...TArgs>
