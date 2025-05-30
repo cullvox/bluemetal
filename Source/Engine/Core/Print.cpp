@@ -3,6 +3,7 @@
 namespace bl
 {
 
+bool Log::useVerboseLogging;
 
 void Log::EnableVerboseLogging(bool enable)
 {

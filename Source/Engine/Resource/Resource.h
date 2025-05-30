@@ -44,6 +44,7 @@ protected:
     void SetPath(const std::filesystem::path& path);
     void SetLoadOp(ResourceLoadOp op);
     void SetState(ResourceState state);
+    ResourceManager* GetManager() { return _manager; }
 
 private:
     ResourceManager* _manager;

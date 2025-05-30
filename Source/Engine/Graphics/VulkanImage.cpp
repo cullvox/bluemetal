@@ -12,19 +12,20 @@ VulkanImage::VulkanImage()
     , _type(VK_IMAGE_TYPE_1D)
     , _format(VK_FORMAT_UNDEFINED)
     , _usage(0)
-    , _aspectMask(VK_IMAGE_ASPECT_NONE)
-    , _mipLevels(0) 
-    , _layout(VK_IMAGE_LAYOUT_UNDEFINED) {}
+    , _mipLevels(1)
+    , _layout(VK_IMAGE_LAYOUT_UNDEFINED) 
+{
+}
 
-VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, VkImageAspectFlags aspectMask, VkImageLayout initialLayout, uint32_t mipLevels)
+VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage,  uint32_t mipLevels, VkImageLayout initialLayout)
     : _device(device)
     , _extent(extent)
     , _type(type)
     , _format(format)
     , _usage(usage)
-    , _aspectMask(aspectMask)
-    , _mipLevels(mipLevels) 
-    , _layout(initialLayout) {
+    , _mipLevels(mipLevels)
+    , _layout(initialLayout) 
+{
 
     auto physicalDevice = _device->GetPhysicalDevice();
 
@@ -43,7 +44,6 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
         throw std::runtime_error("Image format is not supported!");
 
     auto graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
-
 
     VkImageCreateInfo imageCreateInfo = {};
     imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -73,7 +73,82 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     allocationCreateInfo.priority = 1.0f;
 
     VK_CHECK(vmaCreateImage(_device->GetAllocator(), &imageCreateInfo, &allocationCreateInfo, &_image, &_allocation, nullptr))
+}
 
+VulkanImage::VulkanImage(VulkanImage&& rhs) 
+{
+    this->operator=(std::move(rhs));
+}
+
+VulkanImage::~VulkanImage() 
+{ 
+    Destroy();
+}
+
+VulkanImage& VulkanImage::operator=(VulkanImage&& rhs) 
+{
+    Destroy();
+
+    _device = rhs._device;
+    _extent = rhs._extent;
+    _type = rhs._type;
+    _format = rhs._format;
+    _usage = rhs._usage;
+    _image = rhs._image;
+    _views = rhs._views;
+    _allocation = rhs._allocation;
+
+    rhs._device = {};
+    rhs._type = {};
+    rhs._extent = {};
+    rhs._format = {};
+    rhs._usage = {};
+    rhs._image = {};
+    rhs._views = {};
+    rhs._allocation = {};
+
+    return *this;
+}
+
+VkExtent3D VulkanImage::GetExtent() const 
+{ 
+    return _extent; 
+}
+
+VkFormat VulkanImage::GetFormat() const 
+{ 
+    return _format;
+}
+
+VkImageUsageFlags VulkanImage::GetUsage() const 
+{
+    return _usage;
+}
+
+VkImageLayout VulkanImage::GetLayout() const 
+{
+    return _layout;
+}
+
+VkImage VulkanImage::Get() const 
+{
+    return _image;
+}
+
+void VulkanImage::Destroy() 
+{
+    if (!_device) return;
+
+    for (auto view : _views)
+    {
+        vkDestroyImageView(_device->Get(), view, nullptr);
+    }
+
+    vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
+}
+
+VkImageView VulkanImage::CreateView(VkImageAspectFlags viewAspectMask, uint32_t mipLevels)
+{
     VkComponentMapping componentMapping = {};
     componentMapping.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     componentMapping.g = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -81,9 +156,9 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     componentMapping.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
     VkImageSubresourceRange subresourceRange = {};
-    subresourceRange.aspectMask = _aspectMask;
+    subresourceRange.aspectMask = viewAspectMask;
     subresourceRange.baseMipLevel = 0;
-    subresourceRange.levelCount = _mipLevels;
+    subresourceRange.levelCount = mipLevels;
     subresourceRange.baseArrayLayer = 0;
     subresourceRange.layerCount = 1;
 
@@ -97,74 +172,18 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     viewCreateInfo.components = componentMapping;
     viewCreateInfo.subresourceRange = subresourceRange;
 
-    VK_CHECK(vkCreateImageView(_device->Get(), &viewCreateInfo, nullptr, &_imageView))
+    VkImageView view = VK_NULL_HANDLE;
+    VK_CHECK(vkCreateImageView(_device->Get(), &viewCreateInfo, nullptr, &view))
+
+    _views.push_back(view);
+
+    return view;
 }
 
-VulkanImage::VulkanImage(VulkanImage&& rhs) {
-    this->operator=(std::move(rhs));
-}
-
-VulkanImage::~VulkanImage() { 
-    Destroy();
-}
-
-VulkanImage& VulkanImage::operator=(VulkanImage&& rhs) {
-    Destroy();
-
-    _device = rhs._device;
-    _extent = rhs._extent;
-    _type = rhs._type;
-    _format = rhs._format;
-    _usage = rhs._usage;
-    _aspectMask = rhs._aspectMask;
-    _mipLevels = rhs._mipLevels;
-    _image = rhs._image;
-    _imageView = rhs._imageView;
-    _allocation = rhs._allocation;
-
-    rhs._device = {};
-    rhs._type = {};
-    rhs._extent = {};
-    rhs._format = {};
-    rhs._usage = {};
-    rhs._aspectMask = {};
-    rhs._mipLevels = {};
-    rhs._image = {};
-    rhs._imageView = {};
-    rhs._allocation = {};
-
-    return *this;
-}
-
-VkExtent3D VulkanImage::GetExtent() const { 
-    return _extent; 
-}
-
-VkFormat VulkanImage::GetFormat() const { 
-    return _format;
-}
-
-VkImageUsageFlags VulkanImage::GetUsage() const {
-    return _usage;
-}
-
-VkImageLayout VulkanImage::GetLayout() const {
-    return _layout;
-}
-
-VkImage VulkanImage::Get() const {
-    return _image;
-}
-
-VkImageView VulkanImage::GetView() const {
-    return _imageView;
-}
-
-void VulkanImage::Destroy() {
-    if (!_device) return;
-
-    vkDestroyImageView(_device->Get(), _imageView, nullptr);
-    vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
+void VulkanImage::DestroyViews()
+{
+    for (auto view : _views)
+        vkDestroyImageView(_device->Get(), view, nullptr);
 }
 
 void VulkanImage::UploadData(std::span<const std::byte> data, VkImageLayout finalLayout) {

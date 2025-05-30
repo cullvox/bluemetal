@@ -1,4 +1,6 @@
+#include "Graphics/VulkanShader.h"
 #include "Renderer.h"
+#include "Resource/ResourceManager.h"
 #include "Material.h"
 
 namespace bl
@@ -34,8 +36,12 @@ void Material::Load()
         passType = json["renderPass"];
         vertexPath = json["shaders"]["vertex"].get<std::string>();
         fragmentPath = json["shaders"]["fragment"].get<std::string>();
-        info = json["state"];
 
+        auto vertexShader = GetManager()->Load<bl::VulkanShader>(vertexPath);
+        auto fragmentShader = GetManager()->Load<bl::VulkanShader>(fragmentPath);
+        info.stages.shaders = { vertexShader, fragmentShader };
+
+        info = json["state"];
     }
     catch (const std::exception& e)
     {

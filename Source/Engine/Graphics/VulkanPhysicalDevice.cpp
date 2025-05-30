@@ -38,30 +38,30 @@ VkPhysicalDeviceType VulkanPhysicalDevice::GetType() const
     return _properties.deviceType;
 }
 
-const std::vector<VkPresentModeKHR>& VulkanPhysicalDevice::GetPresentModes(VulkanWindow*) 
+const std::vector<VkPresentModeKHR>& VulkanPhysicalDevice::GetPresentModes(VulkanWindow* window) 
 {
     if (!_presentModes.empty())
         return _presentModes;
 
     uint32_t presentModeCount = 0;
 
-    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, VK_NULL_HANDLE, &presentModeCount, nullptr))
+    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window->GetSurface(), &presentModeCount, nullptr))
     _presentModes.resize(presentModeCount);
-    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, VK_NULL_HANDLE, &presentModeCount, _presentModes.data()))
+    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window->GetSurface(), &presentModeCount, _presentModes.data()))
 
     return _presentModes;
 }
 
-const std::vector<VkSurfaceFormatKHR>& VulkanPhysicalDevice::GetSurfaceFormats(VulkanWindow*) 
+const std::vector<VkSurfaceFormatKHR>& VulkanPhysicalDevice::GetSurfaceFormats(VulkanWindow* window) 
 {
     if (!_surfaceFormats.empty())
         return _surfaceFormats;
 
     uint32_t formatCount = 0;
 
-    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, VK_NULL_HANDLE, &formatCount, nullptr))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->GetSurface(), &formatCount, nullptr))
     _surfaceFormats.resize(formatCount);
-    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, VK_NULL_HANDLE, &formatCount, _surfaceFormats.data()))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->GetSurface(), &formatCount, _surfaceFormats.data()))
 
     return _surfaceFormats;
 }

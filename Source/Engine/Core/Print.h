@@ -2,6 +2,7 @@
 
 #include <cstdlib>
 
+#include <fmt/std.h>
 #include <fmt/core.h>
 #include <fmt/color.h>
 #include <fmt/chrono.h>

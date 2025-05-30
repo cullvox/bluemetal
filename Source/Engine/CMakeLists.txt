@@ -13,6 +13,7 @@ list(APPEND Sources
   "Audio/Sound.cpp"
 
   "Graphics/VulkanWindow.cpp"
+  "Graphics/VulkanConversions.cpp"
   "Graphics/VulkanInstance.cpp"
   "Graphics/VulkanPhysicalDevice.cpp"
   "Graphics/VulkanDevice.cpp"
@@ -76,7 +77,6 @@ target_link_libraries(Bluemetal PUBLIC
   volk
   GPUOpen::VulkanMemoryAllocator
   nlohmann_json
-  zlibstatic
   qoixx::qoixx
   assimp)
 

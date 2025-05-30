@@ -136,7 +136,7 @@ uint32_t VulkanConversions::GetFormatSize(VkFormat format)
     }
 }
 
-VkFormat VulkanConversions::VkFormatFromString(const std::string& format, VkFormat default)
+VkFormat VulkanConversions::VkFormatFromString(const std::string& format, VkFormat def)
 {
     static std::unordered_map<std::string_view, VkFormat> convertMap = 
     {
@@ -451,10 +451,10 @@ VkFormat VulkanConversions::VkFormatFromString(const std::string& format, VkForm
     if (it != convertMap.end())
         return it->second;
     else
-        return default;
+        return def;
 }
 
-VkPrimitiveTopology VulkanConversions::VkPrimitiveTopologyFromString(const std::string& str, VkPrimitiveTopology default)
+VkPrimitiveTopology VulkanConversions::VkPrimitiveTopologyFromString(const std::string& str, VkPrimitiveTopology def)
 {
     static std::unordered_map<std::string_view, VkPrimitiveTopology> convertMap =
     {
@@ -476,10 +476,10 @@ VkPrimitiveTopology VulkanConversions::VkPrimitiveTopologyFromString(const std::
     if (it != convertMap.end())
         return it->second;
     else
-        return default;
+        return def;
 }
 
-VkVertexInputRate VulkanConversions::VkVertexInputRateFromString(const std::string& str, VkVertexInputRate default)
+VkVertexInputRate VulkanConversions::VkVertexInputRateFromString(const std::string& str, VkVertexInputRate def)
 {
     static std::unordered_map<std::string_view, VkVertexInputRate> convertMap = 
     {
@@ -492,11 +492,11 @@ VkVertexInputRate VulkanConversions::VkVertexInputRateFromString(const std::stri
     if (it != convertMap.end())
         return it->second;
     else
-        return default;
+        return def;
 }
 
 
-VkPolygonMode VkPolygonModeFromString(const std::string& str, VkPolygonMode default = VK_POLYGON_MODE_FILL)
+VkPolygonMode VkPolygonModeFromString(const std::string& str, VkPolygonMode def = VK_POLYGON_MODE_FILL)
 {
     static std::unordered_map<std::string_view, VkPolygonMode> convertMap =
     {
@@ -511,7 +511,7 @@ VkPolygonMode VkPolygonModeFromString(const std::string& str, VkPolygonMode defa
     if (it != convertMap.end())
         return it->second;
     else
-        return default;
+        return def;
 }
 
 std::string_view ToString(VkFormat format) 

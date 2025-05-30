@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VulkanDevice.h"
+#include <cstdint>
 
 namespace bl {
 
@@ -22,11 +23,10 @@ public:
         VulkanDevice*       device, 
         VkImageType         type, 
         VkExtent3D          extent, 
-        VkFormat            format, 
-        VkImageUsageFlags   usage, 
-        VkImageAspectFlags  viewAspectMask, 
-        VkImageLayout       initialLayout = VK_IMAGE_LAYOUT_UNDEFINED, 
-        uint32_t            mipLevels = 1);
+        VkFormat            format,
+        VkImageUsageFlags   usage,
+        uint32_t            mipLevels = 1,
+        VkImageLayout       initialLayout = VK_IMAGE_LAYOUT_UNDEFINED);
 
     /// @brief Move Constructor
     /// @param[inout] image The other image to move it's data into this new object. 
@@ -69,6 +69,9 @@ public:
     /// @return Returns the default image view created at construction.
     VkImageView GetView() const;
 
+    VkImageView CreateView(VkImageAspectFlags viewAspectMask, uint32_t mipLevels = 1);
+    void DestroyViews();
+
     /// @brief Destroys the Vulkan image freeing up GPU memory.
     void Destroy();
 
@@ -93,11 +96,10 @@ private:
     VkImageType _type;
     VkFormat _format;
     VkImageUsageFlags _usage;
-    VkImageAspectFlags _aspectMask;
     uint32_t _mipLevels;
     VkImageLayout _layout;
     VkImage _image;
-    VkImageView _imageView;
+    std::vector<VkImageView> _views;
     VmaAllocation _allocation;
 };
 
