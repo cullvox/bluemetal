@@ -12,8 +12,10 @@
 // Shader (GLSL) -> SPIR-V using glslc
 
 
+#include <assimp/material.h>
 #include <filesystem>
 #include <fstream>
+#include <regex>
 
 #include <argparse/argparse.hpp>
 
@@ -23,6 +25,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
+#include <assimp/material.h>
 
 #include "Graphics/ModelFormat.h"
 #include "qoixx.hpp"
@@ -319,7 +322,7 @@ bool ProcessTexture(ProcessorState& state, ResourceFile& resource)
 
 
 void ProcessNodes(const aiNode* node, const aiScene* scene, std::ofstream& stream);
-void ProcessMesh(const aiMesh* mesh, std::ofstream& stream);
+void ProcessMesh(const aiScene* scene, const aiMesh* mesh, std::ofstream& stream);
 void ProcessMaterials(const aiMesh* mesh, const aiScene* scene, std::ofstream& stream);
 
 void ProcessNodes(const aiNode* node, const aiScene* scene, std::ofstream& stream)
@@ -327,7 +330,7 @@ void ProcessNodes(const aiNode* node, const aiScene* scene, std::ofstream& strea
 
     for (unsigned int j = 0; j < node->mNumMeshes; j++)
     {
-        ProcessMesh(scene->mMeshes[node->mMeshes[j]], stream);
+        ProcessMesh(scene, scene->mMeshes[node->mMeshes[j]], stream);
 
         auto& m = node->mTransformation;
         float transformationMatrix[16] = {
@@ -346,7 +349,46 @@ void ProcessNodes(const aiNode* node, const aiScene* scene, std::ofstream& strea
     }
 }
 
-void ProcessMesh(const aiMesh* mesh, std::ofstream& stream)
+void ProcessModelMaterials(const aiScene* scene, std::ofstream& stream)
+{
+
+    std::regex regexExpress("^\\*\\d+");
+    std::cmatch regexMatches;
+
+    for (unsigned int i = 0; i < scene->mNumMaterials; i++)
+    {
+        auto material = scene->mMaterials[i];
+
+
+        aiString texturePath;
+        if(material->GetTexture(aiTextureType_LIGHTMAP, 0, &texturePath) == aiReturn_SUCCESS)
+        {
+                    // Check if it's an embedded or external  texture.
+            if(std::regex_search(texturePath.C_Str(), regexMatches, regexExpress))
+            {
+                // Get the index str.
+                std::string indexStr = *(regexMatches.begin());
+
+                // Drop the "*" character.
+                indexStr = indexStr.erase(0,1);
+
+                // Convert the string to an integer. (This is the index in the
+                // Scene::mTextures[] array.
+                int index = std::stoi(indexStr);
+
+
+            }
+            else
+            {
+                // Print the texture file path.
+                std::cout << "File Path: " << texturePath.C_Str() << std::endl;
+            }
+        }
+    }
+
+}
+
+void ProcessMesh(const aiScene* scene, const aiMesh* mesh, std::ofstream& stream)
 {
     int numIndices = 0;
     for (unsigned int i = 0; i < mesh->mNumFaces; i++)
@@ -359,9 +401,11 @@ void ProcessMesh(const aiMesh* mesh, std::ofstream& stream)
 
     std::vector<bl::Vertex> vertices;
     std::vector<uint32_t> indices;
+    std::vector<bl::TextureReference> textureReferences;
 
     vertices.reserve(mesh->mNumVertices);
-    vertices.reserve(numIndices);
+    indices.reserve(numIndices);
+    // textureReferences.reserve(mesh->mMaterialIndex)
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++)
     {
@@ -400,11 +444,48 @@ void ProcessMesh(const aiMesh* mesh, std::ofstream& stream)
     }
 
     bl::WriteVecT(stream, vertices);
-    bl::WriteVecT(stream, indices); 
+    bl::WriteVecT(stream, indices);
+
+    auto material = scene->mMaterials[mesh->mMaterialIndex];
+    for (material->GetTexture(aiTextureType type, unsigned int index, aiString *path)))
+
+    bl::WriteVecT(std::ofstream &out, const std::vector<T> &data)
 }
 
-void ProcessMaterials(const aiMesh* mesh, const aiScene* scene, std::ofstream& stream)
+void ProcessModelTextures(const aiScene* scene, std::ofstream& stream)
 {
+    for (unsigned int i = 0; i < scene->mNumTextures; i++)
+    {
+        auto texture = scene->mTextures[i];
+
+        if (texture->mHeight == 0)
+        {
+            int x = 0, y = 0, channels = 0;
+            auto data = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(texture->pcData), texture->mWidth, &x, &y, &channels, 4);
+
+            if (data == nullptr)
+            {
+                bl::Log::Error("Could not load model texture.");
+                continue;
+            }
+
+            qoixx::qoi::desc desc;
+            desc.width = x;
+            desc.height = y;
+            desc.channels = 4;
+            desc.colorspace = qoixx::qoi::colorspace::linear; // We assume every texture is linear, it's easier to do math on!
+
+            auto imageBuffer = qoixx::qoi::encode<std::vector<char>, stbi_uc>(data, x * y * 4, desc);
+
+            bl::TextureHeader header {
+                .type = bl::TextureType::eAlbdeo,
+                .numBytes = (uint32_t)imageBuffer.size()
+            };
+
+            bl::WriteT(stream, header);
+            bl::WriteVecT(stream, imageBuffer);
+        }
+    }
 }
 
 bool ProcessModel(ProcessorState& state, ResourceFile& resource)
@@ -432,11 +513,13 @@ bool ProcessModel(ProcessorState& state, ResourceFile& resource)
     }
 
     // Write out the file header.
-    bl::WriteT(out, bl::ModelMagic);
+    bl::WriteT(out, bl::ModelHeader::ModelMagic);
     bl::WriteT<uint32_t>(out, scene->mNumMeshes);
+    bl::WriteT<uint32_t>(out, scene->mNumTextures);
 
     // Write out the meshes.
     ProcessNodes(scene->mRootNode, scene, out);
+    ProcessModelTextures(scene, out);
 
     out.flush();
     out.close();

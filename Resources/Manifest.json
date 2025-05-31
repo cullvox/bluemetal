@@ -51,6 +51,12 @@
             "properties": null,
             "relativePath": "Materials/Default.mat",
             "type": "Material"
+        },
+        {
+            "bakedPath": "Baked/Models/dragon_quick_sculpt.bmm",
+            "properties": null,
+            "relativePath": "Models/dragon_quick_sculpt.glb",
+            "type": "Model"
         }
     ]
 }

@@ -91,8 +91,6 @@ VulkanImage::~VulkanImage()
 
 VulkanImage& VulkanImage::operator=(VulkanImage&& rhs) 
 {
-    Destroy();
-
     _device = rhs._device;
     _extent = rhs._extent;
     _type = rhs._type;
@@ -150,7 +148,8 @@ void VulkanImage::Destroy()
         vkDestroyImageView(_device->Get(), view, nullptr);
     }
 
-    vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
+    if (_image)
+        vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
 }
 
 VkImageView VulkanImage::GetDefaultView() const

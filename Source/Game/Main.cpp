@@ -12,6 +12,7 @@
 #include "Graphics/VulkanConversions.h"
 #include "Graphics/Texture2D.h"
 #include "Graphics/UniformData.h"
+#include <glm/ext/matrix_transform.hpp>
 
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -59,6 +60,7 @@ int main(int argc, const char** argv)
     auto vert = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.vert");
     auto frag = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.frag");
     auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.glb");
+    auto dragonModel = resourceMgr->Load<bl::StaticModel>("Models/dragon_quick_sculpt.glb");
     auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
 
     auto renderer = engine.GetRenderer();
@@ -302,11 +304,17 @@ int main(int argc, const char** argv)
             scissor.extent = {extent.width, extent.height};
             vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
 
+            object.model = glm::identity<glm::mat4>();
+
             vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline()->GetPipelineLayout(), 0, 1, &globalSet, 0, nullptr);
             material->Bind(rd);
             material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
 
             model.Get()->Draw(rd, material->GetMaterial());
+
+            object.model = glm::translate(glm::identity<glm::mat4>(), {-100.0f, 0.0f, 0.0f});
+            material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
+            dragonModel.Get()->Draw(rd, material->GetMaterial());
 
             imgui->BeginFrame();
 
@@ -357,7 +365,7 @@ int main(int argc, const char** argv)
                 ImGui::Text("MS/F: %.2f", frameCounter.GetMillisecondsPerFrame()); 
                 ImGui::Text("Average F/S (Over 10 Seconds): %.1f", frameCounter.GetAverageFramesPerSecond(10));
                 ImGui::Text("Average MS/F (Over 144 Frames): %.2f", frameCounter.GetAverageMillisecondsPerFrame(144)); 
-                ImGui::Text("Present Mode: %s", bl::ToString(vulkanWindow->GetSwapchain()->GetPresentMode()).data()); 
+                ImGui::Text("Presenting: (%s | %s, %s)", bl::ToString(vulkanWindow->GetSwapchain()->GetPresentMode()).data(), bl::ToString(vulkanWindow->GetSwapchain()->GetSurfaceFormat().format).data(), bl::ToString(vulkanWindow->GetSwapchain()->GetSurfaceFormat().colorSpace).data()); 
                 // ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
 
                 if (ImGui::TreeNode("Physical Devices")) {

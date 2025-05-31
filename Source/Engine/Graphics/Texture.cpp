@@ -41,7 +41,7 @@ void Texture::Load()
 
     if (extension == ".png" || extension == ".jpg") 
     {
-        DecodePNG(buffer);
+        throw std::runtime_error("Cannot load png images in engine!");
     } 
     else if (extension == ".qoi") 
     {
@@ -76,21 +76,6 @@ TextureColorSpace Texture::GetColorSpace() const {
 
 std::span<const std::byte> Texture::GetImageData() const {
     return _imageData;
-}
-
-void Texture::DecodePNG(const std::vector<std::byte>& data) {
-    int x = 0, y = 0, channels = 0;
-    stbi_uc* image = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(data.data()), (int)data.size(), &x, &y, &channels, STBI_rgb_alpha);
-
-    std::size_t byteCount = x * y * 4;
-    _imageData.resize(byteCount);
-    std::memcpy(_imageData.data(), image, byteCount);
-
-    _format = TextureFormat::eRGBA;
-    _colorSpace = TextureColorSpace::eSRGB;
-    _extent = {(uint32_t)x, (uint32_t)y};
-
-    stbi_image_free(image);
 }
 
 void Texture::DecodeQOI(const std::vector<std::byte>& data) {

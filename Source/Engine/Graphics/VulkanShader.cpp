@@ -73,6 +73,8 @@ void VulkanShader::Unload()
 
     vkDestroyShaderModule(_device->Get(), _module, nullptr); 
     spvReflectDestroyShaderModule(&_reflect);
+
+    _module = VK_NULL_HANDLE;
     Resource::Unload();
 }
 

@@ -1,13 +1,19 @@
 #include <assimp/config.h>
 #include <assimp/postprocess.h>
+#include <cstddef>
 #include <cstdint>
 #include <glm/fwd.hpp>
+#include <string>
+#include <qoixx.hpp>
 
 #include "Core/FileByte.h"
 #include "Graphics/ModelFormat.h"
+#include "Graphics/Texture2D.h"
+#include "Graphics/VulkanImage.h"
 #include "Graphics/VulkanMaterialInstance.h"
+#include "Graphics/VulkanSampler.h"
 #include "Resource/Resource.h"
-#include "Material.h"
+#include "Resource/ResourceManager.h"
 #include "Vertex.h"
 #include "VulkanDevice.h"
 #include "UniformData.h"
@@ -42,21 +48,35 @@ void StaticModel::Load()
     std::ifstream modelFile(GetFilePath(), std::ios::in | std::ios::binary);
     auto header = bl::ReadT<ModelHeader>(modelFile);
 
-    if (header.magic != ModelMagic)
+    if (header.magic != ModelHeader::ModelMagic)
         throw std::runtime_error("Model magic is incorrect!");
 
     _meshes.reserve(header.numMeshes);
     _transforms.reserve(header.numMeshes);
+
+    _sampler = std::make_unique<VulkanSampler>(_device);
     
     for (uint32_t i = 0; i < header.numMeshes; i++)
     {
         auto meshHeader = bl::ReadT<MeshHeader>(modelFile);
         auto vertices = bl::ReadVecT<Vertex>(modelFile, meshHeader.numVertices);
         auto indices = bl::ReadVecT<uint32_t>(modelFile, meshHeader.numIndices);
+        auto textureReferences = bl::ReadVecT<TextureReference>(modelFile, meshHeader.numTextureReferences);
 
         _meshes.emplace_back(_device, vertices, indices);
         _transforms.push_back(bl::ReadT<glm::mat4>(modelFile));
         _meshTransformIndicies.push_back(i);
+        _textures.push_back(textureReferences);
+    }
+
+    for (uint32_t i = 0; i < header.numTextures; i++)
+    {
+        auto textureHeader = bl::ReadT<TextureHeader>(modelFile);
+        auto textureBuffer = bl::ReadVecT<std::byte>(modelFile, textureHeader.numBytes);
+
+        const auto [actual, desc] = qoixx::qoi::decode<std::vector<std::byte>>(textureBuffer, 4);
+
+        _images.emplace_back(_device, VK_IMAGE_TYPE_2D, VkExtent3D{desc.width,desc.height, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     }
 }
 
@@ -74,6 +94,7 @@ void StaticModel::Draw(VulkanRenderData& rd, VulkanMaterialInstance* instance)
         obj.model = _transforms[_meshTransformIndicies[i]];
 
         instance->PushConstant(rd, 0, sizeof(ObjectPC), &obj);
+        instance->SetSampledImage2D("inAlbedo", _sampler.get(), &_images[0]);
         mesh.Bind(rd.cmd);
         mesh.Draw(rd.cmd);
     }

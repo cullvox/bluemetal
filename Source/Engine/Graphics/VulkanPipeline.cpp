@@ -264,26 +264,26 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleState.pNext = nullptr;
     multisampleState.flags = 0;
-    multisampleState.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-    multisampleState.sampleShadingEnable = VK_FALSE;
-    multisampleState.minSampleShading = 1.0f;
+    multisampleState.rasterizationSamples = state.multisampleState.rasterizationSamples;
+    multisampleState.sampleShadingEnable = state.multisampleState.sampleShadingEnable;
+    multisampleState.minSampleShading = state.multisampleState.minSampleShading;
     multisampleState.pSampleMask = nullptr;
-    multisampleState.alphaToCoverageEnable = VK_FALSE;
-    multisampleState.alphaToOneEnable = VK_FALSE;
+    multisampleState.alphaToCoverageEnable = state.multisampleState.alphaToCoverageEnable;
+    multisampleState.alphaToOneEnable = state.multisampleState.alphaToOneEnable;
 
     VkPipelineDepthStencilStateCreateInfo depthStencilState = {};
     depthStencilState.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencilState.pNext = nullptr;
     depthStencilState.flags = 0;
-    depthStencilState.depthTestEnable = VK_TRUE;
-    depthStencilState.depthWriteEnable = VK_TRUE;
-    depthStencilState.depthCompareOp = VK_COMPARE_OP_LESS;
-    depthStencilState.depthBoundsTestEnable = VK_FALSE;
-    depthStencilState.stencilTestEnable = VK_FALSE;
-    depthStencilState.front = {}; // unused
-    depthStencilState.back = {};
-    depthStencilState.minDepthBounds = 0.0f;
-    depthStencilState.maxDepthBounds = 1.0f;
+    depthStencilState.depthTestEnable = state.depthStencilState.depthTestEnable;
+    depthStencilState.depthWriteEnable = state.depthStencilState.depthWriteEnable;
+    depthStencilState.depthCompareOp = state.depthStencilState.depthCompareOp;
+    depthStencilState.depthBoundsTestEnable = state.depthStencilState.depthBoundsTestEnable;
+    depthStencilState.stencilTestEnable = state.depthStencilState.stencilTestEnable;
+    depthStencilState.front = state.depthStencilState.front;
+    depthStencilState.back = state.depthStencilState.back;
+    depthStencilState.minDepthBounds = state.depthStencilState.minDepthBounds;
+    depthStencilState.maxDepthBounds = state.depthStencilState.maxDepthBounds;
 
     std::array<VkPipelineColorBlendAttachmentState, 1> attachments = {};
     attachments[0].blendEnable = VK_TRUE;
@@ -308,18 +308,15 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     colorBlendState.blendConstants[2] = 0.0f;
     colorBlendState.blendConstants[3] = 0.0f;
 
-    std::array dynamicStates{
-        VK_DYNAMIC_STATE_VIEWPORT,
-        VK_DYNAMIC_STATE_SCISSOR
-//        VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT,
-//        VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT_EXT,
-    };
+    auto dynamicStates = state.dynamicStates;
+    dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
+    dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.pNext = nullptr;
     dynamicState.flags = {};
-    dynamicState.dynamicStateCount = (uint32_t)dynamicStates.size();
+    dynamicState.dynamicStateCount = dynamicStates.size();
     dynamicState.pDynamicStates = dynamicStates.data();
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};

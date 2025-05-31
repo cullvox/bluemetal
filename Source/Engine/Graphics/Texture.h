@@ -5,12 +5,6 @@
 
 namespace bl {
 
-/// @brief 
-enum class TextureFileType {
-    ePNG,
-    eQOI,
-};
-
 /// @brief Pixel formats that are currently supported for a texture object. 
 enum class TextureFormat {
     eRGB,
@@ -49,7 +43,6 @@ private:
     void DecodeQOI(const std::vector<std::byte>& buffer);
 
     VkExtent2D _extent;
-    TextureFileType _type; 
     TextureFormat _format;
     TextureColorSpace _colorSpace;
     std::vector<std::byte> _imageData;

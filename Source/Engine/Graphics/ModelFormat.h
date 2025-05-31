@@ -7,23 +7,38 @@
 namespace bl
 {
 
-static inline uint32_t ModelMagic = 0x424D4D46; // blue metal model format
+enum class TextureType : uint32_t
+{
+    eAlbdeo,
+};
+
 
 struct ModelHeader
 {
+    static inline uint32_t ModelMagic = 0x424D4D46; // blue metal model format
+
     uint32_t magic;
     uint32_t numMeshes;
+    uint32_t numTextures;
+};
+
+
+struct TextureReference
+{
+    uint32_t textureIndex;
 };
 
 struct MeshHeader
 {
     uint32_t numVertices;
     uint32_t numIndices;
-};
+    uint32_t numTextureReferences;
 
-struct TransformHeader
-{
-    uint32_t numTransforms;
+    // Below In Bytes
+        // vertices - sizeof(Vertex) * numVertices
+        // indices - sizeof(uint32_t) * numIndices
+        // modelMatrix - sizeof(float[16])
+        // textureReferences - sizeof(uint32_t) * numTextureReferences
 };
 
 struct ModelMatrix
@@ -33,5 +48,13 @@ struct ModelMatrix
     float c1, c2, c3, c4;
     float d1, d2, d3, d4;
 };
+
+struct TextureHeader
+{
+    TextureType type;
+    uint32_t numBytes;
+};
+
+
 
 }

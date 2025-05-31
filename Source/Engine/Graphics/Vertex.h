@@ -34,7 +34,11 @@ struct Vertex
 
 struct VoxelVertex
 {
-    uint32_t v;
+    uint8_t x : 5;
+    uint8_t y : 5;
+    uint8_t z : 5;
+    uint16_t texture : 12;
+    uint8_t ambientOcclusionState : 2;
 };
 
 } // namespace bl
