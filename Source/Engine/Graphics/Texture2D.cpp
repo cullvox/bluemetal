@@ -25,6 +25,8 @@ Texture2D::~Texture2D()
 
 void Texture2D::Load() 
 {
+    Texture::Load();
+
     VkFormat format = VK_FORMAT_UNDEFINED;
 
     static VkFormat formatConversion[2][2] = {

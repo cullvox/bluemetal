@@ -2,6 +2,7 @@
 #include "VulkanConversions.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanReflectedBlock.h"
+#include <vulkan/vulkan_core.h>
 #include "VulkanPipeline.h"
 
 namespace bl 
@@ -233,14 +234,17 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     tessellationState.flags = 0;
     tessellationState.patchControlPoints = 0;
 
+    VkViewport viewport = {};
+    VkRect2D scissor = {};
+
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.pNext = nullptr;
     viewportState.flags = 0;
-    viewportState.viewportCount = 0;
-    viewportState.pViewports = nullptr;
-    viewportState.scissorCount = 0;
-    viewportState.pScissors = nullptr;
+    viewportState.viewportCount = 1;
+    viewportState.pViewports = &viewport;
+    viewportState.scissorCount = 1;
+    viewportState.pScissors = &scissor;
 
     VkPipelineRasterizationStateCreateInfo rasterizationState = {};
     rasterizationState.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -305,8 +309,10 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     colorBlendState.blendConstants[3] = 0.0f;
 
     std::array dynamicStates{
-        VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT,
-        VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT_EXT,
+        VK_DYNAMIC_STATE_VIEWPORT,
+        VK_DYNAMIC_STATE_SCISSOR
+//        VK_DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT,
+//        VK_DYNAMIC_STATE_SCISSOR_WITH_COUNT_EXT,
     };
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};

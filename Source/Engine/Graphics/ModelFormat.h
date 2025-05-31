@@ -7,24 +7,23 @@
 namespace bl
 {
 
+static inline uint32_t ModelMagic = 0x424D4D46; // blue metal model format
+
 struct ModelHeader
 {
     uint32_t magic;
-    uint32_t numVertexBuffers;
-    uint32_t numIndexBuffers;
-    uint32_t numTransforms;
-    uint32_t numAnimations;
-    uint32_t numSkeletons;
+    uint32_t numMeshes;
 };
 
-struct VertexHeader
+struct MeshHeader
 {
     uint32_t numVertices;
+    uint32_t numIndices;
 };
 
-struct IndexHeader
+struct TransformHeader
 {
-    uint32_t numIndices;
+    uint32_t numTransforms;
 };
 
 struct ModelMatrix
@@ -34,12 +33,5 @@ struct ModelMatrix
     float c1, c2, c3, c4;
     float d1, d2, d3, d4;
 };
-
-struct ModelNode
-{
-    uint32_t parentTransformIndex;
-    ModelMatrix matrix;
-
-}
 
 }

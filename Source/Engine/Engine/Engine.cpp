@@ -16,17 +16,10 @@ Engine::Engine()
     _audio = std::make_unique<AudioSystem>(this);
     _graphics = std::make_unique<GraphicsSystem>(this);
 
-    auto displays = Display::GetDisplays();
+    auto vulkanWindow = dynamic_cast<VulkanWindow*>(_graphics->GetWindow());
+    _imgui = std::make_unique<ImGuiSystem>(this, vulkanWindow, _graphics->GetRenderer());
 
-    _graphics->GetDevice()->WaitForDevice();
-    _window = _graphics->CreateWindow("Maginvox", Rect2D{{}, displays[0].GetDesktopMode().extent}, false);
-
-    _renderer = _graphics->CreateRenderer(_window.get());
-
-    auto vulkanWindow = dynamic_cast<VulkanWindow*>(_window.get());
-    _imgui = std::make_unique<ImGuiSystem>(this, vulkanWindow, _renderer.get());
-
-    _resourceManager->RegisterBuilder({"Shader", "Texture", "Model"}, _graphics.get());
+    _resourceManager->RegisterBuilder({"Shader", "Texture", "Model", "Material"}, _graphics.get());
     _resourceManager->RegisterBuilder({"Audio"}, _audio.get());
 }
 
@@ -62,12 +55,12 @@ ImGuiSystem* Engine::GetImGui()
 
 Window* Engine::GetWindow()
 {
-    return _window.get();
+    return _graphics->GetWindow();
 }
 
 Renderer* Engine::GetRenderer()
 {
-    return _renderer.get();
+    return _graphics->GetRenderer();
 }
 
 

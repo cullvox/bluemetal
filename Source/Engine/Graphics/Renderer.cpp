@@ -131,7 +131,7 @@ void Renderer::RecreateImages()
         {
             swapchainImageViews[i],
             _depthImages[i].CreateView(VK_IMAGE_ASPECT_DEPTH_BIT),
-            _positionImages[i].CreateView(VK_IMAGE_ASPECT_COLOR_BIT)
+  //          _positionImages[i].CreateView(VK_IMAGE_ASPECT_COLOR_BIT)
         };
 
         VkFramebufferCreateInfo createInfo = {};
@@ -259,7 +259,7 @@ void Renderer::CreateRenderPasses()
     _positionFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_R32G32B32A32_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, 0);
 
     // Build the renderpasses attachment data.
-    std::array<VkAttachmentDescription, 3> attachments = {};
+    std::array<VkAttachmentDescription, 2> attachments = {};
 
     attachments[0].flags = 0;
     attachments[0].format = _swapchain->GetFormat();
@@ -281,40 +281,40 @@ void Renderer::CreateRenderPasses()
     attachments[1].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attachments[1].finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
-    attachments[2].flags = 0;
-    attachments[2].format = _positionFormat;
-    attachments[2].samples = VK_SAMPLE_COUNT_1_BIT;
-    attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // stencil may be used later
-    attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    attachments[2].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    // attachments[2].flags = 0;
+    // attachments[2].format = _positionFormat;
+    // attachments[2].samples = VK_SAMPLE_COUNT_1_BIT;
+    // attachments[2].loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    // attachments[2].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    // attachments[2].stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE; // stencil may be used later
+    // attachments[2].stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    // attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    // attachments[2].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkAttachmentReference presentAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
     VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
-    VkAttachmentReference positionInputAttachmentReference = {2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
+    // VkAttachmentReference positionInputAttachmentReference = {2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
 
     std::array<VkSubpassDescription, 1> subpasses = {};
     subpasses[0].flags = {};
     subpasses[0].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
     subpasses[0].inputAttachmentCount = 0;
     subpasses[0].pInputAttachments = nullptr;
-    subpasses[0].colorAttachmentCount = 0;
-    subpasses[0].pColorAttachments = nullptr;
+    subpasses[0].colorAttachmentCount = 1;
+    subpasses[0].pColorAttachments = &presentAttachmentReference;
     subpasses[0].pResolveAttachments = nullptr;
     subpasses[0].pDepthStencilAttachment = &depthAttachmentReference;
     subpasses[0].preserveAttachmentCount = 0;
     subpasses[0].pPreserveAttachments = nullptr;
 
-    subpasses[1].flags = 0;
-    subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-    subpasses[1].inputAttachmentCount = 1;
-    subpasses[1].pInputAttachments = &positionInputAttachmentReference;
-    subpasses[1].colorAttachmentCount = 1;
-    subpasses[1].pColorAttachments = &presentAttachmentReference;
-    subpasses[1].preserveAttachmentCount = 0;
-    subpasses[1].pResolveAttachments = nullptr;
+    // subpasses[1].flags = 0;
+    // subpasses[1].pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    // subpasses[1].inputAttachmentCount = 1;
+    // subpasses[1].pInputAttachments = &positionInputAttachmentReference;
+    // subpasses[1].colorAttachmentCount = 1;
+    // subpasses[1].pColorAttachments = &presentAttachmentReference;
+    // subpasses[1].preserveAttachmentCount = 0;
+    // subpasses[1].pResolveAttachments = nullptr;
 
     std::array<VkSubpassDependency, 0> dependencies = {};
     // dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;

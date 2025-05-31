@@ -30,7 +30,7 @@ public:
     virtual ~Resource();
 
     const std::string& GetName() const;
-    const std::filesystem::path& GetPath() const;
+    const std::filesystem::path& GetFilePath() const;
     ResourceLoadOp GetLoadOp() const;
     ResourceState GetState() const;
 
@@ -49,7 +49,7 @@ protected:
 private:
     ResourceManager* _manager;
     std::string _name;
-    std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem. Name of the resource as described in the manifest, must be unique. */
+    std::filesystem::path _filePath; /** @brief Usually a path to the resource in the filesystem. Name of the resource as described in the manifest, must be unique. */
     ResourceLoadOp _loadOp;
     ResourceState _state;
 };

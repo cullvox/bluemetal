@@ -21,14 +21,19 @@ void ResourceManager::LoadFromManifest(const std::filesystem::path& manifest)
 {
     using namespace nlohmann;
     
-    std::ifstream file(manifest);
-    json root = json::parse(file);
-    json resources = root["Resources"];
+    std::ifstream file(manifest, std::ios::binary | std::ios::in);
+    if (file.bad())
+        throw std::runtime_error("Could not open manifest file!");
+
+    const json root = json::parse(file);
+    json resources = root["resources"];
 
     for (const auto& data : resources)
     {
-        auto path = data["Path"].get<std::string>();
-        auto type = data["Type"].get<std::string>();
+        auto path = data["relativePath"].get<std::string>();
+        auto type = data["type"].get<std::string>();
+        auto bakedPath = data["bakedPath"].get<std::string>();
+        
 
         auto builder = _builders.find(type);
         if (builder == _builders.end())
@@ -37,7 +42,8 @@ void ResourceManager::LoadFromManifest(const std::filesystem::path& manifest)
         }
 
         auto resource = builder->second->BuildResource(this, type, path, data);
-        resource->SetPath(path);
+        resource->SetName(path);
+        resource->SetPath(bakedPath);
         resource->SetLoadOp(ResourceLoadOp::eFile);
         resource->SetState(ResourceState::eUnloaded);
 

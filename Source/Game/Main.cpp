@@ -43,7 +43,7 @@ int main(int argc, const char** argv)
     bl::Engine engine;
 
     auto resourceMgr = engine.GetResourceManager();
-    resourceMgr->LoadFromManifest("Baked/Manifest.json");
+    resourceMgr->LoadFromManifest("Resources/Manifest.json");
 
     auto audio = engine.GetAudio();
     auto sound = resourceMgr->Load<bl::Sound>("Audio/Music/Taswell.flac");
@@ -56,9 +56,9 @@ int main(int argc, const char** argv)
     auto graphics = engine.GetGraphics();
     auto imgui = engine.GetImGui();
 
-    auto vert = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.vert.spv");
-    auto frag = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.frag.spv");
-    auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.bmm");
+    auto vert = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.vert");
+    auto frag = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.frag");
+    auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.glb");
     auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
 
     auto renderer = engine.GetRenderer();
@@ -73,7 +73,7 @@ int main(int argc, const char** argv)
     // auto [pass, subpass] = renderer->GetRenderPass(bl::RenderPassType::eGeometry);
 
     // auto material = std::make_unique<bl::Material>(graphics->GetDevice(), pass, subpass, psi, vulkanWindow->GetSwapchain()->GetImageCount(), 1);
-    material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
+    // material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
 
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(vulkanWindow);
 
@@ -118,10 +118,10 @@ int main(int argc, const char** argv)
     object.model = glm::identity<glm::mat4>();
     object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, 0.0f});
 
-    auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Bricks_Albedo.jpg");
+    auto texture = resourceMgr->Load<bl::Texture2D>("Textures/Bricks_Albedo.jpg");
     auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_LINEAR};
 
-    material->SetSampledImage2D("image", &sampler, texture.Get()->GetImage());
+    material->SetSampledImage2D("inAlbedo", &sampler, texture.Get()->GetImage());
 
     bool firstMouse = true;
     glm::ivec2 lastMouse{};
@@ -274,7 +274,7 @@ int main(int argc, const char** argv)
         std::memcpy(&val, &color, sizeof(glm::vec4));
 
         // glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f};
-        material->SetVector4("material.color", color);
+        // material->SetVector4("material.color", color);
 
         source->Set3DAttributes(position, velocity);
         audio->Update();

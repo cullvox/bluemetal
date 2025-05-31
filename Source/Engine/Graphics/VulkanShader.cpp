@@ -12,13 +12,13 @@ VulkanShader::VulkanShader(ResourceManager* manager, const nlohmann::json& json,
     , _module(VK_NULL_HANDLE) 
 {
     // Determine the shaders stage from the json
-    auto stage = json["Stage"].get<std::string>();
+    auto stage = json["properties"]["shaderType"].get<std::string>();
 
-    if (stage == "Vertex") 
+    if (stage == "vertex") 
     {
         _stage = VK_SHADER_STAGE_VERTEX_BIT;
     } 
-    else if (stage == "Fragment") 
+    else if (stage == "fragment") 
     {
         _stage = VK_SHADER_STAGE_FRAGMENT_BIT;
     } 
@@ -36,7 +36,7 @@ VulkanShader::~VulkanShader()
 void VulkanShader::Load() 
 {
     // Load the shader binary into memory.
-    std::ifstream file(GetPath(), std::ios::ate | std::ios::binary);
+    std::ifstream file(GetFilePath(), std::ios::ate | std::ios::binary);
 
     if (!file.is_open()) {
         throw std::runtime_error("failed to open file!");

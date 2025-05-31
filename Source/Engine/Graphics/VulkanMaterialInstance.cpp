@@ -93,8 +93,7 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
 
     VkDescriptorImageInfo imageInfo = {};
     imageInfo.sampler = sampler->Get();
-    //imageInfo.imageView = image->GetView();
-    throw std::runtime_error("FIX ME!");
+    imageInfo.imageView = image->GetDefaultView();
     imageInfo.imageLayout = image->GetLayout();
 
     VkWriteDescriptorSet write = {};

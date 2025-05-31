@@ -19,7 +19,7 @@ Texture::~Texture()
 
 void Texture::Load() 
 {
-    std::filesystem::path path = GetPath();
+    std::filesystem::path path = GetFilePath();
 
     // Readin the image file to a buffer.
     std::ifstream file{path, std::ios::binary};
@@ -103,8 +103,8 @@ void Texture::DecodeQOI(const std::vector<std::byte>& data) {
     _format = TextureFormat::eRGBA;
     
     switch (desc.colorspace) {
-        case qoi::colorspace::linear: _colorSpace = TextureColorSpace::eLinear;
-        case qoi::colorspace::srgb: _colorSpace = TextureColorSpace::eSRGB;
+        case qoi::colorspace::linear: _colorSpace = TextureColorSpace::eLinear; break;
+        case qoi::colorspace::srgb: _colorSpace = TextureColorSpace::eSRGB; break;
     }
 }
 

@@ -1,34 +1,56 @@
 {
     "resources": [
         {
-            "path": "Audio/Music/Taswell.flac",
+            "bakedPath": "Resources/Audio/Music/Taswell.flac",
+            "properties": null,
+            "relativePath": "Audio/Music/Taswell.flac",
             "type": "Audio"
         },
         {
-            "path": "Audio/Music/Mutation.flac",
+            "bakedPath": "Resources/Audio/Music/Mutation.flac",
+            "properties": null,
+            "relativePath": "Audio/Music/Mutation.flac",
             "type": "Audio"
         },
         {
-            "path": "Shaders/Default.vert",
-            "type": "Shader",
-            "stage": "Vertex"
+            "bakedPath": "Baked/Shaders/Default.vert.spv",
+            "properties": {
+                "shaderType": "vertex"
+            },
+            "relativePath": "Shaders/Default.vert",
+            "type": "Shader"
         },
         {
-            "path": "Shaders/Default.frag",
-            "type": "Shader",
-            "stage": "Fragment"
+            "bakedPath": "Baked/Shaders/Default.frag.spv",
+            "properties": {
+                "shaderType": "fragment"
+            },
+            "relativePath": "Shaders/Default.frag",
+            "type": "Shader"
         },
         {
-            "path": "Textures/Bricks_Albedo.jpg",
+            "bakedPath": "Baked/Textures/Bricks_Albedo.qoi",
+            "properties": null,
+            "relativePath": "Textures/Bricks_Albedo.jpg",
             "type": "Texture"
         },
         {
-            "path": "Textures/furry.qoi",
+            "bakedPath": "Resources/Textures/furry.qoi",
+            "properties": null,
+            "relativePath": "Textures/furry.qoi",
             "type": "Texture"
         },
         {
-            "path": "Models/red_fox_skull.glb",
+            "bakedPath": "Baked/Models/red_fox_skull.bmm",
+            "properties": null,
+            "relativePath": "Models/red_fox_skull.glb",
             "type": "Model"
+        },
+        {
+            "bakedPath": "Resources/Materials/Default.mat",
+            "properties": null,
+            "relativePath": "Materials/Default.mat",
+            "type": "Material"
         }
     ]
 }

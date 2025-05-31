@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ImGui/ImGuiSystem.h"
 #include "Resource/ResourceManager.h"
 #include "Window/Window.h"
 #include "VulkanInstance.h"
@@ -28,6 +29,8 @@ public:
     VulkanInstance* GetInstance();
     VulkanPhysicalDevice* GetPhysicalDevice() const;
     VulkanDevice* GetDevice();
+    Window* GetWindow() { return _window.get(); }
+    Renderer* GetRenderer() { return _renderer.get(); }
 
     std::unique_ptr<Window> CreateWindow(const std::string& title, Rect2D rect, bool fullscreen = true);
     std::unique_ptr<Renderer> CreateRenderer(Window* window);
@@ -38,7 +41,10 @@ private:
     Engine* _engine;
     VulkanInstance _instance;
     VulkanPhysicalDevice* _physicalDevice;
+    std::unique_ptr<Window> _window;
+    std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<VulkanDevice> _device;
+    std::unique_ptr<ImGuiSystem> _imgui;
 };
 
 } // namespace bl

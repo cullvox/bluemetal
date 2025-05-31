@@ -19,9 +19,9 @@ const std::string& Resource::GetName() const
     return _name;
 }
 
-const std::filesystem::path& Resource::GetPath() const 
+const std::filesystem::path& Resource::GetFilePath() const 
 {
-    return _path;
+    return _filePath;
 }
 
 ResourceLoadOp Resource::GetLoadOp() const 
@@ -44,9 +44,14 @@ void Resource::Unload()
     _state = ResourceState::eUnloaded;
 }
 
+void Resource::SetName(const std::string& name)
+{
+    _name = name;
+}
+
 void Resource::SetPath(const std::filesystem::path& path) 
 {
-    _path = path;
+    _filePath = path;
 }
 
 void Resource::SetLoadOp(ResourceLoadOp op) 

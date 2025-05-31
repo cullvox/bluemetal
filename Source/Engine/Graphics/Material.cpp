@@ -8,11 +8,9 @@ namespace bl
 
 Material::Material(ResourceManager* manager, const nlohmann::json& data, VulkanDevice* device, Renderer* renderer)
     : Resource(manager, data)
+    , _renderer(renderer)
+    , _device(device)
 {
-
-
-
-    
 }
 
 Material::~Material()
@@ -22,7 +20,7 @@ Material::~Material()
 
 void Material::Load()
 {
-    std::ifstream materialFile(GetPath());
+    std::ifstream materialFile(GetFilePath());
 
     std::string vertexPath, fragmentPath;
     nlohmann::json json;
@@ -37,11 +35,13 @@ void Material::Load()
         vertexPath = json["shaders"]["vertex"].get<std::string>();
         fragmentPath = json["shaders"]["fragment"].get<std::string>();
 
+
+
+        info = json["state"];
+
         auto vertexShader = GetManager()->Load<bl::VulkanShader>(vertexPath);
         auto fragmentShader = GetManager()->Load<bl::VulkanShader>(fragmentPath);
         info.stages.shaders = { vertexShader, fragmentShader };
-
-        info = json["state"];
     }
     catch (const std::exception& e)
     {

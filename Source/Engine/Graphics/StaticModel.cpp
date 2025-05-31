@@ -1,7 +1,10 @@
 #include <assimp/config.h>
 #include <assimp/postprocess.h>
+#include <cstdint>
+#include <glm/fwd.hpp>
 
 #include "Core/FileByte.h"
+#include "Graphics/ModelFormat.h"
 #include "Graphics/VulkanMaterialInstance.h"
 #include "Resource/Resource.h"
 #include "Material.h"
@@ -36,8 +39,25 @@ StaticModel::~StaticModel()
 
 void StaticModel::Load()
 {
-    std::ifstream modelFile(GetPath());
-    // auto value = bl::ReadT<uint32_t>(modelFile);
+    std::ifstream modelFile(GetFilePath(), std::ios::in | std::ios::binary);
+    auto header = bl::ReadT<ModelHeader>(modelFile);
+
+    if (header.magic != ModelMagic)
+        throw std::runtime_error("Model magic is incorrect!");
+
+    _meshes.reserve(header.numMeshes);
+    _transforms.reserve(header.numMeshes);
+    
+    for (uint32_t i = 0; i < header.numMeshes; i++)
+    {
+        auto meshHeader = bl::ReadT<MeshHeader>(modelFile);
+        auto vertices = bl::ReadVecT<Vertex>(modelFile, meshHeader.numVertices);
+        auto indices = bl::ReadVecT<uint32_t>(modelFile, meshHeader.numIndices);
+
+        _meshes.emplace_back(_device, vertices, indices);
+        _transforms.push_back(bl::ReadT<glm::mat4>(modelFile));
+        _meshTransformIndicies.push_back(i);
+    }
 }
 
 void StaticModel::Unload()

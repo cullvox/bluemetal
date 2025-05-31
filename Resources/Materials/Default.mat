@@ -1,8 +1,8 @@
 {
     "renderPass": "geometry",
     "shaders": {
-        "vertex": "Resources/Shaders/Default.vert",
-        "fragment": "Resources/Shaders/Default.frag"
+        "vertex": "Shaders/Default.vert",
+        "fragment": "Shaders/Default.frag"
     },
     "state": {
         "inputBindings": {

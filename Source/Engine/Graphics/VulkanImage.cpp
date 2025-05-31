@@ -13,7 +13,8 @@ VulkanImage::VulkanImage()
     , _format(VK_FORMAT_UNDEFINED)
     , _usage(0)
     , _mipLevels(1)
-    , _layout(VK_IMAGE_LAYOUT_UNDEFINED) 
+    , _layout(VK_IMAGE_LAYOUT_UNDEFINED)
+    , _defaultView(VK_NULL_HANDLE)
 {
 }
 
@@ -24,7 +25,8 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     , _format(format)
     , _usage(usage)
     , _mipLevels(mipLevels)
-    , _layout(initialLayout) 
+    , _layout(initialLayout)
+    , _defaultView(VK_NULL_HANDLE)
 {
 
     auto physicalDevice = _device->GetPhysicalDevice();
@@ -73,6 +75,8 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     allocationCreateInfo.priority = 1.0f;
 
     VK_CHECK(vmaCreateImage(_device->GetAllocator(), &imageCreateInfo, &allocationCreateInfo, &_image, &_allocation, nullptr))
+
+    _defaultView = CreateView(_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 VulkanImage::VulkanImage(VulkanImage&& rhs) 
@@ -97,6 +101,7 @@ VulkanImage& VulkanImage::operator=(VulkanImage&& rhs)
     _image = rhs._image;
     _views = rhs._views;
     _allocation = rhs._allocation;
+    _defaultView = rhs._defaultView;
 
     rhs._device = {};
     rhs._type = {};
@@ -106,6 +111,7 @@ VulkanImage& VulkanImage::operator=(VulkanImage&& rhs)
     rhs._image = {};
     rhs._views = {};
     rhs._allocation = {};
+    rhs._defaultView = {};
 
     return *this;
 }
@@ -145,6 +151,11 @@ void VulkanImage::Destroy()
     }
 
     vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
+}
+
+VkImageView VulkanImage::GetDefaultView() const
+{
+    return _defaultView;
 }
 
 VkImageView VulkanImage::CreateView(VkImageAspectFlags viewAspectMask, uint32_t mipLevels)

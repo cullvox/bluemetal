@@ -67,7 +67,7 @@ public:
 
     /// @brief GetView
     /// @return Returns the default image view created at construction.
-    VkImageView GetView() const;
+    VkImageView GetDefaultView() const;
 
     VkImageView CreateView(VkImageAspectFlags viewAspectMask, uint32_t mipLevels = 1);
     void DestroyViews();
@@ -99,6 +99,7 @@ private:
     uint32_t _mipLevels;
     VkImageLayout _layout;
     VkImage _image;
+    VkImageView _defaultView;
     std::vector<VkImageView> _views;
     VmaAllocation _allocation;
 };

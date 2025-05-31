@@ -46,7 +46,7 @@ int AudioSystem::GetNumChannelsPlaying()
 
 std::unique_ptr<Resource> AudioSystem::BuildResource(ResourceManager* manager, const std::string& type, const std::filesystem::path& path, const nlohmann::json& data)
 {
-    if (type == "Sound")
+    if (type == "Audio")
     {
         return std::make_unique<Sound>(manager, data, this);
     }

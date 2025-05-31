@@ -7,6 +7,8 @@
 #include "StaticModel.h"
 #include "GraphicsSystem.h"
 
+#include "ImGui/ImGuiSystem.h"
+
 namespace bl 
 {
 
@@ -16,6 +18,17 @@ GraphicsSystem::GraphicsSystem(Engine* engine)
     _instance = {{}, "Maginvox", true};
     _physicalDevice = _instance.ChoosePhysicalDevice();
     _device = std::make_unique<VulkanDevice>(&_instance, _physicalDevice);
+
+    
+    auto displays = Display::GetDisplays();
+
+    _device->WaitForDevice();
+    _window = CreateWindow("Maginvox", Rect2D{{}, displays[0].GetDesktopMode().extent}, false);
+
+    _renderer = CreateRenderer(_window.get());
+
+
+
 }
 
 GraphicsSystem::~GraphicsSystem()
@@ -63,6 +76,10 @@ std::unique_ptr<Resource> GraphicsSystem::BuildResource(ResourceManager* manager
     else if (type == "Model")
     {
         return std::make_unique<StaticModel>(manager, json, _device.get());
+    }
+    else if (type == "Material")
+    {
+        return std::make_unique<Material>(manager, json ,_device.get(), _renderer.get());
     }
     else 
     {

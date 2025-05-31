@@ -12,16 +12,19 @@
 // Shader (GLSL) -> SPIR-V using glslc
 
 
+#include <filesystem>
 #include <fstream>
 
 #include <argparse/argparse.hpp>
 
+#include <nlohmann/detail/macro_scope.hpp>
 #include <nlohmann/json.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 #include <assimp/scene.h>
 
+#include "Graphics/ModelFormat.h"
 #include "qoixx.hpp"
 
 #include "Core/Print.h"
@@ -48,10 +51,14 @@ struct ProcessorState
     std::filesystem::path materialOutputPath;
 };
 
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_ONLY_SERIALIZE(ResourceFile, type, relativePath, bakedPath)
+
+std::filesystem::path GetBakedParentPath(ProcessorState& state, ResourceFile& resource);
 bool ProcessShader(ProcessorState& state, ResourceFile& resource);
 bool ProcessTexture(ProcessorState& state, ResourceFile& resource);
 bool ProcessAudio(ProcessorState& state, ResourceFile& resource);
 bool ProcessModel(ProcessorState& state, ResourceFile& resource);
+bool ProcessGeneric(ProcessorState& state, ResourceFile& resource);
 
 int main(int argc, const char** argv)
 {
@@ -90,7 +97,7 @@ int main(int argc, const char** argv)
 
     // Process the manifest file.
     state.manifestPath = parser.get<std::string>("manifest");
-    state.outputPath = parser.get<std::string>("outputPath");
+    state.outputPath = parser.get<std::string>("bakedPath");
     state.materialOutputPath = parser.get<std::string>("materialOutputPath");
 
     if (parser.get<bool>("verbose"))
@@ -105,13 +112,15 @@ int main(int argc, const char** argv)
     {
         std::ifstream manifestFile(state.manifestPath);
         auto manifestJson = nlohmann::json::parse(manifestFile);
+        manifestFile.close();
+
         auto objectArray = manifestJson["resources"];
 
         for (auto object : objectArray)
         {
             ResourceFile resource;
             resource.type = object["type"].get<std::string>();
-            resource.relativePath = object["path"].get<std::string>();
+            resource.relativePath = object["relativePath"].get<std::string>();
             resource.absolutePath = manifestRoot / resource.relativePath;
             resource.bakedPath.clear();
 
@@ -125,6 +134,8 @@ int main(int argc, const char** argv)
             state.resources.push_back(resource);
             state.resourceChecker.emplace(resource.relativePath);
         }
+
+        
     } 
     catch(...)
     {
@@ -155,11 +166,15 @@ int main(int argc, const char** argv)
         } 
         else if (resource.type == "Audio")
         {
-            status = ProcessAudio(state, resource);
+            status = ProcessGeneric(state, resource);
         }
         else if (resource.type == "Model")
         {
             status = ProcessModel(state, resource);
+        }
+        else if (resource.type == "Material")
+        {
+            status = ProcessGeneric(state, resource);
         }
 
         if (status)
@@ -168,22 +183,53 @@ int main(int argc, const char** argv)
             bl::Log::Error("{}: Could not be processed.", resource.relativePath);
     }
 
+    nlohmann::json manifestJson;
+    for (const auto& resource : state.resources)
+    {
+        nlohmann::json resourceJson;
+        resourceJson = resource;
+        resourceJson["properties"] = resource.properties;
+        
+        manifestJson["resources"].push_back(resourceJson);
+        
+        //if (resource.bakedPath.empty())
+        //    manifestJson["resources"].erase("bakedPath");
+    }
+
+    std::ofstream manifestFile(state.manifestPath);
+    manifestFile << std::setw(4) << manifestJson << std::endl;
+    manifestFile.close();
+
     return EXIT_SUCCESS;
+}
+
+std::filesystem::path GetBakedParentPath(ProcessorState& state, ResourceFile& resource)
+{
+    auto exportedPath = state.outputPath / resource.relativePath;
+    std::filesystem::create_directories(exportedPath.parent_path());
+
+    auto filename = exportedPath.filename();
+    auto relativeExportedPath = std::filesystem::path(resource.relativePath).parent_path();
+    relativeExportedPath /= filename.string();
+
+    auto relativePath = std::filesystem::relative(state.outputPath.parent_path(), state.manifestPath.parent_path().parent_path());
+    auto newPath = relativePath / relativeExportedPath;
+
+    return newPath;
 }
 
 bool ProcessShader(ProcessorState& state, ResourceFile& resource)
 {
     // Build the final absolutePath, with proper 'spv' extension.
-    auto exportedPath = state.outputPath / resource.relativePath;
-    std::filesystem::create_directories(exportedPath.parent_path());
+    auto bakedPath = GetBakedParentPath(state, resource);
 
-    exportedPath.replace_extension(exportedPath.extension().string() + ".spv");
-    auto exportedFilename = exportedPath.filename();
-    auto relativeExportedPath = std::filesystem::path(resource.relativePath).parent_path();
-    relativeExportedPath.concat("/" + exportedFilename.string());
+    // Maybe increase this checks complexity down the line!
+    std::string shaderType = bakedPath.extension() == ".vert" ? "vertex" : "fragment";
+
+    bakedPath.replace_extension(bakedPath.extension().string() + ".spv");
 
     // Run the glslc shader compilation command.
-    std::string cmd = fmt::format("glslc {} -o {}", resource.absolutePath.string(), exportedPath.string());
+    std::string cmd = fmt::format("glslc {} -o {}", resource.absolutePath.string(), bakedPath.string());
     if (std::system(cmd.c_str()) != EXIT_SUCCESS)
     {
         bl::Log::Error("{}: Could not compile shader resource.", resource.relativePath);
@@ -193,23 +239,22 @@ bool ProcessShader(ProcessorState& state, ResourceFile& resource)
     }
 
     // Export the final resource into the engine manifest.
-    resource.bakedPath = relativeExportedPath;
+    resource.bakedPath = bakedPath;
+    resource.properties["shaderType"] = shaderType;
     return true;
 }
 
 bool ProcessTexture(ProcessorState& state, ResourceFile& resource)
 {
     // Build the final absolutePath, with proper qoi extension.
-    auto exportedPath = (state.outputPath / resource.relativePath).replace_extension(".qoi");
-    auto exportedFilename = exportedPath.filename();
-    auto relativeExportedPath = std::filesystem::path(resource.relativePath).parent_path() / exportedFilename;
-
-    std::filesystem::create_directories(exportedPath.parent_path());
+    auto bakedPath = GetBakedParentPath(state, resource);
+    bakedPath.replace_extension(".qoi");
 
     if (resource.absolutePath.extension() == ".qoi")
     {
-        bl::Log::Info("{}: Already in QOI format, not baking.", relativeExportedPath.string());
-        resource.bakedPath.clear();
+        bl::Log::Info("{}: Already in QOI format, not baking.", bakedPath.string());
+        auto relativePath = std::filesystem::relative(resource.absolutePath.parent_path(), state.manifestPath.parent_path().parent_path());
+        resource.bakedPath = relativePath / resource.absolutePath.filename();
         return true;
     }
     
@@ -238,19 +283,11 @@ bool ProcessTexture(ProcessorState& state, ResourceFile& resource)
 
     auto out = qoixx::qoi::encode<std::vector<char>, stbi_uc>(data, x * y * 4, desc);
 
-    std::ofstream outFile(exportedPath, std::ios::out | std::ios::binary);
+    std::ofstream outFile(bakedPath, std::ios::out | std::ios::binary);
     outFile.write(out.data(), out.size());
     outFile.close();
 
-    resource.bakedPath = relativeExportedPath;
-    return true;
-}
-
-bool ProcessAudio(ProcessorState& state, ResourceFile& resource)
-{
-    // The engine using FMOD supports a lot of audio codecs and filetypes.
-    // We don't need to do any processing!
-    resource.bakedPath.clear();
+    resource.bakedPath = bakedPath;
     return true;
 }
 
@@ -362,8 +399,8 @@ void ProcessMesh(const aiMesh* mesh, std::ofstream& stream)
         }
     }
 
-    stream.write(reinterpret_cast<char*>(vertices.data()), vertices.size());
-    stream.write(reinterpret_cast<char*>(indices.data()), indices.size());
+    bl::WriteVecT(stream, vertices);
+    bl::WriteVecT(stream, indices); 
 }
 
 void ProcessMaterials(const aiMesh* mesh, const aiScene* scene, std::ofstream& stream)
@@ -372,9 +409,8 @@ void ProcessMaterials(const aiMesh* mesh, const aiScene* scene, std::ofstream& s
 
 bool ProcessModel(ProcessorState& state, ResourceFile& resource)
 {
-    auto exportedPath = (state.outputPath / resource.relativePath).replace_extension(".bmm");
-    auto exportedFilename = exportedPath.filename();
-    auto relativeExportedPath = std::filesystem::path(resource.relativePath).parent_path() / exportedFilename;
+    auto bakedPath = GetBakedParentPath(state, resource);
+    auto exportedPath = bakedPath.replace_extension(".bmm");
 
     std::filesystem::create_directories(exportedPath.parent_path());
 
@@ -396,8 +432,7 @@ bool ProcessModel(ProcessorState& state, ResourceFile& resource)
     }
 
     // Write out the file header.
-    out.write("BMMF", 4);
-    bl::WriteT<uint32_t>(out, 0);
+    bl::WriteT(out, bl::ModelMagic);
     bl::WriteT<uint32_t>(out, scene->mNumMeshes);
 
     // Write out the meshes.
@@ -406,6 +441,13 @@ bool ProcessModel(ProcessorState& state, ResourceFile& resource)
     out.flush();
     out.close();
 
-    resource.bakedPath = relativeExportedPath;
+    resource.bakedPath = bakedPath;
+    return true;
+}
+
+bool ProcessGeneric(ProcessorState& state, ResourceFile& resource)
+{
+    auto relativePath = std::filesystem::relative(resource.absolutePath.parent_path(), state.manifestPath.parent_path().parent_path());
+    resource.bakedPath = relativePath / resource.absolutePath.filename();
     return true;
 }
