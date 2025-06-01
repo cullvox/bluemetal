@@ -1,19 +1,19 @@
 {
     "resources": [
         {
-            "bakedPath": "Resources/Audio/Music/Taswell.flac",
+            "bakedPath": "Resources\\Audio\\Music\\Taswell.flac",
             "properties": null,
             "relativePath": "Audio/Music/Taswell.flac",
             "type": "Audio"
         },
         {
-            "bakedPath": "Resources/Audio/Music/Mutation.flac",
+            "bakedPath": "Resources\\Audio\\Music\\Mutation.flac",
             "properties": null,
             "relativePath": "Audio/Music/Mutation.flac",
             "type": "Audio"
         },
         {
-            "bakedPath": "Baked/Shaders/Default.vert.spv",
+            "bakedPath": "Baked\\Shaders\\Default.vert.spv",
             "properties": {
                 "shaderType": "vertex"
             },
@@ -21,7 +21,7 @@
             "type": "Shader"
         },
         {
-            "bakedPath": "Baked/Shaders/Default.frag.spv",
+            "bakedPath": "Baked\\Shaders\\Default.frag.spv",
             "properties": {
                 "shaderType": "fragment"
             },
@@ -29,31 +29,31 @@
             "type": "Shader"
         },
         {
-            "bakedPath": "Baked/Textures/Bricks_Albedo.qoi",
+            "bakedPath": "Baked\\Textures\\Bricks_Albedo.qoi",
             "properties": null,
             "relativePath": "Textures/Bricks_Albedo.jpg",
             "type": "Texture"
         },
         {
-            "bakedPath": "Resources/Textures/furry.qoi",
+            "bakedPath": "Resources\\Textures\\furry.qoi",
             "properties": null,
             "relativePath": "Textures/furry.qoi",
             "type": "Texture"
         },
         {
-            "bakedPath": "Baked/Models/red_fox_skull.bmm",
+            "bakedPath": "Baked\\Models\\red_fox_skull.bmm",
             "properties": null,
             "relativePath": "Models/red_fox_skull.glb",
             "type": "Model"
         },
         {
-            "bakedPath": "Resources/Materials/Default.mat",
+            "bakedPath": "Resources\\Materials\\Default.mat",
             "properties": null,
             "relativePath": "Materials/Default.mat",
             "type": "Material"
         },
         {
-            "bakedPath": "Baked/Models/dragon_quick_sculpt.bmm",
+            "bakedPath": "Baked\\Models\\dragon_quick_sculpt.bmm",
             "properties": null,
             "relativePath": "Models/dragon_quick_sculpt.glb",
             "type": "Model"

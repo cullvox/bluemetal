@@ -19,7 +19,7 @@ struct ModelHeader
 
     uint32_t magic;
     uint32_t numMeshes;
-    uint32_t numTextures;
+    // uint32_t numTextures;
 };
 
 
@@ -32,7 +32,7 @@ struct MeshHeader
 {
     uint32_t numVertices;
     uint32_t numIndices;
-    uint32_t numTextureReferences;
+    //uint32_t numTextureReferences;
 
     // Below In Bytes
         // vertices - sizeof(Vertex) * numVertices

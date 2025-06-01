@@ -349,44 +349,44 @@ void ProcessNodes(const aiNode* node, const aiScene* scene, std::ofstream& strea
     }
 }
 
-void ProcessModelMaterials(const aiScene* scene, std::ofstream& stream)
-{
-
-    std::regex regexExpress("^\\*\\d+");
-    std::cmatch regexMatches;
-
-    for (unsigned int i = 0; i < scene->mNumMaterials; i++)
-    {
-        auto material = scene->mMaterials[i];
-
-
-        aiString texturePath;
-        if(material->GetTexture(aiTextureType_LIGHTMAP, 0, &texturePath) == aiReturn_SUCCESS)
-        {
-                    // Check if it's an embedded or external  texture.
-            if(std::regex_search(texturePath.C_Str(), regexMatches, regexExpress))
-            {
-                // Get the index str.
-                std::string indexStr = *(regexMatches.begin());
-
-                // Drop the "*" character.
-                indexStr = indexStr.erase(0,1);
-
-                // Convert the string to an integer. (This is the index in the
-                // Scene::mTextures[] array.
-                int index = std::stoi(indexStr);
-
-
-            }
-            else
-            {
-                // Print the texture file path.
-                std::cout << "File Path: " << texturePath.C_Str() << std::endl;
-            }
-        }
-    }
-
-}
+//void ProcessModelMaterials(const aiScene* scene, std::ofstream& stream)
+//{
+//
+//    std::regex regexExpress("^\\*\\d+");
+//    std::cmatch regexMatches;
+//
+//    for (unsigned int i = 0; i < scene->mNumMaterials; i++)
+//    {
+//        auto material = scene->mMaterials[i];
+//
+//
+//        aiString texturePath;
+//        if(material->GetTexture(aiTextureType_LIGHTMAP, 0, &texturePath) == aiReturn_SUCCESS)
+//        {
+//                    // Check if it's an embedded or external  texture.
+//            if(std::regex_search(texturePath.C_Str(), regexMatches, regexExpress))
+//            {
+//                // Get the index str.
+//                std::string indexStr = *(regexMatches.begin());
+//
+//                // Drop the "*" character.
+//                indexStr = indexStr.erase(0,1);
+//
+//                // Convert the string to an integer. (This is the index in the
+//                // Scene::mTextures[] array.
+//                int index = std::stoi(indexStr);
+//
+//
+//            }
+//            else
+//            {
+//                // Print the texture file path.
+//                std::cout << "File Path: " << texturePath.C_Str() << std::endl;
+//            }
+//        }
+//    }
+//
+//}
 
 void ProcessMesh(const aiScene* scene, const aiMesh* mesh, std::ofstream& stream)
 {
@@ -446,10 +446,10 @@ void ProcessMesh(const aiScene* scene, const aiMesh* mesh, std::ofstream& stream
     bl::WriteVecT(stream, vertices);
     bl::WriteVecT(stream, indices);
 
-    auto material = scene->mMaterials[mesh->mMaterialIndex];
-    for (material->GetTexture(aiTextureType type, unsigned int index, aiString *path)))
+   //auto material = scene->mMaterials[mesh->mMaterialIndex];
+   //for (material->GetTexture(aiTextureType type, unsigned int index, aiString *path)))
 
-    bl::WriteVecT(std::ofstream &out, const std::vector<T> &data)
+   //bl::WriteVecT(std::ofstream &out, const std::vector<T> &data)
 }
 
 void ProcessModelTextures(const aiScene* scene, std::ofstream& stream)
@@ -515,11 +515,11 @@ bool ProcessModel(ProcessorState& state, ResourceFile& resource)
     // Write out the file header.
     bl::WriteT(out, bl::ModelHeader::ModelMagic);
     bl::WriteT<uint32_t>(out, scene->mNumMeshes);
-    bl::WriteT<uint32_t>(out, scene->mNumTextures);
+    // bl::WriteT<uint32_t>(out, scene->mNumTextures);
 
     // Write out the meshes.
     ProcessNodes(scene->mRootNode, scene, out);
-    ProcessModelTextures(scene, out);
+    //ProcessModelTextures(scene, out);
 
     out.flush();
     out.close();
