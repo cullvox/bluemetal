@@ -100,7 +100,7 @@ uint32_t VulkanDevice::GetPresentFamilyIndex() const
     return _presentFamilyIndex;
 }
 
-bool VulkanDevice::GetAreQueuesSame() const 
+bool VulkanDevice::AreQueuesSame() const 
 {
     return _graphicsFamilyIndex == _presentFamilyIndex;
 }
@@ -304,7 +304,7 @@ void VulkanDevice::CreateDevice()
 
     // Only use the unique queue indices, this is a basic way to do that.
     // In the event that we use compute, this needs to be upgraded.
-    queueCreateInfos.resize(GetAreQueuesSame() ? 1 : 2);
+    queueCreateInfos.resize(AreQueuesSame() ? 1 : 2);
 
     const VkPhysicalDeviceFeatures features = {};
 

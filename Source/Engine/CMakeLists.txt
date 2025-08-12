@@ -8,9 +8,6 @@ list(APPEND Sources
   
   # Audio
   "Audio/AudioSystem.cpp"
-  "Audio/Source.cpp"
-  "Audio/Listener.cpp"
-  "Audio/Sound.cpp"
 
   "Graphics/VulkanWindow.cpp"
   "Graphics/VulkanConversions.cpp"
@@ -31,8 +28,6 @@ list(APPEND Sources
   "Graphics/VulkanSwapchain.cpp"
   "Graphics/VulkanMaterial.cpp"
   "Graphics/VulkanMaterialInstance.cpp"
-  "Graphics/Material.cpp"
-  "Graphics/MaterialInstance.cpp"
   "Graphics/StaticMesh.cpp"
   "Graphics/StaticModel.cpp"
   "Graphics/Renderer.cpp"
@@ -53,8 +48,15 @@ list(APPEND Sources
   "ImGui/imgui_impl_vulkan.cpp"
   "ImGui/ImGuiSystem.cpp"
 
-  "Resource/Resource.cpp"
-  "Resource/ResourceManager.cpp"
+  "Resources/Resource.cpp"
+  "Resources/ResourceManager.cpp"
+  "Resources/Sampler.cpp"
+  "Resources/Sound.cpp"
+  "Resources/Shader.cpp"
+  "Resources/Material.cpp"
+  "Resources/MaterialInstance.cpp"
+
+  "Scene/Source.cpp"
 
   "Engine/SDLInitializer.cpp"
   
@@ -78,6 +80,6 @@ target_link_libraries(Bluemetal PUBLIC
   GPUOpen::VulkanMemoryAllocator
   nlohmann_json
   qoixx::qoixx
-  assimp)
+  tinygltf)
 
 target_precompile_headers(Bluemetal PUBLIC "Precompiled.h")

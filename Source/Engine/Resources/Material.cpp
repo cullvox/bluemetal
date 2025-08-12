@@ -1,10 +1,9 @@
+#include "Material.h"
 #include "Graphics/VulkanShader.h"
 #include "Renderer.h"
 #include "Resource/ResourceManager.h"
-#include "Material.h"
 
-namespace bl
-{
+namespace bl {
 
 Material::Material(ResourceManager* manager, const nlohmann::json& data, VulkanDevice* device, Renderer* renderer)
     : Resource(manager, data)
@@ -15,10 +14,9 @@ Material::Material(ResourceManager* manager, const nlohmann::json& data, VulkanD
 
 Material::~Material()
 {
-    
 }
 
-void Material::Load()
+bool Material::Load()
 {
     std::ifstream materialFile(GetFilePath());
 
@@ -27,25 +25,21 @@ void Material::Load()
     VulkanPipelineStateInfo info;
     RenderPassType passType;
 
-    try
-    {
+    try {
         json = nlohmann::json::parse(materialFile);
 
         passType = json["renderPass"];
         vertexPath = json["shaders"]["vertex"].get<std::string>();
         fragmentPath = json["shaders"]["fragment"].get<std::string>();
 
-
-
         info = json["state"];
 
-        auto vertexShader = GetManager()->Load<bl::VulkanShader>(vertexPath);
-        auto fragmentShader = GetManager()->Load<bl::VulkanShader>(fragmentPath);
+        auto vertexShader = GetResourceManager()->Load<bl::VulkanShader>(vertexPath);
+        auto fragmentShader = GetResourceManager()->Load<bl::VulkanShader>(fragmentPath);
         info.stages.shaders = { vertexShader, fragmentShader };
-    }
-    catch (const std::exception& e)
-    {
+    } catch (const std::exception& e) {
         Log::Error("Could not parse material json: {}", e.what());
+        return false;
     }
 
     auto [pass, subpass] = _renderer->GetRenderPass(passType);
@@ -115,7 +109,7 @@ void Material::PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size
     _material->PushConstant(rd, offset, size, value);
 }
 
-VulkanPipeline* Material::GetPipeline()
+const VulkanPipeline* Material::GetPipeline()
 {
     return _material->GetPipeline();
 }

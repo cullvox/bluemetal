@@ -3,9 +3,13 @@
 #include "Graphics/VulkanDevice.h"
 #include "Graphics/VulkanInstance.h"
 #include "VulkanShader.h"
-#include "Texture2D.h" 
+
 #include "StaticModel.h"
 #include "GraphicsSystem.h"
+
+#include "Resources/Texture2D.h"
+#include "Resources/Shader.h"
+#include "Resources/Material.h"
 
 #include "ImGui/ImGuiSystem.h"
 
@@ -67,9 +71,9 @@ std::unique_ptr<Resource> GraphicsSystem::BuildResource(ResourceManager* manager
 {
     if (type == "Shader") 
     {
-        return std::make_unique<VulkanShader>(manager, json, _device.get());
+        return std::make_unique<Shader>(manager, json, _device.get());
     } 
-    else if (type == "Texture") 
+    else if (type == "Texture2D") 
     {
         return std::make_unique<Texture2D>(manager, json, _device.get());
     } 

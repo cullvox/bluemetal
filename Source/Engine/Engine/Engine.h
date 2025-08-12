@@ -2,7 +2,7 @@
 
 #include "Precompiled.h"
 #include "Core/Flags.h"
-#include "Resource/ResourceManager.h"
+#include "Resources/ResourceManager.h"
 #include "SDLInitializer.h"
 #include "Audio/AudioSystem.h"
 #include "Graphics/GraphicsSystem.h"

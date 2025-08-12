@@ -1,5 +1,3 @@
-#include <assimp/config.h>
-#include <assimp/postprocess.h>
 #include <cstddef>
 #include <cstdint>
 #include <glm/fwd.hpp>
@@ -8,12 +6,12 @@
 
 #include "Core/FileByte.h"
 #include "Graphics/ModelFormat.h"
-#include "Graphics/Texture2D.h"
 #include "Graphics/VulkanImage.h"
 #include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanSampler.h"
-#include "Resource/Resource.h"
-#include "Resource/ResourceManager.h"
+#include "Resources/Resource.h"
+#include "Resources/ResourceManager.h"
+#include "Resources/Texture2D.h"
 #include "Vertex.h"
 #include "VulkanDevice.h"
 #include "UniformData.h"
@@ -46,19 +44,19 @@ StaticModel::~StaticModel()
 void StaticModel::Load()
 {
     std::ifstream modelFile(GetFilePath(), std::ios::in | std::ios::binary);
-    auto header = bl::ReadT<ModelHeader>(modelFile);
+    auto header = bl::ReadT<BMMFHeader>(modelFile);
 
-    if (header.magic != ModelHeader::ModelMagic)
+    if (header.magic != bl::BMMF_MAGIC)
         throw std::runtime_error("Model magic is incorrect!");
 
     _meshes.reserve(header.numMeshes);
     _transforms.reserve(header.numMeshes);
 
     _sampler = std::make_unique<VulkanSampler>(_device);
-    
+
     for (uint32_t i = 0; i < header.numMeshes; i++)
     {
-        auto meshHeader = bl::ReadT<MeshHeader>(modelFile);
+        auto meshHeader = bl::ReadT<BMMFMeshHeader>(modelFile);
         auto vertices = bl::ReadVecT<Vertex>(modelFile, meshHeader.numVertices);
         auto indices = bl::ReadVecT<uint32_t>(modelFile, meshHeader.numIndices);
         // auto textureReferences = bl::ReadVecT<TextureReference>(modelFile, meshHeader.numTextureReferences);

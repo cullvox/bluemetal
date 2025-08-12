@@ -15,7 +15,7 @@ VulkanReflectedPipeline::VulkanReflectedPipeline(const VulkanPipelineStateInfo::
     for (size_t i = 0; i < shaders.size(); i++) {
 
         // Reflect each descriptor binding to build descriptor set layouts.
-        VulkanShader* shader = shaders[i].Get();
+        VulkanShader* shader = shaders[i];
         auto reflection = shader->GetReflection();
 
         for (uint32_t j = 0; j < reflection.descriptor_binding_count; j++)
@@ -176,8 +176,8 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
         stages[i].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         stages[i].pNext = nullptr;
         stages[i].flags = 0;
-        stages[i].stage = shader.Get()->GetStage();
-        stages[i].module = shader.Get()->Get();
+        stages[i].stage = shader->GetStage();
+        stages[i].module = shader->Get();
         stages[i].pName = "main";
         stages[i].pSpecializationInfo = nullptr;
     }
@@ -316,7 +316,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
     dynamicState.pNext = nullptr;
     dynamicState.flags = {};
-    dynamicState.dynamicStateCount = dynamicStates.size();
+    dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};

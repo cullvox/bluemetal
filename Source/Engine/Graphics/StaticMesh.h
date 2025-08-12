@@ -4,13 +4,14 @@
 
 namespace bl {
 
-template<typename T>
-std::span<const std::byte> vector_as_bytes(const std::vector<T>& vec) {
-    const std::byte* data_ptr = reinterpret_cast<const std::byte*>(vec.data());
-    size_t size = sizeof(T) * vec.size();
-    return std::span<const std::byte>{data_ptr, size};
-}
-
+/**
+ * @class StaticMesh
+ * @brief Represents a static mesh with vertex and index buffers.
+ *
+ * This class is used to create and manage static meshes in Vulkan.
+ * It provides methods to set vertices and indices, bind the mesh for rendering,
+ * and draw the mesh.
+ */
 class StaticMesh 
 {
 public:

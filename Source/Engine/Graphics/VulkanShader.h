@@ -1,21 +1,16 @@
 #pragma once
 
 #include <spirv_reflect.h>
-#include <nlohmann/json.hpp>
 
-#include "Resource/Resource.h"
 #include "VulkanDevice.h"
 
 namespace bl  {
 
 /** @brief A single unit of a shader pipeline. */
-class VulkanShader : public Resource {
+class VulkanShader {
 public:
-    VulkanShader(ResourceManager* manager, const nlohmann::json& json, VulkanDevice* device);  /** @brief Constructor */
+    VulkanShader(VulkanDevice* device, std::span<uint32_t> data);  /** @brief Constructor */
     ~VulkanShader(); /** @brief Destructor */
-
-    virtual void Load() override;
-    virtual void Unload() override;
 
     VkShaderStageFlagBits GetStage() const; /** @brief Returns the shader stage created with. */
     const SpvReflectShaderModule& GetReflection() const; /** @brief Returns the reflection module. */

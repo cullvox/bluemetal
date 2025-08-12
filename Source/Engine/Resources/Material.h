@@ -1,20 +1,23 @@
 #pragma once
 
-#include "Resource/Resource.h"
-#include "Renderer.h"
-#include "VulkanMaterial.h"
+#include "Resource.h"
+#include "Sampler.h"
+#include "Texture.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/VulkanMaterial.h"
 
-namespace bl
-{
+namespace bl {
 
-class Material : public Resource
-{
+class Material : public Resource {
 public:
-    Material(ResourceManager* manager, const nlohmann::json& data, VulkanDevice* device, Renderer* renderer);
+    Material(ResourceManager* manager, VulkanDevice* device, Renderer* renderer);
     ~Material();
 
-    virtual void Load() override;
+    virtual const std::string& GetType() const override { return "Material"; }
+
+    virtual bool Load() override;
     virtual void Unload() override;
+    virtual bool ExportBinary(std::ostream& stream) override;
 
     void SetBool(const std::string& name, bool value);
     void SetInteger(const std::string& name, int value);
@@ -23,14 +26,14 @@ public:
     void SetVector3(const std::string& name, glm::vec3 value);
     void SetVector4(const std::string& name, glm::vec4 value);
     void SetMatrix(const std::string& name, glm::mat4 value);
-    void SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image);
+    void SetSampledTexture(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image);
     void UpdateUniforms(); /** @brief This function must be called before the renderer starts rendering the frame. */
 
     void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */
     void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
 
     VulkanMaterial* GetMaterial() { return _material.get(); }
-    VulkanPipeline* GetPipeline();
+    const VulkanPipeline* GetPipeline();
 
 private:
     Renderer* _renderer;

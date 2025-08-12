@@ -1,5 +1,5 @@
-#include "Core/Hash.h"
 #include "VulkanSampler.h"
+#include "Core/Hash.h"
 
 namespace bl {
 
@@ -20,114 +20,37 @@ VulkanSampler::VulkanSampler(
     VkBool32 unnormalizedCoordinates)
     : _device(device)
     , _sampler(VK_NULL_HANDLE)
-    , _magFilter(magFilter)
-    , _minFilter(minFilter)
-    , _mipmapMode(mipmapMode)
-    , _addressMode(addressMode)
-    , _mipLodBias(mipLodBias)
-    , _enableAnisotropy(enableAnisotropy)
-    , _maxAnisotropy(maxAnisotropy)
-    , _compareEnable(compareEnable)
-    , _compareOp(compareOp)
-    , _minLod(minLod)
-    , _maxLod(maxLod)
-    , _borderColor(borderColor)
-    , _unnormalizedCoordinates(unnormalizedCoordinates) {
-    Update();
+{
+    VkSamplerCreateInfo samplerInfo = {};
+    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerInfo.pNext = nullptr;
+    samplerInfo.flags = 0;
+    samplerInfo.magFilter = magFilter;
+    samplerInfo.minFilter = minFilter;
+    samplerInfo.mipmapMode = mipmapMode;
+    samplerInfo.addressModeU = addressMode;
+    samplerInfo.addressModeV = addressMode;
+    samplerInfo.addressModeW = addressMode;
+    samplerInfo.mipLodBias = mipLodBias;
+    samplerInfo.anisotropyEnable = enableAnisotropy;
+    samplerInfo.maxAnisotropy = maxAnisotropy;
+    samplerInfo.compareEnable = compareEnable;
+    samplerInfo.compareOp = compareOp;
+    samplerInfo.minLod = minLod;
+    samplerInfo.maxLod = maxLod;
+    samplerInfo.borderColor = borderColor;
+    samplerInfo.unnormalizedCoordinates = unnormalizedCoordinates;
+    VK_CHECK(vkCreateSampler(_device->Get(), &samplerInfo, nullptr, &_sampler));
 }
 
-void VulkanSampler::Update() {
-
-    vkDestroySampler(_device->Get(), _sampler, nullptr);
-
-    VkSamplerCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-    createInfo.pNext = nullptr;
-    createInfo.flags = 0;
-    createInfo.magFilter = _magFilter;
-    createInfo.minFilter = _minFilter;
-    createInfo.mipmapMode = _mipmapMode;
-    createInfo.addressModeU = _addressMode;
-    createInfo.addressModeV = _addressMode;
-    createInfo.addressModeW = _addressMode;
-    createInfo.mipLodBias = _mipLodBias;
-    createInfo.anisotropyEnable = _enableAnisotropy;
-    createInfo.maxAnisotropy = _maxAnisotropy;
-    createInfo.compareEnable = _compareEnable;
-    createInfo.compareOp = _compareOp;
-    createInfo.minLod = _minLod;
-    createInfo.maxLod = _maxLod;
-    createInfo.borderColor = _borderColor;
-    createInfo.unnormalizedCoordinates = _unnormalizedCoordinates;
-
-    _hash = 0x59CFA54A2CD1; // some random prime
-    bl::hash_combine(_hash, 
-        _magFilter, _minFilter, _mipmapMode, _addressMode, 
-        _mipLodBias, _enableAnisotropy, _maxAnisotropy, _compareEnable, 
-        _compareOp, _minLod, _maxLod, _borderColor, _unnormalizedCoordinates);
-
-    VK_CHECK(vkCreateSampler(_device->Get(), &createInfo, nullptr, &_sampler));
-}
-
-VulkanSampler::~VulkanSampler() {
+VulkanSampler::~VulkanSampler()
+{
     vkDestroySampler(_device->Get(), _sampler, nullptr);
 }
 
-VkSampler VulkanSampler::Get() const {
+VkSampler VulkanSampler::Get() const
+{
     return _sampler;
-}
-
-void VulkanSampler::SetFilters(VkFilter magFilter, VkFilter minFilter) {
-    _magFilter = magFilter;
-    _minFilter = minFilter;
-    Update();
-}
-
-void VulkanSampler::SetMipmapMode(VkSamplerMipmapMode mode) {
-    _mipmapMode = mode;
-    Update();
-}
-
-void VulkanSampler::SetAddressMode(VkSamplerAddressMode mode) {
-    _addressMode = mode;
-    Update();
-}
-
-void VulkanSampler::SetMipLodBias(float bias) {
-    _mipLodBias = bias;
-    Update();
-}
-
-void VulkanSampler::SetAnisotropy(bool enableAnisotropy, float maxAnisotropy) {
-    _enableAnisotropy = enableAnisotropy;
-    _maxAnisotropy = maxAnisotropy;
-    Update();
-}
-
-void VulkanSampler::SetCompare(bool compareEnable, VkCompareOp op) {
-    _compareEnable = compareEnable;
-    _compareOp = op;
-    Update();
-}
-
-void VulkanSampler::SetLodMinMax(float min, float max) {
-    _minLod = min;
-    _maxLod = max;
-    Update();
-}
-
-void VulkanSampler::SetBorderColor(VkBorderColor color) {
-    _borderColor = color;
-    Update();
-}
-
-void VulkanSampler::SetUnnormalizedCoordinates(VkBool32 unnormalizedCoordinates) {
-    _unnormalizedCoordinates = unnormalizedCoordinates;
-    Update();
-}
-
-std::size_t VulkanSampler::GetHash() const {
-    return _hash;
 }
 
 } // namespace bl

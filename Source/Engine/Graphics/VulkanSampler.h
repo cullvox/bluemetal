@@ -2,14 +2,33 @@
 
 #include "Vulkan.h"
 #include "VulkanDevice.h"
-#include "VulkanMutable.h"
-#include "VulkanDeleterQueue.h"
-#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
-class VulkanSampler : public VulkanMutable {
+/**
+ * @class VulkanSampler
+ * @brief A Vulkan sampler object for texture sampling.
+ */
+class VulkanSampler {
 public:
+
+    /**
+     * @brief Constructs a Vulkan sampler with specified parameters.
+     * @param device Vulkan device to create the sampler with.
+     * @param magFilter Magnification filter to use.
+     * @param minFilter Minification filter to use.
+     * @param mipmapMode Mipmap mode to use.
+     * @param addressMode Address mode to use for texture coordinates.
+     * @param mipLodBias Mipmap level of detail bias.
+     * @param enableAnisotropy Enable anisotropic filtering.
+     * @param maxAnisotropy Maximum anisotropy level.
+     * @param compareEnable Enable comparison for the sampler.
+     * @param compareOp Comparison operation to use.
+     * @param minLod Minimum level of detail for the sampler.
+     * @param maxLod Maximum level of detail for the sampler.
+     * @param borderColor Border color to use for the sampler.
+     * @param unnormalizedCoordinates Use unnormalized coordinates for the sampler.
+     */
     VulkanSampler(
         VulkanDevice* device,
         VkFilter magFilter = VK_FILTER_LINEAR,
@@ -25,41 +44,21 @@ public:
         float maxLod = 0.0f,
         VkBorderColor borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
         VkBool32 unnormalizedCoordinates = VK_FALSE);
+
+    /**
+     * @brief Destroys the Vulkan sampler.
+     */
     ~VulkanSampler();
 
+    /**
+     * @brief Returns the Vulkan sampler handle.
+     * @return The Vulkan sampler handle.
+     */
     VkSampler Get() const;
-    // Mutable values
-    void SetFilters(VkFilter magFilter, VkFilter minFilter);
-    void SetMipmapMode(VkSamplerMipmapMode mode);
-    void SetAddressMode(VkSamplerAddressMode mode);
-    void SetMipLodBias(float bias);
-    void SetAnisotropy(bool enableAnisotropy, float maxAnisotropy);
-    void SetCompare(bool compareEnable, VkCompareOp op);
-    void SetLodMinMax(float min, float max);
-    void SetBorderColor(VkBorderColor color);
-    void SetUnnormalizedCoordinates(VkBool32 unnormalizedCoordinates);
-
-    virtual std::size_t GetHash() const override;
 
 private:
-    void Update();
-
     VulkanDevice* _device;
     VkSampler _sampler;
-    VkFilter _magFilter;
-    VkFilter _minFilter;
-    VkSamplerMipmapMode _mipmapMode;
-    VkSamplerAddressMode _addressMode;
-    float _mipLodBias;
-    bool _enableAnisotropy;
-    float _maxAnisotropy;
-    VkBool32 _compareEnable;
-    VkCompareOp _compareOp;
-    float _minLod;
-    float _maxLod;
-    VkBorderColor _borderColor;
-    VkBool32 _unnormalizedCoordinates;
-    std::size_t _hash;
 };
 
 } // namespace bl

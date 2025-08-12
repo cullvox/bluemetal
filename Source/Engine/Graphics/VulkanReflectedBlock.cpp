@@ -43,7 +43,7 @@ uint32_t VulkanVariableBlock::GetSize() const {
     return _size;
 }
 
-std::string VulkanVariableBlock::GetName() const {
+const std::string& VulkanVariableBlock::GetName() const {
     return _name;
 }
 

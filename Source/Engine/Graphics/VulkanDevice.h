@@ -8,45 +8,130 @@
 
 namespace bl {
 
-/// @brief A graphics device used as the basis of many graphics operations.
+/**
+ * @class VulkanDevice
+ * @brief Represents a Vulkan device used for rendering.
+ */
 class VulkanDevice : public NonCopyable {
 public:
-    
-    /// @brief Default Constructor
+
+    /**
+     * @brief Default constructor for VulkanDevice.
+     */
     VulkanDevice();
 
-    /// @brief Device Constructor
-    /// @param[in] instance The vulkan instance to build this device from.
-    /// @param[in] physicalDevice The physical device this device will use.
-    /// @param[in] temporarySurface Used only to find a present queue used in the device, can be destroyed after construction.
+    /**
+     * @brief Constructs a VulkanDevice with the specified instance and physical device.
+     * @param instance The Vulkan instance to use.
+     * @param physicalDevice The physical device to use.
+     */
     VulkanDevice(
         VulkanInstance* instance, 
         VulkanPhysicalDevice* physicalDevice);
-    
-    /// @brief Move Constructor
+
+    /**
+     * @brief Move constructor for VulkanDevice.
+     */
     VulkanDevice(VulkanDevice&& other) = default;
 
-    /// @brief Destructor
-    ~VulkanDevice(); /** @brief Destructor. */
+    /**
+     * @brief Destructor for VulkanDevice.
+     */
+    ~VulkanDevice();
 
+    /**
+     * @brief Move assignment operator for VulkanDevice.
+     * @param move The VulkanDevice to move from.
+     * @return Reference to this VulkanDevice.
+     */
     VulkanDevice& operator=(VulkanDevice&& move) noexcept;
 
-    VulkanInstance* GetInstance() const; /** @brief Returns the instance that this device was created with. */
-    VulkanPhysicalDevice* GetPhysicalDevice() const; /** @brief Returns the physical device this device was crated with. */
-    uint32_t GetGraphicsFamilyIndex() const; /** @brief Returns the index used for graphics queue operations. */
-    uint32_t GetPresentFamilyIndex() const; /** @brief Returns the index used for present queue operations. */
-    bool GetAreQueuesSame() const; /** @brief Returns true if the graphics family index and present family index are the same. */
-    VkQueue GetGraphicsQueue() const; /** @brief Returns the Vulkan graphics queue. */
-    VkQueue GetPresentQueue() const; /** @brief Returns the Vulkan present queue. */
-    VkDevice Get() const; /** @brief Returns the underlying Vulkan device. */
-    VkCommandPool GetCommandPool() const; /** @brief Returns the default Vulkan command pool. */
-    VmaAllocator GetAllocator() const; /** @brief Returns the Vulkan Memory Allocator object. */
-    void ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder); /** @brief Submits commands to the graphics queue on the double. */
+    /**
+     * @brief Returns the Vulkan instance this device was created with.
+     * @return The Vulkan instance.
+     */
+    VulkanInstance* GetInstance() const;
 
-    /// @brief Waits for an undefined amount of time for the device to finish whatever it may be doing.
+    /**
+     * @brief Returns the physical device this device was created with.
+     * @return The Vulkan physical device.
+     */
+    VulkanPhysicalDevice* GetPhysicalDevice() const;
+
+    /**
+     * @brief Returns the graphics family index used for graphics operations.
+     * @return The graphics family index.
+     */
+    uint32_t GetGraphicsFamilyIndex() const;
+
+    /** 
+     * @brief Returns the present family index used for present operations.
+     * @return The present family index.
+     */
+    uint32_t GetPresentFamilyIndex() const;
+
+    /**
+     * @brief Returns true if the graphics family index and present family index are the same.
+     * @return True if the indices are the same, false otherwise.
+     */
+    bool AreQueuesSame() const;
+
+    /**
+     * @brief Returns the Vulkan graphics queue.
+     * @return The Vulkan graphics queue.
+     */
+    VkQueue GetGraphicsQueue() const;
+
+    /**
+     * @brief Returns the Vulkan present queue.
+     * @return The Vulkan present queue.
+     */
+    VkQueue GetPresentQueue() const;
+
+    /**
+     * @brief Returns the underlying Vulkan device.
+     * @return The Vulkan device handle.
+     */
+    VkDevice Get() const;
+
+    /**
+     * @brief Returns the Vulkan command pool used for command buffer allocation.
+     * @return The Vulkan command pool.
+     */
+    VkCommandPool GetCommandPool() const;
+
+    /**
+     * @brief Returns the Vulkan Memory Allocator used for memory management.
+     * @return The Vulkan Memory Allocator.
+     */
+    VmaAllocator GetAllocator() const;
+
+    /**
+     * @brief Immediately submits a command buffer to the graphics queue.
+     * @param recorder The function to record commands into the command buffer.
+     * This function will create a command buffer, record commands, submit it, and wait for completion.
+     */
+    void ImmediateSubmit(const std::function<void(VkCommandBuffer)>& recorder);
+
+    /**
+     * @brief This function blocks until the device is idle.
+     * @details This is useful for ensuring that all operations are complete before proceeding.
+     */
     void WaitForDevice();
 
+    /**
+     * @brief Acquires a descriptor set layout with the specified bindings.
+     * @param bindings The bindings to use for the descriptor set layout.
+     * @return The VkDescriptorSetLayout handle.
+     */
     VkDescriptorSetLayout AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings);
+
+    /**
+     * @brief Acquires a pipeline layout with the specified descriptor set layouts and push constant ranges.
+     * @param layouts The descriptor set layouts to use.
+     * @param ranges The push constant ranges to use.
+     * @return The VkPipelineLayout handle.
+     */
     VkPipelineLayout AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges);
 
 private:

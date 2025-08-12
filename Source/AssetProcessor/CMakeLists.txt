@@ -1,5 +1,6 @@
 list(APPEND AssetProcessorSources
-    "Main.cpp")
+    "Main.cpp"
+    "ModelProcessor.cpp")
 
 add_executable(AssetProcessor ${AssetProcessorSources})
 target_link_libraries(AssetProcessor Bluemetal)

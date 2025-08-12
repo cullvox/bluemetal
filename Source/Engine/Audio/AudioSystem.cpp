@@ -1,38 +1,38 @@
 #include "Engine/Engine.h"
 #include "AudioSystem.h"
-#include "Sound.h"
+
+#include "Resources/Sound.h"
 
 namespace bl 
 {
 
-AudioSystem::AudioSystem(Engine* engine)
-    : _engine(engine)
+AudioSystem::AudioSystem()
 {
-    FMOD_CHECK(FMOD::System_Create(&_system, FMOD_VERSION))
-    FMOD_CHECK(_system->init(128, FMOD_INIT_NORMAL, nullptr))
+    FMOD_CHECK(FMOD::System_Create(&_fmod, FMOD_VERSION))
+    FMOD_CHECK(_fmod->init(128, FMOD_INIT_NORMAL, nullptr))
 }
 
 AudioSystem::~AudioSystem() 
 { 
-    _system->close();
+    _fmod->close();
 }
 
-FMOD::System* AudioSystem::Get() 
+FMOD::System* AudioSystem::GetFMOD()
 { 
-    return _system; 
+    return _fmod; 
 }
 
 void AudioSystem::Update()
 {
-    FMOD_CHECK(_system->update())
+    FMOD_CHECK(_fmod->update())
 }
 
 std::string AudioSystem::GetDriverName()
 {
     int driverId = 0;
     char name[128] = {0};
-    FMOD_CHECK(_system->getDriver(&driverId))
-    FMOD_CHECK(_system->getDriverInfo(driverId, name, sizeof(name), nullptr, nullptr, nullptr, nullptr))
+    FMOD_CHECK(_fmod->getDriver(&driverId))
+    FMOD_CHECK(_fmod->getDriverInfo(driverId, name, sizeof(name), nullptr, nullptr, nullptr, nullptr))
 
     return std::string(name);
 }
@@ -40,30 +40,20 @@ std::string AudioSystem::GetDriverName()
 int AudioSystem::GetNumChannelsPlaying()
 {
     int count = 0;
-    FMOD_CHECK(_system->getChannelsPlaying(&count))
+    FMOD_CHECK(_fmod->getChannelsPlaying(&count))
     return count;
 }
 
-std::unique_ptr<Resource> AudioSystem::BuildResource(ResourceManager* manager, const std::string& type, const std::filesystem::path& path, const nlohmann::json& data)
+std::unique_ptr<Resource> AudioSystem::BuildResource(ResourceManager* manager, const std::string& type)
 {
     if (type == "Audio")
     {
-        return std::make_unique<Sound>(manager, data, this);
+        return std::make_unique<Sound>(manager, this);
     }
     else
     {
         throw std::runtime_error("Trying to create a resource this builder wasn't specified to!");
     }
-}
-
-std::unique_ptr<Listener> AudioSystem::CreateListener()
-{
-    return std::make_unique<Listener>(this);
-}
-
-std::unique_ptr<Source> AudioSystem::CreateSource()
-{
-    return std::make_unique<Source>(this);
 }
 
 } // namespace bl

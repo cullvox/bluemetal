@@ -32,7 +32,7 @@ private:
     std::vector<int> _meshTransformIndicies;
     std::unique_ptr<VulkanSampler> _sampler;
     std::vector<VulkanImage> _images;
-    std::vector<std::vector<TextureReference>> _textures;
+    std::vector<ResourceRef<Texture>> _textures;
 };
 
 }

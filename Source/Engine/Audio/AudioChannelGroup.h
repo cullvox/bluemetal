@@ -1,21 +1,12 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
-
 
 namespace bl
 {
 
-///////////////////////////////
-// Classes
-///////////////////////////////
-
-class BLUEMETAL_API AudioChannelGroup
+class AudioChannelGroup
 {
     
-}
+};
 
 } // namespace bl

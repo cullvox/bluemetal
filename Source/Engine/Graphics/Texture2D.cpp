@@ -42,26 +42,26 @@ void Texture2D::Load()
 
     format = formatConversion[(int)GetColorSpace()][(int)GetFormat()];
 
-    _image = VulkanImage{
+    _image = std::make_unique<VulkanImage>(
         _device, 
         VK_IMAGE_TYPE_2D, 
         vk::Make3D(GetExtent()),
         format,
-        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT};
+        VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
 
-    _image.UploadData(GetImageData(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    _image->UploadData(GetImageData(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     Texture::Unload();
     Resource::Load();
 }
 
 void Texture2D::Unload() {
-    _image.Destroy();
+    _image.reset();
     Resource::Unload();
 }
 
 VulkanImage* Texture2D::GetImage() {
-    return &_image;
+    return _image.get();
 }
 
 } // namespace bl

@@ -4,10 +4,7 @@
 #include "FMOD.h"
 #include "Core/MacroUtils.h"
 #include "Core/NonCopyable.h"
-#include "Resource/ResourceManager.h"
-#include "Sound.h"
-#include "Listener.h"
-#include "Source.h"
+#include "Resources/ResourceManager.h"
 
 namespace bl
 {
@@ -18,24 +15,48 @@ class Sound;
 class AudioSystem : public NonCopyable, public ResourceBuilder
 {
 public:
-    AudioSystem(Engine* engine);
-    ~AudioSystem();
 
+    /**
+     * @brief Resource builder for the resource manager.
+     */
+    virtual std::unique_ptr<Resource> BuildResource(ResourceManager* manager, const std::string& type);
 
-    FMOD::System* Get();
-    void Update(); /** @brief Ticks the audio system along for another frame. */
+    /**
+     * @brief Returns the singleton instance of the audio system.
+     * @return The singleton instance of the engines audio system.
+     */
+    static AudioSystem* GetInstance();
+
+    /**
+     * @brief Returns the FMOD System object.
+     * @return The FMOD System object.
+     */
+    FMOD::System* GetFMOD();
+
+    /**
+     * @brief Ticks the audio system along for another frame.
+     */
+    void Update(); 
+
+    /**
+     * @brief Returns the audio driver name.
+     * @return The current audio driver name.
+     */
     std::string GetDriverName();
+
+    /**
+     * @brief Returns how many audio channels are playing.
+     * @return The number of audio channels playing.
+     */
     int GetNumChannelsPlaying();
 
-    virtual std::unique_ptr<Resource> BuildResource(ResourceManager* manager, const std::string& type, const std::filesystem::path& path, const nlohmann::json& data);
-
-    std::unique_ptr<Sound> CreateSound(std::filesystem::path path);
-    std::unique_ptr<Listener> CreateListener();
-    std::unique_ptr<Source> CreateSource();
+private:
+    AudioSystem();
+    ~AudioSystem();
 
 private:
-    Engine* _engine;
-    FMOD::System* _system;
+    static std::unique_ptr<AudioSystem> _system;
+    FMOD::System* _fmod;
 };
 
 } // namespace bl

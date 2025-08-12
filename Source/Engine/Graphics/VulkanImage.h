@@ -72,10 +72,7 @@ public:
     VkImageView CreateView(VkImageAspectFlags viewAspectMask, uint32_t mipLevels = 1);
     void DestroyViews();
 
-    /// @brief Destroys the Vulkan image freeing up GPU memory.
-    void Destroy();
 
-public:
     /// @brief Uploads image data into a vulkan image.
     /// @param data The data to upload to the GPU. 
     void UploadData(std::span<const std::byte> data, VkImageLayout finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

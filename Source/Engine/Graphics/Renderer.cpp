@@ -1,7 +1,6 @@
-#include "VulkanDescriptorSetAllocatorCache.h"
 #include "Renderer.h"
-#include "Material.h"
-#include <vulkan/vulkan_core.h>
+#include "VulkanDescriptorSetAllocatorCache.h"
+#include "VulkanMaterial.h"
 
 namespace bl {
 
@@ -24,11 +23,12 @@ Renderer::Renderer(VulkanDevice* device, VulkanWindow* window)
         CreateRenderPasses();
         RecreateImages();
     } 
-    catch (const std::exception& e) 
+    catch (const std::exception& e)
     {
+        Log::Error("Failed to initialize renderer: {}", e.what());
+        DestroySyncObjects();
         DestroyImagesAndFramebuffers();
         DestroyRenderPasses();
-        DestroySyncObjects();
         throw;
     }
 }

@@ -31,10 +31,9 @@ VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayou
     if (it != _freeSets.end())
     {
         auto& freeSets = (*it).second;
-        
+
         if (freeSets.size() > 0)
         {
-            
             // Find the first descriptor set and then remove it from the set.
             auto first = freeSets.begin();
             auto set = (*first);

@@ -273,9 +273,9 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     std::vector queueFamilyIndices = { _device->GetGraphicsFamilyIndex(), _device->GetPresentFamilyIndex() };
 
     // If they are the same index then we don't want to misreport.
-    queueFamilyIndices.resize(_device->GetAreQueuesSame() ? 1 : 2);
+    queueFamilyIndices.resize(_device->AreQueuesSame() ? 1 : 2);
 
-    auto imageSharingMode = _device->GetAreQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
+    auto imageSharingMode = _device->AreQueuesSame() ? VK_SHARING_MODE_EXCLUSIVE : VK_SHARING_MODE_CONCURRENT;
     auto format = surfaceFormat.value_or(_surfaceFormat);
     auto present = presentMode.value_or(_presentMode); 
     auto oldSwapchain = _swapchain;
@@ -320,11 +320,6 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
 
     ObtainImages();
     CreateImageViews();
-}
-
-std::size_t VulkanSwapchain::GetHash() const 
-{
-    return _hash;
 }
 
 } // namespace bl

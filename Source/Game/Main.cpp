@@ -279,6 +279,7 @@ int main(int argc, const char** argv)
         // material->SetVector4("material.color", color);
 
         source->Set3DAttributes(position, velocity);
+        listener->SetAttributes3D(cameraPos, )
         audio->Update();
 
         if (!minimized) {

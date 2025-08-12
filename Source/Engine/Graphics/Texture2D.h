@@ -19,7 +19,7 @@ public:
 
 private:
     VulkanDevice* _device;
-    VulkanImage _image;
+    std::unique_ptr<VulkanImage> _image;
 };
 
 } // namespace bl

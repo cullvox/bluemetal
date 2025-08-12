@@ -1,37 +1,45 @@
 #pragma once
 
 #include "Vertex.h"
-#include "VulkanMutable.h"
-#include "VulkanDevice.h"
-#include "VulkanShader.h"
 #include "VulkanConversions.h"
+#include "VulkanDescriptorSetLayoutCache.h"
+#include "VulkanDevice.h"
+#include "VulkanMutable.h"
+#include "VulkanPipelineLayoutCache.h"
 #include "VulkanReflectedBlock.h"
 #include "VulkanReflectedDescriptorSet.h"
 #include "VulkanReflectedPushConstant.h"
-#include "VulkanDescriptorSetLayoutCache.h"
-#include "VulkanPipelineLayoutCache.h"
+#include "VulkanShader.h"
 #include <vulkan/vulkan_core.h>
 
 namespace bl {
 
-/** @brief Create info for pipeline objects. */
+/**
+ * @brief Creation info for Vulkan pipeline objects.
+ */
 struct VulkanPipelineStateInfo {
 
-    struct Stages 
-    {
-        std::vector<ResourceRef<VulkanShader>> shaders;
+    /**
+     * @brief Stages of the pipeline.
+     */
+    struct Stages {
+        std::vector<VulkanShader*> shaders;
     } stages;
 
-    struct VertexState 
-    {
+    /**
+     * @brief Vertex input state for the pipeline.
+     */
+    struct VertexState {
         std::vector<VkVertexInputBindingDescription> inputBindings = Vertex::GetBindingDescriptions();
         std::vector<VkVertexInputAttributeDescription> inputAttribs = Vertex::GetBindingAttributeDescriptions();
         VkPrimitiveTopology topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
         bool primitiveRestartEnable = VK_FALSE;
     } vertexState;
 
-    struct RasterizerState 
-    {
+    /**
+     * @brief Input assembly state for the pipeline.
+     */
+    struct RasterizerState {
         VkBool32 depthClampEnable = VK_FALSE;
         VkBool32 rasterizerDiscardEnable = VK_FALSE;
         VkPolygonMode polygonMode = VK_POLYGON_MODE_FILL;
@@ -43,9 +51,11 @@ struct VulkanPipelineStateInfo {
         float depthBiasSlopeFactor = 0.0f;
         float lineWidth = 1.0f;
     } rasterizerState;
-    
-    struct MultisampleState 
-    {
+
+    /**
+     * @brief Multisample state for the pipeline.
+     */
+    struct MultisampleState {
         VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
         VkBool32 sampleShadingEnable = VK_FALSE;
         float minSampleShading = 0.2f;
@@ -53,8 +63,10 @@ struct VulkanPipelineStateInfo {
         VkBool32 alphaToOneEnable = VK_FALSE;
     } multisampleState;
 
-    struct DepthStencilState 
-    {
+    /**
+     * @brief Depth and stencil state for the pipeline.
+     */
+    struct DepthStencilState {
         VkBool32 depthTestEnable = VK_TRUE;
         VkBool32 depthWriteEnable = VK_TRUE;
         VkCompareOp depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
@@ -66,90 +78,169 @@ struct VulkanPipelineStateInfo {
         float maxDepthBounds = 1.0f;
     } depthStencilState;
 
-    struct ColorBlendState 
-    {
+    /**
+     * @brief Color blend state for the pipeline.
+     */
+    struct ColorBlendState {
         VkBool32 logicOpEnable = VK_FALSE;
         VkLogicOp logicOp = VK_LOGIC_OP_COPY;
-        std::vector<VkPipelineColorBlendAttachmentState> attachments = 
-        {{
-            .blendEnable = VK_TRUE,
+        std::vector<VkPipelineColorBlendAttachmentState> attachments = { { .blendEnable = VK_TRUE,
             .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
             .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
             .colorBlendOp = VK_BLEND_OP_ADD,
             .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
             .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
             .alphaBlendOp = VK_BLEND_OP_ADD,
-            .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
-        }};
-        std::array<float, 4> blendConstants = 
-        {
+            .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT } };
+        std::array<float, 4> blendConstants = {
             0.0f, 0.0f, 0.0f, 0.0f
         };
     } colorBlendState;
 
+    /**
+     * @brief Dynamic states for the pipeline.
+     */
     std::vector<VkDynamicState> dynamicStates;
 };
 
+/**
+ * @class VulkanReflectedPipeline
+ * @brief Reflection data for a Vulkan pipeline.
+ */
 class VulkanReflectedPipeline {
 public:
-
-    /// @brief Reflection Constructor
-    /// Organizes shader reflection data.
+    /**
+     * @brief Constructs an empty pipeline reflection object.
+     */
     VulkanReflectedPipeline() = default;
+
+    /**
+     * @brief Constructs a Vulkan reflected pipeline object with the given stages.
+     * @param stages The stages of the pipeline.
+     */
     VulkanReflectedPipeline(const VulkanPipelineStateInfo::Stages& stages);
 
+    /**
+     * @brief Gets the reflected descriptor sets of this pipeline.
+     * @return A map of descriptor set index to reflected descriptor set.
+     *
+     * This map contains all the descriptor sets that were reflected from the shaders.
+     * It allows the user to query the descriptor sets and their bindings.
+     *
+     * You can also modify the bindings in this map to change how the pipeline will use them.
+     * This is useful for when creating materials for changing uniform buffers to dynamic uniform buffers.
+     * Doing so doesn't affect how shaders interpret the data, but it allows for more efficient memory usage.
+     */
     std::map<uint32_t, VulkanReflectedDescriptorSet>& GetReflectedDescriptorSets();
+
+    /**
+     * @brief Gets the reflected descriptor sets of this pipeline.
+     * @return A map of descriptor set index to reflected descriptor set.
+     */
     const std::map<uint32_t, VulkanReflectedDescriptorSet>& GetReflectedDescriptorSets() const;
+
+    /**
+     * @brief Gets the reflected push constants of this pipeline.
+     * @return A vector of reflected push constants.
+     */
     std::vector<VulkanReflectedPushConstant>& GetReflectedPushConstants();
+
+    /**
+     * @brief Gets the reflected push constants of this pipeline.
+     * @return A vector of reflected push constants.
+     */
     const std::vector<VulkanReflectedPushConstant>& GetReflectedPushConstants() const;
 
 private:
+    /**
+     * @brief Reflects the members of a block variable.
+     * @param reflection The reflected block to fill with members.
+     * @param binding The binding index of the block.
+     * @param block The block variable to reflect.
+     * @param parent The parent name for nested blocks.
+     *
+     * This function recursively reflects the members of a block variable and adds them to the reflection.
+     */
     void ReflectMembers(VulkanReflectedBlock& reflection, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent = "");
 
     std::map<uint32_t, VulkanReflectedDescriptorSet> _descriptorSetMetadata;
     std::vector<VulkanReflectedPushConstant> _pushConstantMetadata;
 };
 
-/// @brief A program consisting of shaders designed to run on the GPU.
+/**
+ * @class VulkanPipeline
+ * @brief Represents a Vulkan graphics pipeline.
+ *
+ * This class encapsulates the creation and management of a Vulkan graphics pipeline,
+ * including shader stages, descriptor set layouts, push constants and states.
+ */
 class VulkanPipeline {
 public:
-
     VulkanPipeline() = default;
 
-    /// @brief Constructs a Vulkan pipeline object.
-    /// @param[in] device Vukan device to create pipeline with.
-    /// @param[in] info Pipeline state info, how to render.
-    /// @param[in] renderPass The renderpass this pipeline is running on.
-    /// @param[in] subpass What subpass this renderpass is running on.
-    /// @param[in] reflection Information about how descriptor sets interact with the pipeline.
-    ///             This is technically an immutable state since pipeline's will not be recompiled
-    ///             at runtime for this.
+    /**
+     * @brief Constructs a Vulkan pipeline object.
+     * @param device Vulkan device to create the pipeline with.
+     * @param info Pipeline state info, how to render.
+     * @param renderPass The render pass this pipeline is running on.
+     * @param subpass What subpass this render pass is running on.
+     * @param reflection Information about how descriptor sets interact with the pipeline.
+     *        Can be nullptr if the user doesn't want to manually preform reflection.
+     */
     VulkanPipeline(
         VulkanDevice* device,
-        const VulkanPipelineStateInfo& info, 
+        const VulkanPipelineStateInfo& info,
         VkRenderPass renderPass,
         uint32_t subpass,
         const VulkanReflectedPipeline* reflection = nullptr);
 
+    /**
+     * @brief Move constructor for VulkanPipeline.
+     * @param move The VulkanPipeline to move from.
+     */
     VulkanPipeline(VulkanPipeline&& move) noexcept;
+
+    /**
+     * @brief Destructor for VulkanPipeline.
+     * @details This will destroy the pipeline and all resources associated with it.
+     */
     ~VulkanPipeline();
 
+    /**
+     * @brief Move assignment operator for VulkanPipeline.
+     * @param move The VulkanPipeline to move from.
+     * @return Reference to this VulkanPipeline.
+     */
     VulkanPipeline& operator=(VulkanPipeline&& move) noexcept;
 
+    /**
+     * @brief Gets the reflection data of this pipeline.
+     * @return The reflection data of this pipeline.
+     */
     const VulkanReflectedPipeline& GetReflection() const;
+
+    /**
+     * @brief Gets the pipeline layout used by this pipeline.
+     * @return The Vulkan pipeline layout used by this pipeline.
+     */
     VkPipelineLayout GetPipelineLayout() const;
+
+    /**
+     * @brief Gets the Vulkan pipeline handle.
+     * @return The Vulkan pipeline handle.
+     */
     VkPipeline GetPipeline() const;
+
+    /**
+     * @brief Gets the descriptor set layouts used by this pipeline.
+     * @return A map of descriptor set index to descriptor set layout.
+     *
+     * This map contains all the descriptor set layouts that were used for the pipeline.
+     * It allows the user to query the descriptor set layouts and their bindings.
+     */
     const std::map<uint32_t, VkDescriptorSetLayout>& GetDescriptorSetLayouts() const;
 
-    void SetRasterizerState(const VulkanPipelineStateInfo::RasterizerState& state);
-    void SetMultisampleState(const VulkanPipelineStateInfo::MultisampleState& state);
-    void SetDepthStencilState(const VulkanPipelineStateInfo::DepthStencilState& state);
-    void SetColorBlendState(const VulkanPipelineStateInfo::ColorBlendState& state);
-
 private:
-    /// @brief Recreates the Vulkan pipeline object, adds the old one it to the frame destroyer.
-    void Recompile();
-
     VulkanDevice* _device;
     VulkanReflectedPipeline _reflection;
     VkPipelineLayout _layout;
@@ -162,7 +253,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::VertexS
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::RasterizerState, depthClampEnable, rasterizerDiscardEnable, polygonMode, cullMode, frontFace, depthBiasEnable, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor, lineWidth)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::MultisampleState, rasterizationSamples, sampleShadingEnable, minSampleShading, alphaToCoverageEnable, alphaToOneEnable)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::DepthStencilState, depthTestEnable, depthWriteEnable, depthCompareOp, depthBoundsTestEnable, stencilTestEnable, front, back, minDepthBounds, maxDepthBounds)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::ColorBlendState,logicOpEnable, logicOp, attachments, blendConstants)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::ColorBlendState, logicOpEnable, logicOp, attachments, blendConstants)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo, /* stages, */ vertexState, rasterizerState, multisampleState, depthStencilState, colorBlendState, dynamicStates)
 
 } // namespace bl
@@ -171,20 +262,20 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo, /* stag
 
     Descriptor Slot: 0
         Reserved for global data of the frame.
-        
+
         This Includes
             * Current Time
             * Camera MVP
             * Resolution
             * Texture Atlas
             * ... (TBD)
-    
+
     Descriptor Slot: 1
         Reserved for material data. Will change multiple times per frame. Each
         material instance's data will be uploaded here.
 
         Material data is custom to the shader and pipelines will agree to what
-        ever the shader says because of reflection. The material system will 
+        ever the shader says because of reflection. The material system will
         also take from the pipelines reflection and build a list of values that
         can be changed at runtime using this descriptor index.
 
@@ -192,7 +283,7 @@ NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo, /* stag
 
     Descriptor Slot: 2
         Reserved for object data. This will change many times during the runtime
-        of a singe frame. 
+        of a singe frame.
 
         This Includes:
             * Object/Mesh Transform
