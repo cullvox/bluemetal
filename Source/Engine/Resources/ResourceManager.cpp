@@ -11,26 +11,12 @@ ResourceManager::~ResourceManager()
 {
 }
 
-void ResourceManager::RegisterBuilder(const std::vector<std::string>& types, ResourceBuilder* builder)
-{
-    // Add the builder for all specified types.
-    for (const auto& type : types) {
-        if (_builders.contains(type))
-            Log::Warn("Previously registered type \"{}\" is overriden by a newly registered builder!", type);
-
-        _builders.emplace(type, builder);
-    }
-
-    // Request the default resource for each type be added to the manager.
-    builder->AddDefaultResources(this);
-}
-
 bool ResourceManager::BuildResourcesFromManifest(const std::string& manifestPath)
 {
     // Open the JSON manifest file.
     std::ifstream file(manifestPath, std::ios::binary | std::ios::in);
     if (file.bad()) {
-        Log::Error("Could not open the resource manifest file! ({})", manifestPath);
+        Print::Error("Could not open the resource manifest file! ({})", manifestPath);
         return false;
     }
 
@@ -39,7 +25,7 @@ bool ResourceManager::BuildResourcesFromManifest(const std::string& manifestPath
     try {
         root = nlohmann::json::parse(file);
     } catch (const std::exception& e) {
-        Log::Error("Manifest parsing error: {}", e.what());
+        Print::Error("Manifest parsing error: {}", e.what());
         return false;
     }
 
@@ -52,33 +38,30 @@ bool ResourceManager::BuildResourcesFromManifest(const std::string& manifestPath
         auto importData = data["importData"];
 
         if (path.empty() || type.empty()) {
-            Log::Error("Invalid resource entry data \"{}\" in manifest \"{}\"!", entryNumber, manifestPath);
+            Print::Error("Invalid resource entry data \"{}\" in manifest \"{}\"!", entryNumber, manifestPath);
+            entryNumber++;
             continue;
         }
 
         entryNumber++;
 
-        // Retrieve through the builder used to construct this resource type.
-        auto builder = _builders.find(type);
-        if (builder == _builders.end()) {
-            Log::Error("Could not find a builder for type \"{}\"!", type);
-            continue;
-        }
-
         // Finish building resource and move onto the next.
-        std::unique_ptr<Resource> resource = builder->second->BuildResource(this, type);
+        Object* resourceObject = ObjectClasses::CreateObject(type);
+        Resource* resource = dynamic_cast<Resource*>(resourceObject);
 
-        if (resource == nullptr) {
-            Log::Error("Could not build resource \"{}\" in manifest \"{}\"!", path, manifestPath);
-            continue;
+        if (resourceObject == nullptr || resource == nullptr) {
+            Print::Error("Invalid resource type or object type \"{}\"!", type);
+            Print::Error("Could not build resource \"{}\" in manifest \"{}\"!", path, manifestPath);
+            return false; // We got big fish to fry with this error.
         }
 
+        resource->_manager = this;
         resource->_path = path;
         resource->_source = ResourceSource::eFile;
         resource->_isLoaded = false;
         resource->_importData = importData;
 
-        _resources[path] = std::move(resource);
+        _resources[path] = std::move(std::unique_ptr<Resource>(resource));
     }
 
     return true;
@@ -92,14 +75,14 @@ bool ResourceManager::Unlist(const std::string& path)
 {
     auto it = _resources.find(path);
     if (it == _resources.end()) {
-        Log::Error("Could not find resource!");
+        Print::Error("Could not find resource!");
         return false;
     }
 
     Resource* resource = (*it).second.get();
     resource->InvalidateReferences();
 
-    Log::Info("Unlisting resource \"{}\".", path);
+    Print::Info("Unlisting resource \"{}\".", path);
 
     _resources.erase(path);
 }
@@ -108,7 +91,7 @@ bool ResourceManager::Load(const std::string& path)
 {
     auto it = _resources.find(path);
     if (it == _resources.end()) {
-        Log::Error("Could not find resource!");
+        Print::Error("Could not find resource!");
         return false;
     }
 
@@ -121,7 +104,7 @@ bool ResourceManager::LoadGroup(const std::vector<std::string>& paths)
     for (const std::string& path : paths) {
         auto it = _resources.find(path);
         if (it == _resources.end()) {
-            Log::Error("Could not find resource!");
+            Print::Error("Could not find resource!");
             noFail = false;
             continue;
         }
@@ -139,7 +122,7 @@ bool ResourceManager::GetResourcePack(Resource* resource, std::ifstream& outFile
     outByteSize = 0;
     auto it = _resources.find(resource->_path);
     if (it == _resources.end() || (*it).second.get() != resource) {
-        Log::Error("Could not find resource!");
+        Print::Error("Could not find resource!");
         return false;
     }
 

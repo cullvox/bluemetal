@@ -7,26 +7,6 @@
 
 namespace bl {
 
-/**
- * @class ResourceBuilder
- */
-class ResourceBuilder {
-protected:
-    virtual ~ResourceBuilder() = default;
-
-    friend class ResourceManager;
-
-    /** 
-     * @brief Builds a resource of a specific type for the resource manager.
-     */
-    virtual std::unique_ptr<Resource> BuildResource(ResourceManager* manager, const std::string& type) = 0;
-
-    /**
-     * @brief Add all default resources--for types this builder creates--to the manager.
-     */
-    virtual void AddDefaultResources(ResourceManager* manager) = 0;
-};
-
 template<typename T>
 concept DerivedResource = std::is_base_of_v<Resource, T>; 
 
@@ -35,22 +15,12 @@ concept DerivedResource = std::is_base_of_v<Resource, T>;
  */
 class ResourceManager  {
 
-    std::unordered_map<std::string, ResourceBuilder*> _builders; /** @brief These builders build the resources inside the engine, some builders can build more than one type of resource hence a multimap. */
     std::unordered_map<std::string, std::unique_ptr<Resource>> _resources;
     std::vector<std::string> _packPaths;
 
 public:
     ResourceManager();
     ~ResourceManager();
-
-    /**
-     * @brief Registers a resource builder for a specific type of resource.
-     * @param types A vector of strings representing the types this builder can handle.
-     * @param builder A pointer to the ResourceBuilder instance that will handle the resource creation. Pointer will not be managed by the resource manager.
-     *
-     * In order for a resource to be properly built it's builder must already be registered.
-     */
-    void RegisterBuilder(const std::vector<std::string>& types, ResourceBuilder* builder);
 
     /**
      * @brief Builds resources from a manifest file.
@@ -86,6 +56,8 @@ public:
      */
     template <DerivedResource T>
     Ref<T> Add(const std::string& path, const nlohmann::json& importData = {});
+
+    Ref<Resource> RegisterResource(Resource* resource);
 
     /**
      * @brief Retrieves a resource.
@@ -156,7 +128,7 @@ Ref<T> ResourceManager::Get(const std::string& path)
 {
     auto it = _resources.find(path);
     if (it == _resources.end()) {
-        Log::Error("Could not find a resource with path \"{}\"!", path);
+        Print::Error("Could not find a resource with path \"{}\"!", path);
         return Ref<T>{};
     }
 
@@ -168,7 +140,7 @@ Ref<T> ResourceManager::GetAndLoad(const std::string& path)
 {
     auto it = _resources.find(path);
     if (it == _resources.end()) {
-        Log::Error("Could not find a resource with path \"{}\"!", path);
+        Print::Error("Could not find a resource with path \"{}\"!", path);
         return Ref<T>{};
     }
 
@@ -199,11 +171,6 @@ Ref<T> ResourceManager::Add(const std::string& path, const nlohmann::json& data)
     resource->Load();
 
     return ResourceRef<T> { static_cast<T*>(resource.get()) };
-}
-
-template <typename... TResourceTypes>
-void RegisterBuilder(std::unique_ptr<ResourceBuilder> builder)
-{
 }
 
 } // namespace bl

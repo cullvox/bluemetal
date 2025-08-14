@@ -2,9 +2,7 @@
 
 namespace bl {
 
-Shader::Shader(ResourceManager* manager, VulkanDevice* device)
-    : Resource(manager)
-    , _device(device)
+Shader::Shader()
 {
 }
 
@@ -16,7 +14,7 @@ bool Shader::Load()
     case ResourceSource::eFile: {
         std::ifstream file(GetPath(), std::ios::in | std::ios::binary);
         if (!file.good()) {
-            Log::Error("Could not open shader file!");
+            Print::Error("Could not open shader file!");
             return false;
         }
         
@@ -37,7 +35,7 @@ bool Shader::Load()
     }
 
     if (code.size() % 4 != 0) {
-        Log::Error("Code byte size must be divisible by 4 for valid SPIR-V code!");
+        Print::Error("Code byte size must be divisible by 4 for valid SPIR-V code!");
         return false;
     }
 

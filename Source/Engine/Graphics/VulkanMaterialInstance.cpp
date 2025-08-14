@@ -82,7 +82,7 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
 {
     const auto& samplers = _material->GetSamplers();
     if (!samplers.contains(name)) {
-        Log::Error("VulkanMaterial does not contain sampler \"{}\"!", name);
+        Print::Error("VulkanMaterial does not contain sampler \"{}\"!", name);
         return;
     }
 
@@ -121,7 +121,7 @@ void VulkanMaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset,
         });
 
     if (it == pushConstantReflections.end()) {
-        Log::Error("Push constant offset or size does not align to a push constant range in any stage!");
+        Print::Error("Push constant offset or size does not align to a push constant range in any stage!");
         return;
     }
 

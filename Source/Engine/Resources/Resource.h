@@ -28,8 +28,9 @@ enum class ResourceSource {
  * called, the heavy data lifting will begin.
  */
 class Resource : public ReferenceCounted {
-    friend class ResourceManager;
+    CLASS_OBJECT_VIRTUAL(Resource, ReferenceCounted)
 
+    friend class ResourceManager;
     ResourceManager* _manager;
     std::string _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
     ResourceSource _source; /** @brief Location of the resource, used for loading and saving. */
@@ -40,6 +41,7 @@ class Resource : public ReferenceCounted {
     bool _isLoaded = false;
 
 protected:
+
     /**
      * @brief Retrieves the manager that owns this resource.
      */
@@ -60,13 +62,6 @@ protected:
      * Import data is typically a small amount of metadata.
      */
     const nlohmann::json& GetImportData() const { return _importData; }
-
-    /**
-     * @brief Gets the type of this resource.
-     * @return The type of this resource, used for serialization and deserialization.
-     * This should be overridden in derived classes to return the specific type of resource.
-     */
-    virtual const std::string& GetType() const = 0;
 
     /**
      * @brief Loads the resource from file.
@@ -90,12 +85,14 @@ public:
      * @param manager Pointer to the resource manager that manages this resource.
      * @param data JSON data describing the resource.
      */
-    Resource(ResourceManager* manager);
+    Resource();
 
     /**
      * @brief Destructor for the Resource class.
      */
-    virtual ~Resource() = default;
+    virtual ~Resource() = 0;
+
+    static void BindProperties() {} // Base resource class has no properties to bind.
 
     /**
      * @brief Returns the unique path of this resource.

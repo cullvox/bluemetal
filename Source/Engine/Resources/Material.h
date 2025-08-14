@@ -9,15 +9,11 @@
 namespace bl {
 
 class Material : public Resource {
+    CLASS_OBJECT(Material, Resource)
 public:
-    Material(ResourceManager* manager, VulkanDevice* device, Renderer* renderer);
-    ~Material();
-
-    virtual const std::string& GetType() const override { return "Material"; }
-
     virtual bool Load() override;
     virtual void Unload() override;
-    virtual bool ExportBinary(std::ostream& stream) override;
+    virtual bool ExportBinary(std::ostream& stream) const override;
 
     void SetBool(const std::string& name, bool value);
     void SetInteger(const std::string& name, int value);

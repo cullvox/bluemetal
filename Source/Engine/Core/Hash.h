@@ -5,8 +5,6 @@
 namespace bl 
 {
 
-#define BL_HASH_DEFAULT_SEED 0x59CFA54A2CD1
-
 // Primary template for hash_combine function
 template <typename T>
 void hash_combine(std::size_t& seed, const T& value) {

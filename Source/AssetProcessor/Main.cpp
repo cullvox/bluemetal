@@ -71,7 +71,7 @@ int main(int argc, const char** argv)
     try {
         parser.parse_args(argc, argv);
     } catch (const std::exception& e) {
-        bl::Log::Error("{}, {}", e.what(), parser.help().str());
+        bl::Print::Error("{}, {}", e.what(), parser.help().str());
         std::exit(EXIT_FAILURE);
     }
 
@@ -83,8 +83,8 @@ int main(int argc, const char** argv)
     state.materialOutputPath = parser.get<std::string>("materialOutputPath");
 
     if (parser.get<bool>("verbose")) {
-        bl::Log::EnableVerboseLogging(true);
-        bl::Log::Verbose("Enabling verbose logging.");
+        bl::Print::EnableVerboseLogging(true);
+        bl::Print::Verbose("Enabling verbose logging.");
     }
 
     std::filesystem::path manifestRoot = state.manifestPath.parent_path();
@@ -105,7 +105,7 @@ int main(int argc, const char** argv)
 
             // Ensure that the path doesn't exist yet.
             if (state.resourceChecker.find(resource.relativePath) != state.resourceChecker.end()) {
-                bl::Log::Error("{}: Already exists, two resources cannot have the same path! Skipping...", resource.relativePath);
+                bl::Print::Error("{}: Already exists, two resources cannot have the same path! Skipping...", resource.relativePath);
                 continue;
             }
 
@@ -114,18 +114,18 @@ int main(int argc, const char** argv)
         }
 
     } catch (...) {
-        bl::Log::Error("Could not parse the manifest file!");
+        bl::Print::Error("Could not parse the manifest file!");
         exit(EXIT_FAILURE);
     }
 
     for (auto& resource : state.resources) {
         // Ensure that the resource actually exists.
         if (!std::filesystem::exists(resource.absolutePath) || !std::filesystem::is_regular_file(resource.absolutePath)) {
-            bl::Log::Error("Resource does not exist or is not a file: {}", resource.absolutePath);
+            bl::Print::Error("Resource does not exist or is not a file: {}", resource.absolutePath);
             continue;
         }
 
-        bl::Log::Verbose("Beginning processing of: {}", resource.relativePath);
+        bl::Print::Verbose("Beginning processing of: {}", resource.relativePath);
         bool status = false;
 
         if (resource.type == "Shader") {
@@ -141,9 +141,9 @@ int main(int argc, const char** argv)
         }
 
         if (status)
-            bl::Log::Info("{}: Processed successfully.", resource.relativePath);
+            bl::Print::Info("{}: Processed successfully.", resource.relativePath);
         else
-            bl::Log::Error("{}: Could not be processed.", resource.relativePath);
+            bl::Print::Error("{}: Could not be processed.", resource.relativePath);
     }
 
     nlohmann::json manifestJson;
@@ -193,9 +193,9 @@ bool ProcessShader(ProcessorState& state, ResourceFile& resource)
     // Run the glslc shader compilation command.
     std::string cmd = fmt::format("glslc {} -o {}", resource.absolutePath.string(), bakedPath.string());
     if (std::system(cmd.c_str()) != EXIT_SUCCESS) {
-        bl::Log::Error("{}: Could not compile shader resource.", resource.relativePath);
-        bl::Log::Warn("This asset will not be added to the engine manifest.");
-        bl::Log::Warn("Please ensure that you have the Vulkan SDK Installed.");
+        bl::Print::Error("{}: Could not compile shader resource.", resource.relativePath);
+        bl::Print::Warn("This asset will not be added to the engine manifest.");
+        bl::Print::Warn("Please ensure that you have the Vulkan SDK Installed.");
         return false;
     }
 
@@ -212,14 +212,14 @@ bool ProcessTexture(ProcessorState& state, ResourceFile& resource)
     bakedPath.replace_extension(".qoi");
 
     if (resource.absolutePath.extension() == ".qoi") {
-        bl::Log::Info("{}: Already in QOI format, not baking.", bakedPath.string());
+        bl::Print::Info("{}: Already in QOI format, not baking.", bakedPath.string());
         auto relativePath = std::filesystem::relative(resource.absolutePath.parent_path(), state.manifestPath.parent_path().parent_path());
         resource.bakedPath = relativePath / resource.absolutePath.filename();
         return true;
     }
 
     if (resource.absolutePath.extension() != ".png" && resource.absolutePath.extension() != ".jpg" && resource.absolutePath.extension() != ".jpeg") {
-        bl::Log::Error("{}: Invalid texture file type, please convert it manually.", resource.relativePath);
+        bl::Print::Error("{}: Invalid texture file type, please convert it manually.", resource.relativePath);
         return false;
     }
 
@@ -227,7 +227,7 @@ bool ProcessTexture(ProcessorState& state, ResourceFile& resource)
     auto data = stbi_load(resource.absolutePath.string().c_str(), &x, &y, &channels, 4);
 
     if (data == nullptr) {
-        bl::Log::Error("{}: Could not load this texture.", resource.absolutePath.string());
+        bl::Print::Error("{}: Could not load this texture.", resource.absolutePath.string());
         return false;
     }
 

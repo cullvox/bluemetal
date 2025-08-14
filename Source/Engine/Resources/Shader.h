@@ -6,13 +6,13 @@
 namespace bl {
 
 class Shader : public Resource {
+    CLASS_OBJECT(Shader, Resource)
+
     VulkanDevice* _device;
     std::unique_ptr<VulkanShader> _shader;
 
 public:
-    virtual const std::string& GetType() const override { return "Shader"; }
-
-    Shader(ResourceManager* manager, VulkanDevice* device);
+    Shader();
     ~Shader();
 
     virtual bool Load() override;

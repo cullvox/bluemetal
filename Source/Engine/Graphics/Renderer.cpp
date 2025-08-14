@@ -10,22 +10,19 @@ Renderer::Renderer(VulkanDevice* device, VulkanWindow* window)
     , _swapchain(window->GetSwapchain())
     , _imageIndex(0)
     , _currentFrame(0)
-    , _descriptorSetCache(_device, 1024, VulkanDescriptorRatio::Default()) 
+    , _descriptorSetCache(_device, 1024, VulkanDescriptorRatio::Default())
 {
     _commandBuffers.resize(VulkanConfig::numFramesInFlight);
     _imageAvailableSemaphores.resize(_swapchain->GetImageCount());
     _renderFinishedSemaphores.resize(_swapchain->GetImageCount());
     _inFlightFences.resize(_swapchain->GetImageCount());
 
-    try
-    {
+    try {
         CreateSyncObjects();
         CreateRenderPasses();
         RecreateImages();
-    } 
-    catch (const std::exception& e)
-    {
-        Log::Error("Failed to initialize renderer: {}", e.what());
+    } catch (const std::exception& e) {
+        Print::Error("Failed to initialize renderer: {}", e.what());
         DestroySyncObjects();
         DestroyImagesAndFramebuffers();
         DestroyRenderPasses();
@@ -42,18 +39,21 @@ Renderer::~Renderer()
     DestroySyncObjects();
 }
 
-std::tuple<VkRenderPass, uint32_t> Renderer::GetRenderPass(RenderPassType passType) const 
+std::tuple<VkRenderPass, uint32_t> Renderer::GetRenderPass(RenderPassType passType) const
 {
-    switch (passType)
-    {
-    case RenderPassType::eGeometry: return std::make_tuple(_pass, 0);
-    case RenderPassType::eLighting: return std::make_tuple(_pass, 0);
-    case RenderPassType::eUI: return std::make_tuple(_pass, 0);
-    default: throw std::runtime_error("Invalid render pass type!");
+    switch (passType) {
+    case RenderPassType::eGeometry:
+        return std::make_tuple(_pass, 0);
+    case RenderPassType::eLighting:
+        return std::make_tuple(_pass, 0);
+    case RenderPassType::eUI:
+        return std::make_tuple(_pass, 0);
+    default:
+        throw std::runtime_error("Invalid render pass type!");
     }
 }
 
-void Renderer::CreateSyncObjects() 
+void Renderer::CreateSyncObjects()
 {
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -74,18 +74,16 @@ void Renderer::CreateSyncObjects()
     fenceInfo.pNext = nullptr;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) 
-    {
+    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
         VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]))
         VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
         VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_inFlightFences[i]))
     }
 }
 
-void Renderer::DestroySyncObjects() 
+void Renderer::DestroySyncObjects()
 {
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) 
-    {
+    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
         vkDestroySemaphore(_device->Get(), _imageAvailableSemaphores[i], nullptr);
         vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(_device->Get(), _inFlightFences[i], nullptr);
@@ -94,7 +92,7 @@ void Renderer::DestroySyncObjects()
     vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), (uint32_t)_commandBuffers.size(), _commandBuffers.data());
 }
 
-void Renderer::DestroyImagesAndFramebuffers() 
+void Renderer::DestroyImagesAndFramebuffers()
 {
     for (VkFramebuffer fb : _framebuffers)
         vkDestroyFramebuffer(_device->Get(), fb, nullptr);
@@ -103,7 +101,7 @@ void Renderer::DestroyImagesAndFramebuffers()
     _depthImages.clear();
 }
 
-void Renderer::RecreateImages() 
+void Renderer::RecreateImages()
 {
     _imageCount = _swapchain->GetImageCount();
     auto extent = _swapchain->GetExtent();
@@ -114,10 +112,9 @@ void Renderer::RecreateImages()
     _depthImages.reserve(_imageCount);
     _positionImages.reserve(_imageCount);
 
-    auto imageExtent = VkExtent3D{extent.width, extent.height, 1};
+    auto imageExtent = VkExtent3D { extent.width, extent.height, 1 };
 
-    for (uint32_t i = 0; i < _imageCount; i++) 
-    {
+    for (uint32_t i = 0; i < _imageCount; i++) {
         _depthImages.emplace_back(_device, VK_IMAGE_TYPE_2D, imageExtent, _depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
         _positionImages.emplace_back(_device, VK_IMAGE_TYPE_2D, imageExtent, _positionFormat, VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT);
     }
@@ -125,13 +122,11 @@ void Renderer::RecreateImages()
     _framebuffers.resize(_imageCount);
 
     auto swapchainImageViews = _swapchain->GetImageViews();
-    for (uint32_t i = 0; i < _imageCount; i++) 
-    {
-        std::array attachments = 
-        {
+    for (uint32_t i = 0; i < _imageCount; i++) {
+        std::array attachments = {
             swapchainImageViews[i],
             _depthImages[i].CreateView(VK_IMAGE_ASPECT_DEPTH_BIT),
-  //          _positionImages[i].CreateView(VK_IMAGE_ASPECT_COLOR_BIT)
+            //          _positionImages[i].CreateView(VK_IMAGE_ASPECT_COLOR_BIT)
         };
 
         VkFramebufferCreateInfo createInfo = {};
@@ -159,14 +154,12 @@ void Renderer::Render(RenderFunction func)
 
     // Acquire the next image in the swapchain and update all render pass
     // images if the swapchain was recreated within the previous frame.
-    if (_swapchain->AcquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE)) 
-    {
+    if (_swapchain->AcquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE)) {
         RecreateImages();
         return; // skip this frame!
     }
 
     _imageIndex = _swapchain->GetImageIndex();
-
 
     // Update all material buffers.
     for (auto material : _materials)
@@ -185,17 +178,15 @@ void Renderer::Render(RenderFunction func)
     beginInfo.pInheritanceInfo = nullptr;
 
     VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo))
-    
-    std::array clearColors = 
-    {
-        VkClearValue{.color = {{0.96f, 0.97f, 0.96f, 1.0f}}}, // Swapchain Image Clear Color
-        VkClearValue{.depthStencil = {1.0f, 0}}
+
+    std::array clearColors = {
+        VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Swapchain Image Clear Color
+        VkClearValue { .depthStencil = { 1.0f, 0 } }
     };
 
-    VkRect2D renderArea
-    { 
-        { 0, 0 }, 
-        _swapchain->GetExtent() 
+    VkRect2D renderArea {
+        { 0, 0 },
+        _swapchain->GetExtent()
     };
 
     VkRenderPassBeginInfo passBeginInfo = {};
@@ -210,10 +201,9 @@ void Renderer::Render(RenderFunction func)
     vkCmdBeginRenderPass(cmd, &passBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
 
     // Render all the frame data to the gbuffer.
-    VulkanRenderData rd = 
-    {
-        cmd, 
-        _currentFrame, 
+    VulkanRenderData rd = {
+        cmd,
+        _currentFrame,
         _imageIndex
     };
 
@@ -242,21 +232,20 @@ void Renderer::Render(RenderFunction func)
 
     VK_CHECK(vkQueueSubmit(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
 
-    if (_swapchain->QueuePresent(_renderFinishedSemaphores[_currentFrame]))
-    {
+    if (_swapchain->QueuePresent(_renderFinishedSemaphores[_currentFrame])) {
         RecreateImages();
     }
 
     _currentFrame = (_currentFrame + 1) % _imageCount;
 }
 
-void Renderer::CreateRenderPasses() 
+void Renderer::CreateRenderPasses()
 {
 
     // Find the formats for each image in the pass.
     auto physicalDevice = _device->GetPhysicalDevice();
-    _depthFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT}, VK_IMAGE_TILING_OPTIMAL, 0);
-    _positionFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_R32G32B32A32_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, 0);
+    _depthFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, 0);
+    _positionFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_R32G32B32A32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, 0);
 
     // Build the renderpasses attachment data.
     std::array<VkAttachmentDescription, 2> attachments = {};
@@ -291,8 +280,8 @@ void Renderer::CreateRenderPasses()
     // attachments[2].initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     // attachments[2].finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-    VkAttachmentReference presentAttachmentReference = {0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
-    VkAttachmentReference depthAttachmentReference = {1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL};
+    VkAttachmentReference presentAttachmentReference = { 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
+    VkAttachmentReference depthAttachmentReference = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
     // VkAttachmentReference positionInputAttachmentReference = {2, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
 
     std::array<VkSubpassDescription, 1> subpasses = {};
@@ -324,7 +313,7 @@ void Renderer::CreateRenderPasses()
     // dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
     // dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
     // dependencies[0].dependencyFlags = 0;
-    
+
     // dependencies[1].srcSubpass = 0;
     // dependencies[1].dstSubpass = 1;
     // dependencies[1].srcStageMask = VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
@@ -347,20 +336,19 @@ void Renderer::CreateRenderPasses()
     VK_CHECK(vkCreateRenderPass(_device->Get(), &createInfo, nullptr, &_pass))
 }
 
-void Renderer::DestroyRenderPasses() 
+void Renderer::DestroyRenderPasses()
 {
     vkDestroyRenderPass(_device->Get(), _pass, nullptr);
 }
 
-void Renderer::AddMaterial(Material* material)
+void Renderer::AddMaterial(VulkanMaterial* material)
 {
     _materials.emplace(material);
 }
 
-void Renderer::RemoveMaterial(Material* material)
+void Renderer::RemoveMaterial(VulkanMaterial* material)
 {
     _materials.erase(material);
 }
-
 
 } // namespace bl

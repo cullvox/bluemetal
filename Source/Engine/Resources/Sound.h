@@ -11,10 +11,9 @@ class AudioSystem;
 
 class Sound : public Resource
 {
+    CLASS_OBJECT(Sound, Resource)
 public:
-    virtual const std::string& GetType() const override { return "Audio"; }
-
-    Sound(ResourceManager* manager, AudioSystem* system);
+    Sound();
     ~Sound();
 
     virtual bool Load() override; /** @brief From Resource, loads the sound file into memory. */

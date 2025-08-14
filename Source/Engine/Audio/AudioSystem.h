@@ -12,7 +12,7 @@ namespace bl
 class Engine;
 class Sound;
 
-class AudioSystem : public NonCopyable, public ResourceBuilder
+class AudioSystem : public NonCopyable
 {
 public:
 

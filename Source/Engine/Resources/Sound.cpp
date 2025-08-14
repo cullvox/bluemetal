@@ -1,17 +1,15 @@
-#include "Audio/AudioSystem.h"
 #include "Sound.h"
+#include "Audio/AudioSystem.h"
 
-namespace bl 
-{
+namespace bl {
 
-Sound::Sound(ResourceManager* manager, AudioSystem* system)
-    : Resource(manager)
-    , _system(system)
+Sound::Sound()
+    : _sound(nullptr)
 {
 }
 
-Sound::~Sound() 
-{ 
+Sound::~Sound()
+{
     if (_sound)
         Unload();
 }
@@ -33,9 +31,9 @@ bool Sound::ExportBinary(std::ostream&) const
     return false;
 }
 
-FMOD::Sound* Sound::Get() 
-{ 
-    return _sound; 
+FMOD::Sound* Sound::Get()
+{
+    return _sound;
 }
 
 } // namespace bl

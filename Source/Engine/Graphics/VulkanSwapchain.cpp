@@ -152,7 +152,7 @@ void VulkanSwapchain::ChooseFormat() {
     } 
     else // As fallback use the first format available.
     {    
-        Log::Warn("Surface format not found, using default.");
+        Print::Warn("Surface format not found, using default.");
         _surfaceFormat = formats.front();
     }
 }
@@ -172,7 +172,7 @@ void VulkanSwapchain::ChoosePresentMode() {
     }
 
     // If our mode wasn't found just use FIFO, as it's reliable and always available.
-    Log::Warn("Present mode is unavailable, using VK_PRESENT_MODE_FIFO_KHR.");
+    Print::Warn("Present mode is unavailable, using VK_PRESENT_MODE_FIFO_KHR.");
     _presentMode = VK_PRESENT_MODE_FIFO_KHR;
 }
 
@@ -307,7 +307,7 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     _presentMode = present; 
 
     // Update the hash for mutable reference checking.
-    _hash = BL_HASH_DEFAULT_SEED;
+    _hash = 0x58AB464;
     bl::hash_combine(
         _hash, _imageCount, 
         _surfaceFormat.format, _surfaceFormat.colorSpace, 

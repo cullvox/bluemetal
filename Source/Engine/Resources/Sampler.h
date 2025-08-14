@@ -30,7 +30,6 @@ class Sampler : public Resource {
     void RecreateSampler();
 
 protected:
-    virtual const std::string& GetType() const override { return "Sampler"; }
     virtual bool Load() override;
     virtual void Unload() override;
     virtual bool ExportBinary(std::ostream& stream) const override;
@@ -43,7 +42,7 @@ public:
      * @param data JSON data describing the sampler resource.
      * @param device Pointer to the Vulkan device used for creating the sampler.
      */
-    Sampler(ResourceManager* manager, VulkanDevice* device);
+    Sampler();
 
     /**
      * @brief Destructor for the Sampler class.

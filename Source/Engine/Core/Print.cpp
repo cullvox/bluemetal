@@ -3,14 +3,14 @@
 namespace bl
 {
 
-bool Log::useVerboseLogging;
+bool Print::useVerboseLogging;
 
-void Log::EnableVerboseLogging(bool enable)
+void Print::EnableVerboseLogging(bool enable)
 {
     useVerboseLogging = enable;
 }
 
-bool Log::IsVerboseLogging()
+bool Print::IsVerboseLogging()
 {
     return useVerboseLogging;
 }

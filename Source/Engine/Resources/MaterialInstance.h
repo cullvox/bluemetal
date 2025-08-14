@@ -1,20 +1,21 @@
 #pragma once
 
 #include "Material.h"
-#include "Resource/Resource.h"
+#include "Resource.h"
 
 namespace bl {
 
 class MaterialInstance : public Resource {
+    OBJECT_CLASS(MaterialInstance, Resource)
+
     Ref<Material> material;
 protected:
-    virtual const std::string& GetType() const override { return "MaterialInstance"; }
-    virtual void Load();
+    virtual bool Load();
     virtual void Unload();
-    virtual void ExportBinary(std::ostream& stream) const;
+    virtual bool ExportBinary(std::ostream& stream) const;
 
 public:
-    MaterialInstance(ResourceManager* manager, const nlohmann::json& data);
+    MaterialInstance();
     ~MaterialInstance();
 
 };

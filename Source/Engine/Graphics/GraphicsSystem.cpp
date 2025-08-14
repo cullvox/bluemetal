@@ -4,12 +4,7 @@
 #include "Graphics/VulkanInstance.h"
 #include "VulkanShader.h"
 
-#include "StaticModel.h"
 #include "GraphicsSystem.h"
-
-#include "Resources/Texture2D.h"
-#include "Resources/Shader.h"
-#include "Resources/Material.h"
 
 #include "ImGui/ImGuiSystem.h"
 
@@ -65,30 +60,6 @@ std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(Window* window)
     assert(vulkanWindow != nullptr);
 
     return std::make_unique<Renderer>(_device.get(), vulkanWindow);
-}
-
-std::unique_ptr<Resource> GraphicsSystem::BuildResource(ResourceManager* manager, const std::string& type, const std::filesystem::path& path, const nlohmann::json& json)
-{
-    if (type == "Shader") 
-    {
-        return std::make_unique<Shader>(manager, json, _device.get());
-    } 
-    else if (type == "Texture2D") 
-    {
-        return std::make_unique<Texture2D>(manager, json, _device.get());
-    } 
-    else if (type == "Model")
-    {
-        return std::make_unique<StaticModel>(manager, json, _device.get());
-    }
-    else if (type == "Material")
-    {
-        return std::make_unique<Material>(manager, json ,_device.get(), _renderer.get());
-    }
-    else 
-    {
-        throw std::runtime_error("Could not create a resource that was not specified!");
-    }
 }
 
 } // namespace bl

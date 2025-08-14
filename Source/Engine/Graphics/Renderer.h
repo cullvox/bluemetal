@@ -6,6 +6,7 @@
 #include "VulkanImage.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanWindow.h"
+#include "VulkanMaterial.h"
 #include "VulkanRenderData.h"
 
 namespace bl 
@@ -34,9 +35,9 @@ public:
     std::tuple<VkRenderPass, uint32_t> GetRenderPass(RenderPassType pass) const;
 
 protected:
-    friend class Material;
-    void AddMaterial(Material* material);
-    void RemoveMaterial(Material* material);
+    friend class VulkanMaterial;
+    void AddMaterial(VulkanMaterial* material);
+    void RemoveMaterial(VulkanMaterial* material);
 
 private:
     void CreateSyncObjects();
@@ -68,7 +69,7 @@ private:
 
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
 
-    std::unordered_set<Material*> _materials;
+    std::unordered_set<VulkanMaterial*> _materials;
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RenderPassType, {

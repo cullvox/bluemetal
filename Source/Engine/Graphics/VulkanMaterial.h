@@ -109,7 +109,7 @@ void VulkanMaterialInstance::SetGenericUniform(const std::string& name, T value)
 {
     const auto& uniforms = _material->GetUniforms();
     if (!uniforms.contains(name)) {
-        Log::Error("Could not set material uniform, it does not exist!");
+        Print::Error("Could not set material uniform, it does not exist!");
         return;
     }
 

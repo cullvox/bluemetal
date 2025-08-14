@@ -19,6 +19,7 @@
 #include <optional>
 #include <queue>
 #include <set>
+#include <source_location>
 #include <span>
 #include <stdexcept>
 #include <string>

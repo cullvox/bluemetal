@@ -76,7 +76,7 @@ VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice()
     }
     else
     {
-        Log::Warn("Using physical device zero because user does not have a discrete card!");
+        Print::Warn("Using physical device zero because user does not have a discrete card!");
         return physicalDevices[0];
     }
 }
@@ -146,7 +146,7 @@ std::vector<const char*> VulkanInstance::GetValidationLayers()
                 return strcmp(name, properties.layerName) == 0; 
             })) 
         {
-            Log::Error("User requested validation layers but none were found! Is the Vulkan SDK installed?");
+            Print::Error("User requested validation layers but none were found! Is the Vulkan SDK installed?");
             _enableValidation = false;
         }
     }
@@ -206,7 +206,7 @@ void VulkanInstance::CreateInstance(Version appVersion, std::string_view appName
     if (_enableValidation)
         VK_CHECK(vkCreateDebugUtilsMessengerEXT(_instance, &debugMessengerCreateInfo, nullptr, &_messenger))
 
-    Log::Debug("Finshed creating the Vulkan instance.");
+    Print::Debug("Finshed creating the Vulkan instance.");
 }
 
 void VulkanInstance::EnumeratePhysicalDevices() 
@@ -226,13 +226,13 @@ void VulkanInstance::EnumeratePhysicalDevices()
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
 {
     if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) 
-        Log::Error("{}", pCallbackData->pMessage);
+        Print::Error("{}", pCallbackData->pMessage);
 
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) 
-        Log::Warn("{}", pCallbackData->pMessage);
+        Print::Warn("{}", pCallbackData->pMessage);
     
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) 
-        Log::Info("{}", pCallbackData->pMessage);
+        Print::Info("{}", pCallbackData->pMessage);
 
     return false;
 }

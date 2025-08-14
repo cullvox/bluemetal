@@ -65,6 +65,7 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, VkRenderPass pass, uint32_t
 
 VulkanMaterial::~VulkanMaterial()
 {
+    
 }
 
 } // namespace bl

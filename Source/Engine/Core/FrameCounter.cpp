@@ -72,7 +72,7 @@ float FrameCounter::GetAverageFramesPerSecond(uint32_t seconds)
 
     // Make sure we are getting a proper second count.
     if (seconds > _maximumHeldFramesPerSecond || seconds < 1) {
-        Log::Error("Attempting to get an average FPS greater than the maximum at {} seconds.", seconds);
+        Print::Error("Attempting to get an average FPS greater than the maximum at {} seconds.", seconds);
     }
 
     // Get the average fps
@@ -103,7 +103,7 @@ float FrameCounter::GetAverageMillisecondsPerFrame(uint32_t frames)
 
     // Make sure we are getting a proper second count
     if (frames > _maximumHeldMillisecondsPerFrame || frames < 1) {
-        Log::Error(
+        Print::Error(
             "Attempting to get an average milliseconds per frame greater than the maximum frame "
             "count at {} frames.",
             frames);

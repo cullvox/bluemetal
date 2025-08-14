@@ -1,11 +1,10 @@
 #include "Sampler.h"
+#include "Graphics/GraphicsSystem.h"
 
 namespace bl {
 
-Sampler::Sampler(ResourceManager* manager, VulkanDevice* device)
-    : Resource(manager)
-    , _device(device)
-    , _magFilter(VK_FILTER_LINEAR)
+Sampler::Sampler()
+    : _magFilter(VK_FILTER_LINEAR)
     , _minFilter(VK_FILTER_LINEAR)
     , _mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
     , _addressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT)
@@ -53,7 +52,7 @@ bool Sampler::Load()
     case ResourceSource::eFile: {
         std::ifstream file(GetPath());
         if (!file.is_open()) {
-            Log::Error("Failed to open sampler file: {}", GetPath());
+            Print::Error("Failed to open sampler file: {}", GetPath());
             return false;
         }
         file >> data;
@@ -63,7 +62,7 @@ bool Sampler::Load()
     case ResourceSource::eBinary: {
         auto binaryData = GetBinaryStream();
         if (binaryData.empty()) {
-            Log::Error("Binary data for sampler is empty.");
+            Print::Error("Binary data for sampler is empty.");
             return false;
         }
         data = nlohmann::json::from_cbor(binaryData); // Assuming binary data is in CBOR format

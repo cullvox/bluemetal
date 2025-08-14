@@ -1,8 +1,7 @@
 #pragma once
 
-class Node : public Object
-{
-    std::vector<Node*> _children;
-public:
-    
+#include "Core/Object.h"
+
+class Node : public Object {
+    OBJECT_CLASS(Node, Object);
 };

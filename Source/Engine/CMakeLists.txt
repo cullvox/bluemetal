@@ -28,11 +28,7 @@ list(APPEND Sources
   "Graphics/VulkanSwapchain.cpp"
   "Graphics/VulkanMaterial.cpp"
   "Graphics/VulkanMaterialInstance.cpp"
-  "Graphics/StaticMesh.cpp"
-  "Graphics/StaticModel.cpp"
   "Graphics/Renderer.cpp"
-  "Graphics/Texture.cpp"
-  "Graphics/Texture2D.cpp"
   "Graphics/GraphicsSystem.cpp"
 
   "Window/Display.cpp"

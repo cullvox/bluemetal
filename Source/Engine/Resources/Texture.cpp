@@ -44,7 +44,7 @@ void Texture::Load()
     } else if (extension == ".qoi") {
         DecodeQOI(buffer);
     } else {
-        Log::Error("Invalid texture extension cannot parse image: {}", path.string());
+        Print::Error("Invalid texture extension cannot parse image: {}", path.string());
         return;
     }
 
@@ -94,13 +94,13 @@ void Texture::DecodeQOI(const std::vector<std::byte>& data)
             break;
         case qoi::colorspace::srgb:
             _colorSpace = ColorSpace::eSRGB;
-            Log::Warn("Texture using SRGB, consider using a Linear colorspace.");
+            Print::Warn("Texture using SRGB, consider using a Linear colorspace.");
             break;
         }
     }
     catch (const std::exception& e)
     {
-        Log::Error("Could not load a texture: {}", e.what());
+        Print::Error("Could not load a texture: {}", e.what());
     }
 }
 

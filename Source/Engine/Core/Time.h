@@ -1,20 +1,10 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
 #include "Precompiled.h"
 
-namespace bl
-{
+namespace bl {
 
-///////////////////////////////
-// Classes
-///////////////////////////////
-
-class Time
-{
+class Time {
 public:
     static float Current()
     {

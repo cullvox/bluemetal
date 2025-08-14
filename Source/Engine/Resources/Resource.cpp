@@ -3,8 +3,9 @@
 
 namespace bl {
 
-Resource::Resource(ResourceManager* manager)
-    : _manager(manager)
+OBJECT_REGISTRATION(Resource)
+
+Resource::Resource()
 {
 }
 

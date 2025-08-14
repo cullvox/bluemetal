@@ -15,32 +15,26 @@ namespace bl {
 
 class Engine;
 
-class GraphicsSystem : public NonCopyable,
-                       public ResourceBuilder {
-    Engine* _engine;
-    VulkanInstance _instance;
-    VulkanPhysicalDevice* _physicalDevice;
-    std::unique_ptr<Window> _window;
-    std::unique_ptr<Renderer> _renderer;
-    std::unique_ptr<VulkanDevice> _device;
-    std::unique_ptr<ImGuiSystem> _imgui;
+class GraphicsSystem : public NonCopyable {
+    static Engine* _engine;
+    static VulkanInstance _instance;
+    static VulkanPhysicalDevice* _physicalDevice;
+    static std::unique_ptr<Window> _window;
+    static std::unique_ptr<Renderer> _renderer;
+    static std::unique_ptr<VulkanDevice> _device;
+    static std::unique_ptr<ImGuiSystem> _imgui;
 
-protected:
-    virtual std::unique_ptr<Resource> BuildResource(ResourceManager* manager, const std::string& type) override;
-    virtual void AddDefaultResources(ResourceManager* manager) override;
+    GraphicsSystem(Engine* engine); /** @brief Constructor. */
+    ~GraphicsSystem(); /** @brief Destructor */
 
 public:
-    GraphicsSystem(Engine* engine); /** @brief Constructor. */
-    virtual ~GraphicsSystem(); /** @brief Destructor */
+    static GraphicsSystem* GetInstance();
 
-    VulkanInstance* GetInstance();
-    VulkanPhysicalDevice* GetPhysicalDevice() const;
-    VulkanDevice* GetDevice();
-    Window* GetWindow() { return _window.get(); }
-    Renderer* GetRenderer() { return _renderer.get(); }
-
-    std::unique_ptr<Window> CreateWindow(const std::string& title, Rect2D rect, bool fullscreen = true);
-    std::unique_ptr<Renderer> CreateRenderer(Window* window);
+    static VulkanInstance* GetVulkanInstance();
+    static VulkanPhysicalDevice* GetPhysicalDevice();
+    static VulkanDevice* GetDevice();
+    static Window* GetWindow() { return _window.get(); }
+    static Renderer* GetRenderer() { return _renderer.get(); }
 };
 
 } // namespace bl

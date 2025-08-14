@@ -1,25 +1,25 @@
 #pragma once
 
 #include "Core/NonMoveable.h"
-#include "Precompiled.h"
 #include "Object.h"
+#include "Precompiled.h"
 
 namespace bl {
 
 class ReferenceBase {
     bool _updated = false;
     bool _isValid = false;
-    //int32_t _refId = -1;
+    // int32_t _refId = -1;
 
 protected:
     friend class ReferenceCounted;
     virtual void SetUpdated(bool updated) { _updated = updated; }
     virtual void SetValid(bool isValid) { _isValid = isValid; }
 
-    //bool operator==(const ReferenceBase& other) const
-    //{
-    //    return _refId == other._refId;
-    //}
+    // bool operator==(const ReferenceBase& other) const
+    // {
+    //     return _refId == other._refId;
+    // }
 
 public:
     ReferenceBase() = default;
@@ -33,20 +33,8 @@ public:
 /// @brief Any class that needs to know how many times it's being used.
 class ReferenceCounted : public Object {
     CLASS_OBJECT(ReferenceCounted, Object);
-public:
-    ReferenceCounted() = default;
-    ~ReferenceCounted()
-    {
-        for (auto& ref : _references) {
-            //ref._refId = -1; // Mark as invalid
-            ref->SetValid(false); // Reset updated state
-        }
-    }
 
-    std::size_t GetReferenceCount()
-    {
-        return _references.size();
-    }
+    std::list<ReferenceBase*> _references;
 
 protected:
     template <typename T>
@@ -73,7 +61,7 @@ protected:
     {
         _references.push_back(&ref);
         ref.SetValid(true); // Mark as valid
-        //ref._refId = _references.size() - 1; // Assign a unique ID to the reference
+        // ref._refId = _references.size() - 1; // Assign a unique ID to the reference
     }
 
     void RemoveReference(ReferenceBase& ref)
@@ -81,17 +69,30 @@ protected:
         _references.remove(&ref);
         ref.SetUpdated(true);
         ref.SetValid(false); // Mark as invalid
-        //ref._refId = -1; // Mark as invalid
-        //ref._updated = false; // Reset updated state
+        // ref._refId = -1; // Mark as invalid
+        // ref._updated = false; // Reset updated state
     }
 
-private:
-    std::list<ReferenceBase*> _references;
+public:
+    ReferenceCounted() = default;
+    ~ReferenceCounted()
+    {
+        for (auto& ref : _references) {
+            // ref._refId = -1; // Mark as invalid
+            ref->SetValid(false); // Reset updated state
+        }
+    }
+
+    std::size_t GetReferenceCount()
+    {
+        return _references.size();
+    }
 };
 
 template <typename T>
 class ReferenceCounter : public ReferenceBase {
     T* _value;
+
 public:
     ReferenceCounter()
     {
@@ -131,7 +132,7 @@ public:
 
     T* operator->()
     {
-        return IsValid() ?  _value : nullptr;
+        return IsValid() ? _value : nullptr;
     }
 };
 

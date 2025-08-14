@@ -44,16 +44,4 @@ int AudioSystem::GetNumChannelsPlaying()
     return count;
 }
 
-std::unique_ptr<Resource> AudioSystem::BuildResource(ResourceManager* manager, const std::string& type)
-{
-    if (type == "Audio")
-    {
-        return std::make_unique<Sound>(manager, this);
-    }
-    else
-    {
-        throw std::runtime_error("Trying to create a resource this builder wasn't specified to!");
-    }
-}
-
 } // namespace bl

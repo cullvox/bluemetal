@@ -5,11 +5,12 @@
 
 namespace bl {
 
-Material::Material(ResourceManager* manager, const nlohmann::json& data, VulkanDevice* device, Renderer* renderer)
+Material::Material()
     : Resource(manager, data)
     , _renderer(renderer)
     , _device(device)
 {
+    OBJECT_REGISTRATION()
 }
 
 Material::~Material()
@@ -38,7 +39,7 @@ bool Material::Load()
         auto fragmentShader = GetResourceManager()->Load<bl::VulkanShader>(fragmentPath);
         info.stages.shaders = { vertexShader, fragmentShader };
     } catch (const std::exception& e) {
-        Log::Error("Could not parse material json: {}", e.what());
+        Print::Error("Could not parse material json: {}", e.what());
         return false;
     }
 

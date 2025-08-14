@@ -240,13 +240,13 @@ int main(int argc, const char** argv)
             direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
             cameraFront = glm::normalize(direction);
 
-            bl::Log::Info("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
+            bl::Print::Info("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
         }
 
         view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
 
-        bl::Log::Info("Mouse: {}, {}, {}", mouse.x, mouse.y, firstMouse);
-        bl::Log::Info("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
+        bl::Print::Info("Mouse: {}, {}, {}", mouse.x, mouse.y, firstMouse);
+        bl::Print::Info("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
 
         extent = window->GetExtent();
         extentf = glm::vec2{(float)extent.width, (float)extent.height};
