@@ -26,7 +26,7 @@ enum class RenderPassType : uint32_t
 class Renderer 
 {
 public:
-    Renderer(VulkanDevice* device, VulkanWindow* window); /** @brief Constructor */
+    Renderer(VulkanWindow* window); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
     uint32_t GetSwapchainImageCount() { return _imageCount; }

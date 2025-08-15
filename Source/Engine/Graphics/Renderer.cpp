@@ -1,11 +1,12 @@
 #include "Renderer.h"
+#include "GraphicsSystem.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanMaterial.h"
 
 namespace bl {
 
-Renderer::Renderer(VulkanDevice* device, VulkanWindow* window)
-    : _device(device)
+Renderer::Renderer(VulkanWindow* window)
+    : _device(GraphicsSystem::GetInstance()->GetDevice())
     , _window(window)
     , _swapchain(window->GetSwapchain())
     , _imageIndex(0)

@@ -32,11 +32,17 @@ public:
 
 template <ObjectType TObject, PropertyType TProp>
 class PropertyValue : public PropertyBase {
-    std::string_view _name;
-    std::function<TProp()> _getter;
-    std::function<void(TProp)> _setter;
+public:
+    using GetterType = void (TObject::* _getter)(TProp);
+    using SetterType = TProp (TObject::* _setter)(void);
 
-    PropertyValue(std::string_view name, std::function<TProp()> getter, std::function<void(TProp)> setter)
+private:
+    std::string_view _name;
+    GetterType _getter;
+    SetterType _setter;
+
+public:
+    PropertyValue(std::string_view name, GetterType getter, SetterType setter)
         : _name(name)
         , _getter(getter)
         , _setter(setter)

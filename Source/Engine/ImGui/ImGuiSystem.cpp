@@ -95,7 +95,7 @@ void ImGuiSystem::Init()
 {
     auto graphics = _engine->GetGraphics();
     auto device = graphics->GetDevice();
-    auto instance = graphics->GetInstance();
+    auto instance = graphics->GetVulkanInstance();
     auto physicalDevice = graphics->GetPhysicalDevice();
     auto window = _window;
     

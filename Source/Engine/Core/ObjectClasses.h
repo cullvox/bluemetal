@@ -23,8 +23,13 @@ public:
 class ObjectClasses {
     static std::unordered_map<std::string_view, ObjectClass> _objects;
 
-public:
+protected:
+    template<ObjectType TObject>
+    friend class ObjectRegistration;
+
     static ObjectClass& AddObjectClass(std::string_view name);
+
+public:
     static const ObjectClass* GetObjectClass(std::string_view name);
     static ObjectClass* GetParentClass(std::string_view name);
     static Object* CreateObject(std::string_view name);

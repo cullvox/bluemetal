@@ -13,6 +13,7 @@ class Object {
     static Object* _Creator();
     static void BindProperties();
 
+    
     static std::unordered_map<std::string_view, Property> _properties;
 
 public:
@@ -21,9 +22,11 @@ public:
     /**
      * 
      */
-    virtual void PreInit() = 0;
-    virtual void PostInit() = 0;
-    virtual void NotifyChange() = 0;
+    virtual void PreInit() {};
+    virtual void PostInit() {};
+    virtual bool IsInitialized() {};
+    virtual void NotifyChange() {};
+    void Populate();
 
     void Set(std::string_view name, std::any value);
     std::any Get(std::string_view name);

@@ -11,35 +11,35 @@
 namespace bl 
 {
 
-GraphicsSystem::GraphicsSystem(Engine* engine)
-    : _engine(engine)
+GraphicsSystem::GraphicsSystem()
 {
-    _instance = {{}, "Maginvox", true};
-    _physicalDevice = _instance.ChoosePhysicalDevice();
-    _device = std::make_unique<VulkanDevice>(&_instance, _physicalDevice);
+    _vulkanInstance = std::make_unique<VulkanInstance>(bl::Version{bl::VersionRelease::eAlpha, 0, 1, 7}, "bluemetal", true);
+    _physicalDevice = _vulkanInstance->ChoosePhysicalDevice();
+    _device = std::make_unique<VulkanDevice>(_vulkanInstance.get(), _physicalDevice);
 
-    
     auto displays = Display::GetDisplays();
 
     _device->WaitForDevice();
-    _window = CreateWindow("Maginvox", Rect2D{{}, displays[0].GetDesktopMode().extent}, false);
-
-    _renderer = CreateRenderer(_window.get());
-
-
-
+    _window = std::make_unique<VulkanWindow>(_device.get(), "Maginvox", Rect2D{{}, displays[0].GetDesktopMode().extent}, false);
+    _renderer = std::make_unique<Renderer>(_window.get());
 }
 
 GraphicsSystem::~GraphicsSystem()
 {
 }
 
-VulkanInstance* GraphicsSystem::GetInstance() 
-{ 
-    return &_instance;
+GraphicsSystem* GraphicsSystem::GetInstance()
+{
+    static GraphicsSystem graphics;
+    return &graphics;
 }
 
-VulkanPhysicalDevice* GraphicsSystem::GetPhysicalDevice() const
+VulkanInstance* GraphicsSystem::GetVulkanInstance() 
+{ 
+    return _vulkanInstance.get();
+}
+
+VulkanPhysicalDevice* GraphicsSystem::GetPhysicalDevice()
 { 
     return _physicalDevice; 
 }
@@ -47,19 +47,6 @@ VulkanPhysicalDevice* GraphicsSystem::GetPhysicalDevice() const
 VulkanDevice* GraphicsSystem::GetDevice() 
 { 
     return _device.get(); 
-}
-
-std::unique_ptr<Window> GraphicsSystem::CreateWindow(const std::string& title, Rect2D videoMode, bool fullscreen)
-{
-    return std::make_unique<VulkanWindow>(_device.get(), title, videoMode, fullscreen);
-}
-
-std::unique_ptr<Renderer> GraphicsSystem::CreateRenderer(Window* window)
-{
-    auto vulkanWindow = dynamic_cast<VulkanWindow*>(window);
-    assert(vulkanWindow != nullptr);
-
-    return std::make_unique<Renderer>(_device.get(), vulkanWindow);
 }
 
 } // namespace bl

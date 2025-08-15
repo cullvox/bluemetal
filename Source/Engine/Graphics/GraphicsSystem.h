@@ -9,32 +9,31 @@
 #include "VulkanPipelineLayoutCache.h"
 #include "VulkanSwapchain.h"
 #include "Window/Window.h"
-#include <memory>
 
 namespace bl {
 
 class Engine;
 
 class GraphicsSystem : public NonCopyable {
-    static Engine* _engine;
-    static VulkanInstance _instance;
-    static VulkanPhysicalDevice* _physicalDevice;
-    static std::unique_ptr<Window> _window;
-    static std::unique_ptr<Renderer> _renderer;
-    static std::unique_ptr<VulkanDevice> _device;
-    static std::unique_ptr<ImGuiSystem> _imgui;
+    Engine* _engine;
+    std::unique_ptr<VulkanInstance> _vulkanInstance;
+    VulkanPhysicalDevice* _physicalDevice;
+    std::unique_ptr<VulkanWindow> _window;
+    std::unique_ptr<Renderer> _renderer;
+    std::unique_ptr<VulkanDevice> _device;
+    std::unique_ptr<ImGuiSystem> _imgui;
 
-    GraphicsSystem(Engine* engine); /** @brief Constructor. */
+    GraphicsSystem(); /** @brief Constructor. */
     ~GraphicsSystem(); /** @brief Destructor */
 
 public:
     static GraphicsSystem* GetInstance();
 
-    static VulkanInstance* GetVulkanInstance();
-    static VulkanPhysicalDevice* GetPhysicalDevice();
-    static VulkanDevice* GetDevice();
-    static Window* GetWindow() { return _window.get(); }
-    static Renderer* GetRenderer() { return _renderer.get(); }
+    VulkanInstance* GetVulkanInstance();
+    VulkanPhysicalDevice* GetPhysicalDevice();
+    VulkanDevice* GetDevice();
+    Window* GetWindow() { return _window.get(); }
+    Renderer* GetRenderer() { return _renderer.get(); }
 };
 
 } // namespace bl
