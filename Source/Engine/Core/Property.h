@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Precompiled.h"
+#include "Variant.h"
 
 namespace bl {
 
@@ -26,15 +27,15 @@ public:
     template <typename T>
     bool is_type() { return typeid(T).hash_code == type_hash; }
 
-    virtual std::any Get() = 0;
-    virtual void Set(std::any value) = 0;
+    virtual Variant Get(Object* object) = 0;
+    virtual void Set(Object* object, Variant value) = 0;
 };
 
 template <ObjectType TObject, PropertyType TProp>
 class PropertyValue : public PropertyBase {
 public:
-    using GetterType = void (TObject::* _getter)(TProp);
-    using SetterType = TProp (TObject::* _setter)(void);
+    using GetterType = void (TObject::*)(TProp);
+    using SetterType = TProp (TObject::*)(void);
 
 private:
     std::string_view _name;
@@ -49,25 +50,21 @@ public:
     {
     }
 
-    virtual std::any Get() override
+    virtual Variant Get(Object* object) override
     {
-        return std::invoke(_getter);
+        return Variant{std::invoke(implGetter, obj)};
     }
 
-    virtual void Set(std::any value) override
+    virtual void Set(Object* object, const Variant& value) override
     {
-        std::invoke(_setter, std::any_cast<TProp>(value));
+        try {
+            const TProp& value = std::get<TProp>(value);
+        } catch (const std::bad_variant_access& e) {
+            Print::Warn("Bad variant access, incorrect type used in setter!");
+            return;
+        }
+        std::invoke(_setter, obj, std::get<TProp>(value));
     }
-};
-
-class Property {
-    std::unique_ptr<PropertyBase> _property;
-public:
-    template <class TClass, typename TProp>
-    Property(std::string_view name, std::function<TProp()> getter, std::function<void(TProp)> setter);
-
-    void Set(Object* object, std::any value);
-    std::any Get(Object* object);
 };
 
 }

@@ -17,7 +17,7 @@ enum class VersionRelease : uint32_t
     eSnapshot,
 };
 
-static inline constexpr std::string to_string(VersionRelease release) 
+static inline constexpr std::string_view to_string(VersionRelease release) 
 {
     switch(release) 
     {

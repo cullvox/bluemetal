@@ -1,42 +1,16 @@
 
 #pragma once
 
-#include "ClassRegister.h"
 #include "Node3D.h"
-#include "MaterialInstance.h"
-
-class Member
-{
-    std::string _name;
-public:
-    virtual std::string GetName();
-};
-
-class Property
-{
-    
-};
-
-class Function
-{
-
-}
-
-std::unordered_map<std::string, MemberBase>
-
-#define REGISTER_CLASS(CLASS, PARENT) \
-    CLASS::RegisterMembers();
-
+#include "Resources/MaterialInstance.h"
 
 class MeshInstance3D : public Node3D {
-    REGISTER_CLASS(MeshInstance3D, Node3D)
+    OBJECT_CLASS(MeshInstance3D, Node3D)
 public:
     MeshInstance3D() = default;
     virtual ~MeshInstance3D() = default;
 
-    static void RegisterMembers();
-
-    void SetMesh();
+    void SetMesh(Ref<Mesh> mesh);
     void SetMaterial(Ref<MaterialInstance> material);
     virtual void Draw() override;
 };

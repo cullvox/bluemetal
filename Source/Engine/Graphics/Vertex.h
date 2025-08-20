@@ -6,6 +6,11 @@
 namespace bl
 {
 
+template<typename T>
+concept VertexType = requires(T) {
+    { T::GetBindingDescriptions() } -> std::same_as<std::vector<VkVertexInputBindingDescription>>;
+    { T::GetBindingAttributeDescriptions() } -> std::same_as<std::vector<VkVertexInputAttributeDescription>>;
+};
 
 struct Vertex
 {

@@ -10,13 +10,33 @@
 namespace bl {
 
 class Object {
-    static Object* _Creator();
-    static void BindProperties();
+    static Object* _Creator()
+    {
+        return new Object();
+    }
 
-    
-    static std::unordered_map<std::string_view, Property> _properties;
+    static void BindProperties()
+    { // Objects have no properties by default.
+    }
+
+    static std::unordered_map<std::string_view, std::unique_ptr<PropertyBase>> _properties;
+
+protected:
+
+    template<ObjectType TClass, VariantType TProperty>
+    void AddProperty(std::string_view name, TProperty (TClass::* getter)(), void (TClass::* setter)(TProperty))
+    {
+        _properties[name] = std::make_unique<PropertyValue<TClass, TProperty>>(name, getter,setter);
+    }
+
+    void RemoveProperty(std::string_view name)
+    {
+        _properties.erase(name);
+    }
 
 public:
+    Object();
+
     virtual ~Object() = default;
 
     /**
@@ -28,8 +48,8 @@ public:
     virtual void NotifyChange() {};
     void Populate();
 
-    void Set(std::string_view name, std::any value);
-    std::any Get(std::string_view name);
+    Variant GetProperty(std::string_view name);
+    void SetProperty(std::string_view name, const Variant& value);
 };
 
 }

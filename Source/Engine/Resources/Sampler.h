@@ -49,7 +49,7 @@ public:
      */
     virtual ~Sampler() = default;
 
-    VkSampler Get() const;
+    VkSampler GetSampler() const;
     VkFilter GetMagFilter() const;
     VkFilter GetMinFilter() const;
     VkSamplerMipmapMode GetMipmapMode() const;
@@ -57,12 +57,12 @@ public:
     float GetMipLodBias() const;
     bool IsAnisotropyEnabled() const;
     float GetMaxAnisotropy() const;
-    VkBool32 IsCompareEnabled() const;
+    bool IsCompareEnabled() const;
     VkCompareOp GetCompareOp() const;
     float GetMinLod() const;
     float GetMaxLod() const;
     VkBorderColor GetBorderColor() const;
-    VkBool32 IsUnnormalizedCoordinates() const;
+    bool IsUnnormalizedCoordinates() const;
 
     void Set(
         VkFilter magFilter = VK_FILTER_LINEAR,

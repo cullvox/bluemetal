@@ -136,4 +136,7 @@ public:
     }
 };
 
+template <class T>
+using Ref = ReferenceCounter<T>; /** @brief Rename the reference counter to something a little more useful. */
+
 } // namespace bl

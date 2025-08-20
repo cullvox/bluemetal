@@ -1,6 +1,7 @@
 #pragma once
 
-#include "VulkanBuffer.h"
+#include "Graphics/VulkanBuffer.h"
+#include "Graphics/Vertex.h"
 
 namespace bl {
 
@@ -15,7 +16,7 @@ namespace bl {
 class StaticMesh 
 {
 public:
-    template<typename TVertex>
+    template<VertexType TVertex>
     StaticMesh(VulkanDevice* device, const std::vector<TVertex>& vertices, const std::vector<uint32_t>& indices);
 
     template<typename TVertex>
