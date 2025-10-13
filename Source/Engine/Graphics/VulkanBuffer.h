@@ -18,9 +18,9 @@ public:
     VkDeviceSize GetSize() const; /** @brief Returns the size of the buffer in bytes. */
     VmaAllocation GetAllocation() const; /** @brief Returns the underlying VMA allocation. */
     VkBuffer Get() const; /** @brief Returns the underlying Vulkan buffer. */
+    void Upload(std::span<const std::byte> data); /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
     void Map(void** mapped);
     void Unmap();
-    void Upload(std::span<const std::byte> data); /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
     void Flush(VkDeviceSize offset, VkDeviceSize size);
 
 private:

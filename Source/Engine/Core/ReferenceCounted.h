@@ -31,9 +31,7 @@ public:
 };
 
 /// @brief Any class that needs to know how many times it's being used.
-class ReferenceCounted : public Object {
-    CLASS_OBJECT(ReferenceCounted, Object);
-
+class ReferenceCounted {
     std::list<ReferenceBase*> _references;
 
 protected:

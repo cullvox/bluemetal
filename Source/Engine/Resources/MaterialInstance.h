@@ -9,7 +9,6 @@ namespace bl {
 class Material; // Material Resource
 
 class MaterialInstance : public Resource {
-    OBJECT_CLASS(MaterialInstance, Resource)
 
     Ref<Material> material;
 protected:
@@ -23,7 +22,6 @@ public:
 
     virtual bool Load() override;
     virtual void Unload() override;
-    virtual bool ExportBinary(std::ostream& stream) const override;
 
     void SetBool(const std::string& name, bool value);
     void SetInteger(const std::string& name, int value);

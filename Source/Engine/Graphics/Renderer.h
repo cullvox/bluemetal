@@ -19,8 +19,7 @@ class Material;
 enum class RenderPassType : uint32_t
 {
     eGeometry = 0,
-    eLighting = 1,
-    eUI = 2, 
+    eUI = 2,
 };
 
 class Renderer 

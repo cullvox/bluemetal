@@ -67,7 +67,7 @@ VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayou
         pool = GrabPool();
         allocInfo.descriptorPool = pool;
 
-        // If allocating again fails let someone else handle exception,
+        // If allocating again fails let a higher system handle the exception,
         // we can't do anything from here then.
         VK_CHECK(vkAllocateDescriptorSets(_device->Get(), &allocInfo, &set))
     }
@@ -92,7 +92,7 @@ VkDescriptorPool VulkanDescriptorSetAllocatorCache::GrabPool()
         _freePools.pop_back();
         return pool;
     }
-    
+
     pool = CreatePool(_setsPerPool);
 
     // Increment the amount of sets per pool up to a limit.
@@ -101,7 +101,7 @@ VkDescriptorPool VulkanDescriptorSetAllocatorCache::GrabPool()
     {
         _setsPerPool = 4092;
     }
-    
+
     return pool;
 }
 

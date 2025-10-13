@@ -1,7 +1,12 @@
 #pragma once
 
-#include "Core/Object.h"
+class Node
+{
+public:
+    Node() = default;
+    virtual ~Node() = default;
 
-class Node : public Object {
-    OBJECT_CLASS(Node, Object);
+    virtual void Update(float deltaTime) {}
+    virtual void PhysicsUpdate(float delta) {}
+    virtual void Draw() {}
 };

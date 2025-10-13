@@ -10,7 +10,6 @@ Material::Material()
     , _renderer(renderer)
     , _device(device)
 {
-    OBJECT_REGISTRATION()
 }
 
 Material::~Material()

@@ -3,7 +3,7 @@
 #include "Precompiled.h"
 #include "Core/Print.h"
 
-namespace bl 
+namespace bl
 {
 
 enum class VersionRelease : uint32_t 

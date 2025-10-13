@@ -7,7 +7,6 @@
 namespace bl {
 
 class Material : public MaterialInstance {
-    CLASS_OBJECT(Material, MaterialInstance)
 public:
     virtual bool Load() override;
     virtual void Unload() override;

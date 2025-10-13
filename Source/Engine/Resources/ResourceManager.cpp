@@ -46,10 +46,10 @@ bool ResourceManager::BuildResourcesFromManifest(const std::string& manifestPath
         entryNumber++;
 
         // Finish building resource and move onto the next.
-        Object* resourceObject = ObjectClasses::CreateObject(type);
-        Resource* resource = dynamic_cast<Resource*>(resourceObject);
+        //Object* resourceObject = ObjectClasses::CreateObject(type);
+        Resource* resource = nullptr; // dynamic_cast<Resource*>(resourceObject);
 
-        if (resourceObject == nullptr || resource == nullptr) {
+        if (resource == nullptr) {
             Print::Error("Invalid resource type or object type \"{}\"!", type);
             Print::Error("Could not build resource \"{}\" in manifest \"{}\"!", path, manifestPath);
             return false; // We got big fish to fry with this error.

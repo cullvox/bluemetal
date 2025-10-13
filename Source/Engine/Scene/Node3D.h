@@ -22,9 +22,9 @@ public:
     Node3D() = default;
     virtual ~Node3D() = default;
 
-    virtual void Update(float deltaTime) = 0;
-    virtual void PhysicsUpdate(float delta) = 0;
-    virtual void Draw() = 0;
+    virtual void Update(float deltaTime) {}
+    virtual void PhysicsUpdate(float delta) {}
+    virtual void Draw() {}
 
     void SetPosition(const glm::vec3& position);
     void SetWorldPosition(const glm::vec3& position);

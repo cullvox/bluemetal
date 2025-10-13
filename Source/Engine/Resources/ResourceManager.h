@@ -55,7 +55,7 @@ public:
      * Any resource added via this function will be automatically added to the manifest when exported.
      */
     template <DerivedResource T>
-    Ref<T> Add(const std::string& path, const nlohmann::json& importData = {});
+    Ref<T> Load(const std::string& path);
 
     Ref<Resource> RegisterResource(Resource* resource);
 

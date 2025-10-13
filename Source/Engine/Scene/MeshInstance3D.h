@@ -5,38 +5,19 @@
 #include "Node3D.h"
 #include "MaterialInstance.h"
 
-class Member
-{
-    std::string _name;
-public:
-    virtual std::string GetName();
-};
-
-class Property
-{
-    
-};
-
-class Function
-{
-
-}
-
-std::unordered_map<std::string, MemberBase>
-
-#define REGISTER_CLASS(CLASS, PARENT) \
-    CLASS::RegisterMembers();
-
-
 class MeshInstance3D : public Node3D {
-    REGISTER_CLASS(MeshInstance3D, Node3D)
+
+    Ref<MaterialIntance> _material;
+    Ref<Mesh> _mesh;
+
 public:
     MeshInstance3D() = default;
     virtual ~MeshInstance3D() = default;
 
-    static void RegisterMembers();
+    virtual void Draw() override; // Just sets up the instance data, actual draw call is done in renderer
 
-    void SetMesh();
+    void SetMesh(Ref<Mesh> mesh);
     void SetMaterial(Ref<MaterialInstance> material);
-    virtual void Draw() override;
+    Ref<Mesh> GetMesh() const;
+    Ref<MaterialIntance> GetMaterial() const;
 };

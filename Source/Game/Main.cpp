@@ -3,14 +3,14 @@
 #include "Core/Print.h"
 #include "Math/Transform.h"
 #include "Engine/Engine.h"
-#include "Graphics/StaticModel.h"
+#include "Resources/StaticMesh.h"
 #include "Graphics/VulkanShader.h"
 #include "Graphics/VulkanPhysicalDevice.h"
 #include "Graphics/VulkanPipeline.h"
 #include "Graphics/Vertex.h"
-#include "Graphics/Material.h"
+#include "Resources/Material.h"
 #include "Graphics/VulkanConversions.h"
-#include "Graphics/Texture2D.h"
+#include "Resources/Texture2D.h"
 #include "Graphics/UniformData.h"
 #include <glm/ext/matrix_transform.hpp>
 

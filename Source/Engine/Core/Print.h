@@ -13,22 +13,22 @@
 
 namespace bl {
 
+struct FormatWithLocation {
+    std::string_view value;
+    std::source_location location;
+
+    template <typename TString>
+    FormatWithLocation(const TString& s, const std::source_location& location = std::source_location::current())
+        : value(s)
+        , location(location)
+    {
+    }
+};
+
 class Print {
     static bool useVerboseLogging;
 
 public:
-    struct FormatWithLocation {
-        std::string_view value;
-        std::source_location location;
-
-        template <typename TString>
-        FormatWithLocation(const TString& s, const std::source_location& location = std::source_location::current())
-            : value(s)
-            , location(location)
-        {
-        }
-    };
-
     static void EnableVerboseLogging(bool enable);
     static bool IsVerboseLogging();
 

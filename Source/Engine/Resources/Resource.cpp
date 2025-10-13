@@ -3,8 +3,6 @@
 
 namespace bl {
 
-OBJECT_REGISTRATION(Resource)
-
 Resource::Resource()
 {
 }

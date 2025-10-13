@@ -11,7 +11,6 @@ class AudioSystem;
 
 class Sound : public Resource
 {
-    CLASS_OBJECT(Sound, Resource)
 public:
     Sound();
     ~Sound();

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Precompiled.h"
+#include "Flags.h"
 
 namespace bl {
 
@@ -18,56 +19,61 @@ concept SerializableType = std::default_initializable<T> &&
 template<typename T>
 concept PropertyType = requires {SerializableType<T>;};
 
-class PropertyBase {
-protected:
-    std::size_t type_hash;
+class Property {
 
+    std::string_view _name;
 public:
-    template <typename T>
-    bool is_type() { return typeid(T).hash_code == type_hash; }
+    Property(std::string_view name)
+        : _name(name)
+    {
+    }
 
-    virtual std::any Get() = 0;
-    virtual void Set(std::any value) = 0;
+    std::string_view GetName()
+    {
+        return _name;
+    }
 };
 
+enum class PropertyFlagBits : uint32_t
+{
+    eReadOnly,
+};
+using PropertyFlags = Flags<PropertyFlagBits>;
+BL_DEFINE_FLAG_OPS(PropertyFlagBits)
+
 template <ObjectType TObject, PropertyType TProp>
-class PropertyValue : public PropertyBase {
+class PropertyValue : public Property {
 public:
-    using GetterType = void (TObject::* _getter)(TProp);
-    using SetterType = TProp (TObject::* _setter)(void);
+    using Getter = void (TObject::*)(TProp);
+    using Setter = TProp (TObject::*)(void);
 
 private:
     std::string_view _name;
-    GetterType _getter;
-    SetterType _setter;
+    PropertyFlags _flags;
+    Getter _getter;
+    Setter _setter;
 
 public:
-    PropertyValue(std::string_view name, GetterType getter, SetterType setter)
+    PropertyValue(std::string_view name, Getter getter, Setter setter)
         : _name(name)
         , _getter(getter)
         , _setter(setter)
     {
     }
 
-    virtual std::any Get() override
+    virtual std::any Get(const Object* object) override
     {
-        return std::invoke(_getter);
+        TObject* obj = dynamic_cast<const TObject*>(object);
+        assert(obj); // This should never fail.
+        return std::invoke(_getter, obj);
     }
 
-    virtual void Set(std::any value) override
+    virtual void Set(const Object* object, std::any value) override
     {
+        TObject* obj = dynamic_cast<const TObject*>(object);
+        assert(obj); // This should never fail.
         std::invoke(_setter, std::any_cast<TProp>(value));
     }
-};
-
-class Property {
-    std::unique_ptr<PropertyBase> _property;
-public:
-    template <class TClass, typename TProp>
-    Property(std::string_view name, std::function<TProp()> getter, std::function<void(TProp)> setter);
-
-    void Set(Object* object, std::any value);
-    std::any Get(Object* object);
 };
 
 }

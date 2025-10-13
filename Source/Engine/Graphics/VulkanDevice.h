@@ -12,7 +12,7 @@ namespace bl {
  * @class VulkanDevice
  * @brief Represents a Vulkan device used for rendering.
  */
-class VulkanDevice : public NonCopyable {
+class VulkanDevice {
 public:
 
     /**
@@ -25,14 +25,13 @@ public:
      * @param instance The Vulkan instance to use.
      * @param physicalDevice The physical device to use.
      */
-    VulkanDevice(
-        VulkanInstance* instance, 
-        VulkanPhysicalDevice* physicalDevice);
+    VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice);
 
     /**
      * @brief Move constructor for VulkanDevice.
      */
     VulkanDevice(VulkanDevice&& other) = default;
+    VulkanDevice(const VulkanDevice& copy) = delete;
 
     /**
      * @brief Destructor for VulkanDevice.
@@ -45,6 +44,7 @@ public:
      * @return Reference to this VulkanDevice.
      */
     VulkanDevice& operator=(VulkanDevice&& move) noexcept;
+    VulkanDevice& operator=(const VulkanDevice& copy) = delete;
 
     /**
      * @brief Returns the Vulkan instance this device was created with.
