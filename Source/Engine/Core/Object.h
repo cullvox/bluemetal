@@ -9,10 +9,14 @@
 namespace bl {
 
 class Object {
-    static Object* _Creator();
-    static void BindProperties();
+    static Object* _Creator()
+    {
+        return new Object();
+    }
 
 public:
+    Object();
+
     virtual ~Object() = default;
 
     // STATIC FUNCTIONS DEFINED BY OBJECT_CLASS(NAME, PARENT) MACRO

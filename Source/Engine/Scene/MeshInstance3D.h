@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include "ClassRegister.h"
 #include "Node3D.h"
 #include "MaterialInstance.h"
 

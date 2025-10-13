@@ -10,7 +10,7 @@ bool Shader::Load()
 {
     std::vector<uint32_t> code;
 
-    switch (GetLocation()) {
+    switch (GetSource()) {
     case ResourceSource::eFile: {
         std::ifstream file(GetPath(), std::ios::in | std::ios::binary);
         if (!file.good()) {

@@ -10,6 +10,8 @@ public:
     SceneTree();
     ~SceneTree();
 
+    void UpdateTree();
+
 };
 
 }
