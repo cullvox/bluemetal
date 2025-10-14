@@ -16,34 +16,10 @@ concept DerivedResource = std::is_base_of_v<Resource, T>;
 class ResourceManager  {
 
     std::unordered_map<std::string, std::unique_ptr<Resource>> _resources;
-    std::vector<std::string> _packPaths;
 
 public:
     ResourceManager();
     ~ResourceManager();
-
-    /**
-     * @brief Builds resources from a manifest file.
-     * @param manifest The path to the manifest file containing resource definitions.
-     *
-     * Loads a set of resources from a JSON manifest file.
-     */
-    bool BuildResourcesFromManifest(const std::string& manifestPath);
-
-    /**
-     * @brief Builds resources from a pack manifest.
-     * @param packPath Path to load the pack from.
-     *
-     * Loads a set of resources from the pack file using the packs internal
-     * CBOR encoded manifest. These files are not designed to be human readable
-     * and are exported from the resource manager itself.
-     *
-     * This function can be ran as many times as the user would like. For every pack
-     * loaded it's information will be stored for resource loading later. Loading resources
-     * from a pack and from a manifest file @ref BuildFromManifest can be all loaded together
-     * in this same resource manager, feel free to use both.
-     */
-    bool BuildResourcesFromPack(const std::string& packPath);
 
     /**
      * @brief Creates a resource of type T with the specified path and data.
@@ -57,8 +33,6 @@ public:
     template <DerivedResource T>
     Ref<T> Load(const std::string& path);
 
-    Ref<Resource> RegisterResource(Resource* resource);
-
     /**
      * @brief Retrieves a resource.
      * @param path The unique path of the resource to get.
@@ -67,60 +41,9 @@ public:
      */
     template<DerivedResource T>
     Ref<T> Get(const std::string& path);
-
-    /**
-     * @brief Loads a resource by its path.
-     * @param path The path to the resource to be loaded.
-     * @return A reference to the loaded resource.
-     */
-    template <DerivedResource T>
-    Ref<T> GetAndLoad(const std::string& path);
-
-    /**
-     * @brief Removes the resources from the manager.
-     * @param path The path of the resource to be deleted.
-     * 
-     * If this program is restarted and it is still within either a binary or 
-     * json manifest the unlisted resource will reappear. Save the manifest or reexport
-     * the package to ensure the resource is removed.
-     */
-    bool Unlist(const std::string& path);
-
-    /**
-     * @brief Loads a single resource.
-     */
-    bool Load(const std::string& path);
-
-    /**
-     * @brief Loads many resources at once.
-     */
-    bool LoadGroup(const std::vector<std::string>& paths);
-
-    /**
-     * @brief 
-     */
-    bool GetResourcePack(Resource* resource, std::ifstream& outFile, std::size_t& outByteSize);
-
+    bool Load(const std::string& path); /** @brief Ensures a resource is loaded. */
+    void Add(const std::string_view& path, Resource* resource); /** @brief Adds a resource to the manager assuming it's loaded. */
     void UnloadUnreferenced(); /** @brief Cleans up memory by unloading resources that aren't currently needed. Abides by a ResourceLoadOp. */
-
-    /* ========== PACKAGING/MANIFEST ========== */
-
-    /**
-     * @brief Returns all resource paths.
-     * @return A vector containing all resource paths.
-     *
-     * Use this function when you'd like to retrieve a list of all resource paths
-     * for selecting when exporting.
-     */
-    std::vector<std::string> GetAllResourcePaths() const;
-
-    /**
-     * @brief Exports a list of resources to a manifest file.
-     */
-    void ExportManifest(const std::string& exportedManifestPath);
-    void ExportManifest(const std::string& exportedManifestPath, const std::vector<std::string>& resourcesToExport);
-    void ExportPackage(const std::string& exportedPackPath);
-    void ExportPackage(const std::string& exportedPackPath, const std::vector<std::string>& resourcesToExport);
 };
 
 template<DerivedResource T>

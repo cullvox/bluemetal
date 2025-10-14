@@ -45,8 +45,6 @@ std::tuple<VkRenderPass, uint32_t> Renderer::GetRenderPass(RenderPassType passTy
     switch (passType) {
     case RenderPassType::eGeometry:
         return std::make_tuple(_pass, 0);
-    case RenderPassType::eLighting:
-        return std::make_tuple(_pass, 0);
     case RenderPassType::eUI:
         return std::make_tuple(_pass, 0);
     default:
