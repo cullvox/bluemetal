@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Core/NonCopyable.h"
 #include "Precompiled.h"
 #include "Vulkan.h"
 #include "VulkanDevice.h"
@@ -10,7 +9,8 @@
 namespace bl {
 
 /// @brief Swap present images for rendering multiple frames at a time.
-class VulkanSwapchain : public NonCopyable {
+class VulkanSwapchain 
+{
 public:
 
     /**

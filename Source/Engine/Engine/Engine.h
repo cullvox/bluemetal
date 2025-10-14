@@ -13,19 +13,6 @@ namespace bl
 
 class Engine
 {
-public:
-    Engine(); /** @brief Constructor */
-    ~Engine(); /** @brief Destructor */
-
-    ResourceManager* GetResourceManager();
-    GraphicsSystem* GetGraphics();
-    ImGuiSystem* GetImGui();
-    AudioSystem* GetAudio();
-
-    Window* GetWindow();
-    Renderer* GetRenderer();
-
-private:
     nlohmann::json _config;
     SDLInitializer _sdl;
     std::unique_ptr<ResourceManager> _resourceManager;
@@ -34,6 +21,23 @@ private:
     std::unique_ptr<AudioSystem> _audio;
     std::unique_ptr<Window> _window;
     std::unique_ptr<Renderer> _renderer;
+
+    static std::unique_ptr<Engine> _engine;
+
+    Engine(); /** @brief Constructor */
+
+public:
+    ~Engine(); /** @brief Destructor */
+
+    static Engine* GetEngine();
+    ResourceManager* GetResourceManager();
+    GraphicsSystem* GetGraphics();
+    ImGuiSystem* GetImGui();
+    AudioSystem* GetAudio();
+    Window* GetWindow();
+    Renderer* GetRenderer();
 };
+
+Engine* GetEngine();
 
 } // namespace bl

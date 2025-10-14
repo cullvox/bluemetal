@@ -1,34 +1,19 @@
 #include "Sound.h"
+#include "Engine/Engine.h"
 #include "Audio/AudioSystem.h"
 
 namespace bl {
 
-Sound::Sound()
+Sound::Sound(const std::filesystem::path& path)
     : _sound(nullptr)
 {
+    auto system = GetEngine()->GetAudio();
+    FMOD_CHECK(system->GetFMOD()->createSound(path.string().c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &_sound))
 }
 
 Sound::~Sound()
 {
-    if (_sound)
-        Unload();
-}
-
-bool Sound::Load()
-{
-    FMOD_CHECK(_system->GetFMOD()->createSound(GetPath().c_str(), FMOD_DEFAULT | FMOD_3D, nullptr, &_sound))
-    return true;
-}
-
-void Sound::Unload()
-{
-    FMOD_CHECK(_sound->release())
-    _sound = nullptr;
-}
-
-bool Sound::ExportBinary(std::ostream&) const
-{
-    return false;
+    _sound->release();
 }
 
 FMOD::Sound* Sound::Get()

@@ -27,29 +27,10 @@ enum class ResourceSource {
  * be instantiated throughout the program lifetime. Once the @ref Load function is
  * called, the heavy data lifting will begin.
  */
-class Resource : public ReferenceCounted {
-
+class Resource : public ReferenceCounted 
+{
     friend class ResourceManager;
-    ResourceManager* _manager;
     std::string _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
-    bool _isLoaded = false;
-
-protected:
-
-    /**
-     * @brief Retrieves the manager that owns this resource.
-     */
-    ResourceManager* GetResourceManager() { return _manager; }
-
-    /**
-     * @brief Loads the resource from file.
-     */
-    virtual bool Load() = 0;
-
-    /**
-     * @brief Unloads the resource from memory.
-     */
-    virtual void Unload() = 0;
 
 public:
     /**
@@ -69,12 +50,6 @@ public:
      * @return The unique path of the resource.
      */
     const std::string& GetPath() const { return _path; }
-
-    /**
-     * @brief Returns the state of the resource.
-     * @return The state of the resource.
-     */
-    bool IsLoaded() const { return _isLoaded; }
 };
 
 } // namespace bl

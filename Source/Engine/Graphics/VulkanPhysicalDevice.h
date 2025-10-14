@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Precompiled.h"
-#include "Core/NonCopyable.h"
 #include "Vulkan.h"
 
 namespace bl {

@@ -29,12 +29,9 @@ class Sampler : public Resource {
 
     void RecreateSampler();
 
-protected:
-    virtual bool Load() override;
-    virtual void Unload() override;
-    virtual bool ExportBinary(std::ostream& stream) const override;
-
 public:
+
+    Sampler();
 
     /**
      * @brief Constructs a new Sampler object.
@@ -42,14 +39,14 @@ public:
      * @param data JSON data describing the sampler resource.
      * @param device Pointer to the Vulkan device used for creating the sampler.
      */
-    Sampler();
+    Sampler(const std::filesystem::path& path);
 
     /**
      * @brief Destructor for the Sampler class.
      */
     virtual ~Sampler() = default;
 
-    VkSampler GetSampler() const;
+    VkSampler Get() const;
     VkFilter GetMagFilter() const;
     VkFilter GetMinFilter() const;
     VkSamplerMipmapMode GetMipmapMode() const;
@@ -57,27 +54,12 @@ public:
     float GetMipLodBias() const;
     bool IsAnisotropyEnabled() const;
     float GetMaxAnisotropy() const;
-    bool IsCompareEnabled() const;
+    VkBool32 IsCompareEnabled() const;
     VkCompareOp GetCompareOp() const;
     float GetMinLod() const;
     float GetMaxLod() const;
     VkBorderColor GetBorderColor() const;
-    bool IsUnnormalizedCoordinates() const;
-
-    void Set(
-        VkFilter magFilter = VK_FILTER_LINEAR,
-        VkFilter minFilter = VK_FILTER_LINEAR,
-        VkSamplerMipmapMode mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR,
-        VkSamplerAddressMode addressMode = VK_SAMPLER_ADDRESS_MODE_REPEAT,
-        float mipLodBias = 0.0f,
-        bool enableAnisotropy = VK_FALSE,
-        float maxAnisotropy = 0.0f,
-        VkBool32 compareEnable = VK_FALSE,
-        VkCompareOp compareOp = VK_COMPARE_OP_NEVER,
-        float minLod = 0.0f,
-        float maxLod = 0.0f,
-        VkBorderColor borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK,
-        VkBool32 unnormalizedCoordinates = VK_FALSE);
+    VkBool32 IsUnnormalizedCoordinates() const;
 };
 
 }

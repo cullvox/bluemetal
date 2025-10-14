@@ -1,55 +1,33 @@
 #include "Shader.h"
+#include "Engine/Engine.h"
 
-namespace bl {
-
-Shader::Shader()
+namespace bl 
 {
-}
 
-bool Shader::Load()
+Shader::Shader(const std::filesystem::path& path)
 {
     std::vector<uint32_t> code;
 
-    switch (GetSource()) {
-    case ResourceSource::eFile: {
-        std::ifstream file(GetPath(), std::ios::in | std::ios::binary);
-        if (!file.good()) {
-            Print::Error("Could not open shader file!");
-            return false;
-        }
-        
-        file.seekg(0, std::ios::end);
-        size_t size = file.tellg();
-        file.read(0, std::ios::beg);
-        
-        code.resize(size);
+    std::ifstream file(path, std::ios::in | std::ios::binary);
+    if (!file.good()) 
+    {
+        throw std::runtime_error("Could not open shader file!");
+    }
+    
+    file.seekg(0, std::ios::end);
+    size_t size = file.tellg();
+    file.read(0, std::ios::beg);
+    
+    code.resize(size);
 
-        file.read(reinterpret_cast<char*>(code.data()), size);
-        break;
-    }
-    case ResourceSource::eBinary: {
-        auto data = GetBinaryData();
-        code.resize(data.size());
-        std::copy(data.begin(), data.end(), code.begin());
-    }
+    file.read(reinterpret_cast<char*>(code.data()), size);
+
+    if (code.size() % 4 != 0) 
+    {
+        throw std::runtime_error("Code byte size must be divisible by 4 for valid SPIR-V code!");
     }
 
-    if (code.size() % 4 != 0) {
-        Print::Error("Code byte size must be divisible by 4 for valid SPIR-V code!");
-        return false;
-    }
-
-    _shader = std::make_unique<VulkanShader>(_device, code);
-}
-
-void Shader::Unload()
-{
-    _shader.release();
-}
-
-bool Shader::ExportBinary(std::ostream& stream) const
-{
-
+    _shader = std::make_unique<VulkanShader>(GetEngine()->GetGraphics()->GetDevice(), code);
 }
 
 }

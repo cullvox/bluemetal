@@ -7,10 +7,6 @@
 namespace bl 
 {
 
-VulkanInstance::VulkanInstance()
-{
-}
-
 VulkanInstance::VulkanInstance(Version appVersion, std::string_view appName, bool enableValidation)
     : _enableValidation(enableValidation) 
 {
@@ -27,19 +23,6 @@ VulkanInstance::~VulkanInstance()
 
     vkDestroyInstance(_instance, nullptr);
     volkFinalize();
-}
-
-VulkanInstance& VulkanInstance::operator=(VulkanInstance&& move) noexcept
-{
-    _instance = move._instance;
-    _enableValidation = move._enableValidation;
-    _messenger = move._messenger;
-    _physicalDevices = std::move(move._physicalDevices);
-
-    move._instance = VK_NULL_HANDLE;
-    move._messenger = VK_NULL_HANDLE;
-
-    return *this;
 }
 
 VkInstance VulkanInstance::Get() const 

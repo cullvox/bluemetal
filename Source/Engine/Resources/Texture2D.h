@@ -6,14 +6,12 @@
 
 namespace bl {
 
+// Textures are all QOI format, probably
 class Texture2D : public Texture
 { 
 public:
-    Texture2D();
+    Texture2D(const std::filesystem::path& path);
     ~Texture2D();
-
-    virtual bool Load() override;
-    virtual void Unload() override;
 
     VulkanImage* GetImage();
 

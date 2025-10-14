@@ -73,7 +73,6 @@ private:
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RenderPassType, {
     {RenderPassType::eGeometry, "geometry"},
-    {RenderPassType::eLighting, "lighting"},
     {RenderPassType::eUI, "ui"},
 });
 

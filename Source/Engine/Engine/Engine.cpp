@@ -10,27 +10,22 @@ namespace bl
 Engine::Engine()
     : _sdl()
 {
-    bl::Print::Info("Constructing bluemetal engine {}", bl::to_string(bl::engineVersion));
+    bl::Print::Info("Initializing BlueMetal v{}", bl::to_string(bl::engineVersion));
 
     _resourceManager = std::make_unique<ResourceManager>();
     _audio = std::make_unique<AudioSystem>(this);
     _graphics = std::make_unique<GraphicsSystem>(this);
-
-    auto vulkanWindow = dynamic_cast<VulkanWindow*>(_graphics->GetWindow());
-    _imgui = std::make_unique<ImGuiSystem>(this, vulkanWindow, _graphics->GetRenderer());
-
-    _resourceManager->RegisterBuilder({"Shader", "Texture", "Model", "Material"}, _graphics.get());
-    _resourceManager->RegisterBuilder({"Audio"}, _audio.get());
+    _imgui = std::make_unique<ImGuiSystem>(this, _graphics->GetWindow(), _graphics->GetRenderer());
 }
 
 Engine::~Engine() 
 {
-    std::ignore = _resourceManager.release();
-    std::ignore = _renderer.release();
-    std::ignore = _imgui.release();
-    std::ignore = _window.release();
-    std::ignore = _graphics.release();
-    std::ignore = _audio.release();
+}
+
+Engine* Engine::GetEngine()
+{
+    static std::unique_ptr<Engine> engine = std::make_unique<Engine>();
+    return engine.get();
 }
 
 ResourceManager* Engine::GetResourceManager()
@@ -63,5 +58,9 @@ Renderer* Engine::GetRenderer()
     return _graphics->GetRenderer();
 }
 
+Engine* GetEngine()
+{
+    return Engine::GetEngine();
+}
 
 } // namespace bl

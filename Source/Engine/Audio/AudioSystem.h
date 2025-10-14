@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Precompiled.h"
-#include "FMOD.h"
 #include "Core/MacroUtils.h"
-#include "Core/NonCopyable.h"
 #include "Resources/ResourceManager.h"
+
+#include "FMOD.h"
 
 namespace bl
 {
@@ -12,7 +12,7 @@ namespace bl
 class Engine;
 class Sound;
 
-class AudioSystem : public NonCopyable
+class AudioSystem
 {
 public:
 
@@ -52,7 +52,12 @@ public:
 
 private:
     AudioSystem();
+    AudioSystem(const AudioSystem&) = delete;
+    AudioSystem(AudioSystem&&) = delete;
     ~AudioSystem();
+    
+    AudioSystem& operator=(const AudioSystem&) = delete;
+    AudioSystem& operator=(AudioSystem&&) = delete;
 
 private:
     static std::unique_ptr<AudioSystem> _system;

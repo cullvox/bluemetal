@@ -11,27 +11,21 @@ namespace bl
 {
 
 /// @brief Vulkan instance object, used to create a vulkan device and choose physical devices.
-class VulkanInstance : public NonCopyable 
+class VulkanInstance 
 {
+    VkInstance _instance;
+    bool _enableValidation;
+    VkDebugUtilsMessengerEXT _messenger;
+    std::vector<VulkanPhysicalDevice> _physicalDevices;
+
 public:
-
-    /// @brief Default Constructor
-    VulkanInstance();
-
-    /// @brief Move Constructor
-    /// @param[inout] instance The source instance to move all values from.
-    VulkanInstance(VulkanInstance&& instance);
-
-    /// @brief Instance Constructor
-    /// @param appVersion The version of your application.
-    /// @param appName The name of your application.
-    /// @param enableValidation Enables Vulkan validation layers on your device.
+    VulkanInstance(const VulkanInstance&) = delete;
+    VulkanInstance(VulkanInstance&& instance) = delete;
     VulkanInstance(Version appVersion, std::string_view appName, bool enableValidation);
-    
-    /// @brief Destructor
     ~VulkanInstance();
 
-    VulkanInstance& operator=(VulkanInstance&& move) noexcept;
+    VulkanInstance& operator=(const VulkanInstance&) = delete;
+    VulkanInstance& operator=(VulkanInstance&&) = delete;
 
     /// @brief Returns the underlying VkInstance object.
     VkInstance Get() const;
@@ -60,11 +54,6 @@ private:
 
     /// @brief Creates the array of GraphicsPhysicalDevices from VkPhysicalDevices.
     void EnumeratePhysicalDevices();
-
-    VkInstance _instance;
-    bool _enableValidation;
-    VkDebugUtilsMessengerEXT _messenger;
-    std::vector<VulkanPhysicalDevice> _physicalDevices;
 };
 
 } // namespace bl

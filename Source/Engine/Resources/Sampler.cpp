@@ -21,6 +21,35 @@ Sampler::Sampler()
     RecreateSampler();
 }
 
+Sampler::Sampler(const std::filesystem::path& path)
+{
+    nlohmann::json data;
+    std::ifstream file(path);
+    if (!file.is_open()) 
+    {
+        throw std::runtime_error("Could not open sampler JSON file.");
+    }
+    file >> data;
+    file.close();
+
+
+    _magFilter = data.value("magFilter", VK_FILTER_LINEAR);
+    _minFilter = data.value("minFilter", VK_FILTER_LINEAR);
+    _mipmapMode = data.value("mipmapMode", VK_SAMPLER_MIPMAP_MODE_LINEAR);
+    _addressMode = data.value("addressMode", VK_SAMPLER_ADDRESS_MODE_REPEAT);
+    _mipLodBias = data.value("mipLodBias", 0.0f);
+    _enableAnisotropy = data.value("enableAnisotropy", false);
+    _maxAnisotropy = data.value("maxAnisotropy", 0.0f);
+    _compareEnable = data.value("compareEnable", VK_FALSE);
+    _compareOp = data.value("compareOp", VK_COMPARE_OP_NEVER);
+    _minLod = data.value("minLod", 0.0f);
+    _maxLod = data.value("maxLod", 0.0f);
+    _borderColor = data.value("borderColor", VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
+    _unnormalizedCoordinates = data.value("unnormalizedCoordinates", VK_FALSE);
+
+    RecreateSampler();
+}
+
 void Sampler::RecreateSampler()
 {
     _sampler.reset(new VulkanSampler(
@@ -41,117 +70,9 @@ void Sampler::RecreateSampler()
     UpdateReferences();
 }
 
-bool Sampler::Load()
-{
-    if (IsLoaded())
-        return true;
-
-    nlohmann::json data;
-
-    switch (GetSource()) {
-    case ResourceSource::eFile: {
-        std::ifstream file(GetPath());
-        if (!file.is_open()) {
-            Print::Error("Failed to open sampler file: {}", GetPath());
-            return false;
-        }
-        file >> data;
-        file.close();
-        break;
-    }
-    case ResourceSource::eBinary: {
-        auto binaryData = GetBinaryStream();
-        if (binaryData.empty()) {
-            Print::Error("Binary data for sampler is empty.");
-            return false;
-        }
-        data = nlohmann::json::from_cbor(binaryData); // Assuming binary data is in CBOR format
-        break;
-    }
-    }
-
-    _magFilter = data.value("magFilter", VK_FILTER_LINEAR);
-    _minFilter = data.value("minFilter", VK_FILTER_LINEAR);
-    _mipmapMode = data.value("mipmapMode", VK_SAMPLER_MIPMAP_MODE_LINEAR);
-    _addressMode = data.value("addressMode", VK_SAMPLER_ADDRESS_MODE_REPEAT);
-    _mipLodBias = data.value("mipLodBias", 0.0f);
-    _enableAnisotropy = data.value("enableAnisotropy", false);
-    _maxAnisotropy = data.value("maxAnisotropy", 0.0f);
-    _compareEnable = data.value("compareEnable", VK_FALSE);
-    _compareOp = data.value("compareOp", VK_COMPARE_OP_NEVER);
-    _minLod = data.value("minLod", 0.0f);
-    _maxLod = data.value("maxLod", 0.0f);
-    _borderColor = data.value("borderColor", VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK);
-    _unnormalizedCoordinates = data.value("unnormalizedCoordinates", VK_FALSE);
-
-    RecreateSampler();
-    isLoaded = true;
-}
-
-void Sampler::Unload()
-{
-    if (isLoaded) {
-        _sampler.reset();
-        isLoaded = false;
-    }
-}
-
-bool Sampler::ExportBinary(std::ostream& stream) const
-{
-    nlohmann::json data;
-    data["magFilter"] = GetMagFilter();
-    data["minFilter"] = GetMinFilter();
-    data["mipmapMode"] = GetMipmapMode();
-    data["addressMode"] = GetAddressMode();
-    data["mipLodBias"] = GetMipLodBias();
-    data["enableAnisotropy"] = IsAnisotropyEnabled();
-    data["maxAnisotropy"] = GetMaxAnisotropy();
-    data["compareEnable"] = IsCompareEnabled();
-    data["compareOp"] = GetCompareOp();
-    data["minLod"] = GetMinLod();
-    data["maxLod"] = GetMaxLod();
-    data["borderColor"] = GetBorderColor();
-    data["unnormalizedCoordinates"] = IsUnnormalizedCoordinates();
-
-    auto cbor = nlohmann::json::to_cbor(data); // Save as binary
-    std::copy(cbor.begin(), cbor.end(), std::ostream_iterator<char>(stream));
-    return stream.good();
-}
-
-void Sampler::Set(
-    VkFilter magFilter,
-    VkFilter minFilter,
-    VkSamplerMipmapMode mipmapMode,
-    VkSamplerAddressMode addressMode,
-    float mipLodBias,
-    bool enableAnisotropy,
-    float maxAnisotropy,
-    VkBool32 compareEnable,
-    VkCompareOp compareOp,
-    float minLod,
-    float maxLod,
-    VkBorderColor borderColor,
-    VkBool32 unnormalizedCoordinates)
-{
-    _magFilter = magFilter;
-    _minFilter = minFilter;
-    _mipmapMode = mipmapMode;
-    _addressMode = addressMode;
-    _mipLodBias = mipLodBias;
-    _enableAnisotropy = enableAnisotropy;
-    _maxAnisotropy = maxAnisotropy;
-    _compareEnable = compareEnable;
-    _compareOp = compareOp;
-    _minLod = minLod;
-    _maxLod = maxLod;
-    _borderColor = borderColor;
-    _unnormalizedCoordinates = unnormalizedCoordinates;
-    RecreateSampler();
-}
-
 VkSampler Sampler::Get() const
 {
-    return _sampler ? _sampler->Get() : VK_NULL_HANDLE;
+    return _sampler.get() ? _sampler.get()->Get() : VK_NULL_HANDLE;
 }
 
 VkFilter Sampler::GetMagFilter() const

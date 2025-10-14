@@ -14,7 +14,8 @@ namespace bl {
 
 class Engine;
 
-class GraphicsSystem : public NonCopyable {
+class GraphicsSystem 
+{
     Engine* _engine;
     std::unique_ptr<VulkanInstance> _vulkanInstance;
     VulkanPhysicalDevice* _physicalDevice;
@@ -32,7 +33,7 @@ public:
     VulkanInstance* GetVulkanInstance();
     VulkanPhysicalDevice* GetPhysicalDevice();
     VulkanDevice* GetDevice();
-    Window* GetWindow() { return _window.get(); }
+    VulkanWindow* GetWindow() { return _window.get(); }
     Renderer* GetRenderer() { return _renderer.get(); }
 };
 

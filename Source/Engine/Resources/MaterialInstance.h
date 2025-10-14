@@ -1,27 +1,23 @@
 #pragma once
 
+#include "Math/Math.h"
 #include "Resource.h"
 #include "Sampler.h"
 #include "Texture.h"
 
-namespace bl {
+namespace bl 
+{
 
 class Material; // Material Resource
 
-class MaterialInstance : public Resource {
+class MaterialInstance : public Resource 
+{
 
     Ref<Material> material;
-protected:
-    virtual bool Load();
-    virtual void Unload();
-    virtual bool ExportBinary(std::ostream& stream) const;
 
 public:
     MaterialInstance();
     ~MaterialInstance();
-
-    virtual bool Load() override;
-    virtual void Unload() override;
 
     void SetBool(const std::string& name, bool value);
     void SetInteger(const std::string& name, int value);
