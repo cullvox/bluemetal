@@ -4,6 +4,7 @@
 #include "Resource.h"
 #include "Sampler.h"
 #include "Texture.h"
+#include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanRenderData.h"
 
 namespace bl 
@@ -14,6 +15,7 @@ class Material; // Material Resource
 class MaterialInstance : public Resource 
 {
     Ref<Material> material;
+    std::unique_ptr<VulkanMaterialInstance> _materialInstance;
 
 public:
     MaterialInstance();

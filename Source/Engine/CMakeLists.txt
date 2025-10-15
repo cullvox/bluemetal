@@ -52,7 +52,7 @@ list(APPEND Sources
   "Resources/Material.cpp"
   "Resources/MaterialInstance.cpp"
 
-  "Scene/Source.cpp"
+  "Scene/AudioSource3D.cpp"
 
   "Engine/SDLInitializer.cpp"
   

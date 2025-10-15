@@ -27,7 +27,7 @@ public:
     GraphicsSystem(); /** @brief Constructor. */
     ~GraphicsSystem(); /** @brief Destructor */
 
-    VulkanInstance* GetVulkanInstance();
+    VulkanInstance* GetInstance();
     VulkanPhysicalDevice* GetPhysicalDevice();
     VulkanDevice* GetDevice();
     VulkanWindow* GetWindow() { return _window.get(); }

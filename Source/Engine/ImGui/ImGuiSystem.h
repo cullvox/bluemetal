@@ -21,7 +21,7 @@ class Engine;
 class ImGuiSystem
 {
 public:
-    ImGuiSystem(Engine* engine, VulkanWindow* window, Renderer* renderer);
+    ImGuiSystem(VulkanWindow* window, Renderer* renderer);
     ~ImGuiSystem();
 
     void Process(const SDL_Event& event);

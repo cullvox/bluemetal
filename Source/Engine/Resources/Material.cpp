@@ -93,7 +93,7 @@ void Material::SetSampledImage2D(const std::string& name, Ref<Sampler> sampler, 
     _material->SetSampledImage2D(name, sampler.Get()->GetSampler(), image.Get()->GetImage());
 }
 
-const VulkanPipeline* Material::GetPipeline()
+const VulkanPipeline* Material::GetVulkanPipeline()
 {
     return _material->GetPipeline();
 }

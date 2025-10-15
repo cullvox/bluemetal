@@ -12,9 +12,8 @@
 namespace bl 
 {
 
-ImGuiSystem::ImGuiSystem(Engine* engine, VulkanWindow* window, Renderer* renderer)
-    : _engine(engine)
-    , _window(window)
+ImGuiSystem::ImGuiSystem(VulkanWindow* window, Renderer* renderer)
+    : _window(window)
     , _renderer(renderer)
 {
     Init();
@@ -95,7 +94,7 @@ void ImGuiSystem::Init()
 {
     auto graphics = _engine->GetGraphics();
     auto device = graphics->GetDevice();
-    auto instance = graphics->GetVulkanInstance();
+    auto instance = graphics->GetInstance();
     auto physicalDevice = graphics->GetPhysicalDevice();
     auto window = _window;
     

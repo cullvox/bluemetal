@@ -11,8 +11,8 @@ public:
     Material(const std::filesystem::path& path);
     virtual ~Material();
 
-    VulkanMaterial* GetMaterial() { return _material.get(); }
-    const VulkanPipeline* GetPipeline();
+    VulkanMaterial* GetVulkanMaterial() { return _material.get(); }
+    const VulkanPipeline* GetVulkanPipeline();
 
     void SetBool(const std::string& name, bool value);
     void SetInteger(const std::string& name, int value);

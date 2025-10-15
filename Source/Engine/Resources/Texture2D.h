@@ -2,7 +2,7 @@
 
 #include "Resource.h"
 #include "Texture.h"
-#include "VulkanImage.h"
+#include "Graphics/VulkanImage.h"
 
 namespace bl {
 

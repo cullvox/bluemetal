@@ -28,13 +28,7 @@ GraphicsSystem::~GraphicsSystem()
 {
 }
 
-GraphicsSystem* GraphicsSystem::GetInstance()
-{
-    static GraphicsSystem graphics;
-    return &graphics;
-}
-
-VulkanInstance* GraphicsSystem::GetVulkanInstance() 
+VulkanInstance* GraphicsSystem::GetInstance()
 { 
     return _vulkanInstance.get();
 }

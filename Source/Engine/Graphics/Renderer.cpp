@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Engine/Engine.h"
 #include "GraphicsSystem.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanMaterial.h"

@@ -2,9 +2,8 @@
 #include "Core/Print.h"
 #include "Graphics/Renderer.h"
 #include "Math/Rect.h"
-#include <memory>
 
-namespace bl 
+namespace bl
 {
 
 Engine::Engine()
@@ -13,9 +12,9 @@ Engine::Engine()
     bl::Print::Info("Initializing BlueMetal v{}", bl::to_string(bl::engineVersion));
 
     _resourceManager = std::make_unique<ResourceManager>();
-    _audio = std::make_unique<AudioSystem>(this);
-    _graphics = std::make_unique<GraphicsSystem>(this);
-    _imgui = std::make_unique<ImGuiSystem>(this, _graphics->GetWindow(), _graphics->GetRenderer());
+    _audio = std::make_unique<AudioSystem>();
+    _graphics = std::make_unique<GraphicsSystem>();
+    _imgui = std::make_unique<ImGuiSystem>(_graphics->GetWindow(), _graphics->GetRenderer());
 }
 
 Engine::~Engine() 
@@ -24,7 +23,7 @@ Engine::~Engine()
 
 Engine* Engine::GetEngine()
 {
-    static std::unique_ptr<Engine> engine = std::make_unique<Engine>();
+    static std::unique_ptr<Engine> engine = std::unique_ptr<Engine>(new Engine());
     return engine.get();
 }
 

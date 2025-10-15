@@ -11,8 +11,10 @@
 #include "Resources/Material.h"
 #include "Graphics/VulkanConversions.h"
 #include "Resources/Texture2D.h"
+#include "Resources/Shader.h"
 #include "Graphics/UniformData.h"
-#include <glm/ext/matrix_transform.hpp>
+
+#include "Scene/AudioSource3D.h"
 
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -41,35 +43,32 @@ int main(int argc, const char** argv)
 
     try
     {
-    bl::Engine engine;
+    auto engine = bl::GetEngine();
+    auto resourceMgr = engine->GetResourceManager();
 
-    auto resourceMgr = engine.GetResourceManager();
-    resourceMgr->LoadFromManifest("Resources/Manifest.json");
-
-    auto audio = engine.GetAudio();
+    auto audio = engine->GetAudio();
     auto sound = resourceMgr->Load<bl::Sound>("Audio/Music/Taswell.flac");
-    auto listener = audio->CreateListener();
-    auto source = audio->CreateSource();
 
-    source->SetSound(sound);
-    source->Play();
+    auto source = std::make_unique<bl::AudioSource3D>();
 
-    auto graphics = engine.GetGraphics();
-    auto imgui = engine.GetImGui();
+    source->Play(sound, true);
 
-    auto vert = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.vert");
-    auto frag = resourceMgr->Load<bl::VulkanShader>("Shaders/Default.frag");
-    auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.glb");
-    auto dragonModel = resourceMgr->Load<bl::StaticModel>("Models/dragon_quick_sculpt.glb");
+    auto graphics = engine->GetGraphics();
+    auto imgui = engine->GetImGui();
+
+    auto vert = resourceMgr->Load<bl::Shader>("Shaders/Default.vert");
+    auto frag = resourceMgr->Load<bl::Shader>("Shaders/Default.frag");
+    //auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.glb");
+    //auto dragonModel = resourceMgr->Load<bl::StaticModel>("Models/dragon_quick_sculpt.glb");
     auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
 
-    auto renderer = engine.GetRenderer();
+    auto renderer = engine->GetRenderer();
 
     bl::VulkanPipelineStateInfo psi{};
     psi.rasterizerState.cullMode = VK_CULL_MODE_BACK_BIT;
-    psi.stages.shaders = { vert.Get(), frag.Get() };
-    
-    auto window = engine.GetWindow();
+    psi.stages.shaders = { vert.Get()->Get(), frag.Get()->Get() };
+
+    auto window = engine->GetWindow();
     auto vulkanWindow = dynamic_cast<bl::VulkanWindow*>(window);
 
     // auto [pass, subpass] = renderer->GetRenderPass(bl::RenderPassType::eGeometry);
@@ -123,7 +122,7 @@ int main(int argc, const char** argv)
     auto texture = resourceMgr->Load<bl::Texture2D>("Textures/Bricks_Albedo.jpg");
     auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_LINEAR};
 
-    material->SetSampledImage2D("inAlbedo", &sampler, texture.Get()->GetImage());
+    // material->SetSampledImage2D("inAlbedo", &sampler, texture.Get()->GetImage());
 
     bool firstMouse = true;
     glm::ivec2 lastMouse{};
@@ -270,7 +269,6 @@ int main(int argc, const char** argv)
         glm::vec3 velocity{ cosf(bl::Time::Current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
 
         glm::vec4 color = { 1.f, 0.5f, 0.f, 1.0f };
-        
         glm::vec4 val{};
 
         std::memcpy(&val, &color, sizeof(glm::vec4));
@@ -278,13 +276,10 @@ int main(int argc, const char** argv)
         // glm::vec4 color = { 1.0f, 0.0f, 0.0f, 1.0f};
         // material->SetVector4("material.color", color);
 
-        source->Set3DAttributes(position, velocity);
-        listener->SetAttributes3D(cameraPos, )
         audio->Update();
 
         if (!minimized) {
 
-        
         material->UpdateUniforms();
 
         renderer->Render([&](bl::VulkanRenderData& rd){
@@ -307,15 +302,15 @@ int main(int argc, const char** argv)
 
             object.model = glm::identity<glm::mat4>();
 
-            vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline()->GetPipelineLayout(), 0, 1, &globalSet, 0, nullptr);
+            vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetVulkanPipeline()->GetPipelineLayout(), 0, 1, &globalSet, 0, nullptr);
             material->Bind(rd);
             material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
 
-            model.Get()->Draw(rd, material->GetMaterial());
+            //model.Get()->Draw(rd, material->GetMaterial());
 
             object.model = glm::translate(glm::identity<glm::mat4>(), {-100.0f, 0.0f, 0.0f});
             material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
-            dragonModel.Get()->Draw(rd, material->GetMaterial());
+            // dragonModel.Get()->Draw(rd, material->GetMaterial());
 
             imgui->BeginFrame();
 
