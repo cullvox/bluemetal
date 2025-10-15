@@ -4,6 +4,7 @@
 #include "Resource.h"
 #include "Sampler.h"
 #include "Texture.h"
+#include "Graphics/VulkanRenderData.h"
 
 namespace bl 
 {
@@ -12,11 +13,11 @@ class Material; // Material Resource
 
 class MaterialInstance : public Resource 
 {
-
     Ref<Material> material;
 
 public:
     MaterialInstance();
+    MaterialInstance(const std::filesystem::path& path);
     ~MaterialInstance();
 
     void SetBool(const std::string& name, bool value);

@@ -5,10 +5,10 @@
 
 #include <nlohmann/json.hpp>
 
-namespace bl 
+namespace bl
 {
 
-class ResourceManager  
+class ResourceManager
 {
     std::unordered_map<std::string, std::unique_ptr<Resource>> _resources;
 

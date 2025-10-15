@@ -15,6 +15,8 @@ class Shader : public Resource
 public:
     Shader(const std::filesystem::path& path);
     ~Shader();
+
+    VulkanShader* Get() const { return _shader.get(); }
 };
 
 }

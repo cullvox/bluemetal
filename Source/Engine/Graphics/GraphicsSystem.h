@@ -16,7 +16,6 @@ class Engine;
 
 class GraphicsSystem 
 {
-    Engine* _engine;
     std::unique_ptr<VulkanInstance> _vulkanInstance;
     VulkanPhysicalDevice* _physicalDevice;
     std::unique_ptr<VulkanWindow> _window;
@@ -24,11 +23,9 @@ class GraphicsSystem
     std::unique_ptr<VulkanDevice> _device;
     std::unique_ptr<ImGuiSystem> _imgui;
 
+public:
     GraphicsSystem(); /** @brief Constructor. */
     ~GraphicsSystem(); /** @brief Destructor */
-
-public:
-    static GraphicsSystem* GetInstance();
 
     VulkanInstance* GetVulkanInstance();
     VulkanPhysicalDevice* GetPhysicalDevice();

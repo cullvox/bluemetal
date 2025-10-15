@@ -35,6 +35,7 @@ public:
 
 protected:
     friend class VulkanMaterial;
+    friend class Material;
     void AddMaterial(VulkanMaterial* material);
     void RemoveMaterial(VulkanMaterial* material);
 

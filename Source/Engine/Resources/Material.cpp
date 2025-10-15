@@ -1,31 +1,26 @@
 #include "Material.h"
+#include "Engine/Engine.h"
+#include "Shader.h"
 #include "Graphics/VulkanShader.h"
-#include "Renderer.h"
-#include "Resource/ResourceManager.h"
+#include "Graphics/Renderer.h"
 
 namespace bl {
 
-Material::Material()
-    : Resource(manager, data)
-    , _renderer(renderer)
-    , _device(device)
+Material::Material(const std::filesystem::path& path)
 {
-}
-
-Material::~Material()
-{
-}
-
-bool Material::Load()
-{
-    std::ifstream materialFile(GetFilePath());
+    std::ifstream materialFile{path};
+    if (!materialFile.is_open()) 
+    {
+        throw std::runtime_error("Could not open material JSON file.");
+    }
 
     std::string vertexPath, fragmentPath;
     nlohmann::json json;
     VulkanPipelineStateInfo info;
     RenderPassType passType;
 
-    try {
+    try 
+    {
         json = nlohmann::json::parse(materialFile);
 
         passType = json["renderPass"];
@@ -34,24 +29,28 @@ bool Material::Load()
 
         info = json["state"];
 
-        auto vertexShader = GetResourceManager()->Load<bl::VulkanShader>(vertexPath);
-        auto fragmentShader = GetResourceManager()->Load<bl::VulkanShader>(fragmentPath);
-        info.stages.shaders = { vertexShader, fragmentShader };
-    } catch (const std::exception& e) {
-        Print::Error("Could not parse material json: {}", e.what());
-        return false;
+        auto rm = GetEngine()->GetResourceManager();
+        auto vertexShader = rm->Load<Shader>(vertexPath);
+        auto fragmentShader = rm->Load<Shader>(fragmentPath);
+        info.stages.shaders = std::vector<VulkanShader*>{ vertexShader.Get()->Get(), fragmentShader.Get()->Get() };
+    }
+    catch (...)
+    {
+        throw std::runtime_error("Could not parse material JSON file.");
     }
 
-    auto [pass, subpass] = _renderer->GetRenderPass(passType);
+    auto renderer = GetEngine()->GetRenderer();
+    auto device = GetEngine()->GetGraphics()->GetDevice();
+    auto [pass, subpass] = renderer->GetRenderPass(passType);
 
-    _material = std::make_unique<VulkanMaterial>(_device, pass, subpass, info, _renderer->GetSwapchainImageCount());
+    _material = std::make_unique<VulkanMaterial>(device, pass, subpass, info, _renderer->GetSwapchainImageCount());
 
-    _renderer->AddMaterial(this); // Ensures that the material buffers get properly cleaned updated every frame.
+    _renderer->AddMaterial(_material.get()); // Ensures that the material buffers get properly cleaned updated every frame.
 }
 
-void Material::Unload()
+Material::~Material()
 {
-    _renderer->RemoveMaterial(this);
+    _renderer->RemoveMaterial(_material.get());
 }
 
 void Material::SetBool(const std::string& name, bool value)
@@ -89,24 +88,9 @@ void Material::SetMatrix(const std::string& name, glm::mat4 value)
     _material->SetMatrix(name, value);
 }
 
-void Material::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image)
+void Material::SetSampledImage2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image)
 {
-    _material->SetSampledImage2D(name, sampler, image);
-}
-
-void Material::UpdateUniforms()
-{
-    _material->UpdateUniforms();
-}
-
-void Material::Bind(VulkanRenderData& rd)
-{
-    _material->Bind(rd);
-}
-
-void Material::PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value)
-{
-    _material->PushConstant(rd, offset, size, value);
+    _material->SetSampledImage2D(name, sampler.Get()->GetSampler(), image.Get()->GetImage());
 }
 
 const VulkanPipeline* Material::GetPipeline()

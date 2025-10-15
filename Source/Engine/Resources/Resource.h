@@ -9,13 +9,6 @@ namespace bl {
 
 class ResourceManager;
 
-enum class ResourceSource {
-    eFile,
-    eBinary,
-    eRuntime, /** @brief These resources are generated when the program begins, will not be saved in any way. */
-    // eNetwork,
-};
-
 /**
  * @class Resource
  * @brief Base resource interface class for all resources.

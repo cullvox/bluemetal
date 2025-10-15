@@ -75,6 +75,11 @@ VkSampler Sampler::Get() const
     return _sampler.get() ? _sampler.get()->Get() : VK_NULL_HANDLE;
 }
 
+VulkanSampler* Sampler::GetSampler() const
+{
+    return _sampler.get();
+}
+
 VkFilter Sampler::GetMagFilter() const
 {
     return _magFilter;

@@ -32,21 +32,11 @@ class Sampler : public Resource {
 public:
 
     Sampler();
-
-    /**
-     * @brief Constructs a new Sampler object.
-     * @param manager Pointer to the resource manager.
-     * @param data JSON data describing the sampler resource.
-     * @param device Pointer to the Vulkan device used for creating the sampler.
-     */
     Sampler(const std::filesystem::path& path);
-
-    /**
-     * @brief Destructor for the Sampler class.
-     */
     virtual ~Sampler() = default;
 
     VkSampler Get() const;
+    VulkanSampler* GetSampler() const;
     VkFilter GetMagFilter() const;
     VkFilter GetMinFilter() const;
     VkSamplerMipmapMode GetMipmapMode() const;

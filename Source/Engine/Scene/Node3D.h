@@ -22,8 +22,8 @@ public:
     Node3D() = default;
     virtual ~Node3D() = default;
 
-    virtual void Update(float deltaTime) {}
-    virtual void PhysicsUpdate(float delta) {}
+    virtual void Update(float deltaTime) { (void)deltaTime; }
+    virtual void PhysicsUpdate(float delta) { (void)delta; }
     virtual void Draw() {}
 
     void SetPosition(const glm::vec3& position);
@@ -44,5 +44,4 @@ public:
     glm::vec3 GetWorldScale() const;
     glm::mat4 GetTransform() const;
     glm::mat4 GetWorldTransform() const;
-
 };

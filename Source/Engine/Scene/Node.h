@@ -6,7 +6,7 @@ public:
     Node() = default;
     virtual ~Node() = default;
 
-    virtual void Update(float deltaTime) {}
-    virtual void PhysicsUpdate(float delta) {}
+    virtual void Update(float deltaTime) { (void)deltaTime; }
+    virtual void PhysicsUpdate(float delta) { (void)delta; }
     virtual void Draw() {}
 };

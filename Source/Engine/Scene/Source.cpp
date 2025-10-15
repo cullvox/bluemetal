@@ -1,4 +1,5 @@
 #include "Audio/AudioSystem.h"
+#include "Engine/Engine.h"
 #include "Source.h"
 
 namespace bl 
@@ -6,6 +7,7 @@ namespace bl
 
 AudioSource3D::AudioSource3D()
 {
+    _system = GetEngine()->GetAudio();
 }
 
 AudioSource3D::~AudioSource3D() 
@@ -19,7 +21,7 @@ void AudioSource3D::Update(float dt)
     if (!IsPlaying()) return;
 
     // Update the sources 3D attributes.
-    glm::vec3 pos = GetGlobalPosition();
+    glm::vec3 pos = GetWorldPosition();
     glm::vec3 vel = pos - _prevPosition;
     _prevPosition = pos;
 
@@ -29,7 +31,7 @@ void AudioSource3D::Update(float dt)
     FMOD_CHECK(_channel->set3DAttributes(&fmodPosition, &fmodVelocity))
 }
 
-void AudioSource3D::SetPause(bool paused = false)
+void AudioSource3D::SetPause(bool paused)
 {
     FMOD_CHECK(_channel->setPaused(paused))
 }
@@ -43,8 +45,8 @@ bool AudioSource3D::IsPlaying()
 
 void AudioSource3D::Play(Ref<Sound> sound, bool repeat)
 {
-    AudioSystem* system = AudioSystem::GetInstance();
-    FMOD_CHECK(system->GetFMOD()->playSound(sound.Get()->Get(), nullptr, false, &_channel))
+    FMOD_CHECK(_system->GetFMOD()->playSound(sound.Get()->Get(), nullptr, false, &_channel))
+    FMOD_CHECK(_channel->setLoopCount(repeat ? -1 : 0))
 }
 
 } // namespace bl

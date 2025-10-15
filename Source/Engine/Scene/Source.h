@@ -2,7 +2,7 @@
 
 #include "Node3D.h"
 #include "Math/Math.h"
-#include "Sound.h"
+#include "Resources/Sound.h"
 
 namespace bl {
 
