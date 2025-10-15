@@ -98,7 +98,7 @@ public:
     ReferenceCounter(T* value)
         : _value(value)
     {
-        _value->IncreaseRefs();
+        _value->AddReference(*this);
     }
 
     ReferenceCounter(const ReferenceCounter& copy)

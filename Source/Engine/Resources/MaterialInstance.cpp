@@ -29,10 +29,9 @@ MaterialInstance::MaterialInstance(const std::filesystem::path& path)
     }
 
     auto rm = GetEngine()->GetResourceManager();
-    auto device = GetEngine()->GetGraphics()->GetDevice();
 
-    auto material = rm->Load<Material>(json["material"].get<std::string>());
-    _materialInstance = std::unique_ptr<VulkanMaterialInstance>(material->GetVulkanMaterial()->CreateInstance());
+    auto mat = rm->Load<Material>(json["material"].get<std::string>());
+    _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat->GetVulkanMaterial()->CreateInstance());
 }
 
 MaterialInstance::~MaterialInstance()

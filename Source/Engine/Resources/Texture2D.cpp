@@ -23,7 +23,7 @@ Texture2D::Texture2D(const std::filesystem::path& path)
     std::size_t size = file.tellg();
     file.seekg(0, std::ios::beg);
 
-    std::vector<std::byte> buffer { size };
+    std::vector<std::byte> buffer{size};
     file.read(reinterpret_cast<char*>(buffer.data()), size);
     buffer.resize(file.tellg());
 
@@ -34,6 +34,8 @@ Texture2D::Texture2D(const std::filesystem::path& path)
     std::transform(extension.begin(), extension.end(), extension.begin(),
         [](unsigned char c) { return std::tolower(c); });
 
+
+    std::vector<std::byte> imageData;
     if (extension == ".png" || extension == ".jpg") 
     {
         throw std::runtime_error("Cannot load png images in engine!");
@@ -43,9 +45,9 @@ Texture2D::Texture2D(const std::filesystem::path& path)
         using namespace qoixx;
 
         try {
-            const auto [actual, desc] = qoi::decode<std::vector<std::byte>>(data, 4);
+            const auto [actual, desc] = qoi::decode<std::vector<std::byte>>(buffer, 4);
 
-            _imageData = std::move(actual);
+            imageData = actual;
             _extent = { desc.width, desc.height };
             _format = TextureFormat::eRGBA;
 
@@ -59,9 +61,10 @@ Texture2D::Texture2D(const std::filesystem::path& path)
                 break;
             }
         }
-        catch (const std::exception& e)
+        catch (...)
         {
-            throw std::runtime_error("Could not decode a QOI texture.")
+            // TODO: Catch this better?
+            throw std::runtime_error("Could not decode a QOI texture.");
         }
     } 
     else 
@@ -77,9 +80,8 @@ Texture2D::Texture2D(const std::filesystem::path& path)
 
     format = formatConversion[(int)GetColorSpace()][(int)GetFormat()];
 
-    _image = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, vk::Make3D(GetExtent()), format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
-    _image->UploadData(buffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
+    _image = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, _extent, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    _image->UploadData(imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 Texture2D::~Texture2D() 

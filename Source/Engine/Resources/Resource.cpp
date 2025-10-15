@@ -7,4 +7,8 @@ Resource::Resource()
 {
 }
 
+Resource::~Resource()
+{
+}
+
 } // namespace bl

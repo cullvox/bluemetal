@@ -10,7 +10,7 @@ namespace bl
 
 class ResourceManager
 {
-    std::unordered_map<std::string, std::unique_ptr<Resource>> _resources;
+    std::unordered_map<std::filesystem::path, std::unique_ptr<Resource>> _resources;
 
 public:
     ResourceManager();
@@ -21,7 +21,7 @@ public:
     void UnloadUnreferenced(); /** @brief Cleans up memory by unloading resources that aren't currently needed. Abides by a ResourceLoadOp. */
 };
 
-template<typename T> Ref<T> Load(const std::filesystem::path& path)
+template<typename T> Ref<T> ResourceManager::Load(const std::filesystem::path& path)
 {
     auto it = _resources.find(path);
     if (it == _resources.end()) {
@@ -30,16 +30,16 @@ template<typename T> Ref<T> Load(const std::filesystem::path& path)
         {
             _resources[path] = std::make_unique<T>(path);
         } 
-        catch (const std::exception& e)
+        catch (...)
         {
             Print::Error("Could not load resource: {}", path);
-            return Ref<T>{};
+            return Ref{(T*)nullptr};
         }
 
-        return Ref<T>{_resources[path].get()};
+        return Ref{dynamic_cast<T*>(_resources[path].get())};
     }
 
-    return Ref<T>{it->second.get()};
+    return Ref{dynamic_cast<T*>(it->second.get())};
 }
 
 template<typename T>
@@ -51,7 +51,7 @@ Ref<T> ResourceManager::Get(const std::filesystem::path& path)
         return Ref<T>{};
     }
 
-    return ResourceRef<T>{it->second.get()};
+    return ResourceRef{it->second.get()};
 }
 
 template<typename T>
@@ -64,7 +64,7 @@ Ref<T> ResourceManager::Add(const std::filesystem::path& path, T* resource)
 
     _resources[path] = std::make_unique<Resource>(resource);
 
-    return Ref<T>{_resources[path]};
+    return Ref{_resources[path]};
 }
 
 } // namespace bl
