@@ -30,4 +30,8 @@ Shader::Shader(const std::filesystem::path& path)
     _shader = std::make_unique<VulkanShader>(GetEngine()->GetGraphics()->GetDevice(), code);
 }
 
+Shader::~Shader()
+{
+}
+
 }

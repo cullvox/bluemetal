@@ -30,7 +30,7 @@ protected:
 
 public:
     Texture() = default;
-    virtual ~Texture() = 0;
+    virtual ~Texture() = default;
 
     VkExtent3D GetExtent3D() const { return _extent; };
     TextureFormat GetFormat() const { return _format; };

@@ -6,9 +6,12 @@
 namespace bl
 {
 
+std::unique_ptr<Engine> Engine::_engine = nullptr;
+
 Engine::Engine()
     : _sdl()
 {
+    _engine = std::unique_ptr<Engine>(this);
     bl::Print::Info("Initializing BlueMetal v{}", bl::to_string(bl::engineVersion));
 
     _resourceManager = std::make_unique<ResourceManager>();
@@ -21,11 +24,12 @@ Engine::~Engine()
 {
 }
 
-Engine* Engine::GetEngine()
+void Initialize()
 {
-    static std::unique_ptr<Engine> engine = std::unique_ptr<Engine>(new Engine());
-    return engine.get();
+    
 }
+
+void Shutdown();
 
 ResourceManager* Engine::GetResourceManager()
 {

@@ -12,19 +12,20 @@
  */
 class Node3D : public Node
 {
-
     glm::mat4 _transform;
     glm::vec3 _position;
     glm::quat _rotation;
     glm::vec3 _scale;
 
-public:
-    Node3D() = default;
-    virtual ~Node3D() = default;
+    void UpdateTransform();
 
-    virtual void Update(float deltaTime) { (void)deltaTime; }
-    virtual void PhysicsUpdate(float delta) { (void)delta; }
-    virtual void Draw() {}
+public:
+    Node3D();
+    virtual ~Node3D();
+
+    virtual void Update(float deltaTime);
+    virtual void PhysicsUpdate(float delta);
+    virtual void Draw();
 
     void SetPosition(const glm::vec3& position);
     void SetWorldPosition(const glm::vec3& position);

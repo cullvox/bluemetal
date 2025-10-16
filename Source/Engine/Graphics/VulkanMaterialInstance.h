@@ -26,6 +26,16 @@ class VulkanMaterial;
 class VulkanMaterialInstance {
 public:
     /**
+     * @brief Creates a material instance.
+     * @param device Vulkan device to create the material instance with.
+     * @param material Vulkan material to create the instance for.
+     * 
+     * This constructor initializes the material instance with the given device and material.
+     * Only the material should call this constructor.
+     */
+    VulkanMaterialInstance(VulkanDevice* device, VulkanMaterial* material);
+
+    /**
      * @brief Destroy the material instance.
      */
     ~VulkanMaterialInstance();
@@ -121,17 +131,6 @@ public:
     {
         PushConstant(rd, offset, sizeof(T), &data);
     }
-
-protected:
-    /**
-     * @brief Creates a material instance.
-     * @param device Vulkan device to create the material instance with.
-     * @param material Vulkan material to create the instance for.
-     * 
-     * This constructor initializes the material instance with the given device and material.
-     * Only the material should call this constructor.
-     */
-    VulkanMaterialInstance(VulkanDevice* device, VulkanMaterial* material);
 
 protected:
     /**

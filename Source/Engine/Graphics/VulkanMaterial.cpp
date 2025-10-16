@@ -65,7 +65,12 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, VkRenderPass pass, uint32_t
 
 VulkanMaterial::~VulkanMaterial()
 {
-    
 }
+
+std::unique_ptr<VulkanMaterialInstance> VulkanMaterial::CreateInstance()
+{
+    return std::make_unique<VulkanMaterialInstance>(_device, this);
+}
+
 
 } // namespace bl

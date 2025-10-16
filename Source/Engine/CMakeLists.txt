@@ -53,6 +53,8 @@ list(APPEND Sources
   "Resources/Texture2D.cpp"
   "Resources/MaterialInstance.cpp"
 
+  "Scene/Node.cpp"
+  "Scene/Node3D.cpp"
   "Scene/AudioSource3D.cpp"
 
   "Engine/SDLInitializer.cpp"
