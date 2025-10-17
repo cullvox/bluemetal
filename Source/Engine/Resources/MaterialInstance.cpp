@@ -5,11 +5,8 @@
 namespace bl
 {
 
-MaterialInstance::MaterialInstance()
-{
-}
-
-MaterialInstance::MaterialInstance(const std::filesystem::path& path)
+MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
+    : Resource(resourceSystem, graphicsSystem, path)
 {
     std::ifstream file{path};
     if (!file.is_open())
@@ -28,9 +25,7 @@ MaterialInstance::MaterialInstance(const std::filesystem::path& path)
         throw std::runtime_error("Could not parse material JSON file.");
     }
 
-    auto rm = GetEngine()->GetResourceManager();
-
-    auto mat = rm->Load<Material>(json["material"].get<std::string>());
+    auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
     _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat->GetVulkanMaterial()->CreateInstance());
 }
 

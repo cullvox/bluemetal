@@ -31,7 +31,7 @@ static inline glm::mat4 ConvertMatrixToGLMFormat(const aiMatrix4x4& from)
     return to;
 }
 
-StaticModel::StaticModel(ResourceManager* manager, const nlohmann::json& json, VulkanDevice* device)
+StaticModel::StaticModel(ResourceSystem* manager, const nlohmann::json& json, VulkanDevice* device)
     : Resource(manager, json)
     , _device(device)
 {

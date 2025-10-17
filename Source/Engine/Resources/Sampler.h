@@ -2,6 +2,7 @@
 
 #include "Graphics/VulkanDevice.h"
 #include "Graphics/VulkanSampler.h"
+#include "Graphics/GraphicsSystem.h"
 #include "Resource.h"
 
 namespace bl {
@@ -30,9 +31,7 @@ class Sampler : public Resource {
     void RecreateSampler();
 
 public:
-
-    Sampler();
-    Sampler(const std::filesystem::path& path);
+    Sampler(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
     virtual ~Sampler() = default;
 
     VkSampler Get() const;

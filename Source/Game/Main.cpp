@@ -43,32 +43,33 @@ int main(int argc, const char** argv)
 
     try
     {
-    auto engine = bl::GetEngine();
-    auto resourceMgr = engine->GetResourceManager();
+    auto engine = bl::Engine{};
+    engine.Initialize();
+    auto resourceMgr = engine.GetResourceManager();
 
-    auto audio = engine->GetAudio();
-    auto sound = resourceMgr->Load<bl::Sound>("Audio/Music/Taswell.flac");
+    auto audio = engine.GetAudio();
+    auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Taswell.flac");
 
-    auto source = std::make_unique<bl::AudioSource3D>();
+    auto source = std::make_unique<bl::AudioSource3D>(&engine);
 
     source->Play(sound, true);
 
-    auto graphics = engine->GetGraphics();
-    auto imgui = engine->GetImGui();
+    auto graphics = engine.GetGraphics();
+    auto imgui = engine.GetImGui();
 
-    auto vert = resourceMgr->Load<bl::Shader>("Shaders/Default.vert");
-    auto frag = resourceMgr->Load<bl::Shader>("Shaders/Default.frag");
+    auto vert = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.vert");
+    auto frag = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.frag");
     //auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.glb");
     //auto dragonModel = resourceMgr->Load<bl::StaticModel>("Models/dragon_quick_sculpt.glb");
-    auto material = resourceMgr->Load<bl::Material>("Materials/Default.mat");
+    auto material = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
 
-    auto renderer = engine->GetRenderer();
+    auto renderer = engine.GetRenderer();
 
     bl::VulkanPipelineStateInfo psi{};
     psi.rasterizerState.cullMode = VK_CULL_MODE_BACK_BIT;
     psi.stages.shaders = { vert.Get()->Get(), frag.Get()->Get() };
 
-    auto window = engine->GetWindow();
+    auto window = engine.GetWindow();
     auto vulkanWindow = dynamic_cast<bl::VulkanWindow*>(window);
 
     // auto [pass, subpass] = renderer->GetRenderPass(bl::RenderPassType::eGeometry);
@@ -119,7 +120,7 @@ int main(int argc, const char** argv)
     object.model = glm::identity<glm::mat4>();
     object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, 0.0f});
 
-    auto texture = resourceMgr->Load<bl::Texture2D>("Textures/Bricks_Albedo.jpg");
+    auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Bricks_Albedo.jpg");
     auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_LINEAR};
 
     // material->SetSampledImage2D("inAlbedo", &sampler, texture.Get()->GetImage());

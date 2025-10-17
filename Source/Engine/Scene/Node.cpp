@@ -1,6 +1,13 @@
 #include "Node.h"
 
-Node::Node() = default;
+namespace bl
+{
+
+Node::Node(Engine* engine)
+    : _engine(engine)
+{
+}
+
 Node::~Node() = default;
 
 void Node::Update(float deltaTime)
@@ -15,6 +22,11 @@ void Node::PhysicsUpdate(float delta)
 
 void Node::Draw()
 {
+}
+
+Engine* Node::GetEngine()
+{
+    return _engine;
 }
 
 void Node::SetName(const std::string& name)
@@ -80,3 +92,5 @@ void Node::ClearChildren()
     }
     _children.clear();
 }
+
+} // namespace bl

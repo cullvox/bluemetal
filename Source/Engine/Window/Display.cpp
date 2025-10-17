@@ -1,7 +1,6 @@
 #include "Display.h"
 #include "Core/Print.h"
-#include "Engine/SDLInitializer.h"
-#include <cstddef>
+#include "Engine/SDL.h"
 
 namespace bl 
 {

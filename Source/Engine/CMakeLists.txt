@@ -44,8 +44,8 @@ list(APPEND Sources
   "ImGui/imgui_impl_vulkan.cpp"
   "ImGui/ImGuiSystem.cpp"
 
+  "Resources/ResourceSystem.cpp"
   "Resources/Resource.cpp"
-  "Resources/ResourceManager.cpp"
   "Resources/Sampler.cpp"
   "Resources/Sound.cpp"
   "Resources/Shader.cpp"
@@ -57,7 +57,7 @@ list(APPEND Sources
   "Scene/Node3D.cpp"
   "Scene/AudioSource3D.cpp"
 
-  "Engine/SDLInitializer.cpp"
+  "Engine/SDL.cpp"
   
   "Engine/Engine.cpp"
   )

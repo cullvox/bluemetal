@@ -1,17 +1,18 @@
 #include "Core/Print.h"
-#include "Engine/Engine.h"
-#include "Graphics/VulkanDevice.h"
-#include "Graphics/VulkanInstance.h"
+#include "VulkanDevice.h"
+#include "VulkanInstance.h"
 #include "VulkanShader.h"
-
 #include "GraphicsSystem.h"
 
-#include "ImGui/ImGuiSystem.h"
+#include "Resources/Material.h"
+#include "Resources/Shader.h"
+#include "Resources/Sampler.h"
 
 namespace bl 
 {
 
-GraphicsSystem::GraphicsSystem()
+GraphicsSystem::GraphicsSystem(Engine& engine)
+    : System(engine)
 {
     _vulkanInstance = std::make_unique<VulkanInstance>(bl::Version{bl::VersionRelease::eAlpha, 0, 1, 7}, "bluemetal", true);
     _physicalDevice = _vulkanInstance->ChoosePhysicalDevice();
@@ -26,6 +27,24 @@ GraphicsSystem::GraphicsSystem()
 
 GraphicsSystem::~GraphicsSystem()
 {
+}
+
+std::unique_ptr<Resource> GraphicsSystem::ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path)
+{
+    if (typeHash == typeid(Shader).hash_code()) 
+    {
+        return std::make_unique<Shader>(resourceSystem, this, path);
+    }
+    else if (typeHash == typeid(Sampler).hash_code()) 
+    {
+        return std::make_unique<Sampler>(resourceSystem, this, path);
+    }
+    else if (typeHash == typeid(Material).hash_code()) 
+    {
+        return std::make_unique<Material>(resourceSystem, this, path);
+    }
+
+    return nullptr;
 }
 
 VulkanInstance* GraphicsSystem::GetInstance()

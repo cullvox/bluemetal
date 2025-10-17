@@ -1,42 +1,39 @@
 #pragma once
 
-///////////////////////////////
-// Headers
-///////////////////////////////
-
+#include "Core/System.h"
 #include "Window/Window.h"
+
+#include "Engine/SDL.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Vulkan.h"
 
 #define IMGUI_IMPL_VULKAN_NO_PROTOTYPES
 #include "imgui.h"
 
-#include "Engine/SDLInitializer.h"
-#include "Graphics/Renderer.h"
-#include "Graphics/Vulkan.h"
 
 namespace bl
 {
 
 class Engine;
 
-class ImGuiSystem
+class ImGuiSystem : public System
 {
-public:
-    ImGuiSystem(VulkanWindow* window, Renderer* renderer);
-    ~ImGuiSystem();
+    VulkanWindow* _window;
+    Renderer* _renderer;
+    VkDescriptorPool _descriptorPool;
 
-    void Process(const SDL_Event& event);
-    void BeginFrame();
-    void EndFrame(VkCommandBuffer cmd);
-
-private:
     static void ApplyStyle();
     void Init();
     void Unload();
 
-    Engine* _engine;
-    VulkanWindow* _window;
-    Renderer* _renderer;
-    VkDescriptorPool _descriptorPool;
+public:
+    ImGuiSystem(Engine& engine, VulkanWindow* window, Renderer* renderer);
+    ~ImGuiSystem();
+
+    virtual std::unique_ptr<Resource> ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
+    void Process(const SDL_Event& event);
+    void BeginFrame();
+    void EndFrame(VkCommandBuffer cmd);
 };
 
 } // namespace bl

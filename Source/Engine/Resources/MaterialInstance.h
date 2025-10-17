@@ -18,8 +18,7 @@ class MaterialInstance : public Resource
     std::unique_ptr<VulkanMaterialInstance> _materialInstance;
 
 public:
-    MaterialInstance();
-    MaterialInstance(const std::filesystem::path& path);
+    MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
     ~MaterialInstance();
 
     void SetBool(const std::string& name, bool value);

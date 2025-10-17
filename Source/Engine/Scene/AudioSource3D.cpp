@@ -4,7 +4,8 @@
 namespace bl
 {
 
-AudioSource3D::AudioSource3D()
+AudioSource3D::AudioSource3D(Engine* engine)
+    : Node3D(engine)
 {
     _system = GetEngine()->GetAudio();
 }

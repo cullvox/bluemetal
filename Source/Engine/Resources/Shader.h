@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Graphics/GraphicsSystem.h"
 #include "Graphics/VulkanDevice.h"
 #include "Graphics/VulkanShader.h"
 #include "Resource.h"
@@ -13,7 +14,7 @@ class Shader : public Resource
     std::unique_ptr<VulkanShader> _shader;
 
 public:
-    Shader(const std::filesystem::path& path);
+    Shader(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
     ~Shader();
 
     VulkanShader* Get() const { return _shader.get(); }

@@ -12,8 +12,9 @@
 namespace bl 
 {
 
-ImGuiSystem::ImGuiSystem(VulkanWindow* window, Renderer* renderer)
-    : _window(window)
+ImGuiSystem::ImGuiSystem(Engine& engine, VulkanWindow* window, Renderer* renderer)
+    : System(engine)
+    , _window(window)
     , _renderer(renderer)
 {
     Init();
@@ -22,6 +23,11 @@ ImGuiSystem::ImGuiSystem(VulkanWindow* window, Renderer* renderer)
 ImGuiSystem::~ImGuiSystem()
 {
     Unload();
+}
+
+std::unique_ptr<Resource> ImGuiSystem::ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path)
+{
+    throw std::runtime_error("ImGuiSystem does not handle any resources.");
 }
 
 void ImGuiSystem::ApplyStyle()
@@ -92,7 +98,7 @@ void ImGuiSystem::Process(const SDL_Event& event)
 
 void ImGuiSystem::Init()
 {
-    auto graphics = _engine->GetGraphics();
+    auto graphics = GetEngine().GetGraphics();
     auto device = graphics->GetDevice();
     auto instance = graphics->GetInstance();
     auto physicalDevice = graphics->GetPhysicalDevice();
@@ -172,7 +178,7 @@ void ImGuiSystem::Init()
 
 void ImGuiSystem::Unload()
 {
-    auto graphics = _engine->GetGraphics();
+    auto graphics = GetEngine().GetGraphics();
     auto device = graphics->GetDevice();
 
     device->WaitForDevice();

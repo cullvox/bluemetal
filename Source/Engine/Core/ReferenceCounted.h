@@ -22,6 +22,10 @@ protected:
 
 public:
     ReferenceBase() = default;
+    ReferenceBase(const ReferenceBase&) = default;
+    ReferenceBase& operator=(const ReferenceBase&) = default;
+    ReferenceBase(ReferenceBase&&) = default;
+    ReferenceBase& operator=(ReferenceBase&&) = default;
     virtual ~ReferenceBase() = default;
 
     bool IsValid() const { return _isValid; }
@@ -102,7 +106,8 @@ public:
     }
 
     ReferenceCounter(const ReferenceCounter& copy)
-        : _value(copy._value)
+        : ReferenceBase(copy)
+        , _value(copy._value)
     {
         if (IsValid())
             _value->AddReference(*this);

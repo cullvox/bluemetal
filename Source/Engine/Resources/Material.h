@@ -8,7 +8,7 @@ namespace bl {
 
 class Material : public MaterialInstance {
 public:
-    Material(const std::filesystem::path& path);
+    Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
     virtual ~Material();
 
     VulkanMaterial* GetVulkanMaterial() { return _material.get(); }

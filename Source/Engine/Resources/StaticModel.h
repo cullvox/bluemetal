@@ -15,7 +15,7 @@ namespace bl
 class StaticModel : public Resource
 {
 public:
-    StaticModel(ResourceManager* manager, const nlohmann::json& data, VulkanDevice* device);
+    StaticModel(ResourceSystem* manager, const nlohmann::json& data, VulkanDevice* device);
     ~StaticModel();
 
     virtual void Load() override;

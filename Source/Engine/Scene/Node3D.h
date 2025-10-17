@@ -6,6 +6,9 @@
 #include "glm/gtc/quaternion.hpp"
 #include "glm/mat4x4.hpp"
 
+namespace bl
+{
+
 /** 
  * @class Node3D
  * @brief Represents a 3D node in the scene graph.
@@ -20,7 +23,7 @@ class Node3D : public Node
     void UpdateTransform();
 
 public:
-    Node3D();
+    Node3D(Engine* engine);
     virtual ~Node3D();
 
     virtual void Update(float deltaTime);
@@ -46,3 +49,5 @@ public:
     glm::mat4 GetTransform() const;
     glm::mat4 GetWorldTransform() const;
 };
+
+} // namespace bl

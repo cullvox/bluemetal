@@ -5,19 +5,19 @@ namespace bl
 
 VulkanWindow::VulkanWindow(VulkanDevice* device, const std::string& title, Rect2D rect, bool fullscreen)
     : Window(title, rect, fullscreen)
-    , _device(device)
+    , VulkanDeviceObject(device)
 {
-    if (!SDL_Vulkan_CreateSurface(Get(), device->GetInstance()->Get(), nullptr, &_surface))
+    if (!SDL_Vulkan_CreateSurface(Get(), GetDevice()->GetInstance()->Get(), nullptr, &_surface))
     {
         throw std::runtime_error("Could not create a vulkan window surface!");
     }
 
-    _swapchain = std::make_unique<VulkanSwapchain>(device, this);
+    _swapchain = std::make_unique<VulkanSwapchain>(GetDevice(), this);
 }
 
 VulkanWindow::~VulkanWindow()
 {
-    vkDestroySurfaceKHR(_device->GetInstance()->Get(), _surface, nullptr);
+    vkDestroySurfaceKHR(GetDevice()->GetInstance()->Get(), _surface, nullptr);
 }
 
 VkSurfaceKHR VulkanWindow::GetSurface()

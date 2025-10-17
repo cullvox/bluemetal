@@ -6,7 +6,9 @@
 
 namespace bl {
 
-Material::Material(const std::filesystem::path& path)
+Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
+    : MaterialInstance(resourceSystem, graphicsSystem, path)
+    , _renderer(graphicsSystem->GetRenderer())
 {
     std::ifstream materialFile{path};
     if (!materialFile.is_open()) 
@@ -29,9 +31,8 @@ Material::Material(const std::filesystem::path& path)
 
         info = json["state"];
 
-        auto rm = GetEngine()->GetResourceManager();
-        auto vertexShader = rm->Load<Shader>(vertexPath);
-        auto fragmentShader = rm->Load<Shader>(fragmentPath);
+        auto vertexShader = resourceSystem->Load<Shader>(vertexPath);
+        auto fragmentShader = resourceSystem->Load<Shader>(fragmentPath);
         info.stages.shaders = std::vector<VulkanShader*>{ vertexShader.Get()->Get(), fragmentShader.Get()->Get() };
     }
     catch (...)
@@ -39,11 +40,9 @@ Material::Material(const std::filesystem::path& path)
         throw std::runtime_error("Could not parse material JSON file.");
     }
 
-    auto renderer = GetEngine()->GetRenderer();
-    auto device = GetEngine()->GetGraphics()->GetDevice();
-    auto [pass, subpass] = renderer->GetRenderPass(passType);
+    auto [pass, subpass] = graphicsSystem->GetRenderer()->GetRenderPass(passType);
 
-    _material = std::make_unique<VulkanMaterial>(device, pass, subpass, info, _renderer->GetSwapchainImageCount());
+    _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), pass, subpass, info, _renderer->GetSwapchainImageCount());
 
     _renderer->AddMaterial(_material.get()); // Ensures that the material buffers get properly cleaned updated every frame.
 }

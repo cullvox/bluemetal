@@ -3,25 +3,8 @@
 
 namespace bl {
 
-Sampler::Sampler()
-    : _magFilter(VK_FILTER_LINEAR)
-    , _minFilter(VK_FILTER_LINEAR)
-    , _mipmapMode(VK_SAMPLER_MIPMAP_MODE_LINEAR)
-    , _addressMode(VK_SAMPLER_ADDRESS_MODE_REPEAT)
-    , _mipLodBias(0.0f)
-    , _enableAnisotropy(false)
-    , _maxAnisotropy(0.0f)
-    , _compareEnable(VK_FALSE)
-    , _compareOp(VK_COMPARE_OP_NEVER)
-    , _minLod(0.0f)
-    , _maxLod(0.0f)
-    , _borderColor(VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK)
-    , _unnormalizedCoordinates(VK_FALSE)
-{
-    RecreateSampler();
-}
-
-Sampler::Sampler(const std::filesystem::path& path)
+Sampler::Sampler(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
+    : Resource(resourceSystem, system, path)
 {
     nlohmann::json data;
     std::ifstream file(path);
@@ -31,7 +14,6 @@ Sampler::Sampler(const std::filesystem::path& path)
     }
     file >> data;
     file.close();
-
 
     _magFilter = data.value("magFilter", VK_FILTER_LINEAR);
     _minFilter = data.value("minFilter", VK_FILTER_LINEAR);

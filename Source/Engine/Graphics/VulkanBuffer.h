@@ -1,10 +1,19 @@
 #pragma once
 
 #include "VulkanDevice.h"
+#include "VulkanDeviceObject.h"
 
-namespace bl {
+namespace bl 
+{
 
-class VulkanBuffer {
+class VulkanBuffer : public VulkanDeviceObject 
+{
+    VkBufferUsageFlags _usage;
+    VmaMemoryUsage _memoryUsage;
+    VkDeviceSize _size;
+    VkBuffer _buffer;
+    VmaAllocation _allocation;
+    void Cleanup();
 public:
     VulkanBuffer();
     VulkanBuffer(VulkanBuffer&& rhs);
@@ -22,16 +31,6 @@ public:
     void Map(void** mapped);
     void Unmap();
     void Flush(VkDeviceSize offset, VkDeviceSize size);
-
-private:
-    void Cleanup();
-
-    VulkanDevice* _device;
-    VkBufferUsageFlags _usage;
-    VmaMemoryUsage _memoryUsage;
-    VkDeviceSize _size;
-    VkBuffer _buffer;
-    VmaAllocation _allocation;
 };
 
 } // namespace bl

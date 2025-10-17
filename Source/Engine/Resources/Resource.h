@@ -7,7 +7,8 @@
 
 namespace bl {
 
-class ResourceManager;
+class System;
+class ResourceSystem;
 
 /**
  * @class Resource
@@ -22,8 +23,9 @@ class ResourceManager;
  */
 class Resource : public ReferenceCounted 
 {
-    friend class ResourceManager;
-    std::string _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
+    friend class ResourceSystem;
+    ResourceSystem* _resourceSystem; /** @brief Pointer to the resource manager that manages this resource. */
+    std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
 
 public:
     /**
@@ -31,7 +33,7 @@ public:
      * @param manager Pointer to the resource manager that manages this resource.
      * @param data JSON data describing the resource.
      */
-    Resource();
+    Resource(ResourceSystem* resourceSystem, System* system, const std::filesystem::path& path);
 
     /**
      * @brief Destructor for the Resource class.
@@ -42,7 +44,7 @@ public:
      * @brief Returns the unique path of this resource.
      * @return The unique path of the resource.
      */
-    const std::string& GetPath() const { return _path; }
+    const std::filesystem::path& GetPath() const { return _path; }
 };
 
 } // namespace bl

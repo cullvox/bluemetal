@@ -7,7 +7,7 @@
 namespace bl {
 
 Renderer::Renderer(VulkanWindow* window)
-    : _device(GetEngine()->GetGraphics()->GetDevice())
+    : _device(window->GetDevice())
     , _window(window)
     , _swapchain(window->GetSwapchain())
     , _imageIndex(0)

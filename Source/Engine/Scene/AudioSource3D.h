@@ -4,13 +4,19 @@
 #include "Math/Math.h"
 #include "Resources/Sound.h"
 
-namespace bl {
+namespace bl
+{
 
 class AudioSystem;
 
-class AudioSource3D : public Node3D {
+class AudioSource3D : public Node3D
+{
+    AudioSystem* _system;
+    Ref<Sound> _sound;
+    glm::vec3 _prevPosition; /** @brief Used for calculating the node's velocity. */
+    FMOD::Channel* _channel;
 public:
-    AudioSource3D();
+    AudioSource3D(Engine* engine);
     ~AudioSource3D();
 
     virtual void Update(float dt) override;
@@ -20,12 +26,6 @@ public:
 
     bool IsPlaying();
     bool IsStopped();
-
-private:
-    AudioSystem* _system;
-    Ref<Sound> _sound;
-    glm::vec3 _prevPosition; /** @brief Used for calculating the node's velocity. */
-    FMOD::Channel* _channel;
 };
 
 } // namespace bl

@@ -1,7 +1,6 @@
 #include "Texture2D.h"
 #include "qoixx.hpp"
 
-
 namespace bl 
 {
     
@@ -14,8 +13,8 @@ VkExtent3D Make3D(VkExtent2D ex, uint32_t depth = 1) {
 
 }
 
-Texture2D::Texture2D(const std::filesystem::path& path)
-    : Texture()
+Texture2D::Texture2D(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
+    : Texture(resourceSystem, system, path)
 {
     std::ifstream file{path, std::ios::binary};
 

@@ -6,32 +6,37 @@
 namespace bl
 {
 
-std::unique_ptr<Engine> Engine::_engine = nullptr;
-
 Engine::Engine()
     : _sdl()
 {
-    _engine = std::unique_ptr<Engine>(this);
-    bl::Print::Info("Initializing BlueMetal v{}", bl::to_string(bl::engineVersion));
-
-    _resourceManager = std::make_unique<ResourceManager>();
-    _audio = std::make_unique<AudioSystem>();
-    _graphics = std::make_unique<GraphicsSystem>();
-    _imgui = std::make_unique<ImGuiSystem>(_graphics->GetWindow(), _graphics->GetRenderer());
 }
 
 Engine::~Engine() 
 {
 }
 
-void Initialize()
+void Engine::Initialize()
 {
-    
+    _engine = std::unique_ptr<Engine>(this);
+    bl::Print::Info("Initializing BlueMetal v{}", bl::to_string(bl::engineVersion));
+
+    _resourceManager = std::make_unique<ResourceSystem>(*this);
+    _audio = std::make_unique<AudioSystem>(*this);
+    _graphics = std::make_unique<GraphicsSystem>(*this);
+    _imgui = std::make_unique<ImGuiSystem>(*this, _graphics->GetWindow(), _graphics->GetRenderer());
 }
 
-void Shutdown();
+void Engine::Shutdown()
+{
+    bl::Print::Info("Shutting down BlueMetal...");
+    _imgui.reset();
+    _graphics.reset();
+    _audio.reset();
+    _resourceManager.reset();
+    _engine.reset();
+}
 
-ResourceManager* Engine::GetResourceManager()
+ResourceSystem* Engine::GetResourceManager()
 {
     return _resourceManager.get();
 }
@@ -59,11 +64,6 @@ Window* Engine::GetWindow()
 Renderer* Engine::GetRenderer()
 {
     return _graphics->GetRenderer();
-}
-
-Engine* GetEngine()
-{
-    return Engine::GetEngine();
 }
 
 } // namespace bl

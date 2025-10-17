@@ -29,7 +29,10 @@ protected:
     std::unique_ptr<VulkanImage> _image;
 
 public:
-    Texture() = default;
+    Texture(ResourceSystem* resourceSystem, System* system, const std::filesystem::path& path)
+        : Resource(resourceSystem, system, path)
+    {
+    }
     virtual ~Texture() = default;
 
     VkExtent3D GetExtent3D() const { return _extent; };

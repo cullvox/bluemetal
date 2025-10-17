@@ -1,7 +1,11 @@
 #include "Node3D.h"
 
-Node3D::Node3D()
-    : _transform(1.0f)
+namespace bl
+{
+
+Node3D::Node3D(Engine* engine)
+    : Node(engine)
+    , _transform(1.0f)
     , _position(0.0f, 0.0f, 0.0f)
     , _rotation(1.0f, 0.0f, 0.0f, 0.0f) // Identity quaternion
     , _scale(1.0f, 1.0f, 1.0f)
@@ -167,3 +171,5 @@ glm::mat4 Node3D::GetWorldTransform() const
         return _transform;
     }
 }
+
+} // namespace bl
