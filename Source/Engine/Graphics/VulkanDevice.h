@@ -13,6 +13,23 @@ namespace bl {
  * @brief Represents a Vulkan device used for rendering.
  */
 class VulkanDevice {
+    VulkanInstance* _instance;
+    VulkanPhysicalDevice* _physicalDevice;
+    uint32_t _graphicsFamilyIndex, _presentFamilyIndex;
+    VkDevice _device;
+    VkQueue _graphicsQueue, _presentQueue;
+    VkCommandPool _commandPool;
+    VmaAllocator _allocator;
+    std::unique_ptr<VulkanDescriptorSetLayoutCache> _descriptorSetLayoutCache;
+    std::unique_ptr<VulkanPipelineLayoutCache> _pipelineLayoutCache;
+
+    std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
+    std::vector<const char*> GetExtensions(); /** @brief Gets the device's extensions required for the engine. */
+    void CreateDevice(); /** @brief Creates the Vulkan device. */
+    void CreateCommandPool(); /** @brief Creates a command pool for allocating command buffers. */
+    void CreateAllocator(); /** @brief Creates an instance of the Vulkan Memory Allocator */
+    void CreateCaches();
+
 public:
 
     /**
@@ -133,23 +150,6 @@ public:
      * @return The VkPipelineLayout handle.
      */
     VkPipelineLayout AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges);
-
-private:
-    std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
-    std::vector<const char*> GetExtensions(); /** @brief Gets the device's extensions required for the engine. */
-    void CreateDevice(); /** @brief Creates the Vulkan device. */
-    void CreateCommandPool(); /** @brief Creates a command pool for allocating command buffers. */
-    void CreateAllocator(); /** @brief Creates an instance of the Vulkan Memory Allocator */
-
-    VulkanInstance* _instance;
-    VulkanPhysicalDevice* _physicalDevice;
-    uint32_t _graphicsFamilyIndex, _presentFamilyIndex;
-    VkDevice _device;
-    VkQueue _graphicsQueue, _presentQueue;
-    VkCommandPool _commandPool;
-    VmaAllocator _allocator;
-    VulkanDescriptorSetLayoutCache _descriptorSetLayoutCache;
-    VulkanPipelineLayoutCache _pipelineLayoutCache;
 };
 
 } // namespace bl

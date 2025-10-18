@@ -17,7 +17,6 @@ Engine::~Engine()
 
 void Engine::Initialize()
 {
-    _engine = std::unique_ptr<Engine>(this);
     bl::Print::Info("Initializing BlueMetal v{}", bl::to_string(bl::engineVersion));
 
     _resourceManager = std::make_unique<ResourceSystem>(*this);
@@ -33,7 +32,6 @@ void Engine::Shutdown()
     _graphics.reset();
     _audio.reset();
     _resourceManager.reset();
-    _engine.reset();
 }
 
 ResourceSystem* Engine::GetResourceManager()

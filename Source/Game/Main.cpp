@@ -57,8 +57,8 @@ int main(int argc, const char** argv)
     auto graphics = engine.GetGraphics();
     auto imgui = engine.GetImGui();
 
-    auto vert = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.vert");
-    auto frag = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.frag");
+    auto vert = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.vert.spv");
+    auto frag = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.frag.spv");
     //auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.glb");
     //auto dragonModel = resourceMgr->Load<bl::StaticModel>("Models/dragon_quick_sculpt.glb");
     auto material = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
@@ -120,7 +120,7 @@ int main(int argc, const char** argv)
     object.model = glm::identity<glm::mat4>();
     object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, 0.0f});
 
-    auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Bricks_Albedo.jpg");
+    auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/furry.qoi");
     auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_LINEAR};
 
     // material->SetSampledImage2D("inAlbedo", &sampler, texture.Get()->GetImage());
@@ -281,8 +281,6 @@ int main(int argc, const char** argv)
 
         if (!minimized) {
 
-        material->UpdateUniforms();
-
         renderer->Render([&](bl::VulkanRenderData& rd){
 
             auto extent = window->GetExtent();
@@ -423,7 +421,9 @@ int main(int argc, const char** argv)
 
     globalBuffer->Unmap();
 
-    } 
+    resourceMgr->UnloadAll();
+
+    }
     catch (std::exception& e) 
     {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Exception Error", e.what(), nullptr);

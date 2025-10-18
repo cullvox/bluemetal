@@ -21,7 +21,6 @@ class Engine
     std::unique_ptr<AudioSystem> _audio;
     std::unique_ptr<Window> _window;
     std::unique_ptr<Renderer> _renderer;
-    std::unique_ptr<Engine> _engine;
 
 public:
     Engine();

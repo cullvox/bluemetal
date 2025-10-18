@@ -42,24 +42,24 @@
 namespace bl {
 
 VulkanDevice::VulkanDevice()
-    : _descriptorSetLayoutCache(this)
-    , _pipelineLayoutCache(this) 
 {
 }
 
 VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physicalDevice)
     : _instance(instance)
     , _physicalDevice(physicalDevice)
-    , _descriptorSetLayoutCache(this)
-    , _pipelineLayoutCache(this) 
 {
     CreateDevice();
     CreateCommandPool();
     CreateAllocator();
+    CreateCaches();
 }
 
 VulkanDevice::~VulkanDevice() 
-{ 
+{
+    _pipelineLayoutCache.reset();
+    _descriptorSetLayoutCache.reset();
+
     vmaDestroyAllocator(_allocator);
     vkDestroyCommandPool(_device, _commandPool, nullptr);
     vkDestroyDevice(_device, nullptr);
@@ -179,12 +179,12 @@ void VulkanDevice::WaitForDevice()
 
 VkDescriptorSetLayout VulkanDevice::AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings)
 {
-    return _descriptorSetLayoutCache.Acquire(bindings);
+    return _descriptorSetLayoutCache->Acquire(bindings);
 }
 
 VkPipelineLayout VulkanDevice::AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges)
 {
-    return _pipelineLayoutCache.Acquire(layouts, ranges);
+    return _pipelineLayoutCache->Acquire(layouts, ranges);
 }
 
 std::vector<const char*> VulkanDevice::GetValidationLayers() 
@@ -369,6 +369,12 @@ void VulkanDevice::CreateAllocator()
     createInfo.pTypeExternalMemoryHandleTypes = nullptr;
 
     VK_CHECK(vmaCreateAllocator(&createInfo, &_allocator))
+}
+
+void VulkanDevice::CreateCaches()
+{
+    _descriptorSetLayoutCache = std::make_unique<VulkanDescriptorSetLayoutCache>(this);
+    _pipelineLayoutCache = std::make_unique<VulkanPipelineLayoutCache>(this);
 }
 
 } // namespace bl

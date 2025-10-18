@@ -23,6 +23,7 @@ public:
     template<typename T> Ref<T> Get(const std::filesystem::path& path);
     template<typename T> Ref<T> Add(const std::filesystem::path& path, T* resource); /** @brief Adds a resource to the manager assuming it's loaded. */
     void UnloadUnreferenced(); /** @brief Cleans up memory by unloading resources that aren't currently needed. Abides by a ResourceLoadOp. */
+    void UnloadAll(); /** @brief Forcibly unloads all resources. */
 };
 
 template<typename TResource> void ResourceSystem::AddSystemType(System* system)

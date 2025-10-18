@@ -47,7 +47,7 @@ Texture2D::Texture2D(ResourceSystem* resourceSystem, GraphicsSystem* system, con
             const auto [actual, desc] = qoi::decode<std::vector<std::byte>>(buffer, 4);
 
             imageData = actual;
-            _extent = { desc.width, desc.height };
+            _extent = { desc.width, desc.height, 1 };
             _format = TextureFormat::eRGBA;
 
             switch (desc.colorspace) {
@@ -79,7 +79,7 @@ Texture2D::Texture2D(ResourceSystem* resourceSystem, GraphicsSystem* system, con
 
     format = formatConversion[(int)GetColorSpace()][(int)GetFormat()];
 
-    _image = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, _extent, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    _image = std::make_unique<VulkanImage>(system->GetDevice(), VK_IMAGE_TYPE_2D, _extent, format, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     _image->UploadData(imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 

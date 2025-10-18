@@ -1,12 +1,18 @@
 #include "Core/Print.h"
+
 #include "VulkanDevice.h"
 #include "VulkanInstance.h"
 #include "VulkanShader.h"
-#include "GraphicsSystem.h"
 
 #include "Resources/Material.h"
 #include "Resources/Shader.h"
 #include "Resources/Sampler.h"
+#include "Resources/MaterialInstance.h"
+#include "Resources/Texture2D.h"
+
+#include "Engine/Engine.h"
+
+#include "GraphicsSystem.h"
 
 namespace bl 
 {
@@ -14,6 +20,12 @@ namespace bl
 GraphicsSystem::GraphicsSystem(Engine& engine)
     : System(engine)
 {
+    GetEngine().GetResourceManager()->AddSystemType<Shader>(this);
+    GetEngine().GetResourceManager()->AddSystemType<Sampler>(this);
+    GetEngine().GetResourceManager()->AddSystemType<Material>(this);
+    GetEngine().GetResourceManager()->AddSystemType<MaterialInstance>(this);
+    GetEngine().GetResourceManager()->AddSystemType<Texture2D>(this);
+
     _vulkanInstance = std::make_unique<VulkanInstance>(bl::Version{bl::VersionRelease::eAlpha, 0, 1, 7}, "bluemetal", true);
     _physicalDevice = _vulkanInstance->ChoosePhysicalDevice();
     _device = std::make_unique<VulkanDevice>(_vulkanInstance.get(), _physicalDevice);
@@ -42,6 +54,14 @@ std::unique_ptr<Resource> GraphicsSystem::ConstructResource(ResourceSystem* reso
     else if (typeHash == typeid(Material).hash_code()) 
     {
         return std::make_unique<Material>(resourceSystem, this, path);
+    }
+    else if (typeHash == typeid(MaterialInstance).hash_code()) 
+    {
+        return std::make_unique<MaterialInstance>(resourceSystem, this, path);
+    }
+    else if (typeHash == typeid(Texture2D).hash_code()) 
+    {
+        return std::make_unique<Texture2D>(resourceSystem, this, path);
     }
 
     return nullptr;

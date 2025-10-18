@@ -7,7 +7,7 @@
 namespace bl {
 
 Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
-    : MaterialInstance(resourceSystem, graphicsSystem, path)
+    : Resource(resourceSystem, graphicsSystem, path)
     , _renderer(graphicsSystem->GetRenderer())
 {
     std::ifstream materialFile{path};
@@ -40,10 +40,9 @@ Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSyste
         throw std::runtime_error("Could not parse material JSON file.");
     }
 
-    auto [pass, subpass] = graphicsSystem->GetRenderer()->GetRenderPass(passType);
+    auto [pass, subpass] = _renderer->GetRenderPass(passType);
 
     _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), pass, subpass, info, _renderer->GetSwapchainImageCount());
-
     _renderer->AddMaterial(_material.get()); // Ensures that the material buffers get properly cleaned updated every frame.
 }
 
@@ -95,6 +94,16 @@ void Material::SetSampledImage2D(const std::string& name, Ref<Sampler> sampler, 
 const VulkanPipeline* Material::GetVulkanPipeline()
 {
     return _material->GetPipeline();
+}
+
+void Material::Bind(VulkanRenderData& rd)
+{
+    _material->Bind(rd);
+}
+
+void Material::PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value)
+{
+    _material->PushConstant(rd, offset, size, value);
 }
 
 }

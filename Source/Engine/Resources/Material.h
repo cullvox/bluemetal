@@ -6,7 +6,9 @@
 
 namespace bl {
 
-class Material : public MaterialInstance {
+class Material : public Resource {
+    Renderer* _renderer;
+    std::unique_ptr<VulkanMaterial> _material;
 public:
     Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
     virtual ~Material();
@@ -23,10 +25,9 @@ public:
     void SetMatrix(const std::string& name, glm::mat4 value);
     void SetSampledImage2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image);
     void SetPushConstant(VulkanRenderData& rd, const std::string& name, const void* value);
-private:
-    Renderer* _renderer;
-    VulkanDevice* _device;
-    std::unique_ptr<VulkanMaterial> _material;
+
+    void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */
+    void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
 };
 
 }

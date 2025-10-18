@@ -10,19 +10,16 @@ Shader::Shader(ResourceSystem* resourceSystem, GraphicsSystem* system, const std
 {
     std::vector<uint32_t> code;
 
-    std::ifstream file(path, std::ios::in | std::ios::binary);
-    if (!file.good()) 
+    const auto fullPath = std::filesystem::current_path() / path;
+    std::ifstream file(fullPath, std::ios::in | std::ios::binary);
+    if (!file.good())
     {
         throw std::runtime_error("Could not open shader file!");
     }
 
-    file.seekg(0, std::ios::end);
-    size_t size = file.tellg();
-    file.read(0, std::ios::beg);
+    code.resize(std::filesystem::file_size(fullPath));
 
-    code.resize(size);
-
-    file.read(reinterpret_cast<char*>(code.data()), size);
+    file.read(reinterpret_cast<char*>(code.data()), code.size());
 
     if (code.size() % 4 != 0)
     {
