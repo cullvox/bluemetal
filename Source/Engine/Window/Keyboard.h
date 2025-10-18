@@ -288,14 +288,14 @@ enum class Scancode {
 };
 
 class Keyboard {
+    uint8_t* _scancodes;
 public:
-
-    /// @brief Destructor
-    virtual ~Keyboard() = default;
+    Keyboard() = default;
+    ~Keyboard() = default;
 
     /// @brief Checks if a scancode was pressed between poll time.
     ///
-    /// At poll time the keyboard internal class state may change and upade
+    /// At poll time the keyboard internal class state may change and update
     /// it's internal state array. Use this function to check if the state
     /// of the keyboard's state has changed.
     ///
@@ -303,7 +303,7 @@ public:
     ///
     /// @return True if the scancode/key was pressed.
     ///
-    virtual bool IsKeyDown(Scancode code) = 0;
+    bool IsKeyDown(Scancode code);
 
     /// @brief Returns the name of the key on the users keyboard.
     /// 
@@ -315,15 +315,15 @@ public:
     ///
     /// @return The name of the key from scancode.
     ///
-    virtual std::string ScancodeToLocalKeyName(Scancode key) = 0;
-    
+    constexpr std::string ScancodeToLocalKeyName(Scancode key);
+
     /// @brief An easy way to check what modifiers are currently down.
     ///
     /// @return The modifier bit flags.
     ///
-    virtual KeyboardModifierFlags GetKeyModifiers() {
+    KeyboardModifierFlags GetKeyModifiers() {
         KeyboardModifierFlags flags;
-        if (IsKeyDown(Scancode::LeftCtrl) || IsKeyDown(Scancode::RightCtrl)) 
+        if (IsKeyDown(Scancode::LeftCtrl) || IsKeyDown(Scancode::RightCtrl))
             flags |= KeyboardModifierFlagBits::Ctrl;
         if (IsKeyDown(Scancode::LeftShift) || IsKeyDown(Scancode::RightShift))
             flags |= KeyboardModifierFlagBits::Shift;

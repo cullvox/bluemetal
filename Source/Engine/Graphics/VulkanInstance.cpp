@@ -1,6 +1,5 @@
-#include <SDL3/SDL_vulkan.h>
 #include "Core/Print.h"
-#include "Window/Window.h"
+#include "VulkanWindow.h"
 #include "VulkanPhysicalDevice.h"
 #include "VulkanInstance.h"
 
@@ -78,7 +77,7 @@ std::vector<const char*> VulkanInstance::GetExtensions()
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
     // Add the SDL surface extensions to the list of extensions.
-    auto surfaceExtensions = Window::GetVulkanExtensions();
+    auto surfaceExtensions = VulkanWindow::GetVulkanExtensions();
     extensions.insert(extensions.end(), surfaceExtensions.begin(), surfaceExtensions.end());
 
     // Get all the current vulkan instance extensions.
@@ -167,9 +166,9 @@ void VulkanInstance::CreateInstance(Version appVersion, std::string_view appName
     applicationInfo.apiVersion = VulkanConfig::apiVersion;
 
     VkInstanceCreateFlags flags = 0;
-    #ifdef BLUEMETAL_VULKAN_PORTABILITY
+#ifdef BLUEMETAL_VULKAN_PORTABILITY
     flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-    #endif
+#endif
 
     VkInstanceCreateInfo instanceCreateInfo = {};
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -213,7 +212,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanInstance::DebugCallback(VkDebugUtilsMessage
 
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) 
         Print::Warn("{}", pCallbackData->pMessage);
-    
+
     else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) 
         Print::Info("{}", pCallbackData->pMessage);
 

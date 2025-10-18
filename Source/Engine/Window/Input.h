@@ -11,10 +11,13 @@ class Gamepad;
 
 /// @brief Input object for interfacing with all input sources.
 class Input {
+    Keyboard& _keyboard;
+    Mouse& _mouse;
+
 public:
 
     /// @brief Destructor
-    virtual ~Input() = default;
+    ~Input() = default;
 
     /// @brief Polls the system for events.
     ///
@@ -22,7 +25,7 @@ public:
     /// not limited to, Keyboard, Mouse, and Gamepads. Later as more features 
     /// are added it will include more advanced input like VR.
     /// 
-    virtual void Poll() = 0;
+    void Poll();
 
     /// @brief Gets the system keyboard input object.
     ///
@@ -33,8 +36,8 @@ public:
     ///
     /// @returns The keyboard object.
     ///
-    virtual Keyboard& GetKeyboard() = 0;
-    
+    Keyboard& GetKeyboard();
+
     /// @brief Gets the mouse input object.
     ///
     /// We only support one mouse and one keyboard so we return a singular 
@@ -43,9 +46,8 @@ public:
     ///
     /// @returns The mouse object.
     ///
-    virtual Mouse& GetMouse() = 0;
+    Mouse& GetMouse();
 
-    
     /// @brief Gets all connected gamepad objects.
     ///
     /// Returns an array of the maximum amount of gamepads supported by the 

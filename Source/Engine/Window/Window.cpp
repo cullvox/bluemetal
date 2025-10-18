@@ -15,9 +15,7 @@ Window::Window(const std::string& title, Rect2D rect, bool fullscreen)
 
     _window = SDL_CreateWindow(title.c_str(), rect.extent.width, rect.extent.height, flags);
     if (!_window) 
-    {
         throw std::runtime_error("Could not create an SDL window!");
-    }
 
     SDL_ShowWindow(_window);
 }
@@ -43,9 +41,9 @@ VideoMode Window::GetCurrentVideoMode() const
     return VideoMode{details->Rbits, details->Gbits, details->Bbits, {(uint32_t)mode->w, (uint32_t)mode->h}, mode->refresh_rate};
 }
 
-SDL_Window* Window::Get() const 
-{ 
-    return _window; 
+SDL_Window* Window::Get() const
+{
+    return _window;
 }
 
 Extent2D Window::GetExtent() const
@@ -54,24 +52,6 @@ Extent2D Window::GetExtent() const
     SDL_GetWindowSizeInPixels(_window, &w, &h);
 
     return Extent2D{(uint32_t)w, (uint32_t)h};
-}
-
-VkSurfaceKHR Window::CreateSurface(VkInstance instance)
-{
-    VkSurfaceKHR surface = VK_NULL_HANDLE;
-    if (!SDL_Vulkan_CreateSurface(_window, instance, nullptr, &surface))
-        throw std::runtime_error("Could not create a Vulkan surface!");
-
-    return surface;
-}
-
-std::span<const char*> Window::GetVulkanExtensions() {
-
-    static uint32_t extensionCount = 0;
-    static const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
-    static std::vector<const char*> ext{extensions, extensions + extensionCount};
-
-    return std::span<const char*>{ext.begin(), ext.end()};
 }
 
 } // namespace bl

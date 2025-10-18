@@ -31,6 +31,15 @@ VulkanSwapchain* VulkanWindow::GetSwapchain()
     return _swapchain.get();
 }
 
+std::span<const char*> VulkanWindow::GetVulkanExtensions() 
+{
+    static uint32_t extensionCount = 0;
+    static const char* const* extensions = SDL_Vulkan_GetInstanceExtensions(&extensionCount);
+    static std::vector<const char*> ext{extensions, extensions + extensionCount};
+
+    return std::span<const char*>{ext.begin(), ext.end()};
+}
+
 //std::vector<VkPresentModeKHR> VulkanWindow::GetPresentModes(VulkanWindow* window) const {
 //    std::vector<VkPresentModeKHR> presentModes{};
 //    uint32_t presentModeCount = 0;

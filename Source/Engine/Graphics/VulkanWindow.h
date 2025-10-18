@@ -21,6 +21,7 @@ public:
     VulkanWindow(VulkanDevice* device, const std::string& title, Rect2D rect, bool fullscreen);
     ~VulkanWindow();
 
+    static std::span<const char*> GetVulkanExtensions(); /** @brief Returns an array of extensions the vulkan device needs. */
     VkSurfaceKHR GetSurface();
     VulkanSwapchain* GetSwapchain();
 };
