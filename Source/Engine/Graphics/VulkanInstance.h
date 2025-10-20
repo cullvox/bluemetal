@@ -5,7 +5,6 @@
 #include "Vulkan.h"
 #include "VulkanConfig.h"
 #include "VulkanPhysicalDevice.h"
-#include "Window/WindowPlatform.h"
 
 namespace bl 
 {

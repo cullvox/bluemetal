@@ -22,6 +22,7 @@ void Engine::Initialize()
     _resourceManager = std::make_unique<ResourceSystem>(*this);
     _audio = std::make_unique<AudioSystem>(*this);
     _graphics = std::make_unique<GraphicsSystem>(*this);
+    _input = std::make_unique<InputSystem>(*this);
     _imgui = std::make_unique<ImGuiSystem>(*this, _graphics->GetWindow(), _graphics->GetRenderer());
 }
 
@@ -47,6 +48,11 @@ GraphicsSystem* Engine::GetGraphics()
 AudioSystem* Engine::GetAudio() 
 {
     return _audio.get();
+}
+
+InputSystem* Engine::GetInput()
+{
+    return _input.get();
 }
 
 ImGuiSystem* Engine::GetImGui() 

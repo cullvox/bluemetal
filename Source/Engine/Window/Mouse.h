@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Math/Math.h"
+#include "Window.h"
 
-namespace bl {
-
-class Window;
+namespace bl
+{
 
 enum class MouseButton {
     Left = 0, ///!< Left mouse button.
@@ -22,8 +22,27 @@ enum class MouseInputMode {
 };
 
 class Mouse {
+    SDL_MouseButtonFlags _buttonFlags{0};
+    glm::vec2 _relative{};
+    glm::vec2 _location{};
+    glm::vec2 _wheel{};
+
+    MouseButton MouseButtonFromSDL(int buttonFlag);
+    int MouseButtonToSDL(MouseButton button);
+
+protected:
+    friend class InputSystem;
+
+    void SetRelativeMotion(glm::vec2 motion);
+    void SetLocation(glm::vec2 location);
+    void SetMouseButtonFlag(int flags, bool value);
+    void SetWheel(glm::vec2 wheel);
+
 public:
+    Mouse() = default;
     ~Mouse() = default;
+
+    void Poll();
 
     /// @brief Changes the input mode of the mouse on a window basis.
     ///
@@ -35,7 +54,9 @@ public:
     /// @param[in] window Window to change mouse mode on.
     /// @param[in] mode The input mode to set the mouse to.
     ///
-    void SetInputMode(Window* window, MouseInputMode mode = MouseInputMode::Normal);
+    void SetCaptured(Window* window, bool captured);
+
+    bool GetCaptured(Window* window);
 
     /// @brief Returns true if the selected button was down at poll.
     ///
@@ -51,14 +72,6 @@ public:
     ///
     /// @returns The mouse position within the window.
     glm::vec2 GetMousePosition();
-
-    /// @brief Returns the position of the mouse in global system coordinates.
-    ///
-    /// Typically you'll want to use \ref GetMousePosition() but in some
-    /// circumstances if you need global position it can be found here.
-    ///
-    /// @returns The mouse position from the system.
-    glm::vec2 GetMousePositionGlobal();
 
     /// @brief Returns the delta between the previous poll and the latest one.
     ///

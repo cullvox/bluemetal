@@ -33,6 +33,9 @@ list(APPEND Sources
 
   "Window/Display.cpp"
   "Window/Window.cpp"
+  "Window/Input.cpp"
+  "Window/Keyboard.cpp"
+  "Window/Mouse.cpp"
 
   # ImGui
   "ImGui/imgui.cpp"

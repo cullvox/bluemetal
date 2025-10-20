@@ -2,22 +2,26 @@
 
 #include "Precompiled.h"
 #include "Core/Flags.h"
+#include "Core/System.h"
+#include "Engine/SDL.h"
+#include "Keyboard.h"
+#include "Mouse.h"
 
-namespace bl {
+namespace bl
+{
 
-class Keyboard;
-class Mouse;
 class Gamepad;
 
 /// @brief Input object for interfacing with all input sources.
-class Input {
-    Keyboard& _keyboard;
-    Mouse& _mouse;
+class InputSystem : public System {
+    Keyboard _keyboard;
+    Mouse _mouse;
 
 public:
+    InputSystem(Engine& engine);
+    ~InputSystem() = default;
 
-    /// @brief Destructor
-    ~Input() = default;
+    virtual std::unique_ptr<Resource> ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
 
     /// @brief Polls the system for events.
     ///
@@ -25,7 +29,7 @@ public:
     /// not limited to, Keyboard, Mouse, and Gamepads. Later as more features 
     /// are added it will include more advanced input like VR.
     /// 
-    void Poll();
+    void Poll(std::function<void(SDL_Event&)> extraFunc);
 
     /// @brief Gets the system keyboard input object.
     ///
@@ -54,11 +58,11 @@ public:
     /// window platform. The gamepads are thoughtfully 
     ///
     /// @return 
-    virtual const std::vector<Gamepad*>& GetGamepads() = 0;
+    //virtual const std::vector<Gamepad*>& GetGamepads() = 0;
 
     /// @brief 
     /// @return 
-    virtual std::vector<Gamepad*> GetConnectedGamepads() = 0;
+    //virtual std::vector<Gamepad*> GetConnectedGamepads() = 0;
 };
 
 } // namespace bl

@@ -15,6 +15,8 @@
 #include "Graphics/UniformData.h"
 
 #include "Scene/AudioSource3D.h"
+#include <Window/Keyboard.h>
+#include <Window/Mouse.h>
 
 
 // Helper to display a little (?) mark which shows a tooltip when hovered.
@@ -56,6 +58,10 @@ int main(int argc, const char** argv)
 
     auto graphics = engine.GetGraphics();
     auto imgui = engine.GetImGui();
+
+    auto input = engine.GetInput();
+    auto& keyboard = input->GetKeyboard();
+    auto& mouse = input->GetMouse();
 
     auto vert = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.frag.spv");
@@ -125,16 +131,12 @@ int main(int argc, const char** argv)
 
     // material->SetSampledImage2D("inAlbedo", &sampler, texture.Get()->GetImage());
 
-    bool firstMouse = true;
-    glm::ivec2 lastMouse{};
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -10.0f);
     glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
     glm::mat4 view = glm::identity<glm::mat4>();
     float yaw = -90.0f, pitch = 0.0f;
     float walkingSpeed = 9.0f;
-    bool mouseCaptured = false;
-    bool windowFocused = false;
     glm::vec3 direction;
 
     auto extent = window->GetExtent();
@@ -155,80 +157,42 @@ int main(int argc, const char** argv)
 
     std::memcpy(globalBufferMap, &globalUBO, sizeof(globalUBO));
 
-    bool running = true;
-    bool minimized = false;
-    while (running) 
+    while (!window->GetCloseRequested())
     {
         frameCounter.BeginFrame();
 
-        glm::vec2 mouseRelativeMovement = {};
-        SDL_Event event;
-        while (SDL_PollEvent(&event))
-        {
-            switch (event.type) 
-            {
-            case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
-                running = false;
-                break;
-            case SDL_EVENT_WINDOW_MINIMIZED:
-                minimized = true;
-                break;
-            case SDL_EVENT_WINDOW_RESTORED:
-                minimized = false;
-                break;
-            case SDL_EVENT_WINDOW_FOCUS_GAINED:
-                windowFocused = true;
-                break;
-            case SDL_EVENT_WINDOW_FOCUS_LOST:
-                windowFocused = false;
-                break;
-            case SDL_EVENT_MOUSE_MOTION:
-                mouseRelativeMovement.x = (float)event.motion.xrel;
-                mouseRelativeMovement.y = (float)event.motion.yrel;
-            }
-
+        input->Poll([imgui](SDL_Event& event){
             imgui->Process(event);
-        }
+        });
 
-        SDL_PumpEvents();
-
-        const bool* keystate = SDL_GetKeyboardState(NULL);
-        if(keystate[SDL_SCANCODE_W])
+        if(keyboard.GetKeyDown(bl::Scancode::W))
             cameraPos += -walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
-        if (keystate[SDL_SCANCODE_S])
+        if (keyboard.GetKeyDown(bl::Scancode::S))
             cameraPos += walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
-        if (keystate[SDL_SCANCODE_A])
+        if (keyboard.GetKeyDown(bl::Scancode::A))
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * walkingSpeed * frameCounter.GetDeltaTime();
-        if (keystate[SDL_SCANCODE_D])
+        if (keyboard.GetKeyDown(bl::Scancode::D))
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * -walkingSpeed * frameCounter.GetDeltaTime();
-        if (keystate[SDL_SCANCODE_ESCAPE])
+        if (keyboard.GetKeyDown(bl::Scancode::Escape))
         {
-            mouseCaptured = false;
-            SDL_SetWindowRelativeMouseMode(window->Get(), false);
+            mouse.SetCaptured(window, false);
         }
 
-        glm::vec2 mouse;
-        uint32_t buttons = SDL_GetMouseState(&mouse.x, &mouse.y);
+        auto mousePos = mouse.GetMousePosition();
+        auto mouseDelta = mouse.GetMouseDelta();
 
-        if (buttons & SDL_BUTTON_MASK(SDL_BUTTON_LEFT) && windowFocused && !ImGui::GetIO().WantCaptureMouse)
+        if (mouse.IsButtonDown(bl::MouseButton::Left) && window->GetFocused() && !ImGui::GetIO().WantCaptureMouse)
         {
-            mouseCaptured = true;
-            SDL_SetWindowRelativeMouseMode(window->Get(), true);
+            mouse.SetCaptured(window, true);
         }
 
-        if (mouseCaptured)
+        if (mouse.GetCaptured(window))
         {
-            if (firstMouse)
-            {
-                lastMouse = mouse;
-                firstMouse = false;
-            }
-
             float sensitivity = 0.1f;
-            mouseRelativeMovement *= sensitivity;
+            mouseDelta *= sensitivity;
 
-            yaw += mouseRelativeMovement.x;
-            pitch -= mouseRelativeMovement.y;
+            yaw += mouseDelta.x;
+            pitch -= mouseDelta.y;
 
             if (pitch > 89.0f)
                 pitch = 89.0f;
@@ -245,7 +209,7 @@ int main(int argc, const char** argv)
 
         view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
 
-        bl::Print::Info("Mouse: {}, {}, {}", mouse.x, mouse.y, firstMouse);
+        bl::Print::Info("Mouse: {}, {}", mousePos.x, mousePos.y);
         bl::Print::Info("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
 
         extent = window->GetExtent();
@@ -279,7 +243,7 @@ int main(int argc, const char** argv)
 
         audio->Update();
 
-        if (!minimized) {
+        if (!window->GetMinimized()) {
 
         renderer->Render([&](bl::VulkanRenderData& rd){
 
@@ -347,7 +311,7 @@ int main(int argc, const char** argv)
             if (ImGui::CollapsingHeader("Input"))
             {
                 ImGui::Text("Camera Direction: %f, %f, %f", direction.x, direction.y, direction.z);
-                ImGui::Text("Mouse Relative: %f, %f", mouseRelativeMovement.x, mouseRelativeMovement.y);
+                ImGui::Text("Mouse Relative: %f, %f", mouseDelta.x, mouseDelta.y);
                 ImGui::Text("x: %f, y: %f, z: %f", cameraPos.x, cameraPos.y, cameraPos.z);
             }
 

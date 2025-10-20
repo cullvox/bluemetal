@@ -2,8 +2,10 @@
 
 #include "Precompiled.h"
 #include "Core/Flags.h"
+#include "Engine/SDL.h"
 
-namespace bl {
+namespace bl 
+{
 
 /// @brief Key Modifiers
 ///
@@ -11,7 +13,8 @@ namespace bl {
 /// by using a modification button. Control, Shift are examples of such keys.
 /// The program can change behavior of functionality depending on modifiers.
 ///
-enum class KeyboardModifierFlagBits : uint32_t {
+enum class KeyboardModifierFlagBits : uint32_t 
+{
     Ctrl  = 0x00000001,
     Shift = 0x00000002,
     Alt   = 0x00000004,
@@ -20,12 +23,14 @@ enum class KeyboardModifierFlagBits : uint32_t {
 
 using KeyboardModifierFlags = uint32_t;
 
-static inline KeyboardModifierFlags operator|(KeyboardModifierFlags modifiers, KeyboardModifierFlagBits bit) {
-    return (uint32_t)modifiers | (uint32_t)bit;
+static inline KeyboardModifierFlags operator|(KeyboardModifierFlags modifiers, KeyboardModifierFlagBits bit) 
+{
+    return static_cast<uint32_t>(modifiers) | static_cast<uint32_t>(bit);
 }
 
-static inline KeyboardModifierFlags operator|=(KeyboardModifierFlags modifiers, KeyboardModifierFlagBits bit) {
-    return (uint32_t)modifiers |= (uint32_t)bit;
+static inline KeyboardModifierFlags operator|=(KeyboardModifierFlags& modifiers, KeyboardModifierFlagBits bit) 
+{
+    return static_cast<uint32_t&>(modifiers) |= static_cast<uint32_t>(bit);
 }
 
 /// @brief Keyboard USB Scancodes
@@ -40,7 +45,8 @@ static inline KeyboardModifierFlags operator|=(KeyboardModifierFlags modifiers, 
 /// To translate a scancode to a key name use Keyboard::ScancodeToLocalKeyName.
 /// Here comes a long list of scancodes...
 ///
-enum class Scancode {
+enum class Scancode 
+{
     A = 0,
     B,
     C,
@@ -254,16 +260,15 @@ enum class Scancode {
     RightAlt, ///!< alt gr, option
     RightMeta, ///!< windows, command (apple), meta
     Mode,
-    AudioNext,
-    AudioPrev,
-    AudioStop,
-    AudioPlay,
-    AudioMute,
+    MediaNext,
+    MediaPrev,
+    MediaStop,
+    MediaPlay,
+    MediaMute,
+    MediaRewind,
+    MediaFastForward,
     MediaSelect,
-    Www, ///!< AL Internet Browser
-    Mail,
-    Calculator, ///!< AL Calculator
-    Computer,
+    MediaEject,
     AppControlSearch, ///!< AC Search
     AppControlHome, ///!< AC Home
     AppControlBack, ///!< AC Back
@@ -271,27 +276,24 @@ enum class Scancode {
     AppControlStop, ///!< AC Stop
     AppControlRefresh, ///!< AC Refresh
     AppControlBookmarks, ///!< AC Bookmarks
-    BrightnessDown,
-    BrightnessUp,
-    DisplaySwitch, ///!< display mirroring/dual display switch, video mode switch
-    KeyboardIlluminationToggle,
-    KeyboardIlluminationDown,
-    KeyboardIlluminationUp,
-    Eject,
     Sleep, ///!< SC System Sleep
-    App1,
-    App2,
-    AudioRewind,
-    AudioFastForward,
+    Wake,
 
+    Unknown,
     Count,
 };
 
-class Keyboard {
-    uint8_t* _scancodes;
+class Keyboard 
+{
+    const bool* _keystates;
+    constexpr SDL_Scancode ConvertScancodeToSDL(Scancode code);
+    constexpr Scancode ConvertScancodeFromSDL(SDL_Scancode code);
+
 public:
     Keyboard() = default;
     ~Keyboard() = default;
+
+    void Poll(); /** @brief Polls the key states. */
 
     /// @brief Checks if a scancode was pressed between poll time.
     ///
@@ -303,7 +305,7 @@ public:
     ///
     /// @return True if the scancode/key was pressed.
     ///
-    bool IsKeyDown(Scancode code);
+    bool GetKeyDown(Scancode code);
 
     /// @brief Returns the name of the key on the users keyboard.
     /// 
@@ -315,7 +317,7 @@ public:
     ///
     /// @return The name of the key from scancode.
     ///
-    constexpr std::string ScancodeToLocalKeyName(Scancode key);
+    constexpr std::string_view ScancodeToLocalKeyName(Scancode key);
 
     /// @brief An easy way to check what modifiers are currently down.
     ///
@@ -323,13 +325,13 @@ public:
     ///
     KeyboardModifierFlags GetKeyModifiers() {
         KeyboardModifierFlags flags;
-        if (IsKeyDown(Scancode::LeftCtrl) || IsKeyDown(Scancode::RightCtrl))
+        if (GetKeyDown(Scancode::LeftCtrl) || GetKeyDown(Scancode::RightCtrl))
             flags |= KeyboardModifierFlagBits::Ctrl;
-        if (IsKeyDown(Scancode::LeftShift) || IsKeyDown(Scancode::RightShift))
+        if (GetKeyDown(Scancode::LeftShift) || GetKeyDown(Scancode::RightShift))
             flags |= KeyboardModifierFlagBits::Shift;
-        if (IsKeyDown(Scancode::LeftAlt) || IsKeyDown(Scancode::RightAlt))
+        if (GetKeyDown(Scancode::LeftAlt) || GetKeyDown(Scancode::RightAlt))
             flags |= KeyboardModifierFlagBits::Alt;
-        if (IsKeyDown(Scancode::LeftMeta) || IsKeyDown(Scancode::RightMeta))
+        if (GetKeyDown(Scancode::LeftMeta) || GetKeyDown(Scancode::RightMeta))
             flags |= KeyboardModifierFlagBits::Meta;
         return flags;
     }

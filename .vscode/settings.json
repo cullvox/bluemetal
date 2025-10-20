@@ -127,7 +127,10 @@
         "zconf.h": "c",
         "ciso646": "cpp",
         "volk.h": "c",
-        "print": "cpp"
+        "print": "cpp",
+        "mouse.h": "c",
+        "window.h": "c",
+        "math.h": "c"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",

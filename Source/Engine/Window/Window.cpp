@@ -7,6 +7,8 @@
 namespace bl  {
 
 Window::Window(const std::string& title, Rect2D rect, bool fullscreen)
+    : _window(nullptr)
+    , _closeRequested(false)
 {
     auto flags = SDL_WINDOW_VULKAN | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY;
 
@@ -17,6 +19,8 @@ Window::Window(const std::string& title, Rect2D rect, bool fullscreen)
     if (!_window) 
         throw std::runtime_error("Could not create an SDL window!");
 
+    SDL_PropertiesID props = SDL_GetWindowProperties(_window);
+    SDL_SetPointerProperty(props, "user", this);
     SDL_ShowWindow(_window);
 }
 
@@ -24,6 +28,22 @@ Window::~Window()
 {
     SDL_DestroyWindow(_window);
 }
+
+void Window::SetClose(bool close)
+{
+    _closeRequested = close;
+}
+
+void Window::SetMinimized(bool minimized)
+{
+    _minimized = minimized;
+}
+
+void Window::SetFocused(bool focused)
+{
+    _focused = focused;
+}
+
 
 VideoMode Window::GetCurrentVideoMode() const 
 {
@@ -53,5 +73,21 @@ Extent2D Window::GetExtent() const
 
     return Extent2D{(uint32_t)w, (uint32_t)h};
 }
+
+bool Window::GetCloseRequested() const
+{
+    return _closeRequested;
+}
+
+bool Window::GetMinimized() const
+{
+    return _minimized;
+}
+
+bool Window::GetFocused() const
+{
+    return _focused;
+}
+
 
 } // namespace bl

@@ -6,6 +6,7 @@
 #include "Resources/ResourceSystem.h"
 #include "Audio/AudioSystem.h"
 #include "Graphics/GraphicsSystem.h"
+#include "Window/Input.h"
 #include "ImGui/ImGuiSystem.h"
 
 namespace bl
@@ -19,6 +20,7 @@ class Engine
     std::unique_ptr<GraphicsSystem> _graphics;
     std::unique_ptr<ImGuiSystem> _imgui;
     std::unique_ptr<AudioSystem> _audio;
+    std::unique_ptr<InputSystem> _input;
     std::unique_ptr<Window> _window;
     std::unique_ptr<Renderer> _renderer;
 
@@ -31,6 +33,7 @@ public:
 
     ResourceSystem* GetResourceManager();
     GraphicsSystem* GetGraphics();
+    InputSystem* GetInput();
     ImGuiSystem* GetImGui();
     AudioSystem* GetAudio();
     Window* GetWindow();
