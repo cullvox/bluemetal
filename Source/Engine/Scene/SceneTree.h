@@ -2,9 +2,10 @@
 
 #include "Resource.h"
 
-namespace bl {
+namespace bl 
+{
 
-class SceneTree : public Resource
+class SceneTree
 {
 public:
     SceneTree();

@@ -24,6 +24,11 @@ void Node::Draw()
 {
 }
 
+Node* Node::Clone()
+{
+
+}
+
 Engine* Node::GetEngine()
 {
     return _engine;

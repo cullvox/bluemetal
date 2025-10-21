@@ -21,6 +21,7 @@ public:
     virtual void Update(float deltaTime);
     virtual void PhysicsUpdate(float delta);
     virtual void Draw();
+    virtual Node* Clone();
 
     Engine* GetEngine();
     void SetName(const std::string& name);
