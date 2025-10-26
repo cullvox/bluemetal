@@ -4,6 +4,8 @@
 #include <string>
 #include <qoixx.hpp>
 
+#include <tiny_gltf.h>
+
 #include "Core/FileByte.h"
 #include "Graphics/ModelFormat.h"
 #include "Graphics/VulkanImage.h"
@@ -31,52 +33,30 @@ static inline glm::mat4 ConvertMatrixToGLMFormat(const aiMatrix4x4& from)
     return to;
 }
 
-StaticModel::StaticModel(ResourceSystem* manager, const nlohmann::json& json, VulkanDevice* device)
-    : Resource(manager, json)
-    , _device(device)
+StaticModel::StaticModel(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
+    : Resource(resourceSystem, system, path)
 {
+    tinygltf::TinyGLTF loader;
+    tinygltf::Model model;
+    std::string err;
+    std::string warn;
+
+    bool res = loader.LoadASCIIFromFile(&model, &err, &warn, path.string());
+
+    if (!warn.empty())
+        Log::Warn("GLTF Load: {}", warn);
+
+    if (!err.empty())
+        Log::Error("GLTF Load: {}", err);
+
+    if (!res)
+        throw std::runtime_error("Could not load a model file!");
 }
 
 StaticModel::~StaticModel()
 {
 }
 
-void StaticModel::Load()
-{
-    std::ifstream modelFile(GetFilePath(), std::ios::in | std::ios::binary);
-    auto header = bl::ReadT<BMMFHeader>(modelFile);
-
-    if (header.magic != bl::BMMF_MAGIC)
-        throw std::runtime_error("Model magic is incorrect!");
-
-    _meshes.reserve(header.numMeshes);
-    _transforms.reserve(header.numMeshes);
-
-    _sampler = std::make_unique<VulkanSampler>(_device);
-
-    for (uint32_t i = 0; i < header.numMeshes; i++)
-    {
-        auto meshHeader = bl::ReadT<BMMFMeshHeader>(modelFile);
-        auto vertices = bl::ReadVecT<Vertex>(modelFile, meshHeader.numVertices);
-        auto indices = bl::ReadVecT<uint32_t>(modelFile, meshHeader.numIndices);
-        // auto textureReferences = bl::ReadVecT<TextureReference>(modelFile, meshHeader.numTextureReferences);
-
-        _meshes.emplace_back(_device, vertices, indices);
-        _transforms.push_back(bl::ReadT<glm::mat4>(modelFile));
-        _meshTransformIndicies.push_back(i);
-        //_textures.push_back(textureReferences);
-    }
-
-    //for (uint32_t i = 0; i < header.numTextures; i++)
-    //{
-    //    auto textureHeader = bl::ReadT<TextureHeader>(modelFile);
-    //    auto textureBuffer = bl::ReadVecT<std::byte>(modelFile, textureHeader.numBytes);
-    //
-    //    const auto [actual, desc] = qoixx::qoi::decode<std::vector<std::byte>>(textureBuffer, 4);
-    //
-    //    _images.emplace_back(_device, VK_IMAGE_TYPE_2D, VkExtent3D{desc.width,desc.height, 1}, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-    //}
-}
 
 void StaticModel::Unload()
 {

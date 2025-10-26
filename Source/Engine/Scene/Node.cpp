@@ -26,7 +26,9 @@ void Node::Draw()
 
 Node* Node::Clone()
 {
-
+    Node* newNode = new Node(_engine);
+    newNode->SetName(_name);
+    return newNode;
 }
 
 Engine* Node::GetEngine()
