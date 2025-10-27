@@ -51,6 +51,9 @@ StaticModel::StaticModel(ResourceSystem* resourceSystem, GraphicsSystem* system,
 
     if (!res)
         throw std::runtime_error("Could not load a model file!");
+
+    // Load meshes
+    
 }
 
 StaticModel::~StaticModel()

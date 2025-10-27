@@ -3,9 +3,11 @@
 #include "Object.h"
 #include "Precompiled.h"
 
-namespace bl {
+namespace bl 
+{
 
-class ReferenceBase {
+class ReferenceBase 
+{
     bool _updated = false;
     bool _isValid = false;
     // int32_t _refId = -1;
@@ -34,11 +36,12 @@ public:
 };
 
 /// @brief Any class that needs to know how many times it's being used.
-class ReferenceCounted {
+class ReferenceCounted 
+{
     std::list<ReferenceBase*> _references;
 
 protected:
-    template <typename T>
+    template <class T>
     friend class ReferenceCounter;
 
     void UpdateReferences()
@@ -90,18 +93,24 @@ public:
     }
 };
 
-template <typename T>
-class ReferenceCounter : public ReferenceBase {
+
+template <class T>
+class ReferenceCounter : public ReferenceBase 
+{
     T* _value;
 
 public:
     ReferenceCounter()
+        : _value(nullptr)
     {
     }
 
     ReferenceCounter(T* value)
         : _value(value)
     {
+        if (dynamic_cast<ReferenceCounted*>(value) == nullptr)
+            throw std::runtime_error("Reference counter type not based on ReferenceCounted!");
+
         _value->AddReference(*this);
     }
 

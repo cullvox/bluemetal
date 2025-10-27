@@ -10,7 +10,7 @@ namespace bl
 class MeshInstance3D : public Node3D 
 {
 
-    Ref<MaterialIntance> _material;
+    Ref<MaterialInstance> _material;
     Ref<Mesh> _mesh;
 
 public:
