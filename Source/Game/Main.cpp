@@ -19,20 +19,7 @@
 #include <Window/Mouse.h>
 
 
-// Helper to display a little (?) mark which shows a tooltip when hovered.
-// In your own code you may want to display an actual icon if you are using a merged icon fonts (see
-// docs/FONTS.md)
-// static void HelpMarker(const char* desc)
-// {
-//     ImGui::TextDisabled("(?)");
-//     if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort) && ImGui::BeginTooltip())
-//     {
-//         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
-//         ImGui::TextUnformatted(desc);
-//         ImGui::PopTextWrapPos();
-//         ImGui::EndTooltip();
-//     }
-// }
+
 
 static inline float randomValue() {
     return static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -319,6 +306,8 @@ int main(int argc, const char** argv)
             if (ImGui::CollapsingHeader("Graphics")) {
 
                 ImGui::Text("Graphics Device: %s", graphics->GetPhysicalDevice()->GetDeviceName().c_str()); 
+                ImGui::SameLine();
+                ImGui::HelpMarker("Your graphics card.");
                 ImGui::Text("Graphics Vendor: %s", graphics->GetPhysicalDevice()->GetVendorName().c_str()); 
                 ImGui::Text("F/S: %d", frameCounter.GetFramesPerSecond()); 
                 ImGui::Text("MS/F: %.2f", frameCounter.GetMillisecondsPerFrame()); 

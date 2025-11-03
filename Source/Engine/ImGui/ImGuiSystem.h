@@ -22,7 +22,7 @@ class ImGuiSystem : public System
     Renderer* _renderer;
     VkDescriptorPool _descriptorPool;
 
-    static void ApplyStyle();
+    void ApplyStyle();
     void Init();
     void Unload();
 
@@ -37,3 +37,12 @@ public:
 };
 
 } // namespace bl
+
+
+namespace ImGui
+{
+// Helper to display a little (?) mark which shows a tooltip when hovered.
+// In your own code you may want to display an actual icon if you are using a merged icon fonts (see
+// docs/FONTS.md)
+extern void HelpMarker(const char* desc);
+}

@@ -3,10 +3,10 @@
 #include "Object.h"
 #include "Precompiled.h"
 
-namespace bl 
+namespace bl
 {
 
-class ReferenceBase 
+class ReferenceBase
 {
     bool _updated = false;
     bool _isValid = false;
@@ -79,7 +79,7 @@ protected:
 
 public:
     ReferenceCounted() = default;
-    ~ReferenceCounted()
+    virtual ~ReferenceCounted()
     {
         for (auto& ref : _references) {
             // ref._refId = -1; // Mark as invalid
@@ -95,9 +95,9 @@ public:
 
 
 template <class T>
-class ReferenceCounter : public ReferenceBase 
+class ReferenceCounter : public ReferenceBase
 {
-    T* _value;
+    ReferenceCounted* _value;
 
 public:
     ReferenceCounter()
@@ -108,10 +108,11 @@ public:
     ReferenceCounter(T* value)
         : _value(value)
     {
-        if (dynamic_cast<ReferenceCounted*>(value) == nullptr)
+        ReferenceCounted* counted = dynamic_cast<ReferenceCounted*>(_value);
+        if (counted == nullptr)
             throw std::runtime_error("Reference counter type not based on ReferenceCounted!");
 
-        _value->AddReference(*this);
+        counted->AddReference(*this);
     }
 
     ReferenceCounter(const ReferenceCounter& copy)
@@ -138,12 +139,12 @@ public:
 
     T* Get() const
     {
-        return IsValid() ? _value : nullptr;
+        return IsValid() ? dynamic_cast<T*>(_value) : nullptr;
     }
 
     T* operator->()
     {
-        return IsValid() ? _value : nullptr;
+        return IsValid() ? dynamic_cast<T*>(_value) : nullptr;
     }
 };
 

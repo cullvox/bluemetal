@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Print.h"
 #include "Core/System.h"
 #include "Precompiled.h"
 #include "Resource.h"
@@ -80,7 +81,7 @@ Ref<T> ResourceSystem::Get(const std::filesystem::path& path)
         return Ref<T>{};
     }
 
-    return ResourceRef{it->second.get()};
+    return Ref{it->second.get()};
 }
 
 template<typename T>
@@ -97,30 +98,3 @@ Ref<T> ResourceSystem::Add(const std::filesystem::path& path, T* resource)
 }
 
 } // namespace bl
-
-/* How a resource manifest file works:
-
-    It's a typical JSON file with data for each resource.
-
-    Each resource itself has some data:
-        type - string
-        path - string       <- used as name in the resource manager
-
-    {
-        "resources": [
-            {
-                "type": "sound"
-                "path": "/some/path.wav"
-            },
-            {
-                "type": "model",
-                "path": "assets/models/fox.gltf"
-            }
-            {
-                "type": "shader",
-                "path": "assets/shaders/default_unlit.vert"
-            }
-        ]
-    }
-
- */

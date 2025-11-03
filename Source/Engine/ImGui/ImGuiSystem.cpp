@@ -32,10 +32,15 @@ std::unique_ptr<Resource> ImGuiSystem::ConstructResource(ResourceSystem*, std::s
 
 void ImGuiSystem::ApplyStyle()
 {
-    // float SCALE = 2.0f;
-    // ImFontConfig cfg;
-    // cfg.SizePixels = 13 * SCALE;
-    // ImGui::GetIO().Fonts->AddFontDefault(&cfg);
+    float scale = SDL_GetWindowDisplayScale(_window->Get());
+
+    Print::Debug("SDL Display scale: {}", scale);
+
+    ImFontConfig cfg;
+    cfg.SizePixels = 13 * scale;
+    ImGui::GetIO().Fonts->AddFontDefault(&cfg);
+    // ImGui::GetIO().FontGlobalScale = scale;
+    ImGui::GetIO().DisplayFramebufferScale = ImVec2{scale, scale};
 
     ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -103,7 +108,7 @@ void ImGuiSystem::Init()
     auto instance = graphics->GetInstance();
     auto physicalDevice = graphics->GetPhysicalDevice();
     auto window = _window;
-    
+
     auto [pass, subpass] = _renderer->GetRenderPass(RenderPassType::eUI);
 
     device->WaitForDevice();
@@ -167,7 +172,8 @@ void ImGuiSystem::Init()
 
     auto io = ImGui::GetIO();
 
-    ImFont* pFont = io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto-Regular.ttf", 18.0f);
+    float scale = SDL_GetWindowDisplayScale(_window->Get());
+    ImFont* pFont = io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto-Regular.ttf", 18.0f * scale);
     io.FontDefault = pFont;
 
     ImGui_ImplVulkan_CreateFontsTexture();
@@ -202,3 +208,20 @@ void ImGuiSystem::EndFrame(VkCommandBuffer cmd)
 }
 
 } // namespace bl
+
+namespace ImGui
+{
+
+void HelpMarker(const char* desc)
+{
+    ImGui::TextDisabled("(?)");
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort) && ImGui::BeginTooltip())
+    {
+        ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
+        ImGui::TextUnformatted(desc);
+        ImGui::PopTextWrapPos();
+        ImGui::EndTooltip();
+    }
+}
+
+} // namespace ImGui
