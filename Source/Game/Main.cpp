@@ -72,41 +72,6 @@ int main(int argc, const char** argv)
 
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(vulkanWindow);
 
-    auto globalBuffer = std::make_unique<bl::VulkanBuffer>(graphics->GetDevice(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO));
-
-    void* globalBufferMap = nullptr;
-    globalBuffer->Map(&globalBufferMap);
-
-    std::vector<VkDescriptorSetLayoutBinding> bindings{1};
-    bindings[0].binding = 0;
-    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    bindings[0].descriptorCount = 1;
-    bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-    bindings[0].pImmutableSamplers = nullptr;
-
-    auto layout = graphics->GetDevice()->AcquireDescriptorSetLayout(bindings);
-
-    bl::VulkanDescriptorSetAllocatorCache descriptorCache = {graphics->GetDevice(), 8, bl::VulkanDescriptorRatio::Default()};
-
-    VkDescriptorSet globalSet = descriptorCache.Allocate(layout);
-
-    VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = globalBuffer->Get();
-    bufferInfo.offset = 0;
-    bufferInfo.range = VK_WHOLE_SIZE;
-
-    VkWriteDescriptorSet write = {};
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = globalSet;
-    write.dstBinding = 0;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    write.pBufferInfo = &bufferInfo;
-
-    vkUpdateDescriptorSets(graphics->GetDevice()->Get(), 1, &write, 0, nullptr);
-
     bl::FrameCounter frameCounter;
 
     bl::ObjectPC object{};
@@ -133,16 +98,7 @@ int main(int argc, const char** argv)
     view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
     auto projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.1f, 100.0f);
 
-    bl::GlobalUBO globalUBO = {
-        0.0f,
-        0.0f,
-        extenti,
-        {},
-        view,
-        projection
-    };
 
-    std::memcpy(globalBufferMap, &globalUBO, sizeof(globalUBO));
 
     while (!window->GetCloseRequested())
     {
@@ -204,16 +160,8 @@ int main(int argc, const char** argv)
         projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.1f, 1000.0f);
         // auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
-        globalUBO = {
-            0.0f,
-            0.0f,
-            extentf,
-            {},
-            view,
-            projection
-        };
-
-        std::memcpy(globalBufferMap, &globalUBO, sizeof(globalUBO));
+        renderer->SetView(view);
+        renderer->SetProjection(projection);
 
         // object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
 
@@ -250,15 +198,11 @@ int main(int argc, const char** argv)
             scissor.extent = {extent.width, extent.height};
             vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
 
-            object.model = glm::identity<glm::mat4>();
-
-            vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetVulkanPipeline()->GetPipelineLayout(), 0, 1, &globalSet, 0, nullptr);
             material->Bind(rd);
             material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
 
             //model.Get()->Draw(rd, material->GetMaterial());
 
-            object.model = glm::translate(glm::identity<glm::mat4>(), {-100.0f, 0.0f, 0.0f});
             material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
             // dragonModel.Get()->Draw(rd, material->GetMaterial());
 
@@ -371,8 +315,6 @@ int main(int argc, const char** argv)
     }
 
     graphics->GetDevice()->WaitForDevice();
-
-    globalBuffer->Unmap();
 
     resourceMgr->UnloadAll();
 

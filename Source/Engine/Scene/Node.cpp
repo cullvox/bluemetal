@@ -20,7 +20,7 @@ void Node::PhysicsUpdate(float delta)
     (void)delta;
 }
 
-void Node::Draw()
+void Node::Draw(VulkanRenderData& rd)
 {
 }
 

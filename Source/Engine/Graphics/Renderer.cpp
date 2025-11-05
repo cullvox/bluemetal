@@ -1,8 +1,10 @@
 #include "Renderer.h"
 #include "Engine/Engine.h"
 #include "GraphicsSystem.h"
+#include "UniformData.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanMaterial.h"
+#include "Core/Time.h"
 
 namespace bl {
 
@@ -23,12 +25,14 @@ Renderer::Renderer(VulkanWindow* window)
         CreateSyncObjects();
         CreateRenderPasses();
         RecreateImages();
+        CreateGlobalUniform();
     } catch (const std::exception& e) {
         Print::Error("Failed to initialize renderer: {}", e.what());
-        DestroySyncObjects();
-        DestroyImagesAndFramebuffers();
+        DestroyGlobalUniform();
         DestroyRenderPasses();
-        throw;
+        DestroyImagesAndFramebuffers();
+        DestroySyncObjects();
+        throw e;
     }
 }
 
@@ -36,6 +40,7 @@ Renderer::~Renderer()
 {
     _device->WaitForDevice();
 
+    DestroyGlobalUniform();
     DestroyImagesAndFramebuffers();
     DestroyRenderPasses();
     DestroySyncObjects();
@@ -51,6 +56,16 @@ std::tuple<VkRenderPass, uint32_t> Renderer::GetRenderPass(RenderPassType passTy
     default:
         throw std::runtime_error("Invalid render pass type!");
     }
+}
+
+void Renderer::SetProjection(const glm::mat4& projection)
+{
+    _uboData.projection = projection;
+}
+
+void Renderer::SetView(const glm::mat4& view)
+{
+    _uboData.view = view;
 }
 
 void Renderer::CreateSyncObjects()
@@ -94,11 +109,17 @@ void Renderer::DestroySyncObjects()
 
 void Renderer::DestroyImagesAndFramebuffers()
 {
-    for (VkFramebuffer fb : _framebuffers)
+    for (VkFramebuffer fb : _framebuffers) {
         vkDestroyFramebuffer(_device->Get(), fb, nullptr);
+    }
 
     _framebuffers.clear();
     _depthImages.clear();
+}
+
+void Renderer::DestroyGlobalUniform()
+{
+    _globalBuffer.Unmap();
 }
 
 void Renderer::RecreateImages()
@@ -146,8 +167,23 @@ void Renderer::RecreateImages()
 
 void Renderer::Render(RenderFunction func)
 {
-    if (!_swapchain->Get()) // Swapchain must be valid.
+    // Compute the per frame UBO.
+    const auto currentTime = Time::Current();
+    const auto extent = _swapchain->GetExtent();
+
+    _uboData.time = currentTime;
+    _uboData.dt = currentTime - _prevTime;
+    _uboData.resolution = glm::vec2{(float)extent.width, (float)extent.height};
+    _uboData.mouse = {}; // TODO: mouse position to be added later.
+
+    _prevTime = currentTime;
+
+    std::memcpy(_globalBufferMap, &_uboData, sizeof(_uboData));
+
+    // Swapchain must be valid.
+    if (!_swapchain->Get()) {
         return;
+    }
 
     // Wait for the current image up coming in the chain to finish.
     VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
@@ -162,8 +198,9 @@ void Renderer::Render(RenderFunction func)
     _imageIndex = _swapchain->GetImageIndex();
 
     // Update all material buffers.
-    for (auto material : _materials)
+    for (auto material : _materials) {
         material->UpdateUniforms();
+    }
 
     // Reset the fence for this image so it can signal when it's done.
     VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
@@ -184,10 +221,7 @@ void Renderer::Render(RenderFunction func)
         VkClearValue { .depthStencil = { 1.0f, 0 } }
     };
 
-    VkRect2D renderArea {
-        { 0, 0 },
-        _swapchain->GetExtent()
-    };
+    VkRect2D renderArea { { 0, 0 }, _swapchain->GetExtent() };
 
     VkRenderPassBeginInfo passBeginInfo = {};
     passBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -339,6 +373,40 @@ void Renderer::CreateRenderPasses()
 void Renderer::DestroyRenderPasses()
 {
     vkDestroyRenderPass(_device->Get(), _pass, nullptr);
+}
+
+void Renderer::CreateGlobalUniform()
+{
+    _globalBuffer = bl::VulkanBuffer{_device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO)};
+    _globalBuffer.Map(&_globalBufferMap);
+
+    std::vector<VkDescriptorSetLayoutBinding> bindings { 1 };
+    bindings[0].binding = 0;
+    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bindings[0].descriptorCount = 1;
+    bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    bindings[0].pImmutableSamplers = nullptr;
+
+    auto layout = _device->AcquireDescriptorSetLayout(bindings);
+
+    VkDescriptorSet globalSet = _descriptorSetCache.Allocate(layout);
+
+    VkDescriptorBufferInfo bufferInfo = {};
+    bufferInfo.buffer = _globalBuffer.Get();
+    bufferInfo.offset = 0;
+    bufferInfo.range = VK_WHOLE_SIZE;
+
+    VkWriteDescriptorSet write = {};
+    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    write.pNext = nullptr;
+    write.dstSet = globalSet;
+    write.dstBinding = 0;
+    write.dstArrayElement = 0;
+    write.descriptorCount = 1;
+    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    write.pBufferInfo = &bufferInfo;
+
+    vkUpdateDescriptorSets(_device->Get(), 1, &write, 0, nullptr);
 }
 
 void Renderer::AddMaterial(VulkanMaterial* material)

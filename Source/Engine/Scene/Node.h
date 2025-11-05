@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Precompiled.h"
+#include "Graphics/VulkanRenderData.h"
 
 namespace bl
 {
@@ -11,7 +12,7 @@ class Node : public std::enable_shared_from_this<Node>
 {
     std::string _name;
     std::weak_ptr<Node> _parent;
-    std::vector<std::shared_ptr<Node>> _children;
+    std::unordered_map<std::string, std::shared_ptr<Node>> _children;
     Engine* _engine;
 
 public:
@@ -20,7 +21,7 @@ public:
 
     virtual void Update(float deltaTime);
     virtual void PhysicsUpdate(float delta);
-    virtual void Draw();
+    virtual void Draw(VulkanRenderData& rd);
     virtual Node* Clone();
 
     Engine* GetEngine();
@@ -28,9 +29,10 @@ public:
     std::string GetName() const;
     void SetParent(std::shared_ptr<Node> parent);
     std::shared_ptr<Node> GetParent() const;
-    const std::vector<std::shared_ptr<Node>>& GetChildren() const;
-    void AddChild(std::shared_ptr<Node> child);
-    void RemoveChild(std::shared_ptr<Node> child);
+    Node* GetChild(std::string_view name);
+    std::vector<Node*> GetChildren() const;
+    void AddChild(std::unique_ptr<Node> child);
+    void RemoveChild(std::string_view name);
     void ClearChildren();
 };
 

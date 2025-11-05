@@ -55,11 +55,14 @@ list(APPEND Sources
   "Resources/Material.cpp"
   "Resources/Texture2D.cpp"
   "Resources/MaterialInstance.cpp"
+  "Resources/Mesh.cpp"
   "Resources/Model.cpp"
 
   "Scene/Node.cpp"
   "Scene/Node3D.cpp"
   "Scene/AudioSource3D.cpp"
+  "Scene/MeshInstance3D.cpp"
+  "Scene/Camera3D.cpp"
 
   "Engine/SDL.cpp"
   

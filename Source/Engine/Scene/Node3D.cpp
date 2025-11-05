@@ -25,9 +25,9 @@ void Node3D::PhysicsUpdate(float delta)
     Node::PhysicsUpdate(delta);
 }
 
-void Node3D::Draw()
+void Node3D::Draw(VulkanRenderData& rd)
 {
-    Node::Draw();
+    Node::Draw(rd);
 }
 
 void Node3D::UpdateTransform()

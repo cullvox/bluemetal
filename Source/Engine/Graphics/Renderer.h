@@ -2,6 +2,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "UniformData.h"
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
@@ -33,6 +34,9 @@ public:
     void Render(RenderFunction func);
     std::tuple<VkRenderPass, uint32_t> GetRenderPass(RenderPassType pass) const;
 
+    void SetProjection(const glm::mat4& projection);
+    void SetView(const glm::mat4& view);
+
 protected:
     friend class VulkanMaterial;
     friend class Material;
@@ -45,6 +49,8 @@ private:
     void CreateRenderPasses();
     void DestroyRenderPasses();
     void DestroyImagesAndFramebuffers();
+    void CreateGlobalUniform();
+    void DestroyGlobalUniform();
     void RecreateImages();
 
     VulkanDevice* _device;
@@ -68,6 +74,12 @@ private:
     std::vector<VkFramebuffer> _framebuffers;
 
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
+
+    // Uniform data
+    VulkanBuffer _globalBuffer;
+    GlobalUBO _uboData;
+    void* _globalBufferMap;
+    float _prevTime;
 
     std::unordered_set<VulkanMaterial*> _materials;
 };

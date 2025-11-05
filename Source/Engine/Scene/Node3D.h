@@ -28,7 +28,7 @@ public:
 
     virtual void Update(float deltaTime);
     virtual void PhysicsUpdate(float delta);
-    virtual void Draw();
+    virtual void Draw(VulkanRenderData& rd);
 
     void SetPosition(const glm::vec3& position);
     void SetWorldPosition(const glm::vec3& position);
