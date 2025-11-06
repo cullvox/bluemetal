@@ -22,9 +22,12 @@ public:
     template<typename T> void AddSystemType(System* system);
     template<typename T> Ref<T> Load(const std::filesystem::path& path);
     template<typename T> Ref<T> Get(const std::filesystem::path& path);
-    template<typename T> Ref<T> Add(const std::filesystem::path& path, T* resource); /** @brief Adds a resource to the manager assuming it's loaded. */
+    template<typename T> Ref<T> Add(const std::filesystem::path& path, std::unique_ptr<T> resource); /** @brief Adds a resource to the manager assuming it's loaded. */
+    template<typename T> Ref<T> AddSubResource(Ref<Resource> parent, std::unique_ptr<T> resource); /** @brief Adds a sub-resource to a parent resource. */
+    template<typename T> Ref<T> AddSubResource(Ref<Resource> parent); /** @brief Adds a sub-resource to a parent resource. */
     void UnloadUnreferenced(); /** @brief Cleans up memory by unloading resources that aren't currently needed. Abides by a ResourceLoadOp. */
     void UnloadAll(); /** @brief Forcibly unloads all resources. */
+    template<typename T> System* GetSystemType();
 };
 
 template<typename TResource> void ResourceSystem::AddSystemType(System* system)
@@ -85,16 +88,39 @@ Ref<T> ResourceSystem::Get(const std::filesystem::path& path)
 }
 
 template<typename T>
-Ref<T> ResourceSystem::Add(const std::filesystem::path& path, T* resource)
+Ref<T> ResourceSystem::Add(const std::filesystem::path& path, std::unique_ptr<T> resource)
 {
     auto it = _resources.find(path);
     if (it != _resources.end()) {
         throw std::runtime_error("Could not add a runtime resource as the path already exists!");
     }
 
-    _resources[path] = std::unique_ptr<Resource>(resource);
+    _resources[path] = resource;
 
     return Ref{_resources[path]};
+}
+
+template<typename T> Ref<T> ResourceSystem::AddSubResource(Ref<Resource> parent, std::unique_ptr<T> resource)
+{
+    parent->_subResources.push_back(std::move(resource));
+    return Ref<T>{dynamic_cast<T*>(parent->_subResources.back().get())};
+}
+template<typename T> Ref<T> ResourceSystem::AddSubResource(Ref<Resource> parent)
+{
+    System* system = GetSystemType<T>();
+    std::unique_ptr<Resource> resource = system->ConstructResource(this, typeid(T).hash_code(), ""); // Sub-resources do not have paths.
+
+    return AddSubResource(parent, std::move(resource));
+}
+
+template<typename T> 
+System* ResourceSystem::GetSystemType()
+{
+    auto systemIt = _resourceTypes.find(typeid(T).hash_code());
+    if (systemIt == _resourceTypes.end()) {
+        throw std::runtime_error("Could not get system as no system is registered to handle it!");
+    }
+    return systemIt->second;
 }
 
 } // namespace bl

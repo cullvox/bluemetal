@@ -17,6 +17,7 @@
 #include "Scene/AudioSource3D.h"
 #include <Window/Keyboard.h>
 #include <Window/Mouse.h>
+#include <Resources/Model.h>
 
 
 
@@ -52,8 +53,8 @@ int main(int argc, const char** argv)
 
     auto vert = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.frag.spv");
-    //auto model = resourceMgr->Load<bl::StaticModel>("Models/red_fox_skull.glb");
-    //auto dragonModel = resourceMgr->Load<bl::StaticModel>("Models/dragon_quick_sculpt.glb");
+    auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.glb");
+    auto dragonModel = resourceMgr->Load<bl::Model>("Resources/Models/dragon_quick_sculpt.glb");
     auto material = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
 
     auto renderer = engine.GetRenderer();

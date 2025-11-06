@@ -15,4 +15,9 @@ void MeshInstance3D::Draw(VulkanRenderData& rd)
     vkCmdDrawIndexed(rd.cmd, 0, 1, 0, 0, 0);
 }
 
+void MeshInstance3D::SetMesh(Ref<Mesh> mesh)
+{
+    _mesh = mesh;
+}
+
 }

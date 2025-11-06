@@ -9,6 +9,7 @@
 #include "Resources/Sampler.h"
 #include "Resources/MaterialInstance.h"
 #include "Resources/Texture2D.h"
+#include "Resources/Model.h"
 
 #include "Engine/Engine.h"
 
@@ -25,6 +26,8 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     GetEngine().GetResourceManager()->AddSystemType<Material>(this);
     GetEngine().GetResourceManager()->AddSystemType<MaterialInstance>(this);
     GetEngine().GetResourceManager()->AddSystemType<Texture2D>(this);
+    GetEngine().GetResourceManager()->AddSystemType<Mesh>(this);
+    GetEngine().GetResourceManager()->AddSystemType<Model>(this);
 
     _vulkanInstance = std::make_unique<VulkanInstance>(bl::Version{bl::VersionRelease::eAlpha, 0, 1, 7}, "bluemetal", true);
     _physicalDevice = _vulkanInstance->ChoosePhysicalDevice();
@@ -62,6 +65,14 @@ std::unique_ptr<Resource> GraphicsSystem::ConstructResource(ResourceSystem* reso
     else if (typeHash == typeid(Texture2D).hash_code()) 
     {
         return std::make_unique<Texture2D>(resourceSystem, this, path);
+    }
+    else if (typeHash == typeid(Mesh).hash_code()) 
+    {
+        return std::make_unique<Mesh>(resourceSystem, this, path);
+    }
+    else if (typeHash == typeid(Model).hash_code()) 
+    {
+        return std::make_unique<Model>(resourceSystem, this, path);
     }
 
     return nullptr;

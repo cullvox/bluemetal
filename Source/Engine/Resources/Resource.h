@@ -26,6 +26,7 @@ class Resource : public ReferenceCounted
     friend class ResourceSystem;
     ResourceSystem* _resourceSystem; /** @brief Pointer to the resource manager that manages this resource. */
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
+    std::vector<std::unique_ptr<Resource>> _subResources; /** @brief Sub-resources that are part of this resource, but managed by it. */
 
 public:
     /**
@@ -45,6 +46,7 @@ public:
      * @return The unique path of the resource.
      */
     const std::filesystem::path& GetPath() const { return _path; }
+
 };
 
 } // namespace bl

@@ -1,4 +1,4 @@
-#include <tiny_gltf.h>
+
 
 #include "Core/FileByte.h"
 #include "Core/Print.h"
@@ -10,6 +10,10 @@
 #include "Model.h"
 #include "Texture2D.h"
 
+#include "Scene/MeshInstance3D.h"
+
+#include <glm/gtx/matrix_decompose.hpp>
+
 namespace bl {
 
 Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
@@ -20,7 +24,12 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
     std::string err;
     std::string warn;
 
-    bool res = loader.LoadASCIIFromFile(&model, &err, &warn, path.string());
+    bool res = false;
+    if (path.extension() == ".glb") {
+        res = loader.LoadBinaryFromFile(&model, &err, &warn, path.string());
+    } else {
+        res = loader.LoadASCIIFromFile(&model, &err, &warn, path.string());
+    }
 
     if (!warn.empty())
         Print::Warn("GLTF Load: {}", warn);
@@ -62,11 +71,10 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
             auto& indexView = model.bufferViews[indexAccessor.bufferView];
             auto& indexBuffer = model.buffers[indexView.buffer];
             if (indicesWidth == 4) {
-                memcpy(indices.data(), indexBuffer.data.data(), indexView.byteLength);
+                memcpy(indices.data(), indexBuffer.data.data() + indexView.byteOffset, 4 * indexAccessor.count);
             } else {
                 for (int i = 0; i < indexAccessor.count; i++) {
-                    const size_t offset = i * indicesWidth;
-                    std::memcpy(&indices[i], &indexBuffer.data[offset], indicesWidth);
+                    std::memcpy(&indices[i], indexBuffer.data.data() + indexView.byteOffset + (i * indicesWidth), indicesWidth);
                 }
             }
 
@@ -106,7 +114,8 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
                 }
             }
 
-            std::unique_ptr<Mesh> m;
+            Ref<Mesh> m = resourceSystem->AddSubResource<Mesh>(Ref<Resource>(this));
+            _meshes.push_back(m);
             m->UploadVertices<Vertex>(vertices);
             m->UploadIndices(indices);
         }
@@ -115,17 +124,69 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
     // Build out the scene tree for model loading.
     const auto& scene = model.scenes[model.defaultScene];
 
-    _root = std::make_unique<Node3D>(system->GetEngine());
+    _root = std::make_unique<Node3D>(&system->GetEngine());
+
     for (int i : scene.nodes)
     {
-        _root->
+        _root->AddChild(LoadNode(model, model.nodes[i], system));
     }
-
-
 }
 
 Model::~Model()
 {
+}
+
+std::shared_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tinygltf::Node& node, GraphicsSystem* system)
+{
+    std::shared_ptr<Node3D> newNode{nullptr};
+    if (node.mesh < 0) {
+        newNode = std::make_unique<Node3D>(&system->GetEngine());
+    } else {
+        auto meshNode = std::make_unique<MeshInstance3D>(&system->GetEngine());
+        meshNode->SetMesh(_meshes[node.mesh]);
+        // meshNode->SetMaterial(_materials[...]);
+        newNode = std::move(meshNode);
+    }
+
+    newNode->SetName(node.name);
+
+    // Load transform
+    if (node.matrix.size() == 16) {
+        glm::mat4 transform;
+        std::memcpy(&transform, node.matrix.data(), sizeof(glm::mat4));
+        // Decompose matrix
+        glm::vec3 scale;
+        glm::quat rotation;
+        glm::vec3 translation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+
+        glm::decompose(transform, scale, rotation, translation, skew, perspective);
+        newNode->SetPosition(translation);
+        newNode->SetRotation(rotation);
+        newNode->SetScale(scale);
+    } else {
+        if (node.translation.size() == 3) {
+            glm::vec3 translation;
+            std::memcpy(&translation, node.translation.data(), sizeof(glm::vec3));
+            newNode->SetPosition(translation);
+        }
+        if (node.rotation.size() == 4) {
+            glm::quat rotation;
+            std::memcpy(&rotation, node.rotation.data(), sizeof(glm::quat));
+            newNode->SetRotation(rotation);
+        }
+        if (node.scale.size() == 3) {
+            glm::vec3 scale;
+            std::memcpy(&scale, node.scale.data(), sizeof(glm::vec3));
+            newNode->SetScale(scale);
+        }
+    }
+
+    for (int i : node.children) {
+        newNode->AddChild(LoadNode(model, model.nodes[i], system));
+    }
+    return newNode;
 }
 
 void Model::Draw(VulkanRenderData&, VulkanMaterialInstance*)

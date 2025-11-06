@@ -10,17 +10,15 @@ Node::Node(Engine* engine)
 
 Node::~Node() = default;
 
-void Node::Update(float deltaTime)
+void Node::Update(float)
 {
-    (void)deltaTime;
 }
 
-void Node::PhysicsUpdate(float delta)
+void Node::PhysicsUpdate(float)
 {
-    (void)delta;
 }
 
-void Node::Draw(VulkanRenderData& rd)
+void Node::Draw(VulkanRenderData&)
 {
 }
 
@@ -39,6 +37,10 @@ Engine* Node::GetEngine()
 void Node::SetName(const std::string& name)
 {
     _name = name;
+    if (auto parent = _parent.lock()) {
+        parent->_children.erase(_name);
+        parent->_children[name] = shared_from_this();
+    }
 }
 
 std::string Node::GetName() const
@@ -50,7 +52,7 @@ void Node::SetParent(std::shared_ptr<Node> parent)
 {
     // Remove from current parent if exists.
     if (auto currentParent = _parent.lock()) {
-        currentParent->RemoveChild(shared_from_this());
+        currentParent->RemoveChild(this->GetName());
     }
 
     _parent = parent;
@@ -65,34 +67,49 @@ std::shared_ptr<Node> Node::GetParent() const
     return _parent.lock();
 }
 
-const std::vector<std::shared_ptr<Node>>& Node::GetChildren() const
+std::shared_ptr<Node> Node::GetChild(const std::string& name) const
 {
-    return _children;
+    auto it = _children.find(name);
+    if (it != _children.end()) {
+        return it->second;
+    }
+    return nullptr;
+}
+
+std::vector<std::shared_ptr<Node>> Node::GetChildren() const
+{
+    std::vector<std::shared_ptr<Node>> childrenList;
+    for (auto& [name, child] : _children) {
+        if (child) {
+            childrenList.push_back(child);
+        }
+    }
+    return childrenList;
 }
 
 void Node::AddChild(std::shared_ptr<Node> child)
 {
     if (child) {
         // Avoid adding the same child multiple times.
-        if (std::find(_children.begin(), _children.end(), child) == _children.end()) {
-            _children.push_back(child);
+        if (_children.find(child->GetName()) == _children.end()) {
+            _children.insert({child->GetName(), child});
             child->_parent = shared_from_this();
         }
     }
 }
 
-void Node::RemoveChild(std::shared_ptr<Node> child)
+void Node::RemoveChild(const std::string& child)
 {
-    auto it = std::find(_children.begin(), _children.end(), child);
+    auto it = _children.find(child);
     if (it != _children.end()) {
-        (*it)->_parent.reset();
+        (*it).second->_parent.reset();
         _children.erase(it);
     }
 }
 
 void Node::ClearChildren()
 {
-    for (auto& child : _children) {
+    for (auto& [name, child]: _children) {
         if (child) {
             child->_parent.reset();
         }

@@ -97,6 +97,7 @@ public:
 template <class T>
 class ReferenceCounter : public ReferenceBase
 {
+    template <class> friend class ReferenceCounter;
     ReferenceCounted* _value;
 
 public:
@@ -135,6 +136,15 @@ public:
         if (_value)
             _value->AddReference(*this);
         return *this;
+    }
+
+    template <class U>
+    ReferenceCounter(const ReferenceCounter<U>& copy)
+        : ReferenceBase(copy)
+        , _value(copy._value)
+    {
+        if (IsValid())
+            _value->AddReference(*this);
     }
 
     T* Get() const

@@ -28,11 +28,11 @@ public:
     void SetName(const std::string& name);
     std::string GetName() const;
     void SetParent(std::shared_ptr<Node> parent);
-    std::shared_ptr<Node> GetParent() const;
-    Node* GetChild(std::string_view name);
-    std::vector<Node*> GetChildren() const;
-    void AddChild(std::unique_ptr<Node> child);
-    void RemoveChild(std::string_view name);
+    virtual std::shared_ptr<Node> GetParent() const;
+    std::shared_ptr<Node> GetChild(const std::string& name) const;
+    std::vector<std::shared_ptr<Node>> GetChildren() const;
+    virtual void AddChild(std::shared_ptr<Node> child);
+    void RemoveChild(const std::string& child);
     void ClearChildren();
 };
 

@@ -13,7 +13,8 @@ class VulkanInstance;
 class VulkanDevice;
 class VulkanSwapchain;
 
-class VulkanWindow final : public VulkanDeviceObject, public Window {
+class VulkanWindow final : public Window {
+    VulkanDevice* _device;
     VkSurfaceKHR _surface;
     std::unique_ptr<VulkanSwapchain> _swapchain;
 
@@ -22,6 +23,7 @@ public:
     ~VulkanWindow();
 
     static std::span<const char*> GetVulkanExtensions(); /** @brief Returns an array of extensions the vulkan device needs. */
+    VulkanDevice* GetDevice() const;
     VkSurfaceKHR GetSurface();
     VulkanSwapchain* GetSwapchain();
 };

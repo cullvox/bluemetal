@@ -6,8 +6,9 @@
 namespace bl 
 {
 
-class VulkanBuffer : public VulkanDeviceObject 
+class VulkanBuffer
 {
+    VulkanDevice* _device;
     VkBufferUsageFlags _usage;
     VmaMemoryUsage _memoryUsage;
     VkDeviceSize _size;

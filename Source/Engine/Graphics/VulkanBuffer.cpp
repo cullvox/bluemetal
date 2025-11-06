@@ -5,7 +5,7 @@
 namespace bl {
 
 VulkanBuffer::VulkanBuffer()
-    : VulkanDeviceObject(nullptr)
+    : _device(nullptr)
     , _usage(0)
     , _memoryUsage(VMA_MEMORY_USAGE_UNKNOWN)
     , _size(0)
@@ -13,7 +13,7 @@ VulkanBuffer::VulkanBuffer()
     , _allocation(VK_NULL_HANDLE) {}
 
 VulkanBuffer::VulkanBuffer(VulkanBuffer&& rhs)
-    : VulkanDeviceObject(rhs.GetDevice())
+    : _device(rhs._device)
     , _usage(rhs._usage)
     , _memoryUsage(rhs._memoryUsage)
     , _size(rhs._size)
@@ -28,11 +28,11 @@ VulkanBuffer::VulkanBuffer(VulkanBuffer&& rhs)
 }
 
 VulkanBuffer::VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkDeviceSize size, VmaAllocationInfo* allocationInfo, bool mapped)
-    : VulkanDeviceObject(device)
+    : _device(device)
     , _usage(usage)
     , _memoryUsage(memoryUsage)
     , _size(size) {
-    uint32_t graphicsFamilyIndex = GetDevice()->GetGraphicsFamilyIndex();
+    uint32_t graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
 
     VkBufferCreateInfo bufferCreateInfo = {};
     bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -55,7 +55,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMe
     allocationCreateInfo.pUserData = nullptr;
     allocationCreateInfo.priority = 0.0f;
 
-    VK_CHECK(vmaCreateBuffer(GetDevice()->GetAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, allocationInfo))
+    VK_CHECK(vmaCreateBuffer(_device->GetAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, allocationInfo))
 }
 
 VulkanBuffer::~VulkanBuffer() {
@@ -68,14 +68,14 @@ VulkanBuffer& VulkanBuffer::operator=(VulkanBuffer&& rhs) {
         Cleanup();
     }
 
-    // _device = rhs._device;
+    _device = rhs._device;
     _usage = rhs._usage;
     _memoryUsage = rhs._memoryUsage;
     _size = rhs._size;
     _buffer = rhs._buffer;
     _allocation = rhs._allocation;
 
-    // rhs._device = nullptr;
+    rhs._device = nullptr;
     rhs._usage = 0;
     rhs._memoryUsage = VMA_MEMORY_USAGE_UNKNOWN;
     rhs._size = 0;
@@ -102,12 +102,12 @@ VkDeviceSize VulkanBuffer::GetSize() const
 
 void VulkanBuffer::Map(void** mapped)
 {
-    VK_CHECK(vmaMapMemory(GetDevice()->GetAllocator(), _allocation, mapped))
+    VK_CHECK(vmaMapMemory(_device->GetAllocator(), _allocation, mapped))
 }
 
 void VulkanBuffer::Unmap()
 {
-    vmaUnmapMemory(GetDevice()->GetAllocator(), _allocation);
+    vmaUnmapMemory(_device->GetAllocator(), _allocation);
 }
 
 void VulkanBuffer::Upload(std::span<const std::byte> data)
@@ -119,17 +119,11 @@ void VulkanBuffer::Upload(std::span<const std::byte> data)
 
     // Build a host visible intermediate buffer for a quick transfer.
     VmaAllocationInfo allocInfo = {};
-    VulkanBuffer stagingBuffer{
-        GetDevice(), 
-        VK_BUFFER_USAGE_TRANSFER_SRC_BIT, 
-        VMA_MEMORY_USAGE_CPU_ONLY,
-        _size,
-        &allocInfo,
-        true};
-        
+    VulkanBuffer stagingBuffer{_device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, _size, &allocInfo,true};
+
     std::memcpy(allocInfo.pMappedData, data.data(), _size);
 
-    GetDevice()->ImmediateSubmit([&](VkCommandBuffer cmd){ 
+    _device->ImmediateSubmit([&](VkCommandBuffer cmd){ 
         VkBufferCopy region = {};
         region.srcOffset = 0;
         region.dstOffset = 0;
@@ -141,13 +135,13 @@ void VulkanBuffer::Upload(std::span<const std::byte> data)
 
 void VulkanBuffer::Flush(VkDeviceSize offset, VkDeviceSize size)
 {
-    VK_CHECK(vmaFlushAllocation(GetDevice()->GetAllocator(), _allocation, offset, size))
+    VK_CHECK(vmaFlushAllocation(_device->GetAllocator(), _allocation, offset, size))
 }
 
 void VulkanBuffer::Cleanup()
 {
     if (_buffer != VK_NULL_HANDLE)
-        vmaDestroyBuffer(GetDevice()->GetAllocator(), _buffer, _allocation);
+        vmaDestroyBuffer(_device->GetAllocator(), _buffer, _allocation);
 }
 
 } // namespace bl
