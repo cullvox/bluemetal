@@ -23,6 +23,7 @@ enum class MouseInputMode {
 
 class Mouse {
     SDL_MouseButtonFlags _buttonFlags{0};
+    glm::vec2 _lastLocation{};
     glm::vec2 _relative{};
     glm::vec2 _location{};
     glm::vec2 _wheel{};

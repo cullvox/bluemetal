@@ -11,6 +11,13 @@ namespace bl
 //     }
 // }
 
+void Mouse::Poll()
+{
+    _buttonFlags = SDL_GetMouseState(&_location.x, &_location.y);
+    _relative = _location - _lastLocation;
+    _lastLocation = _location;
+}
+
 int Mouse::MouseButtonToSDL(MouseButton button)
 {
     switch (button)

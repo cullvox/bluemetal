@@ -71,8 +71,8 @@ int main(int argc, const char** argv)
 
     material->SetSampledImage2D("inAlbedo", sampler, texture);
 
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -10.0f);
-    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
     glm::mat4 view = glm::identity<glm::mat4>();
     float yaw = -90.0f, pitch = 0.0f;
@@ -83,8 +83,8 @@ int main(int argc, const char** argv)
     auto extenti = glm::ivec2{(int)extent.width, (int)extent.height};
     auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
-    view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
-    auto projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.1f, 100.0f);
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    auto projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 100.0f);
 
 
 
@@ -112,6 +112,8 @@ int main(int argc, const char** argv)
         auto mousePos = mouse.GetMousePosition();
         auto mouseDelta = mouse.GetMouseDelta();
 
+        bl::Print::Debug("Mouse down: {}", mouse.IsButtonDown(bl::MouseButton::Left));
+
         if (mouse.IsButtonDown(bl::MouseButton::Left) && window->GetFocused() && !ImGui::GetIO().WantCaptureMouse)
         {
             mouse.SetCaptured(window, true);
@@ -138,14 +140,14 @@ int main(int argc, const char** argv)
             bl::Print::Info("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
         }
 
-        view = glm::lookAt(cameraPos, cameraPos - cameraFront, cameraUp);
+        view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 
         bl::Print::Info("Mouse: {}, {}", mousePos.x, mousePos.y);
         bl::Print::Info("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
 
         extent = window->GetExtent();
         extentf = glm::vec2{(float)extent.width, (float)extent.height};
-        projection = glm::perspectiveFov(70.0f, extentf.x, extentf.y, 0.1f, 1000.0f);
+        projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 1000.0f);
         // auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
         renderer->SetView(view);
@@ -225,7 +227,7 @@ int main(int argc, const char** argv)
 
             if (ImGui::CollapsingHeader("Input"))
             {
-                ImGui::Text("Camera Direction: %f, %f, %f", direction.x, direction.y, direction.z);
+                ImGui::Text("Camera Direction: %f, %f", yaw, pitch);
                 ImGui::Text("Mouse Relative: %f, %f", mouseDelta.x, mouseDelta.y);
                 ImGui::Text("x: %f, y: %f, z: %f", cameraPos.x, cameraPos.y, cameraPos.z);
             }

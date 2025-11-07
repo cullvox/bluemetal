@@ -18,7 +18,7 @@ void MeshInstance3D::Draw(VulkanRenderData& rd)
 
     bl::ObjectPC object{};
     object.model = glm::identity<glm::mat4>();
-    object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, -10.0f});
+    object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, -50.0f});
 
     _material->PushConstant(rd, 0, sizeof(ObjectPC), &object);
 

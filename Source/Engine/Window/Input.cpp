@@ -43,16 +43,16 @@ void InputSystem::Poll(std::function<void(SDL_Event&)> extraFunc)
             if (window)
                 window->SetClose(true);
             break;
-        case SDL_EVENT_MOUSE_MOTION:
-            _mouse.SetLocation({event.motion.x, event.motion.y});
-            _mouse.SetRelativeMotion({event.motion.xrel, event.motion.yrel});
-            break;
-        case SDL_EVENT_MOUSE_BUTTON_DOWN:
-            _mouse.SetMouseButtonFlag(event.button.button, true);
-            break;
-        case SDL_EVENT_MOUSE_BUTTON_UP:
-            _mouse.SetMouseButtonFlag(event.button.button, false);
-            break;
+        //case SDL_EVENT_MOUSE_MOTION:
+        //    _mouse.SetLocation({event.motion.x, event.motion.y});
+        //    _mouse.SetRelativeMotion({event.motion.xrel, event.motion.yrel});
+        //    break;
+        // case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        //     _mouse.SetMouseButtonFlag(event.button.button, true);
+        //     break;
+        // case SDL_EVENT_MOUSE_BUTTON_UP:
+        //     _mouse.SetMouseButtonFlag(event.button.button, false);
+        //     break;
         case SDL_EVENT_MOUSE_WHEEL:
             _mouse.SetWheel({event.wheel.x, event.wheel.y});
             break;
@@ -64,6 +64,7 @@ void InputSystem::Poll(std::function<void(SDL_Event&)> extraFunc)
 
     SDL_PumpEvents();
     _keyboard.Poll();
+    _mouse.Poll();
 
 }
 
