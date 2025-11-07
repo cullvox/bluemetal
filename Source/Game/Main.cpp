@@ -71,7 +71,7 @@ int main(int argc, const char** argv)
 
     material->SetSampledImage2D("inAlbedo", sampler, texture);
 
-    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
     glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
     glm::mat4 view = glm::identity<glm::mat4>();
@@ -119,6 +119,7 @@ int main(int argc, const char** argv)
             mouse.SetCaptured(window, true);
         }
 
+        cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
         if (mouse.GetCaptured(window))
         {
             float sensitivity = 0.1f;
@@ -148,6 +149,7 @@ int main(int argc, const char** argv)
         extent = window->GetExtent();
         extentf = glm::vec2{(float)extent.width, (float)extent.height};
         projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 1000.0f);
+        projection[1][1] *= -1;
         // auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
         renderer->SetView(view);
