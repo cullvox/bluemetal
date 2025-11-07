@@ -26,13 +26,20 @@ void Mesh::UploadIndices(std::span<uint32_t> indices)
 {
     _indexBuffer = VulkanBuffer{_system->GetDevice(), VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_ONLY, indices.size_bytes(), nullptr, false};
     _indexBuffer.Upload(std::as_bytes(indices));
+    _indicesCount = static_cast<uint32_t>(indices.size());
 }
 
 void Mesh::Bind(VkCommandBuffer cmd)
 {
     VkBuffer buffer = _vertexBuffer.Get();
-    vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, nullptr);
+    std::array<VkDeviceSize, 1> offsets {{0}};
+    vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, offsets.data());
     vkCmdBindIndexBuffer(cmd, _indexBuffer.Get(), 0, VK_INDEX_TYPE_UINT32);
+}
+
+uint32_t Mesh::GetIndicesCount()
+{
+    return _indicesCount;
 }
 
 }

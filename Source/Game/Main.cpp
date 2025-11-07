@@ -53,36 +53,23 @@ int main(int argc, const char** argv)
 
     auto vert = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.vert.spv");
     auto frag = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.frag.spv");
+    auto material = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
     auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.glb");
     auto dragonModel = resourceMgr->Load<bl::Model>("Resources/Models/dragon_quick_sculpt.glb");
-    auto material = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
+    auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/furry.qoi");
+    auto sampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/LinearSampler.bmr");
 
     auto renderer = engine.GetRenderer();
 
-    bl::VulkanPipelineStateInfo psi{};
-    psi.rasterizerState.cullMode = VK_CULL_MODE_BACK_BIT;
-    psi.stages.shaders = { vert.Get()->Get(), frag.Get()->Get() };
-
     auto window = engine.GetWindow();
     auto vulkanWindow = dynamic_cast<bl::VulkanWindow*>(window);
-
-    // auto [pass, subpass] = renderer->GetRenderPass(bl::RenderPassType::eGeometry);
-
-    // auto material = std::make_unique<bl::Material>(graphics->GetDevice(), pass, subpass, psi, vulkanWindow->GetSwapchain()->GetImageCount(), 1);
-    // material->SetVector4("material.color", { 1.0f, 0.0f, 0.0, 1.0f});
 
     auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(vulkanWindow);
 
     bl::FrameCounter frameCounter;
 
-    bl::ObjectPC object{};
-    object.model = glm::identity<glm::mat4>();
-    object.model = glm::translate(object.model, glm::vec3{0.0f, 0.0f, 0.0f});
 
-    auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/furry.qoi");
-    auto sampler = bl::VulkanSampler{graphics->GetDevice(), VK_FILTER_LINEAR};
-
-    // material->SetSampledImage2D("inAlbedo", &sampler, texture.Get()->GetImage());
+    material->SetSampledImage2D("inAlbedo", sampler, texture);
 
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, -10.0f);
     glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
@@ -199,12 +186,8 @@ int main(int argc, const char** argv)
             scissor.extent = {extent.width, extent.height};
             vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
 
-            material->Bind(rd);
-            material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
+            model->GetTree()->Draw(rd);
 
-            //model.Get()->Draw(rd, material->GetMaterial());
-
-            material->PushConstant(rd, 0, sizeof(bl::ObjectPC), &object);
             // dragonModel.Get()->Draw(rd, material->GetMaterial());
 
             imgui->BeginFrame();

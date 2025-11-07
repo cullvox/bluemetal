@@ -23,7 +23,6 @@ class Model : public Resource
     std::vector<Ref<MaterialInstance>> _materials;
     std::vector<Ref<Texture2D>> _textures;
     std::shared_ptr<Node3D> _root;
-    // Ref<SceneTree> _tree;
 
     std::shared_ptr<Node3D> LoadNode(const tinygltf::Model& model, const tinygltf::Node& node, GraphicsSystem* system);
 
@@ -31,7 +30,7 @@ public:
     Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
     ~Model();
 
-    void Draw(VulkanRenderData& rd, VulkanMaterialInstance* material);
+    std::shared_ptr<Node3D> GetTree();
 };
 
 }

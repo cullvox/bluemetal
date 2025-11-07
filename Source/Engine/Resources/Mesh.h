@@ -15,6 +15,7 @@ class Mesh : public Resource
     GraphicsSystem* _system;
     VulkanBuffer _vertexBuffer;
     VulkanBuffer _indexBuffer;
+    uint32_t _indicesCount;
 
     void UploadVertices(std::span<const std::byte> bytes);
 
@@ -30,6 +31,7 @@ public:
     }
 
     void UploadIndices(std::span<uint32_t> indices);
+    uint32_t GetIndicesCount();
 
     void Bind(VkCommandBuffer buffer);
 };

@@ -89,7 +89,8 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
                     }
                     for (int i = 0; i < attribAccessor.count; i++) {
                         // sorta unsafe
-                        std::memcpy(&vertices[i].position, &buffer.data[i * sizeof(glm::vec3)], sizeof(glm::vec3));
+                        size_t offset = bufferView.byteOffset + (i * sizeof(glm::vec3));
+                        std::memcpy(&vertices[i].position, &buffer.data[offset], sizeof(glm::vec3));
                     }
                 }
 
@@ -99,7 +100,8 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
                     }
                     for (int i = 0; i < attribAccessor.count; i++) {
                         // sorta unsafe
-                        std::memcpy(&vertices[i].position, &buffer.data[i * sizeof(glm::vec3)], sizeof(glm::vec3));
+                        size_t offset = i * sizeof(glm::vec3) + bufferView.byteOffset;
+                        std::memcpy(&vertices[i].normal, &buffer.data[offset], sizeof(glm::vec3));
                     }
                 }
 
@@ -109,12 +111,14 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
                     }
                     for (int i = 0; i < attribAccessor.count; i++) {
                         // sorta unsafe
-                        std::memcpy(&vertices[i].position, &buffer.data[i * sizeof(glm::vec2)], sizeof(glm::vec2));
+                        size_t offset = i * sizeof(glm::vec2) + bufferView.byteOffset;
+                        std::memcpy(&vertices[i].texCoords, &buffer.data[offset], sizeof(glm::vec2));
                     }
                 }
             }
 
-            Ref<Mesh> m = resourceSystem->AddSubResource<Mesh>(Ref<Resource>(this));
+            auto m = std::make_shared<Mesh>(resourceSystem, system, "");
+            AddSubResource(m);
             _meshes.push_back(m);
             m->UploadVertices<Vertex>(vertices);
             m->UploadIndices(indices);
@@ -189,10 +193,9 @@ std::shared_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
     return newNode;
 }
 
-void Model::Draw(VulkanRenderData&, VulkanMaterialInstance*)
+std::shared_ptr<Node3D> Model::GetTree()
 {
-    for (int i = 0; i < (int)_meshes.size(); i++) {
-    }
+    return _root;
 }
 
 }

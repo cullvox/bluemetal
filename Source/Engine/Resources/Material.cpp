@@ -33,7 +33,7 @@ Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSyste
 
         auto vertexShader = resourceSystem->Load<Shader>(vertexPath);
         auto fragmentShader = resourceSystem->Load<Shader>(fragmentPath);
-        info.stages.shaders = std::vector<VulkanShader*>{ vertexShader.Get()->Get(), fragmentShader.Get()->Get() };
+        info.stages.shaders = std::vector<VulkanShader*>{ vertexShader->Get(), fragmentShader->Get() };
     }
     catch (...)
     {
@@ -88,7 +88,7 @@ void Material::SetMatrix(const std::string& name, glm::mat4 value)
 
 void Material::SetSampledImage2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image)
 {
-    _material->SetSampledImage2D(name, sampler.Get()->GetSampler(), image.Get()->GetImage());
+    _material->SetSampledImage2D(name, sampler->GetSampler(), image->GetImage());
 }
 
 const VulkanPipeline* Material::GetVulkanPipeline()

@@ -70,7 +70,7 @@ void MaterialInstance::SetMatrix(const std::string& name, glm::mat4 value)
 
 void MaterialInstance::SetSampledTexture(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image)
 {
-    _materialInstance->SetSampledImage2D(name, sampler.Get()->GetSampler(), image.Get()->GetImage());
+    _materialInstance->SetSampledImage2D(name, sampler->GetSampler(), image->GetImage());
 }
 
 void MaterialInstance::UpdateUniforms()

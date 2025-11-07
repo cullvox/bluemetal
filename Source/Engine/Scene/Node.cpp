@@ -18,8 +18,11 @@ void Node::PhysicsUpdate(float)
 {
 }
 
-void Node::Draw(VulkanRenderData&)
+void Node::Draw(VulkanRenderData& rd)
 {
+    for (auto& [name, child] : _children) {
+        child->Draw(rd);
+    }
 }
 
 Node* Node::Clone()

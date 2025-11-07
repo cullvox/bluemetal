@@ -1,10 +1,12 @@
 #include "Sampler.h"
 #include "Graphics/GraphicsSystem.h"
+#include "Graphics/VulkanConversions.h"
 
 namespace bl {
 
 Sampler::Sampler(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
+    , _device(system->GetDevice())
 {
     nlohmann::json data;
     std::ifstream file(path);
@@ -49,7 +51,6 @@ void Sampler::RecreateSampler()
         GetMaxLod(),
         GetBorderColor(),
         IsUnnormalizedCoordinates()));
-    UpdateReferences();
 }
 
 VkSampler Sampler::Get() const

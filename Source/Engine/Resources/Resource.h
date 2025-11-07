@@ -21,12 +21,12 @@ class ResourceSystem;
  * be instantiated throughout the program lifetime. Once the @ref Load function is
  * called, the heavy data lifting will begin.
  */
-class Resource : public ReferenceCounted 
+class Resource : public std::enable_shared_from_this<Resource> 
 {
     friend class ResourceSystem;
     ResourceSystem* _resourceSystem; /** @brief Pointer to the resource manager that manages this resource. */
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
-    std::vector<std::unique_ptr<Resource>> _subResources; /** @brief Sub-resources that are part of this resource, but managed by it. */
+    std::vector<std::shared_ptr<Resource>> _subResources; /** @brief Sub-resources that are part of this resource, but managed by it. */
 
 public:
     /**
@@ -46,6 +46,8 @@ public:
      * @return The unique path of the resource.
      */
     const std::filesystem::path& GetPath() const { return _path; }
+
+    void AddSubResource(std::shared_ptr<Resource> res);
 
 };
 

@@ -16,11 +16,8 @@ public:
     Texture2D(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
     ~Texture2D();
 
-    VulkanImage* GetImage();
-
 private:
     VulkanDevice* _device;
-    std::unique_ptr<VulkanImage> _image;
 };
 
 } // namespace bl

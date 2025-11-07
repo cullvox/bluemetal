@@ -78,6 +78,7 @@ private:
     // Uniform data
     VulkanBuffer _globalBuffer;
     GlobalUBO _uboData;
+    VkDescriptorSet _globalSet;
     void* _globalBufferMap;
     float _prevTime;
 

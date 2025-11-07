@@ -87,9 +87,4 @@ Texture2D::~Texture2D()
 {
 }
 
-VulkanImage* Texture2D::GetImage() 
-{
-    return _image.get();
-}
-
 } // namespace bl

@@ -238,7 +238,8 @@ void Renderer::Render(RenderFunction func)
     VulkanRenderData rd = {
         cmd,
         _currentFrame,
-        _imageIndex
+        _imageIndex,
+        _globalSet
     };
 
     func(rd);
@@ -389,7 +390,7 @@ void Renderer::CreateGlobalUniform()
 
     auto layout = _device->AcquireDescriptorSetLayout(bindings);
 
-    VkDescriptorSet globalSet = _descriptorSetCache.Allocate(layout);
+    _globalSet = _descriptorSetCache.Allocate(layout);
 
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.buffer = _globalBuffer.Get();
@@ -399,7 +400,7 @@ void Renderer::CreateGlobalUniform()
     VkWriteDescriptorSet write = {};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write.pNext = nullptr;
-    write.dstSet = globalSet;
+    write.dstSet = _globalSet;
     write.dstBinding = 0;
     write.dstArrayElement = 0;
     write.descriptorCount = 1;
