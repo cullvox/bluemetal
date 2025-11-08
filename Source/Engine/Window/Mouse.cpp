@@ -14,8 +14,7 @@ namespace bl
 void Mouse::Poll()
 {
     _buttonFlags = SDL_GetMouseState(&_location.x, &_location.y);
-    _relative = _location - _lastLocation;
-    _lastLocation = _location;
+    SDL_GetRelativeMouseState(&_relative.x, &_relative.y);
 }
 
 int Mouse::MouseButtonToSDL(MouseButton button)

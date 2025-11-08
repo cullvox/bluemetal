@@ -72,7 +72,7 @@ int main(int argc, const char** argv)
     material->SetSampledImage2D("inAlbedo", sampler, texture);
 
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
+    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::identity<glm::mat4>();
     float yaw = -90.0f, pitch = 0.0f;
@@ -88,21 +88,26 @@ int main(int argc, const char** argv)
     {
         frameCounter.BeginFrame();
 
-        input->Poll([imgui](SDL_Event& event){
+        input->Poll([imgui, &mouse, window](SDL_Event& event){
             imgui->Process(event);
         });
 
         if(keyboard.GetKeyDown(bl::Scancode::W))
-            cameraPos += -walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
-        if (keyboard.GetKeyDown(bl::Scancode::S))
             cameraPos += walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
+        if (keyboard.GetKeyDown(bl::Scancode::S))
+            cameraPos -= walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
         if (keyboard.GetKeyDown(bl::Scancode::A))
-            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * walkingSpeed * frameCounter.GetDeltaTime();
+            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * walkingSpeed * frameCounter.GetDeltaTime();
         if (keyboard.GetKeyDown(bl::Scancode::D))
-            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * -walkingSpeed * frameCounter.GetDeltaTime();
+            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * walkingSpeed * frameCounter.GetDeltaTime();
+        if (keyboard.GetKeyDown(bl::Scancode::Space))
+            cameraPos += walkingSpeed * cameraUp * frameCounter.GetDeltaTime();
+        if (keyboard.GetKeyDown(bl::Scancode::LeftShift))
+            cameraPos -= walkingSpeed * cameraUp * frameCounter.GetDeltaTime();
         if (keyboard.GetKeyDown(bl::Scancode::Escape))
         {
             mouse.SetCaptured(window, false);
+            ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
         }
 
         auto mousePos = mouse.GetMousePosition();
@@ -113,9 +118,9 @@ int main(int argc, const char** argv)
         if (mouse.IsButtonDown(bl::MouseButton::Left) && window->GetFocused() && !ImGui::GetIO().WantCaptureMouse)
         {
             mouse.SetCaptured(window, true);
+            ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
         }
 
-        cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
         if (mouse.GetCaptured(window))
         {
             float sensitivity = 0.1f;
@@ -224,6 +229,9 @@ int main(int argc, const char** argv)
                 ImGui::Text("Camera Direction: %f, %f", yaw, pitch);
                 ImGui::Text("Mouse Relative: %f, %f", mouseDelta.x, mouseDelta.y);
                 ImGui::Text("x: %f, y: %f, z: %f", cameraPos.x, cameraPos.y, cameraPos.z);
+                ImGui::Text("Mouse Captured: %s", mouse.GetCaptured(window) ? "Yes" : "No");
+                ImGui::Text("Window Focused: %s", window->GetFocused() ? "Yes" : "No");
+                ImGui::Text("ImGui Wants Mouse: %s", ImGui::GetIO().WantCaptureMouse ? "Yes" : "No");
             }
 
 
