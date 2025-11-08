@@ -23,8 +23,8 @@ layout(push_constant) uniform Constants
     mat4 model;
 } object;
 
-void main() 
+void main()
 {
     outTextureCoordinates = inTextureCoordinates;
-    gl_Position = global.projection * global.view * object.model * vec4(inPosition, 1.0);
+    gl_Position = global.projection * object.model * vec4(inPosition, 1.0);
 }

@@ -83,10 +83,6 @@ int main(int argc, const char** argv)
     auto extenti = glm::ivec2{(int)extent.width, (int)extent.height};
     auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
 
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    auto projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 100.0f);
-
-
 
     while (!window->GetCloseRequested())
     {
@@ -148,14 +144,11 @@ int main(int argc, const char** argv)
 
         extent = window->GetExtent();
         extentf = glm::vec2{(float)extent.width, (float)extent.height};
-        projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 1000.0f);
-        projection[1][1] *= -1;
-        // auto extentf = glm::vec2{(float)extent.width, (float)extent.height};
+        glm::mat4 projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 1000.0f);
+        projection[1][1] *= -1; // Invert the projection for Vulkan y (0, 1)
 
-        renderer->SetView(view);
-        renderer->SetProjection(projection);
-
-        // object.model = glm::rotate(object.model, frameCounter.GetDeltaTime() * glm::radians(180.0f), glm::vec3{0.f, 1.f, 1.f});
+        renderer->SetView(glm::identity<glm::mat4>());
+        renderer->SetProjection(projection * view);
 
         glm::vec3 position{ sinf(bl::Time::Current() / 1000.f) * 10.f, 0.0f, 10.0f };
         glm::vec3 velocity{ cosf(bl::Time::Current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };
