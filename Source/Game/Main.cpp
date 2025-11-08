@@ -72,8 +72,8 @@ int main(int argc, const char** argv)
     material->SetSampledImage2D("inAlbedo", sampler, texture);
 
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f,  0.0f);
+    glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, 1.0f);
+    glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
     glm::mat4 view = glm::identity<glm::mat4>();
     float yaw = -90.0f, pitch = 0.0f;
     float walkingSpeed = 9.0f;
@@ -138,7 +138,6 @@ int main(int argc, const char** argv)
         }
 
         view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
         bl::Print::Info("Mouse: {}, {}", mousePos.x, mousePos.y);
         bl::Print::Info("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
 
@@ -147,8 +146,8 @@ int main(int argc, const char** argv)
         glm::mat4 projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 1000.0f);
         projection[1][1] *= -1; // Invert the projection for Vulkan y (0, 1)
 
-        renderer->SetView(glm::identity<glm::mat4>());
-        renderer->SetProjection(projection * view);
+        renderer->SetView(view);
+        renderer->SetProjection(projection);
 
         glm::vec3 position{ sinf(bl::Time::Current() / 1000.f) * 10.f, 0.0f, 10.0f };
         glm::vec3 velocity{ cosf(bl::Time::Current() / 1000.f) * 1 / 100.f, 0.0f, 0.0f };

@@ -9,13 +9,12 @@ layout(location=0) out vec2 outTextureCoordinates;
 
 layout(set=0, binding=0) uniform GlobalUniform
 {
-    float time;
-    float dt;
-    vec2 resolution;
-    vec2 mouse;
-
     mat4 view;
     mat4 projection;
+    vec2 resolution;
+    vec2 mouse;
+    float time;
+    float dt;
 } global;
 
 layout(push_constant) uniform Constants
@@ -26,5 +25,5 @@ layout(push_constant) uniform Constants
 void main()
 {
     outTextureCoordinates = inTextureCoordinates;
-    gl_Position = global.projection * object.model * vec4(inPosition, 1.0);
+    gl_Position = global.projection * global.view * object.model * vec4(inPosition, 1.0);
 }
