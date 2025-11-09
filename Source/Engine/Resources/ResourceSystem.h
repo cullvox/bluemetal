@@ -9,7 +9,7 @@
 
 namespace bl {
 
-concept ResourceType = std::is_base_of_t<Resource, T>;
+// concept ResourceType = std::is_base_of_t<Resource, T>;
 
 class ResourceSystem : public System {
     std::unordered_map<std::filesystem::path, std::shared_ptr<Resource>> _resources;

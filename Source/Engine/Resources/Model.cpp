@@ -125,6 +125,8 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
         }
     }
 
+    //model.textures[0].source
+
     // Build out the scene tree for model loading.
     const auto& scene = model.scenes[model.defaultScene];
 
