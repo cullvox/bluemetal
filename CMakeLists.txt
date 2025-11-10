@@ -78,7 +78,7 @@ CPMAddPackage("gh:syoyo/tinygltf#v2.9.6")
 CPMAddPackage("gh:auburn/fastnoise2@0.10.0-alpha")
 CPMAddPackage("gh:zeux/volk#1.4.304")
 CPMAddPackage("gh:gpuopen-librariesandsdks/vulkanmemoryallocator@3.1.0")
-CPMAddPackage("gh:cullvox/qoixx#cmake_and_windows_fix")
+CPMAddPackage("gh:cullvox/qoixx#addspan")
 
 
 #===============================================================================
