@@ -53,6 +53,7 @@ list(APPEND Sources
   "Resources/Sound.cpp"
   "Resources/Shader.cpp"
   "Resources/Material.cpp"
+  "Resources/Texture.cpp"
   "Resources/Texture2D.cpp"
   "Resources/MaterialInstance.cpp"
   "Resources/Mesh.cpp"

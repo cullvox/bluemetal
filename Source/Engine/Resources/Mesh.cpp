@@ -1,4 +1,5 @@
 #include "Graphics/Vulkan.h"
+#include "Graphics/GraphicsSystem.h"
 #include "Mesh.h"
 
 namespace bl

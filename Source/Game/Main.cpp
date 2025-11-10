@@ -6,6 +6,7 @@
 #include "Resources/StaticMesh.h"
 #include "Graphics/VulkanShader.h"
 #include "Graphics/VulkanPhysicalDevice.h"
+#include "Graphics/VulkanWindow.h"
 #include "Graphics/VulkanPipeline.h"
 #include "Graphics/Vertex.h"
 #include "Resources/Material.h"

@@ -16,6 +16,58 @@
 
 namespace bl {
 
+static std::shared_ptr<Node3D> LoadNode(const tinygltf::Model& model, const std::vector<Ref<Mesh>>& meshes, const tinygltf::Node& node, GraphicsSystem* system)
+{
+    std::shared_ptr<Node3D> newNode{nullptr};
+    if (node.mesh < 0) {
+        newNode = std::make_unique<Node3D>(&system->GetEngine());
+    } else {
+        auto meshNode = std::make_unique<MeshInstance3D>(&system->GetEngine());
+        meshNode->SetMesh(meshes[node.mesh]);
+        // meshNode->SetMaterial(_materials[...]);
+        newNode = std::move(meshNode);
+    }
+
+    newNode->SetName(node.name);
+
+    // Load transform
+    if (node.matrix.size() == 16) {
+        glm::mat4 transform;
+        std::memcpy(&transform, node.matrix.data(), sizeof(glm::mat4));
+        // Decompose matrix
+        glm::vec3 scale;
+        glm::quat rotation;
+        glm::vec3 translation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+
+        glm::decompose(transform, scale, rotation, translation, skew, perspective);
+        newNode->SetPosition(translation);
+        newNode->SetRotation(rotation);
+        newNode->SetScale(scale);
+    } else {
+        if (node.translation.size() == 3) {
+            glm::vec3 translation;
+            std::memcpy(&translation, node.translation.data(), sizeof(glm::vec3));
+            newNode->SetPosition(translation);
+        }
+        if (node.rotation.size() == 4) {
+            glm::quat rotation;
+            std::memcpy(&rotation, node.rotation.data(), sizeof(glm::quat));
+            newNode->SetRotation(rotation);
+        }
+        if (node.scale.size() == 3) {
+            glm::vec3 scale;
+            std::memcpy(&scale, node.scale.data(), sizeof(glm::vec3));
+            newNode->SetScale(scale);
+        }
+    }
+
+    for (int i : node.children) {
+        newNode->AddChild(LoadNode(model, meshes, model.nodes[i], system));
+    }
+    return newNode;
+}
 
 Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
@@ -135,65 +187,12 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
 
     for (int i : scene.nodes)
     {
-        _root->AddChild(LoadNode(model, model.nodes[i], system));
+        _root->AddChild(LoadNode(model, _meshes, model.nodes[i], system));
     }
 }
 
 Model::~Model()
 {
-}
-
-std::shared_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tinygltf::Node& node, GraphicsSystem* system)
-{
-    std::shared_ptr<Node3D> newNode{nullptr};
-    if (node.mesh < 0) {
-        newNode = std::make_unique<Node3D>(&system->GetEngine());
-    } else {
-        auto meshNode = std::make_unique<MeshInstance3D>(&system->GetEngine());
-        meshNode->SetMesh(_meshes[node.mesh]);
-        // meshNode->SetMaterial(_materials[...]);
-        newNode = std::move(meshNode);
-    }
-
-    newNode->SetName(node.name);
-
-    // Load transform
-    if (node.matrix.size() == 16) {
-        glm::mat4 transform;
-        std::memcpy(&transform, node.matrix.data(), sizeof(glm::mat4));
-        // Decompose matrix
-        glm::vec3 scale;
-        glm::quat rotation;
-        glm::vec3 translation;
-        glm::vec3 skew;
-        glm::vec4 perspective;
-
-        glm::decompose(transform, scale, rotation, translation, skew, perspective);
-        newNode->SetPosition(translation);
-        newNode->SetRotation(rotation);
-        newNode->SetScale(scale);
-    } else {
-        if (node.translation.size() == 3) {
-            glm::vec3 translation;
-            std::memcpy(&translation, node.translation.data(), sizeof(glm::vec3));
-            newNode->SetPosition(translation);
-        }
-        if (node.rotation.size() == 4) {
-            glm::quat rotation;
-            std::memcpy(&rotation, node.rotation.data(), sizeof(glm::quat));
-            newNode->SetRotation(rotation);
-        }
-        if (node.scale.size() == 3) {
-            glm::vec3 scale;
-            std::memcpy(&scale, node.scale.data(), sizeof(glm::vec3));
-            newNode->SetScale(scale);
-        }
-    }
-
-    for (int i : node.children) {
-        newNode->AddChild(LoadNode(model, model.nodes[i], system));
-    }
-    return newNode;
 }
 
 std::shared_ptr<Node3D> Model::GetTree()
