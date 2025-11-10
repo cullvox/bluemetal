@@ -1,13 +1,10 @@
 #pragma once
 
 #include "VulkanDevice.h"
-#include "VulkanDeviceObject.h"
 
-namespace bl 
-{
+namespace bl {
 
-class VulkanBuffer
-{
+class VulkanBuffer {
     VulkanDevice* _device;
     VkBufferUsageFlags _usage;
     VmaMemoryUsage _memoryUsage;
@@ -15,13 +12,16 @@ class VulkanBuffer
     VkBuffer _buffer;
     VmaAllocation _allocation;
     void Cleanup();
+
 public:
     VulkanBuffer();
-    VulkanBuffer(VulkanBuffer&& rhs);
+    VulkanBuffer(VulkanBuffer&) = delete;
+    VulkanBuffer(VulkanBuffer&& rhs) noexcept;
     VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkDeviceSize size, VmaAllocationInfo* allocationInfo = nullptr, bool mapped = false);
     ~VulkanBuffer();
 
-    VulkanBuffer& operator=(VulkanBuffer&& rhs);
+    VulkanBuffer& operator=(const VulkanBuffer& rhs) = delete;
+    VulkanBuffer& operator=(VulkanBuffer&& rhs) noexcept;
 
     VkBufferUsageFlags GetUsage() const; /** @brief Returns the usage types of the buffer. */
     VkMemoryPropertyFlags GetMemoryProperties() const; /** @brief Returns the memory properties the buffer was created with. */
@@ -29,6 +29,7 @@ public:
     VmaAllocation GetAllocation() const; /** @brief Returns the underlying VMA allocation. */
     VkBuffer Get() const; /** @brief Returns the underlying Vulkan buffer. */
     void Upload(std::span<const std::byte> data); /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
+    void Upload(size_t offset, std::span<const std::byte> data); /** @brief Uploads a portion of memory to the buffer on the GPU immediately. */
     void Map(void** mapped);
     void Unmap();
     void Flush(VkDeviceSize offset, VkDeviceSize size);

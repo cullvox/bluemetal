@@ -1,5 +1,5 @@
-#include "Core/Print.h"
 #include "VulkanBuffer.h"
+#include "Core/Print.h"
 #include "vulkan/vulkan_core.h"
 
 namespace bl {
@@ -10,15 +10,18 @@ VulkanBuffer::VulkanBuffer()
     , _memoryUsage(VMA_MEMORY_USAGE_UNKNOWN)
     , _size(0)
     , _buffer(VK_NULL_HANDLE)
-    , _allocation(VK_NULL_HANDLE) {}
+    , _allocation(VK_NULL_HANDLE)
+{
+}
 
-VulkanBuffer::VulkanBuffer(VulkanBuffer&& rhs)
+VulkanBuffer::VulkanBuffer(VulkanBuffer&& rhs) noexcept
     : _device(rhs._device)
     , _usage(rhs._usage)
     , _memoryUsage(rhs._memoryUsage)
     , _size(rhs._size)
     , _buffer(rhs._buffer)
-    , _allocation(rhs._allocation) {
+    , _allocation(rhs._allocation)
+{
     // rhs._device = nullptr;
     rhs._usage = 0;
     rhs._memoryUsage = VMA_MEMORY_USAGE_UNKNOWN;
@@ -31,7 +34,8 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMe
     : _device(device)
     , _usage(usage)
     , _memoryUsage(memoryUsage)
-    , _size(size) {
+    , _size(size)
+{
     uint32_t graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
 
     VkBufferCreateInfo bufferCreateInfo = {};
@@ -58,11 +62,13 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMe
     VK_CHECK(vmaCreateBuffer(_device->GetAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, allocationInfo))
 }
 
-VulkanBuffer::~VulkanBuffer() {
+VulkanBuffer::~VulkanBuffer()
+{
     Cleanup();
 }
 
-VulkanBuffer& VulkanBuffer::operator=(VulkanBuffer&& rhs) {
+VulkanBuffer& VulkanBuffer::operator=(VulkanBuffer&& rhs) noexcept
+{
     if (_buffer != VK_NULL_HANDLE) {
         Print::Warn("Moving buffer into already created buffer, this isn't expected behavior.");
         Cleanup();
@@ -85,19 +91,19 @@ VulkanBuffer& VulkanBuffer::operator=(VulkanBuffer&& rhs) {
     return *this;
 }
 
-VmaAllocation VulkanBuffer::GetAllocation() const 
-{ 
-    return _allocation; 
+VmaAllocation VulkanBuffer::GetAllocation() const
+{
+    return _allocation;
 }
 
-VkBuffer VulkanBuffer::Get() const 
-{ 
-    return _buffer; 
+VkBuffer VulkanBuffer::Get() const
+{
+    return _buffer;
 }
 
-VkDeviceSize VulkanBuffer::GetSize() const 
-{ 
-    return _size; 
+VkDeviceSize VulkanBuffer::GetSize() const
+{
+    return _size;
 }
 
 void VulkanBuffer::Map(void** mapped)
@@ -113,23 +119,32 @@ void VulkanBuffer::Unmap()
 void VulkanBuffer::Upload(std::span<const std::byte> data)
 {
     if (data.size() != _size) {
-        Print::Error("Buffer upload is not the same size as it's buffer.");
+        throw std::range_error("Buffer upload size mismatch.");
+    }
+
+    Upload(0, data);
+}
+
+void VulkanBuffer::Upload(size_t offset, std::span<const std::byte> data)
+{
+    if (offset + data.size() > _size) {
+        Print::Error("Buffer upload range exceeds buffer size.");
         return;
     }
 
     // Build a host visible intermediate buffer for a quick transfer.
     VmaAllocationInfo allocInfo = {};
-    VulkanBuffer stagingBuffer{_device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, _size, &allocInfo,true};
+    VulkanBuffer stagingBuffer { _device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, data.size(), &allocInfo, true };
 
-    std::memcpy(allocInfo.pMappedData, data.data(), _size);
+    std::memcpy(allocInfo.pMappedData, data.data(), data.size());
 
-    _device->ImmediateSubmit([&](VkCommandBuffer cmd){ 
+    _device->ImmediateSubmit([&](VkCommandBuffer cmd) {
         VkBufferCopy region = {};
         region.srcOffset = 0;
-        region.dstOffset = 0;
-        region.size = _size;
+        region.dstOffset = offset;
+        region.size = data.size();
 
-        vkCmdCopyBuffer(cmd, stagingBuffer.Get(), _buffer, 1, &region); 
+        vkCmdCopyBuffer(cmd, stagingBuffer.Get(), _buffer, 1, &region);
     });
 }
 

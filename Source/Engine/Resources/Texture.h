@@ -6,7 +6,7 @@
 namespace bl 
 {
 
-enum class TextureFormat 
+enum class TextureFormat
 {
     eRGB,
     eRGBA,
@@ -20,7 +20,7 @@ enum class ColorSpace
     eSRGB,
 };
 
-class Texture : public Resource 
+class Texture : public Resource
 {
 protected:
     VkExtent3D _extent;
@@ -29,16 +29,13 @@ protected:
     std::unique_ptr<VulkanImage> _image;
 
 public:
-    Texture(ResourceSystem* resourceSystem, System* system, const std::filesystem::path& path)
-        : Resource(resourceSystem, system, path)
-    {
-    }
+    Texture(ResourceSystem* resourceSystem, System* system, const std::filesystem::path& path);
     virtual ~Texture() = default;
 
-    VkExtent3D GetExtent3D() const { return _extent; };
-    TextureFormat GetFormat() const { return _format; };
-    ColorSpace GetColorSpace() const { return _colorSpace; };
-    VulkanImage* GetImage() const { return _image.get(); }
+    VkExtent3D GetExtent3D() const;
+    TextureFormat GetFormat() const;
+    ColorSpace GetColorSpace() const;
+    VulkanImage* GetImage() const;
 
 };
 

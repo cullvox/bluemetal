@@ -1,20 +1,21 @@
-
+#include <tiny_gltf.h>
 
 #include "Core/FileByte.h"
 #include "Core/Print.h"
-#include "Graphics/ModelFormat.h"
+
 #include "Graphics/UniformData.h"
 #include "Graphics/VulkanImage.h"
 #include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanSampler.h"
-#include "Model.h"
-#include "Texture2D.h"
+
+#include "Resources/Texture2D.h"
+#include "Resources/Model.h"
 
 #include "Scene/MeshInstance3D.h"
 
-#include <glm/gtx/matrix_decompose.hpp>
 
 namespace bl {
+
 
 Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)

@@ -1,10 +1,11 @@
 #include "Renderer.h"
+#include "Core/Time.h"
 #include "Engine/Engine.h"
 #include "GraphicsSystem.h"
 #include "UniformData.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanMaterial.h"
-#include "Core/Time.h"
+#include "VulkanWindow.h"
 
 namespace bl {
 
@@ -173,7 +174,7 @@ void Renderer::Render(RenderFunction func)
 
     _uboData.time = currentTime;
     _uboData.dt = currentTime - _prevTime;
-    _uboData.resolution = glm::vec2{(float)extent.width, (float)extent.height};
+    _uboData.resolution = glm::vec2 { (float)extent.width, (float)extent.height };
     _uboData.mouse = {}; // TODO: mouse position to be added later.
 
     _prevTime = currentTime;
@@ -378,7 +379,7 @@ void Renderer::DestroyRenderPasses()
 
 void Renderer::CreateGlobalUniform()
 {
-    _globalBuffer = bl::VulkanBuffer{_device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO)};
+    _globalBuffer = bl::VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO) };
     _globalBuffer.Map(&_globalBufferMap);
 
     std::vector<VkDescriptorSetLayoutBinding> bindings { 1 };

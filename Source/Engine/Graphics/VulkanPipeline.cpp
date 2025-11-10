@@ -1,32 +1,98 @@
+#include "VulkanPipeline.h"
 #include "Core/Print.h"
 #include "VulkanConversions.h"
 #include "VulkanDescriptorSetLayoutCache.h"
-#include "VulkanReflectedBlock.h"
-#include <vulkan/vulkan_core.h>
-#include "VulkanPipeline.h"
+#include "VulkanDevice.h"
+#include "VulkanShader.h"
+#include "spirv_reflect.h"
 
-namespace bl 
+namespace bl {
+
+
+// Recursively reflects members of a block variable into the given reflected block.
+// Helper function for VulkanReflectedPipeline::Reflect.
+static void ReflectMembers(VulkanReflectedBlock& meta, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent = "")
 {
+    std::string structName;
+    if (parent.empty()) {
+        structName = block.name;
+    } else {
+        structName = fmt::format("{}.{}", parent, block.name);
+    }
 
-VulkanReflectedPipeline::VulkanReflectedPipeline(const VulkanPipelineStateInfo::Stages& state) {
+    meta.SetName(structName);
+
+    for (uint32_t j = 0; j < block.member_count; j++) {
+        auto& blockVariable = block.members[j];
+        auto& numericTraits = blockVariable.numeric;
+        auto typeDescription = blockVariable.type_description;
+        VulkanVariableBlockType type = VulkanVariableBlockType::eScalarInt;
+
+        if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_STRUCT) {
+            ReflectMembers(meta, binding, blockVariable, meta.GetName());
+            continue;
+        }
+
+        // We are a little specific about our supported material uniform block types.
+        if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_ARRAY) {
+            Print::Warn("Arrays are not supported in pipelines, it will not be parameterized.");
+            continue;
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_VECTOR) {
+
+            // We only support floating vector types.
+            if (!(typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT)) {
+                Print::Warn("Only float vectors are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
+                continue;
+            }
+            std::array types = { VulkanVariableBlockType::eVector2, VulkanVariableBlockType::eVector3, VulkanVariableBlockType::eVector4 };
+            type = types[numericTraits.vector.component_count - 2];
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_MATRIX) {
+
+            // We only support 4x4 matrices.
+            if (numericTraits.matrix.column_count != 4 || numericTraits.matrix.row_count != 4) {
+                Print::Warn("Only 4x4 matrices are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
+                continue;
+            }
+            type = VulkanVariableBlockType::eMatrix4;
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) {
+            type = VulkanVariableBlockType::eScalarBool;
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
+            type = VulkanVariableBlockType::eScalarInt;
+        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
+            type = VulkanVariableBlockType::eScalarFloat;
+        }
+
+        std::string name = fmt::format("{}.{}", structName, blockVariable.name);
+
+        meta[name]
+            .SetName(name)
+            .SetBinding(binding)
+            .SetOffset(blockVariable.offset)
+            .SetType(type)
+            .SetSize(blockVariable.size);
+    }
+}
+
+VulkanReflectedPipeline VulkanReflectedPipeline::Reflect(const VulkanPipelineStateInfo::Stages& state)
+{
     const auto& shaders = state.shaders;
+    VulkanReflectedPipeline reflection;
 
     // Obtain reflection data from shaders to build the pipeline layout.
     for (size_t i = 0; i < shaders.size(); i++) {
 
         // Reflect each descriptor binding to build descriptor set layouts.
         VulkanShader* shader = shaders[i];
-        auto reflection = shader->GetReflection();
+        auto spirvReflection = shader->GetReflection();
 
-        for (uint32_t j = 0; j < reflection.descriptor_binding_count; j++)
-        {
-            const auto& reflectBinding = reflection.descriptor_bindings[j];
-            auto& set = _descriptorSetMetadata[reflectBinding.set];
-            
+        for (uint32_t j = 0; j < spirvReflection.descriptor_binding_count; j++) {
+            const auto& reflectBinding = spirvReflection.descriptor_bindings[j];
+            auto& set = reflection.descriptorSetMetadata[reflectBinding.set];
+
             set.SetLocation(reflectBinding.set);
 
             // If this binding number already exists then compare and use that.
-            auto location = reflectBinding.binding; 
+            auto location = reflectBinding.binding;
             auto type = static_cast<VkDescriptorType>(reflectBinding.descriptor_type);
             auto count = reflectBinding.count;
 
@@ -53,122 +119,45 @@ VulkanReflectedPipeline::VulkanReflectedPipeline(const VulkanPipelineStateInfo::
 
         // Gather all the push constant ranges for the pipeline layout.
         // Check if the push constant already exists.
-        for (uint32_t j = 0; j < reflection.push_constant_block_count; j++)
-        {
-            const auto& block = reflection.push_constant_blocks[j];
-            auto offset = block.offset; 
+        for (uint32_t j = 0; j < spirvReflection.push_constant_block_count; j++) {
+            const auto& block = spirvReflection.push_constant_blocks[j];
+            auto offset = block.offset;
             auto size = block.size;
 
-            auto it = std::find_if(_pushConstantMetadata.begin(), _pushConstantMetadata.end(),
-                [offset, size](const auto& refl){ return refl.Compare(offset, size); });
+            auto it = std::find_if(reflection.pushConstantMetadata.begin(), reflection.pushConstantMetadata.end(),
+                [offset, size](const auto& refl) { return refl.Compare(offset, size); });
 
-            if (it != _pushConstantMetadata.end())
-            {
+            if (it != reflection.pushConstantMetadata.end()) {
                 // Add the stage to the existing push constant range.
                 auto& refl = (*it);
                 refl.AddStageFlags(shader->GetStage());
             } else {
                 // This block wasn't added yet.
-                auto& pcm =_pushConstantMetadata.emplace_back(shader->GetStage(), offset, size);
+                auto& pcm = reflection.pushConstantMetadata.emplace_back(shader->GetStage(), offset, size);
                 ReflectMembers(pcm, 0, block);
             }
         }
     }
+
+    return reflection;
 }
 
-std::map<uint32_t, VulkanReflectedDescriptorSet>& VulkanReflectedPipeline::GetReflectedDescriptorSets() {
-    return _descriptorSetMetadata;
-}
-
-std::vector<VulkanReflectedPushConstant>& VulkanReflectedPipeline::GetReflectedPushConstants() {
-    return _pushConstantMetadata;
-}
-
-const std::map<uint32_t, VulkanReflectedDescriptorSet>& VulkanReflectedPipeline::GetReflectedDescriptorSets() const {
-    return _descriptorSetMetadata;
-}
-
-const std::vector<VulkanReflectedPushConstant>& VulkanReflectedPipeline::GetReflectedPushConstants() const {
-    return _pushConstantMetadata;
-}
-
-void VulkanReflectedPipeline::ReflectMembers(VulkanReflectedBlock& meta, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent)
-{
-    std::string structName;
-    if (parent.empty()) {
-        structName = block.name;
-    } else {
-        structName = fmt::format("{}.{}", parent, block.name);
-    }
-
-    meta.SetName(structName);
-
-    for (uint32_t j = 0; j < block.member_count; j++)
-    {
-        auto& blockVariable = block.members[j];
-        auto& numericTraits = blockVariable.numeric;
-        auto typeDescription = blockVariable.type_description;
-        VulkanVariableBlockType type = VulkanVariableBlockType::eScalarInt;
-
-        if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_STRUCT) {
-            ReflectMembers(meta, binding, blockVariable, meta.GetName());
-            continue;
-        }
-
-        // We are a little specific about our supported material uniform block types.
-        if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_ARRAY) {
-            Print::Warn("Arrays are not supported in pipelines, it will not be parameterized.");
-            continue;
-        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_VECTOR) {
-
-            // We only support floating vector types.
-            if (!(typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT)) {
-                Print::Warn("Only float vectors are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
-                continue;
-            }
-            std::array types = { VulkanVariableBlockType::eVector2, VulkanVariableBlockType::eVector3, VulkanVariableBlockType::eVector4 };
-            type = types[numericTraits.vector.component_count - 2];
-        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_MATRIX) {
-
-            // We only support 4x4 matrices. 
-            if (numericTraits.matrix.column_count != 4 || numericTraits.matrix.row_count != 4) {
-                Print::Warn("Only 4x4 matrices are supported in pipelines, {} in {} will not be parameterized.", typeDescription->struct_member_name, blockVariable.name);
-                continue;
-            }
-            type = VulkanVariableBlockType::eMatrix4;
-        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) {
-            type = VulkanVariableBlockType::eScalarBool;
-        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
-            type = VulkanVariableBlockType::eScalarInt;
-        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
-            type = VulkanVariableBlockType::eScalarFloat;
-        }
-
-        std::string name = fmt::format("{}.{}", structName, blockVariable.name);
-        
-        meta[name]
-            .SetName(name)
-            .SetBinding(binding)
-            .SetOffset(blockVariable.offset)
-            .SetType(type)
-            .SetSize(blockVariable.size);
-    }
-}
 
 
 VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanReflectedPipeline* reflection)
-    : _device(device) {
-    
+    : _device(device)
+{
+
     // Depending on circumstances the reflection of the pipeline can be edited by the user.
     // To enable this we don't instantaneously preform reflection, we check to see if the user
     // did it for us.
     if (reflection)
         _reflection = *reflection;
     else
-        _reflection = VulkanReflectedPipeline{state.stages};
+        _reflection = VulkanReflectedPipeline::Reflect(state.stages);
 
-    std::vector<VkPipelineShaderStageCreateInfo> stages{state.stages.shaders.size()};
-    std::vector<VulkanShader*> shaders = {  };
+    std::vector<VkPipelineShaderStageCreateInfo> stages { state.stages.shaders.size() };
+    std::vector<VulkanShader*> shaders = {};
 
     // Build the pipelines shader stage create info.
     for (size_t i = 0; i < state.stages.shaders.size(); i++) {
@@ -182,12 +171,12 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
         stages[i].pSpecializationInfo = nullptr;
     }
 
-    const auto& descriptorSetMetadata = _reflection.GetReflectedDescriptorSets();
-    const auto& pushConstantMetadata = _reflection.GetReflectedPushConstants();
+    const auto& descriptorSetMetadata = _reflection.descriptorSetMetadata;
+    const auto& pushConstantMetadata = _reflection.pushConstantMetadata;
 
     // Use the descriptor set layout cache to acquire layouts for each set.
     std::vector<VkDescriptorSetLayout> layouts;
-    layouts.reserve( descriptorSetMetadata.size());
+    layouts.reserve(descriptorSetMetadata.size());
     // _descriptorSetLayouts.reserve(descriptorSetMetadata.size());
 
     // Extract descriptor set layout bindings and create a layout.
@@ -344,7 +333,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
 }
 
 VulkanPipeline::~VulkanPipeline()
-{ 
+{
     vkDestroyPipeline(_device->Get(), _pipeline, nullptr);
 }
 
@@ -358,18 +347,19 @@ VulkanPipeline& VulkanPipeline::operator=(VulkanPipeline&& move) noexcept
     return *this;
 }
 
-const VulkanReflectedPipeline& VulkanPipeline::GetReflection() const {
+const VulkanReflectedPipeline& VulkanPipeline::GetReflection() const
+{
     return _reflection;
 }
 
-VkPipelineLayout VulkanPipeline::GetPipelineLayout() const 
+VkPipelineLayout VulkanPipeline::GetPipelineLayout() const
 {
-    return _layout; 
+    return _layout;
 }
 
-VkPipeline VulkanPipeline::GetPipeline() const 
+VkPipeline VulkanPipeline::GetPipeline() const
 {
-    return _pipeline; 
+    return _pipeline;
 }
 
 const std::map<uint32_t, VkDescriptorSetLayout>& VulkanPipeline::GetDescriptorSetLayouts() const

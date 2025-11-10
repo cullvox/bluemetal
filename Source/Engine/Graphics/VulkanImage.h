@@ -1,12 +1,24 @@
 #pragma once
 
-#include "VulkanDevice.h"
-#include <cstdint>
+#include "Vulkan.h"
 
 namespace bl {
 
+class VulkanDevice;
+
 /// @brief Creates a graphics image on the physical device.
 class VulkanImage {
+    VulkanDevice* _device;
+    VkExtent3D _extent;
+    VkImageType _type;
+    VkFormat _format;
+    VkImageUsageFlags _usage;
+    uint32_t _mipLevels;
+    VkImageLayout _layout;
+    VkImage _image;
+    VkImageView _defaultView;
+    std::vector<VkImageView> _views;
+    VmaAllocation _allocation;
 public:
     /// @brief Default Constructor
     VulkanImage();
@@ -35,12 +47,10 @@ public:
     /// @brief Default Destructor
     ~VulkanImage();
 
-public:
     /// @brief Move Assign Operator 
     /// @param[inout] rhs The other image to move it's data into this new object. 
     VulkanImage& operator=(VulkanImage&& rhs);
 
-public:
     /// @brief GetType 
     /// @returns The type of image this was created as.
     VkImageType GetType() const;
@@ -85,19 +95,6 @@ public:
     /// Immediately submits a command buffer to the graphics card.
     /// @param layout[in] New layout to transition the image into.
     void Transition(VkImageLayout layout);
-
-private:
-    VulkanDevice* _device;
-    VkExtent3D _extent;
-    VkImageType _type;
-    VkFormat _format;
-    VkImageUsageFlags _usage;
-    uint32_t _mipLevels;
-    VkImageLayout _layout;
-    VkImage _image;
-    VkImageView _defaultView;
-    std::vector<VkImageView> _views;
-    VmaAllocation _allocation;
 };
 
 } // namespace bl

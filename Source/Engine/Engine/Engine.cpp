@@ -1,17 +1,17 @@
 #include "Engine/Engine.h"
 #include "Core/Print.h"
 #include "Graphics/Renderer.h"
+#include "Graphics/VulkanWindow.h"
 #include "Math/Rect.h"
 
-namespace bl
-{
+namespace bl {
 
 Engine::Engine()
     : _sdl()
 {
 }
 
-Engine::~Engine() 
+Engine::~Engine()
 {
 }
 
@@ -40,12 +40,12 @@ ResourceSystem* Engine::GetResourceManager()
     return _resourceManager.get();
 }
 
-GraphicsSystem* Engine::GetGraphics() 
+GraphicsSystem* Engine::GetGraphics()
 {
     return _graphics.get();
 }
 
-AudioSystem* Engine::GetAudio() 
+AudioSystem* Engine::GetAudio()
 {
     return _audio.get();
 }
@@ -55,7 +55,7 @@ InputSystem* Engine::GetInput()
     return _input.get();
 }
 
-ImGuiSystem* Engine::GetImGui() 
+ImGuiSystem* Engine::GetImGui()
 {
     return _imgui.get();
 }

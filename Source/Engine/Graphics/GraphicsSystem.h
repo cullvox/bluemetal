@@ -1,22 +1,22 @@
 #pragma once
 
 #include "Core/System.h"
-#include "Resources/ResourceSystem.h"
-#include "ImGui/ImGuiSystem.h"
+
+#include "Renderer.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanDevice.h"
 #include "VulkanInstance.h"
+#include "VulkanPhysicalDevice.h"
 #include "VulkanPipelineLayoutCache.h"
-#include "VulkanSwapchain.h"
-#include "Window/Window.h"
-#include "Renderer.h"
+
+#include "ImGui/ImGuiSystem.h"
 
 namespace bl {
 
 class Engine;
+class ResourceSystem;
 
-class GraphicsSystem : public System
-{
+class GraphicsSystem : public System {
     std::unique_ptr<VulkanInstance> _vulkanInstance;
     std::unique_ptr<VulkanDevice> _device;
     VulkanPhysicalDevice* _physicalDevice;

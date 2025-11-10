@@ -12,9 +12,9 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, VkRenderPass pass, uint32_t
     _materialSet = materialSet;
 
     // Preform reflection on the pipeline shaders to retrieve detailed descriptor set info.
-    VulkanReflectedPipeline reflection = { state.stages };
+    auto reflection = VulkanReflectedPipeline::Reflect(state.stages);
 
-    auto& sets = reflection.GetReflectedDescriptorSets();
+    auto& sets = reflection.descriptorSetMetadata;
     if (!sets.contains(materialSet))
         throw std::runtime_error("VulkanMaterial does not contain the used set!");
 

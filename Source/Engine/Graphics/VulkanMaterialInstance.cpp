@@ -113,7 +113,7 @@ void VulkanMaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset,
 {
 
     // Find the shader stage that uses the offset and size.
-    const auto& pushConstantReflections = _material->_pipeline->GetReflection().GetReflectedPushConstants();
+    const auto& pushConstantReflections = _material->_pipeline->GetReflection().pushConstantMetadata;
 
     auto it = std::find_if(pushConstantReflections.begin(), pushConstantReflections.end(),
         [offset, size](const auto& pcr) {
@@ -202,7 +202,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
     }
 
     const auto& reflection = _material->_pipeline->GetReflection();
-    const auto& sets = reflection.GetReflectedDescriptorSets();
+    const auto& sets = reflection.descriptorSetMetadata;
     const auto& set = sets.at(_materialSet);
 
     VkDescriptorBufferInfo bufferInfo = {};

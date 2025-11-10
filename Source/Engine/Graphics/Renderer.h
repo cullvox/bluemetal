@@ -3,28 +3,27 @@
 #include <nlohmann/json.hpp>
 
 #include "UniformData.h"
-#include "VulkanDevice.h"
-#include "VulkanImage.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
-#include "VulkanWindow.h"
-#include "VulkanMaterial.h"
-#include "VulkanRenderData.h"
+#include "VulkanBuffer.h"
+#include "VulkanImage.h"
 
-namespace bl 
-{
+namespace bl {
+
+class Material;
+class VulkanWindow;
+class VulkanDevice;
+class VulkanSwapchain;
+class VulkanMaterial;
+struct VulkanRenderData;
 
 using RenderFunction = std::function<void(VulkanRenderData& rd)>;
 
-class Material;
-
-enum class RenderPassType : uint32_t
-{
+enum class RenderPassType : uint32_t {
     eGeometry = 0,
     eUI = 2,
 };
 
-class Renderer 
-{
+class Renderer {
 public:
     Renderer(VulkanWindow* window); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
@@ -86,8 +85,8 @@ private:
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RenderPassType, {
-    {RenderPassType::eGeometry, "geometry"},
-    {RenderPassType::eUI, "ui"},
-});
+                                                 { RenderPassType::eGeometry, "geometry" },
+                                                 { RenderPassType::eUI, "ui" },
+                                             });
 
 } // namespace bl

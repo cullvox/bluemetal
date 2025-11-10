@@ -1,5 +1,7 @@
 #include "Texture2D.h"
 
+#include "Graphics/GraphicsSystem.h"
+
 #include "qoixx.hpp"
 #include "stb_image.h"
 
@@ -68,7 +70,7 @@ Texture2D::Texture2D(ResourceSystem* rs, GraphicsSystem* gs, std::span<std::byte
     _image->UploadData(imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-bool Texture2D::DecodeQOI(std::span<std::byte> data, std::vector<std::byte>& out)
+bool Texture2D::DecodeQOI(const std::vector<std::byte>& data, std::vector<std::byte>& out)
 {
     using namespace qoixx;
 
@@ -95,10 +97,10 @@ bool Texture2D::DecodeQOI(std::span<std::byte> data, std::vector<std::byte>& out
     return true;
 }
 
-bool Texture2D::DecodeSTBI(std::span<std::byte> data, std::vector<std::byte>& out)
+bool Texture2D::DecodeSTBI(const std::vector<std::byte>& data, std::vector<std::byte>& out)
 {
     int channels = 0, width = 0, height = 0;
-    stbi_uc* pixels = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(data.data()), (int)data.size_bytes(), &width, &height, &channels, 4);
+    stbi_uc* pixels = stbi_load_from_memory(reinterpret_cast<const stbi_uc*>(data.data()), (int)data.size(), &width, &height, &channels, 4);
     if (!pixels) {
         return false;
     }

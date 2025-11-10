@@ -1,14 +1,14 @@
 #pragma once
 
-#include "Resource.h"
-#include "Texture2D.h"
 #include "Precompiled.h"
+#include "Resource.h"
 #include "Graphics/Vertex.h"
 #include "Graphics/VulkanBuffer.h"
-#include "Graphics/GraphicsSystem.h"
 
 namespace bl
 {
+
+class GraphicsSystem;
 
 class Mesh : public Resource
 {
