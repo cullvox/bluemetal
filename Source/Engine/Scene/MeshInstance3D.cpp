@@ -34,4 +34,9 @@ void MeshInstance3D::SetMesh(Ref<Mesh> mesh)
     _mesh = mesh;
 }
 
+void MeshInstance3D::SetMaterial(Ref<MaterialInstance> material)
+{
+    _material = material;
+}
+
 }

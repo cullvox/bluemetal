@@ -2,6 +2,7 @@
 
 #include "Precompiled.h"
 #include "Core/Flags.h"
+#include "Core/FrameCounter.h"
 #include "Engine/SDL.h"
 #include "Resources/ResourceSystem.h"
 #include "Audio/AudioSystem.h"
@@ -16,6 +17,7 @@ class Engine
 {
     nlohmann::json _config;
     SDLInitializer _sdl;
+    FrameCounter _counter;
     std::unique_ptr<ResourceSystem> _resourceManager;
     std::unique_ptr<GraphicsSystem> _graphics;
     std::unique_ptr<ImGuiSystem> _imgui;
@@ -31,6 +33,7 @@ public:
     void Initialize();
     void Shutdown();
 
+    FrameCounter& GetFrameCounter();
     ResourceSystem* GetResourceManager();
     GraphicsSystem* GetGraphics();
     InputSystem* GetInput();

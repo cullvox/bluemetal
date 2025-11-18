@@ -6,7 +6,9 @@
 
 namespace bl {
 
-class Material : public Resource {
+class Material : public MaterialInstance {
+    ResourceSystem* _resourceSystem;
+    GraphicsSystem* _graphicsSystem;
     Renderer* _renderer;
     std::unique_ptr<VulkanMaterial> _material;
 public:
@@ -15,6 +17,8 @@ public:
 
     VulkanMaterial* GetVulkanMaterial() { return _material.get(); }
     const VulkanPipeline* GetVulkanPipeline();
+
+    Ref<MaterialInstance> CreateInstance();
 
     void SetBool(const std::string& name, bool value);
     void SetInteger(const std::string& name, int value);

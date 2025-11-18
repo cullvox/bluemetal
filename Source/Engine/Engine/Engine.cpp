@@ -35,6 +35,11 @@ void Engine::Shutdown()
     _resourceManager.reset();
 }
 
+FrameCounter& Engine::GetFrameCounter()
+{
+    return _counter;
+}
+
 ResourceSystem* Engine::GetResourceManager()
 {
     return _resourceManager.get();

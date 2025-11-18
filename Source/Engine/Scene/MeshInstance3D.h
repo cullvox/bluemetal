@@ -10,7 +10,7 @@ namespace bl
 
 class MeshInstance3D : public Node3D
 {
-    Ref<Material> _material;
+    Ref<MaterialInstance> _material;
     Ref<Mesh> _mesh;
 
 public:
@@ -20,9 +20,9 @@ public:
     virtual void Draw(VulkanRenderData& rd) override; // Just sets up the instance data, actual draw call is done in renderer
 
     void SetMesh(Ref<Mesh> mesh);
-    void SetMaterial(Ref<Material> material);
+    void SetMaterial(Ref<MaterialInstance> material);
     Ref<Mesh> GetMesh() const;
-    Ref<Material> GetMaterial() const;
+    Ref<MaterialInstance> GetMaterial() const;
 };
 
 } // namespace bl

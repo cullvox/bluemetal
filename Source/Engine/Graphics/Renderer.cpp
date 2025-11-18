@@ -168,6 +168,10 @@ void Renderer::RecreateImages()
 
 void Renderer::Render(RenderFunction func)
 {
+    // If the window is minimized, we don't draw anything.
+    if (_window->GetMinimized())
+        return;
+
     // Compute the per frame UBO.
     const auto currentTime = Time::Current();
     const auto extent = _swapchain->GetExtent();

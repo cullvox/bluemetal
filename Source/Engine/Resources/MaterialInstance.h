@@ -7,18 +7,31 @@
 #include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanRenderData.h"
 
-namespace bl 
+namespace bl
 {
 
+class ResourceSystem;
+class GraphicsSystem;
 class Material; // Material Resource
 
+/// @class Material Instance
+/// @brief An instance of a material containing it's own buffers.
+///
+/// Material instances are best described by JSON.
+/// baseMaterial: string
+/// properties: map
+///
 class MaterialInstance : public Resource 
 {
-    Ref<Material> material;
+    Ref<Material> _baseMaterial;
     std::unique_ptr<VulkanMaterialInstance> _materialInstance;
 
 public:
+
+    /// @brief Loads a material instance from file.
+    /// This constructor is designated for the ResourceSystem.
     MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
+    MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance);
     ~MaterialInstance();
 
     void SetBool(const std::string& name, bool value);

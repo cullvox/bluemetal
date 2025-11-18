@@ -192,7 +192,7 @@ void VulkanImage::DestroyViews()
         vkDestroyImageView(_device->Get(), view, nullptr);
 }
 
-void VulkanImage::UploadData(std::span<const std::byte> data, VkImageLayout finalLayout) {
+void VulkanImage::UploadData(const std::span<const std::byte> data, VkImageLayout finalLayout) {
 
     // Create a staging buffer.
     VmaAllocationInfo allocInfo = {};

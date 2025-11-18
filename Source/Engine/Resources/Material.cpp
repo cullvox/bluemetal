@@ -7,7 +7,9 @@
 namespace bl {
 
 Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
-    : Resource(resourceSystem, graphicsSystem, path)
+    : MaterialInstance()
+    , _resourceSystem(resourceSystem)
+    , _graphicsSystem(graphicsSystem)
     , _renderer(graphicsSystem->GetRenderer())
 {
     std::ifstream materialFile{path};
@@ -49,6 +51,11 @@ Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSyste
 Material::~Material()
 {
     _renderer->RemoveMaterial(_material.get());
+}
+
+Ref<MaterialInstance> Material::CreateInstance()
+{
+    return std::make_shared<MaterialInstance>(_resourceSystem, _graphicsSystem, _material->CreateInstance());
 }
 
 void Material::SetBool(const std::string& name, bool value)

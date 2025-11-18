@@ -15,6 +15,7 @@ namespace bl
 {
 
 class Engine;
+class GraphicsSystem;
 
 class ImGuiSystem : public System
 {
@@ -34,10 +35,10 @@ public:
     void Process(const SDL_Event& event);
     void BeginFrame();
     void EndFrame(VkCommandBuffer cmd);
+    void DrawDebug();
 };
 
 } // namespace bl
-
 
 namespace ImGui
 {

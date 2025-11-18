@@ -1,3 +1,6 @@
+
+#include "ResourceSystem.h"
+#include "Graphics/GraphicsSystem.h"
 #include "MaterialInstance.h"
 #include "Material.h"
 #include "Engine/Engine.h"
@@ -27,6 +30,11 @@ MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSyste
 
     auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
     _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat->GetVulkanMaterial()->CreateInstance());
+}
+
+MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance)
+    : Resource(resourceSystem, graphicsSystem, "")
+{
 }
 
 MaterialInstance::~MaterialInstance()

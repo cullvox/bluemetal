@@ -9,7 +9,7 @@ Texture::Texture(ResourceSystem* resourceSystem, System* system, const std::file
 {
 }
 
-VkExtent3D Texture::GetExtent3D() const
+Extent3D Texture::GetExtent3D() const
 {
     return _extent;
 }

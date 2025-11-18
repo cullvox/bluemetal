@@ -8,23 +8,28 @@
 #include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanSampler.h"
 
+#include "Resources/ResourceSystem.h"
 #include "Resources/Texture2D.h"
 #include "Resources/Model.h"
+#include "Resources/Material.h"
+#include "Resources/MaterialInstance.h"
 
 #include "Scene/MeshInstance3D.h"
 
 
 namespace bl {
 
-static std::shared_ptr<Node3D> LoadNode(const tinygltf::Model& model, const std::vector<Ref<Mesh>>& meshes, const tinygltf::Node& node, GraphicsSystem* system)
+std::shared_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tinygltf::Node& node)
 {
     std::shared_ptr<Node3D> newNode{nullptr};
     if (node.mesh < 0) {
-        newNode = std::make_unique<Node3D>(&system->GetEngine());
+        newNode = std::make_unique<Node3D>(&_graphicsSystem->GetEngine());
     } else {
-        auto meshNode = std::make_unique<MeshInstance3D>(&system->GetEngine());
-        meshNode->SetMesh(meshes[node.mesh]);
-        // meshNode->SetMaterial(_materials[...]);
+        auto meshNode = std::make_unique<MeshInstance3D>(&_graphicsSystem->GetEngine());
+        auto& primitive = model.meshes[node.mesh].primitives[0];
+
+        meshNode->SetMesh(_meshes[node.mesh]);
+        meshNode->SetMaterial(_materials[primitive.material]);
         newNode = std::move(meshNode);
     }
 
@@ -64,7 +69,7 @@ static std::shared_ptr<Node3D> LoadNode(const tinygltf::Model& model, const std:
     }
 
     for (int i : node.children) {
-        newNode->AddChild(LoadNode(model, meshes, model.nodes[i], system));
+        newNode->AddChild(LoadNode(model, model.nodes[i]));
     }
     return newNode;
 }
@@ -93,89 +98,136 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
     if (!res)
         throw std::runtime_error("Could not load a model file!");
 
-    // Load meshes
- 
-    for (auto& mesh : model.meshes) {
+    // Load images
+    _textures.resize(model.images.size());
+    for (int i = 0; i < model.images.size(); i++)
+    {
+        auto& image = model.images[i];
 
-        for (auto& primitive : mesh.primitives) {
-            auto& indexAccessor = model.accessors[primitive.indices];
-
-            size_t verticesCount = model.accessors[primitive.attributes.begin()->second].count;
-            std::vector<Vertex> vertices { verticesCount };
-            std::vector<uint32_t> indices {};
-            indices.resize(indexAccessor.count);
-
-            size_t indicesWidth = 0;
-            switch (indexAccessor.componentType) {
-                case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-                    indicesWidth = 1;
-                    break;
-                case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: 
-                    indicesWidth = 2;
-                    break;
-                case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-                    indicesWidth = 4;
-                    break;
-                default:
-                    throw std::runtime_error("Invalid indices width!");
-                    break;
-            }
-
-            auto& indexView = model.bufferViews[indexAccessor.bufferView];
-            auto& indexBuffer = model.buffers[indexView.buffer];
-            if (indicesWidth == 4) {
-                memcpy(indices.data(), indexBuffer.data.data() + indexView.byteOffset, 4 * indexAccessor.count);
-            } else {
-                for (int i = 0; i < indexAccessor.count; i++) {
-                    std::memcpy(&indices[i], indexBuffer.data.data() + indexView.byteOffset + (i * indicesWidth), indicesWidth);
-                }
-            }
-
-            for (auto& attrib : primitive.attributes) {
-                auto& attribAccessor = model.accessors[attrib.second];
-                auto& bufferView = model.bufferViews[attribAccessor.bufferView];
-                auto& buffer = model.buffers[bufferView.buffer];
-
-                if (attrib.first == "POSITION") {
-                    if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC3) {
-                        throw std::runtime_error("Invalid position type.");
-                    }
-                    for (int i = 0; i < attribAccessor.count; i++) {
-                        // sorta unsafe
-                        size_t offset = bufferView.byteOffset + (i * sizeof(glm::vec3));
-                        std::memcpy(&vertices[i].position, &buffer.data[offset], sizeof(glm::vec3));
-                    }
-                }
-
-                if (attrib.first == "NORMAL") {
-                    if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC3) {
-                        throw std::runtime_error("Invalid normal type.");
-                    }
-                    for (int i = 0; i < attribAccessor.count; i++) {
-                        // sorta unsafe
-                        size_t offset = i * sizeof(glm::vec3) + bufferView.byteOffset;
-                        std::memcpy(&vertices[i].normal, &buffer.data[offset], sizeof(glm::vec3));
-                    }
-                }
-
-                if (attrib.first == "TEXCOORD_0") {
-                    if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC2) {
-                        throw std::runtime_error("Invalid normal type.");
-                    }
-                    for (int i = 0; i < attribAccessor.count; i++) {
-                        // sorta unsafe
-                        size_t offset = i * sizeof(glm::vec2) + bufferView.byteOffset;
-                        std::memcpy(&vertices[i].texCoords, &buffer.data[offset], sizeof(glm::vec2));
-                    }
-                }
-            }
-
-            auto m = std::make_shared<Mesh>(resourceSystem, system, "");
-            AddSubResource(m);
-            _meshes.push_back(m);
-            m->UploadVertices<Vertex>(vertices);
-            m->UploadIndices(indices);
+        if (image.pixel_type != TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE ||
+            image.bits != 8 ||
+            image.as_is ||
+            image.component < 3 || image.component > 4) {
+            Print::Warn("Invalid texture will not be loaded.");
+            continue;
         }
+
+        TextureFormat format;
+        switch (image.component) {
+            case 3: format = TextureFormat::eRGB; break;
+            case 4: format = TextureFormat::eRGBA; break;
+            default:
+                Print::Warn("Invalid texture format.");
+                continue;
+        }
+        Extent2D extent{ static_cast<uint32_t>(image.width), static_cast<uint32_t>(image.height) };
+
+        const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(image.image.data()), image.image.size());
+
+        auto texture = std::make_shared<Texture2D>(resourceSystem, system, bytes, format, extent);
+        AddSubResource(texture);
+        _textures[i] = texture;
+    }
+
+    // Load materials
+    // Here we are assuming a default material type.
+    auto defaultMaterial = resourceSystem->Load<Material>("Resources/Materials/Default.mat");
+    auto defaultSampler = resourceSystem->Load<Sampler>("Resources/Samplers/Default.json");
+
+    for (auto& material : model.materials)
+    {
+        auto instance = defaultMaterial->CreateInstance();
+        AddSubResource(instance);
+
+        {
+            auto texture = _textures[material.pbrMetallicRoughness.baseColorTexture.index];
+            instance->SetSampledTexture("inAlbedo", defaultSampler, texture);
+        }
+    }
+
+    // Load meshes 
+    _meshes.resize(model.meshes.size());
+    for (int i = 0; i < model.meshes.size(); i ++) {
+        auto& mesh = model.meshes[i];
+
+        auto& primitive = mesh.primitives[0];
+        auto& indexAccessor = model.accessors[primitive.indices];
+
+        size_t verticesCount = model.accessors[primitive.attributes.begin()->second].count;
+        std::vector<Vertex> vertices { verticesCount };
+        std::vector<uint32_t> indices {};
+        indices.resize(indexAccessor.count);
+
+        size_t indicesWidth = 0;
+        switch (indexAccessor.componentType) {
+            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+                indicesWidth = 1;
+                break;
+            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: 
+                indicesWidth = 2;
+                break;
+            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+                indicesWidth = 4;
+                break;
+            default:
+                throw std::runtime_error("Invalid indices width!");
+                break;
+        }
+
+        auto& indexView = model.bufferViews[indexAccessor.bufferView];
+        auto& indexBuffer = model.buffers[indexView.buffer];
+        if (indicesWidth == 4) {
+            memcpy(indices.data(), indexBuffer.data.data() + indexView.byteOffset, 4 * indexAccessor.count);
+        } else {
+            for (int j = 0; j < indexAccessor.count; j++) {
+                std::memcpy(&indices[j], indexBuffer.data.data() + indexView.byteOffset + (j * indicesWidth), indicesWidth);
+            }
+        }
+
+        for (auto& attrib : primitive.attributes) {
+            auto& attribAccessor = model.accessors[attrib.second];
+            auto& bufferView = model.bufferViews[attribAccessor.bufferView];
+            auto& buffer = model.buffers[bufferView.buffer];
+
+            if (attrib.first == "POSITION") {
+                if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC3) {
+                    throw std::runtime_error("Invalid position type.");
+                }
+                for (int j = 0; i < attribAccessor.count; j++) {
+                    // sorta unsafe
+                    size_t offset = bufferView.byteOffset + (j * sizeof(glm::vec3));
+                    std::memcpy(&vertices[j].position, &buffer.data[offset], sizeof(glm::vec3));
+                }
+            }
+
+            if (attrib.first == "NORMAL") {
+                if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC3) {
+                    throw std::runtime_error("Invalid normal type.");
+                }
+                for (int j = 0; j < attribAccessor.count; j++) {
+                    // sorta unsafe
+                    size_t offset = i * sizeof(glm::vec3) + bufferView.byteOffset;
+                    std::memcpy(&vertices[j].normal, &buffer.data[offset], sizeof(glm::vec3));
+                }
+            }
+
+            if (attrib.first == "TEXCOORD_0") {
+                if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC2) {
+                    throw std::runtime_error("Invalid normal type.");
+                }
+                for (int j = 0; j < attribAccessor.count; j++) {
+                    // sorta unsafe
+                    size_t offset = j * sizeof(glm::vec2) + bufferView.byteOffset;
+                    std::memcpy(&vertices[j].texCoords, &buffer.data[offset], sizeof(glm::vec2));
+                }
+            }
+        }
+
+        auto m = std::make_shared<Mesh>(resourceSystem, system, "");
+        AddSubResource(m);
+        _meshes.push_back(m);
+        m->UploadVertices<Vertex>(vertices);
+        m->UploadIndices(indices);
     }
 
     //model.textures[0].source
@@ -187,7 +239,7 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
 
     for (int i : scene.nodes)
     {
-        _root->AddChild(LoadNode(model, _meshes, model.nodes[i], system));
+        _root->AddChild(LoadNode(model, model.nodes[i]));
     }
 }
 
