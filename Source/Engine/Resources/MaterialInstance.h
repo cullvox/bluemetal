@@ -17,25 +17,46 @@ class Material; // Material Resource
 /// @class Material Instance
 /// @brief An instance of a material containing it's own buffers.
 ///
-/// Material instances are best described by JSON.
-/// baseMaterial: string
-/// properties: map
+/// A material instance holds its own uniform buffers and sampled images,
+/// allowing multiple objects to use the same base material with different parameters.
 ///
 class MaterialInstance : public Resource 
 {
+private:
+    friend class Material;
     Ref<Material> _baseMaterial;
-    std::unique_ptr<VulkanMaterialInstance> _materialInstance;
+    std::unique_ptr<VulkanMaterialInstance> _materialInstance; // Set by either Material or is created.
+
+    /// @brief Creates an empty material instance, used for constructing materials.
+    /// This constructor is designated for the Material Resource.
+    ///
+    /// @param resourceSystem Pointer to the resource system.
+    /// @param graphicsSystem Pointer to the graphics system.
+    ///
+    MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem);
 
 public:
 
     /// @brief Loads a material instance from file.
     /// This constructor is designated for the ResourceSystem.
     MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
-    MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance);
-    ~MaterialInstance();
 
+    /// @brief Destructor
+    virtual ~MaterialInstance();
+
+    /// @brief Sets a boolean uniform in the material instance.
+    /// @param name Name of the uniform to set.
+    /// @param value Value to set the uniform to.
     void SetBool(const std::string& name, bool value);
+
+    /// @brief Sets an integer uniform in the material instance.
+    /// @param name Name of the uniform to set.
+    /// @param value Value to set the uniform to.
     void SetInteger(const std::string& name, int value);
+
+    /// @brief Sets a scaler (float) uniform in the material instance.
+    /// @param name Name of the uniform to set.
+    /// @param value Value to set the uniform to.
     void SetScaler(const std::string& name, float value);
     void SetVector2(const std::string& name, glm::vec2 value);
     void SetVector3(const std::string& name, glm::vec3 value);

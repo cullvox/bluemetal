@@ -7,7 +7,7 @@
 namespace bl {
 
 Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
-    : MaterialInstance()
+    : MaterialInstance(resourceSystem, graphicsSystem)
     , _resourceSystem(resourceSystem)
     , _graphicsSystem(graphicsSystem)
     , _renderer(graphicsSystem->GetRenderer())
@@ -44,13 +44,17 @@ Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSyste
 
     auto [pass, subpass] = _renderer->GetRenderPass(passType);
 
-    _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), pass, subpass, info, _renderer->GetSwapchainImageCount());
-    _renderer->AddMaterial(_material.get()); // Ensures that the material buffers get properly cleaned updated every frame.
+    auto newMat = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), pass, subpass, info, _renderer->GetSwapchainImageCount());
+    _material = newMat.get();
+
+    _materialInstance = std::unique_ptr<VulkanMaterialInstance>(newMat.release());
+
+    _renderer->AddMaterial(_material); // Ensures that the material buffers get properly cleaned updated every frame.
 }
 
 Material::~Material()
 {
-    _renderer->RemoveMaterial(_material.get());
+    _renderer->RemoveMaterial(_material);
 }
 
 Ref<MaterialInstance> Material::CreateInstance()
@@ -58,59 +62,14 @@ Ref<MaterialInstance> Material::CreateInstance()
     return std::make_shared<MaterialInstance>(_resourceSystem, _graphicsSystem, _material->CreateInstance());
 }
 
-void Material::SetBool(const std::string& name, bool value)
-{
-    _material->SetBool(name, value);
-}
-
-void Material::SetInteger(const std::string& name, int value)
-{
-    _material->SetInteger(name, value);
-}
-
-void Material::SetScaler(const std::string& name, float value)
-{
-    _material->SetScaler(name, value);
-}
-
-void Material::SetVector2(const std::string& name, glm::vec2 value)
-{
-    _material->SetVector2(name, value);
-}
-
-void Material::SetVector3(const std::string& name, glm::vec3 value)
-{
-    _material->SetVector3(name, value);
-}
-
-void Material::SetVector4(const std::string& name, glm::vec4 value)
-{
-    _material->SetVector4(name, value);
-}
-
-void Material::SetMatrix(const std::string& name, glm::mat4 value)
-{
-    _material->SetMatrix(name, value);
-}
-
-void Material::SetSampledImage2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image)
-{
-    _material->SetSampledImage2D(name, sampler->GetSampler(), image->GetImage());
-}
-
 const VulkanPipeline* Material::GetVulkanPipeline()
 {
     return _material->GetPipeline();
 }
 
-void Material::Bind(VulkanRenderData& rd)
+VulkanMaterial* Material::GetVulkanMaterial()
 {
-    _material->Bind(rd);
-}
-
-void Material::PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value)
-{
-    _material->PushConstant(rd, offset, size, value);
+    return _material;
 }
 
 }

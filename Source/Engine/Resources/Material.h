@@ -1,37 +1,40 @@
 #pragma once
 
-#include "MaterialInstance.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/VulkanMaterial.h"
+#include "MaterialInstance.h"
 
-namespace bl {
+namespace bl 
+{
 
-class Material : public MaterialInstance {
+/// @class Material
+/// @brief A material resource defining how to render objects.
+class Material : public MaterialInstance
+{
     ResourceSystem* _resourceSystem;
     GraphicsSystem* _graphicsSystem;
     Renderer* _renderer;
-    std::unique_ptr<VulkanMaterial> _material;
+    VulkanMaterial* _material;
+
 public:
+
+    /// @brief Loads a material from file.
+    /// @param resourceSystem Pointer to the resource system.
+    /// @param graphicsSystem Pointer to the graphics system.
+    /// @param path Filesystem path to the material JSON file.
     Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
+
+    /// @brief Destructor
     virtual ~Material();
 
-    VulkanMaterial* GetVulkanMaterial() { return _material.get(); }
+    /// @brief Gets the Vulkan material used by this material.
+    VulkanMaterial* GetVulkanMaterial();
+
+    /// @brief Gets the Vulkan pipeline used by this material.
     const VulkanPipeline* GetVulkanPipeline();
 
+    /// @brief Creates a material instance for this material.
     Ref<MaterialInstance> CreateInstance();
-
-    void SetBool(const std::string& name, bool value);
-    void SetInteger(const std::string& name, int value);
-    void SetScaler(const std::string& name, float value);
-    void SetVector2(const std::string& name, glm::vec2 value);
-    void SetVector3(const std::string& name, glm::vec3 value);
-    void SetVector4(const std::string& name, glm::vec4 value);
-    void SetMatrix(const std::string& name, glm::mat4 value);
-    void SetSampledImage2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image);
-    void SetPushConstant(VulkanRenderData& rd, const std::string& name, const void* value);
-
-    void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */
-    void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
 };
 
 }

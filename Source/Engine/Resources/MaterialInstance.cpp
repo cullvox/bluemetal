@@ -8,6 +8,12 @@
 namespace bl
 {
 
+MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem)
+    : Resource(resourceSystem, graphicsSystem, "")
+{
+    // Empty constructor for creating material instances from a base material.
+}
+
 MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
     : Resource(resourceSystem, graphicsSystem, path)
 {
@@ -30,11 +36,6 @@ MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSyste
 
     auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
     _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat->GetVulkanMaterial()->CreateInstance());
-}
-
-MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance)
-    : Resource(resourceSystem, graphicsSystem, "")
-{
 }
 
 MaterialInstance::~MaterialInstance()
