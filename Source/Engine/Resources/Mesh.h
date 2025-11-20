@@ -1,17 +1,15 @@
 #pragma once
 
-#include "Precompiled.h"
-#include "Resource.h"
 #include "Graphics/Vertex.h"
 #include "Graphics/VulkanBuffer.h"
+#include "Precompiled.h"
+#include "Resource.h"
 
-namespace bl
-{
+namespace bl {
 
 class GraphicsSystem;
 
-class Mesh : public Resource
-{
+class Mesh : public Resource {
     GraphicsSystem* _system;
     VulkanBuffer _vertexBuffer;
     VulkanBuffer _indexBuffer;
@@ -24,7 +22,7 @@ public:
     Mesh(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
     ~Mesh() = default;
 
-    template<VertexType T>
+    template <VertexType T>
     void UploadVertices(std::span<T> vertices)
     {
         UploadVertices(std::as_bytes<T>(vertices));

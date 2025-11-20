@@ -2,16 +2,15 @@
 
 #include "Precompiled.h"
 
-namespace bl
-{
+namespace bl {
 
 class Engine;
 class ResourceSystem;
 class Resource;
 
-class System
-{
+class System {
     Engine& engine;
+
 public:
     System(Engine& engine)
         : engine(engine)

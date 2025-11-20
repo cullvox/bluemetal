@@ -8,8 +8,6 @@ class MesherInterface {
 public:
     MesherInterface() = default;
     ~MesherInterface() = default;
-
-    
 };
 
 } // namespace bl

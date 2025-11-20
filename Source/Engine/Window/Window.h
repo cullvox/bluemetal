@@ -1,20 +1,19 @@
 #pragma once
 
-#include "Precompiled.h"
+#include "Display.h"
 #include "Engine/SDL.h"
 #include "Math/Rect.h"
-#include "Display.h"
+#include "Precompiled.h"
 
 namespace bl {
 
 /** @brief A window object from the device's platform. */
-class Window
-{
+class Window {
     friend class InputSystem;
     SDL_Window* _window;
-    bool _closeRequested{false};
-    bool _minimized{false};
-    bool _focused{false};
+    bool _closeRequested { false };
+    bool _minimized { false };
+    bool _focused { false };
 
 protected:
     friend class InputSystem;

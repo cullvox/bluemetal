@@ -1,10 +1,10 @@
-#include "Core/Print.h"
 #include "Window.h"
+#include "Core/Print.h"
 
 #include <SDL3/SDL_vulkan.h>
 #include <cstddef>
 
-namespace bl  {
+namespace bl {
 
 Window::Window(const std::string& title, Rect2D rect, bool fullscreen)
     : _window(nullptr)
@@ -16,7 +16,7 @@ Window::Window(const std::string& title, Rect2D rect, bool fullscreen)
         flags |= SDL_WINDOW_FULLSCREEN;
 
     _window = SDL_CreateWindow(title.c_str(), rect.extent.width, rect.extent.height, flags);
-    if (!_window) 
+    if (!_window)
         throw std::runtime_error("Could not create an SDL window!");
 
     SDL_PropertiesID props = SDL_GetWindowProperties(_window);
@@ -24,7 +24,7 @@ Window::Window(const std::string& title, Rect2D rect, bool fullscreen)
     SDL_ShowWindow(_window);
 }
 
-Window::~Window() 
+Window::~Window()
 {
     SDL_DestroyWindow(_window);
 }
@@ -44,8 +44,7 @@ void Window::SetFocused(bool focused)
     _focused = focused;
 }
 
-
-VideoMode Window::GetCurrentVideoMode() const 
+VideoMode Window::GetCurrentVideoMode() const
 {
     int x = 0, y = 0;
     SDL_GetWindowPosition(_window, &x, &y);
@@ -58,7 +57,7 @@ VideoMode Window::GetCurrentVideoMode() const
     if (!details)
         throw std::runtime_error("Could not get pixel format details!");
 
-    return VideoMode{details->Rbits, details->Gbits, details->Bbits, {(uint32_t)mode->w, (uint32_t)mode->h}, mode->refresh_rate};
+    return VideoMode { details->Rbits, details->Gbits, details->Bbits, { (uint32_t)mode->w, (uint32_t)mode->h }, mode->refresh_rate };
 }
 
 SDL_Window* Window::Get() const
@@ -71,7 +70,7 @@ Extent2D Window::GetExtent() const
     int w = 0, h = 0;
     SDL_GetWindowSizeInPixels(_window, &w, &h);
 
-    return Extent2D{(uint32_t)w, (uint32_t)h};
+    return Extent2D { (uint32_t)w, (uint32_t)h };
 }
 
 bool Window::GetCloseRequested() const
@@ -88,6 +87,5 @@ bool Window::GetFocused() const
 {
     return _focused;
 }
-
 
 } // namespace bl

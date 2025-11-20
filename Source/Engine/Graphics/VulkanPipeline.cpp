@@ -8,7 +8,6 @@
 
 namespace bl {
 
-
 // Recursively reflects members of a block variable into the given reflected block.
 // Helper function for VulkanReflectedPipeline::Reflect.
 static void ReflectMembers(VulkanReflectedBlock& meta, uint32_t binding, const SpvReflectBlockVariable& block, std::string parent = "")
@@ -141,8 +140,6 @@ VulkanReflectedPipeline VulkanReflectedPipeline::Reflect(const VulkanPipelineSta
 
     return reflection;
 }
-
-
 
 VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanReflectedPipeline* reflection)
     : _device(device)

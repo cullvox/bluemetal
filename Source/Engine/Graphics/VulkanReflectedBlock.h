@@ -30,10 +30,15 @@ enum class VulkanVariableBlockType {
  */
 class VulkanVariableBlock {
 public:
-
     VulkanVariableBlock() = default;
     VulkanVariableBlock(uint32_t binding, VulkanVariableBlockType type, uint32_t offset, uint32_t size, const std::string& name)
-        : _binding(binding), _type(type), _offset(offset), _size(size), _name(name) {}
+        : _binding(binding)
+        , _type(type)
+        , _offset(offset)
+        , _size(size)
+        , _name(name)
+    {
+    }
 
     /**
      * @brief Sets the binding for this variable block.
@@ -108,7 +113,6 @@ private:
     uint32_t _size;
 };
 
-
 /**
  * @class VulkanReflectedBlock
  * @brief Represents a reflected block in a Vulkan pipeline.
@@ -119,11 +123,13 @@ private:
  */
 class VulkanReflectedBlock {
 public:
-
     VulkanReflectedBlock() = default;
     VulkanReflectedBlock(const std::string& name, uint32_t size)
-        : _name(name), _size(size) {}
-    
+        : _name(name)
+        , _size(size)
+    {
+    }
+
     /**
      * @brief Sets the name of this reflected block.
      * @param name The name of the reflected block.
@@ -143,14 +149,14 @@ public:
      * @return The name of the reflected block.
      */
     std::string GetName() const;
-    
+
     /**
      * @brief Gets the size of this reflected block.
      * @return The size in bytes of the reflected block.
      */
     uint32_t GetSize() const;
-    
-    /** 
+
+    /**
      * @brief Add or get a variable in this reflected block.
      * @param name The name of the variable to add or get.
      * @return Reference to the VulkanVariableBlock for the given name.

@@ -1,20 +1,20 @@
-#include "VulkanDevice.h"
 #include "VulkanPipelineLayoutCache.h"
+#include "VulkanDevice.h"
 
-namespace bl 
-{
+namespace bl {
 
 bool VulkanPipelineLayoutCacheData::operator==(const VulkanPipelineLayoutCacheData& rhs) const noexcept
 {
-    if (layouts != rhs.layouts) return false;
-    for (size_t i = 0; i < ranges.size(); i++)
-    {
+    if (layouts != rhs.layouts)
+        return false;
+    for (size_t i = 0; i < ranges.size(); i++) {
         const auto& r = ranges[i];
         const auto& rr = rhs.ranges[i];
 
         if (r.offset != rr.offset
             || r.size != rr.size
-            || r.stageFlags != rr.stageFlags) return false;
+            || r.stageFlags != rr.stageFlags)
+            return false;
     }
 
     return true;
@@ -55,14 +55,14 @@ VkPipelineLayout VulkanPipelineLayoutCache::Acquire(const std::span<VkDescriptor
     // std::sort(data.layouts.begin(), data.layouts.end());
 
     // Sort each value to ensure stability when hashing.
-    std::sort(data.ranges.begin(), data.ranges.end(), [](const VkPushConstantRange& a, const VkPushConstantRange& b){ return a.offset < b.offset; });
+    std::sort(data.ranges.begin(), data.ranges.end(), [](const VkPushConstantRange& a, const VkPushConstantRange& b) { return a.offset < b.offset; });
 
     auto it = _cache.find(data);
     if (it != _cache.end())
         return (*it).second; // Return an already created and cached pipeline layout.
 
     // Create a pipeline layout to cache and return it.
-    VkPipelineLayoutCreateInfo createInfo{};
+    VkPipelineLayoutCreateInfo createInfo {};
     createInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     createInfo.pNext = nullptr;
     createInfo.flags = 0;

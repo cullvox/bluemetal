@@ -1,8 +1,7 @@
-#include "Engine/Engine.h"
 #include "Camera3D.h"
+#include "Engine/Engine.h"
 
-namespace bl
-{
+namespace bl {
 
 Camera3D::Camera3D(Engine* engine)
     : Node3D(engine)
@@ -37,8 +36,7 @@ void Camera3D::SetFOV(float fov)
 glm::mat4 Camera3D::GetProjectionMatrix()
 {
     Extent2D extent = GetEngine()->GetWindow()->GetExtent();
-    switch (_projection)
-    {
+    switch (_projection) {
     case CameraProjection::ePerspective:
         return glm::perspectiveFov(_fov, (float)extent.width, (float)extent.height, _nearClip, _farClip);
         break;

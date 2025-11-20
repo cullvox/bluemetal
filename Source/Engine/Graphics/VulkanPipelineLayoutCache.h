@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Precompiled.h"
 #include "Core/Hash.h"
+#include "Precompiled.h"
 #include "Vulkan.h"
 
 namespace bl {
@@ -23,11 +23,10 @@ struct VulkanPipelineLayoutCacheHasher {
 /// @brief Caches Vulkan pipeline layout objects to be reused if similar.
 class VulkanPipelineLayoutCache {
 public:
-
     /// @brief Cache Constructor
     /// @param[in] device Device used to create pipeline layouts with.
     VulkanPipelineLayoutCache(const VulkanDevice* device);
-    
+
     /// @brief Destructor
     ~VulkanPipelineLayoutCache();
 

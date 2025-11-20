@@ -1,12 +1,8 @@
 #pragma once
 
+namespace bl {
 
-namespace bl
-{
-
-class AudioChannelGroup
-{
-    
+class AudioChannelGroup {
 };
 
 } // namespace bl

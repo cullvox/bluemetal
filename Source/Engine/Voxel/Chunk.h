@@ -1,14 +1,12 @@
 #pragma once
 
 #include "Precompiled.h"
-#include "VoxelLimits.h"
 #include "Voxel.h"
+#include "VoxelLimits.h"
 
-namespace bl
-{
+namespace bl {
 
-class Chunk
-{
+class Chunk {
 public:
     Chunk();
     ~Chunk();

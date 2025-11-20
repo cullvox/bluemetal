@@ -1,7 +1,6 @@
 #include "Node.h"
 
-namespace bl
-{
+namespace bl {
 
 Node::Node(Engine* engine)
     : _engine(engine)
@@ -95,7 +94,7 @@ void Node::AddChild(std::shared_ptr<Node> child)
     if (child) {
         // Avoid adding the same child multiple times.
         if (_children.find(child->GetName()) == _children.end()) {
-            _children.insert({child->GetName(), child});
+            _children.insert({ child->GetName(), child });
             child->_parent = shared_from_this();
         }
     }
@@ -112,7 +111,7 @@ void Node::RemoveChild(const std::string& child)
 
 void Node::ClearChildren()
 {
-    for (auto& [name, child]: _children) {
+    for (auto& [name, child] : _children) {
         if (child) {
             child->_parent.reset();
         }

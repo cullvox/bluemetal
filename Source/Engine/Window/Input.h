@@ -1,14 +1,13 @@
 #pragma once
 
-#include "Precompiled.h"
 #include "Core/Flags.h"
 #include "Core/System.h"
 #include "Engine/SDL.h"
 #include "Keyboard.h"
 #include "Mouse.h"
+#include "Precompiled.h"
 
-namespace bl
-{
+namespace bl {
 
 class Gamepad;
 
@@ -26,15 +25,15 @@ public:
     /// @brief Polls the system for events.
     ///
     /// Updates the internal state for all input objects. This includes but is
-    /// not limited to, Keyboard, Mouse, and Gamepads. Later as more features 
+    /// not limited to, Keyboard, Mouse, and Gamepads. Later as more features
     /// are added it will include more advanced input like VR.
-    /// 
+    ///
     void Poll(std::function<void(SDL_Event&)> extraFunc);
 
     /// @brief Gets the system keyboard input object.
     ///
-    /// Since systems can only technically have one keyboard in most 
-    /// circumstances there is only one keyboard object. Use the returned 
+    /// Since systems can only technically have one keyboard in most
+    /// circumstances there is only one keyboard object. Use the returned
     /// keyboard object to update input bindings and other actions that should
     /// take place because of keyboard input.
     ///
@@ -44,8 +43,8 @@ public:
 
     /// @brief Gets the mouse input object.
     ///
-    /// We only support one mouse and one keyboard so we return a singular 
-    /// mouse object. Use the returned mouse input object to gather 
+    /// We only support one mouse and one keyboard so we return a singular
+    /// mouse object. Use the returned mouse input object to gather
     /// information about the state of the cursor and the mouse's raw data.
     ///
     /// @returns The mouse object.
@@ -54,15 +53,15 @@ public:
 
     /// @brief Gets all connected gamepad objects.
     ///
-    /// Returns an array of the maximum amount of gamepads supported by the 
-    /// window platform. The gamepads are thoughtfully 
+    /// Returns an array of the maximum amount of gamepads supported by the
+    /// window platform. The gamepads are thoughtfully
     ///
-    /// @return 
-    //virtual const std::vector<Gamepad*>& GetGamepads() = 0;
+    /// @return
+    // virtual const std::vector<Gamepad*>& GetGamepads() = 0;
 
-    /// @brief 
-    /// @return 
-    //virtual std::vector<Gamepad*> GetConnectedGamepads() = 0;
+    /// @brief
+    /// @return
+    // virtual std::vector<Gamepad*> GetConnectedGamepads() = 0;
 };
 
 } // namespace bl

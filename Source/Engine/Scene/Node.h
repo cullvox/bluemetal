@@ -1,15 +1,13 @@
 #pragma once
 
-#include "Precompiled.h"
 #include "Graphics/VulkanRenderData.h"
+#include "Precompiled.h"
 
-namespace bl
-{
+namespace bl {
 
 class Engine;
 
-class Node : public std::enable_shared_from_this<Node>
-{
+class Node : public std::enable_shared_from_this<Node> {
     std::string _name;
     std::weak_ptr<Node> _parent;
     std::unordered_map<std::string, std::shared_ptr<Node>> _children;

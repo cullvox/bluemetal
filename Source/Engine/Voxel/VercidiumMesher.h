@@ -6,7 +6,6 @@ namespace bl {
 
 class VercidiumMesher : public MesherInterface {
 public:
-    
 };
 
 } // namespace bl

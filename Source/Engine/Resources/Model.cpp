@@ -8,20 +8,19 @@
 #include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanSampler.h"
 
-#include "Resources/ResourceSystem.h"
-#include "Resources/Texture2D.h"
-#include "Resources/Model.h"
 #include "Resources/Material.h"
 #include "Resources/MaterialInstance.h"
+#include "Resources/Model.h"
+#include "Resources/ResourceSystem.h"
+#include "Resources/Texture2D.h"
 
 #include "Scene/MeshInstance3D.h"
-
 
 namespace bl {
 
 std::shared_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tinygltf::Node& node)
 {
-    std::shared_ptr<Node3D> newNode{nullptr};
+    std::shared_ptr<Node3D> newNode { nullptr };
     if (node.mesh < 0) {
         newNode = std::make_unique<Node3D>(&_graphicsSystem->GetEngine());
     } else {
@@ -101,27 +100,27 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
 
     // Load images
     _textures.resize(model.images.size());
-    for (int i = 0; i < model.images.size(); i++)
-    {
+    for (int i = 0; i < model.images.size(); i++) {
         auto& image = model.images[i];
 
-        if (image.pixel_type != TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE ||
-            image.bits != 8 ||
-            image.as_is ||
-            image.component < 3 || image.component > 4) {
+        if (image.pixel_type != TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE || image.bits != 8 || image.as_is || image.component < 3 || image.component > 4) {
             Print::Warn("Invalid texture will not be loaded.");
             continue;
         }
 
         TextureFormat format;
         switch (image.component) {
-            case 3: format = TextureFormat::eRGB; break;
-            case 4: format = TextureFormat::eRGBA; break;
-            default:
-                Print::Warn("Invalid texture format.");
-                continue;
+        case 3:
+            format = TextureFormat::eRGB;
+            break;
+        case 4:
+            format = TextureFormat::eRGBA;
+            break;
+        default:
+            Print::Warn("Invalid texture format.");
+            continue;
         }
-        Extent2D extent{ static_cast<uint32_t>(image.width), static_cast<uint32_t>(image.height) };
+        Extent2D extent { static_cast<uint32_t>(image.width), static_cast<uint32_t>(image.height) };
 
         const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(image.image.data()), image.image.size());
 
@@ -135,8 +134,7 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
     auto defaultMaterial = resourceSystem->Load<Material>("Resources/Materials/Default.mat");
     auto defaultSampler = resourceSystem->Load<Sampler>("Resources/Samplers/Default.json");
 
-    for (auto& material : model.materials)
-    {
+    for (auto& material : model.materials) {
         auto instance = defaultMaterial->CreateInstance();
         AddSubResource(instance);
 
@@ -148,9 +146,9 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
         _materials.push_back(instance);
     }
 
-    // Load meshes 
+    // Load meshes
     _meshes.reserve(model.meshes.size());
-    for (int i = 0; i < model.meshes.size(); i ++) {
+    for (int i = 0; i < model.meshes.size(); i++) {
         auto& mesh = model.meshes[i];
 
         auto& primitive = mesh.primitives[0];
@@ -163,18 +161,18 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
 
         size_t indicesWidth = 0;
         switch (indexAccessor.componentType) {
-            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
-                indicesWidth = 1;
-                break;
-            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT: 
-                indicesWidth = 2;
-                break;
-            case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
-                indicesWidth = 4;
-                break;
-            default:
-                throw std::runtime_error("Invalid indices width!");
-                break;
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE:
+            indicesWidth = 1;
+            break;
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_SHORT:
+            indicesWidth = 2;
+            break;
+        case TINYGLTF_COMPONENT_TYPE_UNSIGNED_INT:
+            indicesWidth = 4;
+            break;
+        default:
+            throw std::runtime_error("Invalid indices width!");
+            break;
         }
 
         auto& indexView = model.bufferViews[indexAccessor.bufferView];
@@ -233,15 +231,14 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
         m->UploadIndices(indices);
     }
 
-    //model.textures[0].source
+    // model.textures[0].source
 
     // Build out the scene tree for model loading.
     const auto& scene = model.scenes[model.defaultScene];
 
     _root = std::make_unique<Node3D>(&system->GetEngine());
 
-    for (int i : scene.nodes)
-    {
+    for (int i : scene.nodes) {
         _root->AddChild(LoadNode(model, model.nodes[i]));
     }
 }

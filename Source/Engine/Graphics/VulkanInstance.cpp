@@ -1,21 +1,21 @@
-#include "Core/Print.h"
-#include "VulkanWindow.h"
-#include "VulkanPhysicalDevice.h"
 #include "VulkanInstance.h"
+#include "Core/Print.h"
+#include "VulkanPhysicalDevice.h"
+#include "VulkanWindow.h"
 
-namespace bl 
-{
+namespace bl {
 
 VulkanInstance::VulkanInstance(Version appVersion, std::string_view appName, bool enableValidation)
-    : _enableValidation(enableValidation) 
+    : _enableValidation(enableValidation)
 {
     CreateInstance(appVersion, appName);
     EnumeratePhysicalDevices();
 }
 
-VulkanInstance::~VulkanInstance() 
+VulkanInstance::~VulkanInstance()
 {
-    if (!_instance) return;
+    if (!_instance)
+        return;
 
     if (_enableValidation)
         vkDestroyDebugUtilsMessengerEXT(_instance, _messenger, nullptr);
@@ -24,12 +24,12 @@ VulkanInstance::~VulkanInstance()
     volkFinalize();
 }
 
-VkInstance VulkanInstance::Get() const 
+VkInstance VulkanInstance::Get() const
 {
     return _instance;
 }
 
-bool VulkanInstance::GetValidationEnabled() const 
+bool VulkanInstance::GetValidationEnabled() const
 {
     return _enableValidation;
 }
@@ -43,31 +43,26 @@ std::vector<VulkanPhysicalDevice*> VulkanInstance::GetPhysicalDevices()
     return out;
 }
 
-VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice() 
+VulkanPhysicalDevice* VulkanInstance::ChoosePhysicalDevice()
 {
     auto physicalDevices = GetPhysicalDevices();
-    auto it = std::find_if(physicalDevices.begin(), physicalDevices.end(), 
-        [](const auto& pd)
-        { 
-            return pd->GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU; 
+    auto it = std::find_if(physicalDevices.begin(), physicalDevices.end(),
+        [](const auto& pd) {
+            return pd->GetType() == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU;
         });
 
-    if (it != physicalDevices.end()) 
-    {
+    if (it != physicalDevices.end()) {
         return *it;
-    }
-    else
-    {
+    } else {
         Print::Warn("Using physical device zero because user does not have a discrete card!");
         return physicalDevices[0];
     }
 }
 
-std::vector<const char*> VulkanInstance::GetExtensions() 
+std::vector<const char*> VulkanInstance::GetExtensions()
 {
     // Add required instance extensions below...
-    std::vector<const char*> extensions = 
-    {
+    std::vector<const char*> extensions = {
 #ifdef BLUEMETAL_VULKAN_PORTABILITY
         VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME,
 #endif
@@ -89,13 +84,11 @@ std::vector<const char*> VulkanInstance::GetExtensions()
     VK_CHECK(vkEnumerateInstanceExtensionProperties(nullptr, &propertiesCount, extensionProperties.data()));
 
     // Make sure all the extensions wanted are present.
-    for (const char* name : extensions) 
-    {
-        if (!std::any_of(extensionProperties.begin(), extensionProperties.end(), 
-            [name](const auto& properties){ 
-                return strcmp(name, properties.extensionName) == 0; 
-            })) 
-        {
+    for (const char* name : extensions) {
+        if (!std::any_of(extensionProperties.begin(), extensionProperties.end(),
+                [name](const auto& properties) {
+                    return strcmp(name, properties.extensionName) == 0;
+                })) {
             throw std::runtime_error("Could not find a required instance extension!");
         }
     }
@@ -106,8 +99,7 @@ std::vector<const char*> VulkanInstance::GetExtensions()
 std::vector<const char*> VulkanInstance::GetValidationLayers()
 {
     // The engines required validation layers.
-    std::vector<const char*> layers = 
-    {
+    std::vector<const char*> layers = {
         "VK_LAYER_KHRONOS_validation",
     };
 
@@ -120,14 +112,11 @@ std::vector<const char*> VulkanInstance::GetValidationLayers()
     VK_CHECK(vkEnumerateInstanceLayerProperties(&propertiesCount, properties.data()));
 
     // Ensure that the requested layers are present on the system.
-    for (const char* name : layers) 
-    {
-        if (!std::any_of(properties.begin(), properties.end(), 
-            [name](const auto& properties)
-            { 
-                return strcmp(name, properties.layerName) == 0; 
-            })) 
-        {
+    for (const char* name : layers) {
+        if (!std::any_of(properties.begin(), properties.end(),
+                [name](const auto& properties) {
+                    return strcmp(name, properties.layerName) == 0;
+                })) {
             Print::Error("User requested validation layers but none were found! Is the Vulkan SDK installed?");
             _enableValidation = false;
         }
@@ -142,9 +131,9 @@ void VulkanInstance::CreateInstance(Version appVersion, std::string_view appName
     volkInitializeCustom((PFN_vkGetInstanceProcAddr)SDL_Vulkan_GetVkGetInstanceProcAddr());
 
     std::vector<const char*> extensions = GetExtensions();
-    std::vector<const char*> layers{};
+    std::vector<const char*> layers {};
 
-    if (_enableValidation) 
+    if (_enableValidation)
         layers = GetValidationLayers();
 
     VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo = {};
@@ -191,10 +180,10 @@ void VulkanInstance::CreateInstance(Version appVersion, std::string_view appName
     Print::Debug("Finshed creating the Vulkan instance.");
 }
 
-void VulkanInstance::EnumeratePhysicalDevices() 
+void VulkanInstance::EnumeratePhysicalDevices()
 {
     uint32_t physicalDeviceCount = 0;
-    std::vector<VkPhysicalDevice> physicalDevices{};
+    std::vector<VkPhysicalDevice> physicalDevices {};
 
     VK_CHECK(vkEnumeratePhysicalDevices(_instance, &physicalDeviceCount, nullptr));
     physicalDevices.resize(physicalDeviceCount);
@@ -207,13 +196,13 @@ void VulkanInstance::EnumeratePhysicalDevices()
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VulkanInstance::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void*)
 {
-    if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) 
+    if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
         Print::Error("{}", pCallbackData->pMessage);
 
-    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) 
+    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
         Print::Warn("{}", pCallbackData->pMessage);
 
-    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) 
+    else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
         Print::Info("{}", pCallbackData->pMessage);
 
     return false;

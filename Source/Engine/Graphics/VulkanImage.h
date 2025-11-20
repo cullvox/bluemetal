@@ -19,6 +19,7 @@ class VulkanImage {
     VkImageView _defaultView;
     std::vector<VkImageView> _views;
     VmaAllocation _allocation;
+
 public:
     /// @brief Default Constructor
     VulkanImage();
@@ -30,28 +31,28 @@ public:
     /// @param[in] format The format for pixel storage and data representation.
     /// @param[in] usage What the image is used for in api.
     /// @param[in] viewAspectMask The default image view aspect mask.
-    /// @param[in] mipLevels How many mipmap levels will this image have. 
+    /// @param[in] mipLevels How many mipmap levels will this image have.
     VulkanImage(
-        VulkanDevice*       device, 
-        VkImageType         type, 
-        VkExtent3D          extent, 
-        VkFormat            format,
-        VkImageUsageFlags   usage,
-        uint32_t            mipLevels = 1,
-        VkImageLayout       initialLayout = VK_IMAGE_LAYOUT_UNDEFINED);
+        VulkanDevice* device,
+        VkImageType type,
+        VkExtent3D extent,
+        VkFormat format,
+        VkImageUsageFlags usage,
+        uint32_t mipLevels = 1,
+        VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED);
 
     /// @brief Move Constructor
-    /// @param[inout] image The other image to move it's data into this new object. 
+    /// @param[inout] image The other image to move it's data into this new object.
     VulkanImage(VulkanImage&& image);
 
     /// @brief Default Destructor
     ~VulkanImage();
 
-    /// @brief Move Assign Operator 
-    /// @param[inout] rhs The other image to move it's data into this new object. 
+    /// @brief Move Assign Operator
+    /// @param[inout] rhs The other image to move it's data into this new object.
     VulkanImage& operator=(VulkanImage&& rhs);
 
-    /// @brief GetType 
+    /// @brief GetType
     /// @returns The type of image this was created as.
     VkImageType GetType() const;
 
@@ -62,10 +63,10 @@ public:
     /// @brief GetFormat
     /// @returns Returns the current image format.
     VkFormat GetFormat() const;
-    
+
     /// @brief GetUsage
-    /// @returns Returns the image usage at construction. 
-    VkImageUsageFlags GetUsage() const; 
+    /// @returns Returns the image usage at construction.
+    VkImageUsageFlags GetUsage() const;
 
     /// @brief GetLayout
     /// @return Returns the current image layout.
@@ -83,7 +84,7 @@ public:
     void DestroyViews();
 
     /// @brief Uploads image data into a vulkan image.
-    /// @param data The data to upload to the GPU. 
+    /// @param data The data to upload to the GPU.
     void UploadData(const std::span<const std::byte> data, VkImageLayout finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     /// @brief Transitions the image from the previous layout to another new one.

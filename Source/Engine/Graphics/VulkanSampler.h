@@ -11,7 +11,6 @@ namespace bl {
  */
 class VulkanSampler {
 public:
-
     /**
      * @brief Constructs a Vulkan sampler with specified parameters.
      * @param device Vulkan device to create the sampler with.

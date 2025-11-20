@@ -1,6 +1,6 @@
 
-#include "Core/Print.h"
 #include "Texture.h"
+#include "Core/Print.h"
 
 namespace bl {
 
@@ -26,7 +26,7 @@ ColorSpace Texture::GetColorSpace() const
 
 VulkanImage* Texture::GetImage() const
 {
-    return _image.get(); 
+    return _image.get();
 }
 
 } // namespace bl

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Precompiled.h"
 #include "Core/Hash.h"
+#include "Precompiled.h"
 #include "Vulkan.h"
 
 namespace bl {
@@ -22,7 +22,6 @@ struct VulkanDescriptorLayoutCacheHasher {
 /// @brief Caches descriptor set layouts optimizing descriptor set creation speeds and memory usage.
 class VulkanDescriptorSetLayoutCache {
 public:
-
     /// @brief Layout Cache Constructor
     /// @param device The Vulkan device used to create descriptor set layouts.
     VulkanDescriptorSetLayoutCache(const VulkanDevice* device);

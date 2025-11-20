@@ -5,11 +5,9 @@
 #include "Graphics/VulkanShader.h"
 #include "Resource.h"
 
-namespace bl 
-{
+namespace bl {
 
-class Shader : public Resource 
-{
+class Shader : public Resource {
     VulkanDevice* _device;
     std::unique_ptr<VulkanShader> _shader;
 

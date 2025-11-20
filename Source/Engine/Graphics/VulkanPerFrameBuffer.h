@@ -5,6 +5,7 @@
 class VulkanPerFrameBuffer {
     VulkanBuffer _buffer;
     size_t _sizePerFrame;
+
 public:
     VulkanPerFrameBuffer() = default;
     VulkanPerFrameBuffer(VulkanDevice* device, size_t sizePerFrame, uint32_t numFrames);

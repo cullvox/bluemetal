@@ -2,17 +2,14 @@
 
 #include "Resource.h"
 
-namespace bl 
-{
+namespace bl {
 
-class SceneTree
-{
+class SceneTree {
 public:
     SceneTree();
     ~SceneTree();
 
     void UpdateTree();
-
 };
 
 }

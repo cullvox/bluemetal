@@ -7,22 +7,28 @@ namespace bl {
 class VulkanFrameTracker {
 public:
     VulkanFrameTracker(uint32_t startFrame = 0)
-        : _currentFrame(startFrame) {}
+        : _currentFrame(startFrame)
+    {
+    }
     ~VulkanFrameTracker();
 
-    void Next() {
+    void Next()
+    {
         _currentFrame = (_currentFrame + 1) % VulkanConfig::numFramesInFlight;
     }
 
-    uint32_t PeekNext() const {
+    uint32_t PeekNext() const
+    {
         return (_currentFrame + 1) % VulkanConfig::numFramesInFlight;
     }
 
-    uint32_t Prev() const {
+    uint32_t Prev() const
+    {
         return (_currentFrame - 1) % VulkanConfig::numFramesInFlight;
     }
 
-    uint32_t Get() const {
+    uint32_t Get() const
+    {
         return _currentFrame;
     }
 

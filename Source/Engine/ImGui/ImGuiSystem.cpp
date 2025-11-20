@@ -1,22 +1,14 @@
-///////////////////////////////
-// Headers
-///////////////////////////////
-
 #include "ImGui/ImGuiSystem.h"
-
+#include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/Renderer.h"
-#include "Graphics/VulkanWindow.h"
 #include "Graphics/VulkanConversions.h"
-
+#include "Graphics/VulkanWindow.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl3.h"
 #include "ImGui/imgui_impl_vulkan.h"
 
-#include "Engine/Engine.h"
-
-namespace bl 
-{
+namespace bl {
 
 ImGuiSystem::ImGuiSystem(Engine& engine, VulkanWindow* window, Renderer* renderer)
     : System(engine)
@@ -46,7 +38,7 @@ void ImGuiSystem::ApplyStyle()
     cfg.SizePixels = 13 * scale;
     ImGui::GetIO().Fonts->AddFontDefault(&cfg);
     // ImGui::GetIO().FontGlobalScale = scale;
-    ImGui::GetIO().DisplayFramebufferScale = ImVec2{scale, scale};
+    ImGui::GetIO().DisplayFramebufferScale = ImVec2 { scale, scale };
 
     ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -119,18 +111,18 @@ void ImGuiSystem::Init()
 
     device->WaitForDevice();
 
-    std::array poolSizes = { 
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 }, 
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 }, 
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
-        VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
+    std::array poolSizes = {
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_SAMPLER, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1000 },
+        VkDescriptorPoolSize { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 1000 }
     };
 
     VkDescriptorPoolCreateInfo poolInfo = {};
@@ -145,9 +137,7 @@ void ImGuiSystem::Init()
     ImGui::CreateContext();
 
     VkInstance inst = instance->Get();
-    ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [](const char *function_name, void *vulkan_instance) {
-        return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance *>(vulkan_instance)), function_name);
-    }, &inst);
+    ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [](const char* function_name, void* vulkan_instance) { return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance*>(vulkan_instance)), function_name); }, &inst);
 
     ImGui_ImplSDL3_InitForVulkan(window->Get());
 
@@ -222,53 +212,50 @@ void ImGuiSystem::DrawDebug()
 
     ImGui::Begin("BlueMetal Debug Info");
 
-    if (ImGui::CollapsingHeader("Version"))
-    {
+    if (ImGui::CollapsingHeader("Version")) {
         ImGui::Text("Compiled " __DATE__ " " __TIME__);
         ImGui::Text("Compiler ");
         ImGui::SameLine();
-        ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", bl::compiler.c_str());
+        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, "%s", bl::compiler.c_str());
 
         ImGui::Text("Bluemetal");
         ImGui::SameLine();
-        ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", bl::to_string(bl::engineVersion).c_str());
+        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, "%s", bl::to_string(bl::engineVersion).c_str());
 
         ImGui::Text("SDL");
         ImGui::SameLine();
-        ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION));
+        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION));
 
         ImGui::Text("Vulkan Header");
         ImGui::SameLine();
-        ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%d", VK_HEADER_VERSION);
+        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, "%d", VK_HEADER_VERSION);
 
         ImGui::Text("Vulkan Version");
         ImGui::SameLine();
         auto instanceVersion = volkGetInstanceVersion();
-        ImGui::TextColored(ImVec4{0.7f, 0.1f, 0.1f, 1.0f}, "%d.%d.%d", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
+        ImGui::TextColored(ImVec4 { 0.7f, 0.1f, 0.1f, 1.0f }, "%d.%d.%d", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
 
         ImGui::Text("ImGui");
         ImGui::SameLine();
-        ImGui::TextColored(ImVec4{0.2f, 0.4f, 0.8f, 1.0f}, "%s", ImGui::GetVersion());
+        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, "%s", ImGui::GetVersion());
     }
 
-    if (ImGui::CollapsingHeader("Input"))
-    {
+    if (ImGui::CollapsingHeader("Input")) {
         ImGui::Text("Window Focused: %s", window->GetFocused() ? "Yes" : "No");
         ImGui::Text("ImGui Wants Mouse: %s", ImGui::GetIO().WantCaptureMouse ? "Yes" : "No");
     }
 
-
     if (ImGui::CollapsingHeader("Graphics")) {
 
-        ImGui::Text("Graphics Device: %s", gs->GetPhysicalDevice()->GetDeviceName().c_str()); 
+        ImGui::Text("Graphics Device: %s", gs->GetPhysicalDevice()->GetDeviceName().c_str());
         ImGui::SameLine();
         ImGui::HelpMarker("Your graphics card.");
-        ImGui::Text("Graphics Vendor: %s", gs->GetPhysicalDevice()->GetVendorName().c_str()); 
-        ImGui::Text("F/S: %d", counter.GetFramesPerSecond()); 
-        ImGui::Text("MS/F: %.2f", counter.GetMillisecondsPerFrame()); 
+        ImGui::Text("Graphics Vendor: %s", gs->GetPhysicalDevice()->GetVendorName().c_str());
+        ImGui::Text("F/S: %d", counter.GetFramesPerSecond());
+        ImGui::Text("MS/F: %.2f", counter.GetMillisecondsPerFrame());
         ImGui::Text("Average F/S (Over 10 Seconds): %.1f", counter.GetAverageFramesPerSecond(10));
-        ImGui::Text("Average MS/F (Over 144 Frames): %.2f", counter.GetAverageMillisecondsPerFrame(144)); 
-        ImGui::Text("Presenting: (%s | %s, %s)", bl::ToString(window->GetSwapchain()->GetPresentMode()).data(), bl::ToString(window->GetSwapchain()->GetSurfaceFormat().format).data(), bl::ToString(window->GetSwapchain()->GetSurfaceFormat().colorSpace).data()); 
+        ImGui::Text("Average MS/F (Over 144 Frames): %.2f", counter.GetAverageMillisecondsPerFrame(144));
+        ImGui::Text("Presenting: (%s | %s, %s)", bl::ToString(window->GetSwapchain()->GetPresentMode()).data(), bl::ToString(window->GetSwapchain()->GetSurfaceFormat().format).data(), bl::ToString(window->GetSwapchain()->GetSurfaceFormat().colorSpace).data());
         // ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
 
         if (ImGui::TreeNode("Physical Devices")) {
@@ -280,18 +267,26 @@ void ImGuiSystem::DrawDebug()
                 if (ImGui::TreeNode((void*)(intptr_t)i, "%s", physicalDevice->GetDeviceName().c_str())) {
                     const char* deviceType = "";
                     switch (physicalDevice->GetType()) {
-                    case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU: deviceType = "Integrated"; break;
-                    case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU: deviceType = "Discrete"; break;
-                    case VK_PHYSICAL_DEVICE_TYPE_CPU: deviceType = "CPU"; break;
-                    default: deviceType = "Unknown"; break;
+                    case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+                        deviceType = "Integrated";
+                        break;
+                    case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+                        deviceType = "Discrete";
+                        break;
+                    case VK_PHYSICAL_DEVICE_TYPE_CPU:
+                        deviceType = "CPU";
+                        break;
+                    default:
+                        deviceType = "Unknown";
+                        break;
                     }
 
                     ImGui::SameLine();
-                    ImGui::TextColored({0.2f, 0.8f, 0.4f, 1.0f}, "%s", deviceType);
+                    ImGui::TextColored({ 0.2f, 0.8f, 0.4f, 1.0f }, "%s", deviceType);
 
                     if (physicalDevice == gs->GetPhysicalDevice()) {
                         ImGui::SameLine();
-                        ImGui::TextColored(ImVec4{0.2f, 0.5f, 0.8f, 1.0f}, "Current");
+                        ImGui::TextColored(ImVec4 { 0.2f, 0.5f, 0.8f, 1.0f }, "Current");
                     }
 
                     if (ImGui::TreeNode("Present Modes")) {
@@ -317,17 +312,14 @@ void ImGuiSystem::DrawDebug()
     ImGui::End();
 }
 
-
 } // namespace bl
 
-namespace ImGui
-{
+namespace ImGui {
 
 void HelpMarker(const char* desc)
 {
     ImGui::TextDisabled("(?)");
-    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort) && ImGui::BeginTooltip())
-    {
+    if (ImGui::IsItemHovered(ImGuiHoveredFlags_DelayShort) && ImGui::BeginTooltip()) {
         ImGui::PushTextWrapPos(ImGui::GetFontSize() * 35.0f);
         ImGui::TextUnformatted(desc);
         ImGui::PopTextWrapPos();

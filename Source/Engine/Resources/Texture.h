@@ -1,28 +1,24 @@
 #pragma once
 
-#include "Resources/Resource.h"
-#include "Math/Extent.h"
 #include "Graphics/VulkanImage.h"
+#include "Math/Extent.h"
+#include "Resources/Resource.h"
 
-namespace bl 
-{
+namespace bl {
 
-enum class TextureFormat
-{
+enum class TextureFormat {
     eRGB,
     eRGBA,
     eNormals,
     // ... Specular
 };
 
-enum class ColorSpace 
-{
+enum class ColorSpace {
     eLinear,
     eSRGB,
 };
 
-class Texture : public Resource
-{
+class Texture : public Resource {
 protected:
     Extent3D _extent;
     TextureFormat _format;

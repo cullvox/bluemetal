@@ -1,19 +1,18 @@
 #pragma once
 
+#include "Core/MacroUtils.h"
 #include "Core/System.h"
 #include "Precompiled.h"
-#include "Core/MacroUtils.h"
 
 #include "FMOD.h"
 
-namespace bl
-{
+namespace bl {
 
 class Sound;
 
-class AudioSystem : public System
-{
+class AudioSystem : public System {
     FMOD::System* _fmod;
+
 public:
     AudioSystem(Engine& engine);
     AudioSystem(const AudioSystem&) = delete;

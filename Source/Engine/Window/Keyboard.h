@@ -1,34 +1,32 @@
 #pragma once
 
-#include "Precompiled.h"
 #include "Core/Flags.h"
 #include "Engine/SDL.h"
+#include "Precompiled.h"
 
-namespace bl 
-{
+namespace bl {
 
 /// @brief Key Modifiers
 ///
-/// Keyboard modifiers are simple ways to change the functionality of keys 
+/// Keyboard modifiers are simple ways to change the functionality of keys
 /// by using a modification button. Control, Shift are examples of such keys.
 /// The program can change behavior of functionality depending on modifiers.
 ///
-enum class KeyboardModifierFlagBits : uint32_t 
-{
-    Ctrl  = 0x00000001,
+enum class KeyboardModifierFlagBits : uint32_t {
+    Ctrl = 0x00000001,
     Shift = 0x00000002,
-    Alt   = 0x00000004,
-    Meta  = 0x00000008,
+    Alt = 0x00000004,
+    Meta = 0x00000008,
 };
 
 using KeyboardModifierFlags = uint32_t;
 
-static inline KeyboardModifierFlags operator|(KeyboardModifierFlags modifiers, KeyboardModifierFlagBits bit) 
+static inline KeyboardModifierFlags operator|(KeyboardModifierFlags modifiers, KeyboardModifierFlagBits bit)
 {
     return static_cast<uint32_t>(modifiers) | static_cast<uint32_t>(bit);
 }
 
-static inline KeyboardModifierFlags operator|=(KeyboardModifierFlags& modifiers, KeyboardModifierFlagBits bit) 
+static inline KeyboardModifierFlags operator|=(KeyboardModifierFlags& modifiers, KeyboardModifierFlagBits bit)
 {
     return static_cast<uint32_t&>(modifiers) |= static_cast<uint32_t>(bit);
 }
@@ -37,16 +35,15 @@ static inline KeyboardModifierFlags operator|=(KeyboardModifierFlags& modifiers,
 ///
 /// Scancodes pertaining to standard USB positioning of keys. Because they are
 /// standardised it makes it easy in games to use them for binding positions.
-/// When displaying to the user they should be translated into their literal 
-/// names from the system to give an accurate representation of their 
-/// keyboard layout. Users can and will have different keyboard layouts other 
+/// When displaying to the user they should be translated into their literal
+/// names from the system to give an accurate representation of their
+/// keyboard layout. Users can and will have different keyboard layouts other
 /// than QWERTY because of locale or desire.
 ///
 /// To translate a scancode to a key name use Keyboard::ScancodeToLocalKeyName.
 /// Here comes a long list of scancodes...
 ///
-enum class Scancode 
-{
+enum class Scancode {
     A = 0,
     B,
     C,
@@ -93,7 +90,7 @@ enum class Scancode
     LeftBracket,
     RightBracket,
     Backslash,
-    NonUsHash, 
+    NonUsHash,
     Semicolon,
     Apostrophe,
     Grave,
@@ -144,7 +141,7 @@ enum class Scancode
     Keypad0,
     KeypadPeriod,
     NonUsBackSlash,
-    Application, 
+    Application,
     Power,
     KeypadEquals,
     F13,
@@ -283,8 +280,7 @@ enum class Scancode
     Count,
 };
 
-class Keyboard 
-{
+class Keyboard {
     const bool* _keystates;
     constexpr SDL_Scancode ConvertScancodeToSDL(Scancode code);
     constexpr Scancode ConvertScancodeFromSDL(SDL_Scancode code);
@@ -308,9 +304,9 @@ public:
     bool GetKeyDown(Scancode code);
 
     /// @brief Returns the name of the key on the users keyboard.
-    /// 
+    ///
     /// Scancodes are based on position their position cannot be changed
-    /// but the usage of the key can change depending on the users keyboard 
+    /// but the usage of the key can change depending on the users keyboard
     /// layout or locale.
     ///
     /// @param key The key to check.
@@ -323,7 +319,8 @@ public:
     ///
     /// @return The modifier bit flags.
     ///
-    KeyboardModifierFlags GetKeyModifiers() {
+    KeyboardModifierFlags GetKeyModifiers()
+    {
         KeyboardModifierFlags flags;
         if (GetKeyDown(Scancode::LeftCtrl) || GetKeyDown(Scancode::RightCtrl))
             flags |= KeyboardModifierFlagBits::Ctrl;

@@ -80,7 +80,7 @@ public:
     /**
      * @brief Gets the reflected descriptor samplers of this material.
      * @return The reflected descriptor samplers of this material.
-     * 
+     *
      * This is a map of sampler names to their binding locations.
      */
     const SamplerMap& GetSamplers() const { return _samplers; }

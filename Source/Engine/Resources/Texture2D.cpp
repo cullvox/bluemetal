@@ -67,7 +67,7 @@ Texture2D::Texture2D(ResourceSystem* resourceSystem, GraphicsSystem* system, con
 
     std::vector<std::byte> imageData;
 
-    Extent2D extent{};
+    Extent2D extent {};
     if (extension == ".png" || extension == ".jpeg" || extension == ".jpg") {
         if (!DecodeSTBI(buffer, imageData, extent, _format, _colorSpace)) {
             throw std::runtime_error("Could not decode an image! STB");
@@ -81,13 +81,18 @@ Texture2D::Texture2D(ResourceSystem* resourceSystem, GraphicsSystem* system, con
     }
 
     _extent = extent.To3D();
-    VkExtent3D vulkanExtent = {_extent.width, _extent.height, _extent.depth};
+    VkExtent3D vulkanExtent = { _extent.width, _extent.height, _extent.depth };
 
     VkFormat imageFormat = VK_FORMAT_UNDEFINED;
     switch (_format) {
-        case TextureFormat::eRGB: imageFormat = VK_FORMAT_R8G8B8_SRGB; break;
-        case TextureFormat::eRGBA: imageFormat = VK_FORMAT_R8G8B8A8_SRGB; break;
-        default: throw std::runtime_error("Invalid texture format!");
+    case TextureFormat::eRGB:
+        imageFormat = VK_FORMAT_R8G8B8_SRGB;
+        break;
+    case TextureFormat::eRGBA:
+        imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+        break;
+    default:
+        throw std::runtime_error("Invalid texture format!");
     }
 
     _image = std::make_unique<VulkanImage>(system->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
@@ -99,20 +104,24 @@ Texture2D::Texture2D(ResourceSystem* rs, GraphicsSystem* gs, std::span<std::byte
 {
     std::vector<std::byte> imageData;
 
-    Extent2D extent{};
-    if (!DecodeQOI(data, imageData, extent, _format, _colorSpace) &&
-        !DecodeSTBI(data, imageData, extent, _format, _colorSpace)) {
+    Extent2D extent {};
+    if (!DecodeQOI(data, imageData, extent, _format, _colorSpace) && !DecodeSTBI(data, imageData, extent, _format, _colorSpace)) {
         throw std::runtime_error("Could not decode image resource!");
     }
 
     _extent = extent.To3D();
-    VkExtent3D vulkanExtent = {_extent.width, _extent.height, _extent.depth};
+    VkExtent3D vulkanExtent = { _extent.width, _extent.height, _extent.depth };
 
     VkFormat imageFormat = VK_FORMAT_UNDEFINED;
     switch (_format) {
-        case TextureFormat::eRGB: imageFormat = VK_FORMAT_R8G8B8_SRGB; break;
-        case TextureFormat::eRGBA: imageFormat = VK_FORMAT_R8G8B8A8_SRGB; break;
-        default: throw std::runtime_error("Invalid texture format!");
+    case TextureFormat::eRGB:
+        imageFormat = VK_FORMAT_R8G8B8_SRGB;
+        break;
+    case TextureFormat::eRGBA:
+        imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+        break;
+    default:
+        throw std::runtime_error("Invalid texture format!");
     }
 
     _image = std::make_unique<VulkanImage>(gs->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
@@ -127,17 +136,20 @@ Texture2D::Texture2D(ResourceSystem* rs, GraphicsSystem* gs, const std::span<con
 
     VkFormat imageFormat = VK_FORMAT_UNDEFINED;
     switch (format) {
-        case TextureFormat::eRGB: imageFormat = VK_FORMAT_R8G8B8_SRGB; break;
-        case TextureFormat::eRGBA: imageFormat = VK_FORMAT_R8G8B8A8_SRGB; break;
-        default: throw std::runtime_error("Invalid texture format!");
+    case TextureFormat::eRGB:
+        imageFormat = VK_FORMAT_R8G8B8_SRGB;
+        break;
+    case TextureFormat::eRGBA:
+        imageFormat = VK_FORMAT_R8G8B8A8_SRGB;
+        break;
+    default:
+        throw std::runtime_error("Invalid texture format!");
     }
 
-    VkExtent3D vulkanExtent = {_extent.width, _extent.height, _extent.depth};
+    VkExtent3D vulkanExtent = { _extent.width, _extent.height, _extent.depth };
 
     _image = std::make_unique<VulkanImage>(gs->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     _image->UploadData(pixels, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
-
-
 
 } // namespace bl

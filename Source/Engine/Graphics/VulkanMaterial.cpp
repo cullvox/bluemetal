@@ -1,6 +1,6 @@
+#include "VulkanMaterial.h"
 #include "Core/Print.h"
 #include "VulkanBuffer.h"
-#include "VulkanMaterial.h"
 
 namespace bl {
 
@@ -73,6 +73,5 @@ std::unique_ptr<VulkanMaterialInstance> VulkanMaterial::CreateInstance()
     auto instance = std::make_unique<VulkanMaterialInstance>(_device, this);
     return instance;
 }
-
 
 } // namespace bl

@@ -2,54 +2,65 @@
 
 namespace bl {
 
-VulkanVariableBlock& VulkanVariableBlock::SetBinding(uint32_t binding) {
+VulkanVariableBlock& VulkanVariableBlock::SetBinding(uint32_t binding)
+{
     _binding = binding;
     return *this;
 }
 
-VulkanVariableBlock& VulkanVariableBlock::SetType(VulkanVariableBlockType type) {
+VulkanVariableBlock& VulkanVariableBlock::SetType(VulkanVariableBlockType type)
+{
     _type = type;
     return *this;
 }
 
-VulkanVariableBlock& VulkanVariableBlock::SetOffset(uint32_t offset) {
+VulkanVariableBlock& VulkanVariableBlock::SetOffset(uint32_t offset)
+{
     _offset = offset;
     return *this;
 }
 
-VulkanVariableBlock& VulkanVariableBlock::SetSize(uint32_t size) {
+VulkanVariableBlock& VulkanVariableBlock::SetSize(uint32_t size)
+{
     _size = size;
     return *this;
 }
 
-VulkanVariableBlock& VulkanVariableBlock::SetName(const std::string& name) {
+VulkanVariableBlock& VulkanVariableBlock::SetName(const std::string& name)
+{
     _name = name;
     return *this;
 }
 
-uint32_t VulkanVariableBlock::GetBinding() const {
+uint32_t VulkanVariableBlock::GetBinding() const
+{
     return _binding;
 }
 
-VulkanVariableBlockType VulkanVariableBlock::GetType() const {
+VulkanVariableBlockType VulkanVariableBlock::GetType() const
+{
     return _type;
 }
 
-uint32_t VulkanVariableBlock::GetOffset() const {
+uint32_t VulkanVariableBlock::GetOffset() const
+{
     return _offset;
 }
 
-uint32_t VulkanVariableBlock::GetSize() const {
+uint32_t VulkanVariableBlock::GetSize() const
+{
     return _size;
 }
 
-const std::string& VulkanVariableBlock::GetName() const {
+const std::string& VulkanVariableBlock::GetName() const
+{
     return _name;
 }
 
 // ==== BlockMeta ==== //
 
-VulkanVariableBlock& VulkanReflectedBlock::operator[](const std::string& name) {
+VulkanVariableBlock& VulkanReflectedBlock::operator[](const std::string& name)
+{
     return _variables[name];
 }
 
@@ -65,7 +76,8 @@ VulkanReflectedBlock& VulkanReflectedBlock::SetName(const std::string& name)
     return *this;
 }
 
-std::vector<VulkanVariableBlock> VulkanReflectedBlock::GetMembers() const {
+std::vector<VulkanVariableBlock> VulkanReflectedBlock::GetMembers() const
+{
     std::vector<VulkanVariableBlock> out;
     out.reserve(_variables.size());
 
@@ -76,11 +88,13 @@ std::vector<VulkanVariableBlock> VulkanReflectedBlock::GetMembers() const {
     return out;
 }
 
-uint32_t VulkanReflectedBlock::GetSize() const {
+uint32_t VulkanReflectedBlock::GetSize() const
+{
     return _size;
 }
 
-std::string VulkanReflectedBlock::GetName() const {
+std::string VulkanReflectedBlock::GetName() const
+{
     return _name;
 }
 

@@ -2,11 +2,9 @@
 
 #include "Node3D.h"
 
-namespace bl
-{
+namespace bl {
 
-class AudioListener3D : public Node3D
-{
+class AudioListener3D : public Node3D {
 public:
     AudioListener3D(Engine* engine);
     ~AudioListener3D();

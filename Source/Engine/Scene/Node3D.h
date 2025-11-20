@@ -2,19 +2,17 @@
 
 #include "Node.h"
 
-#include "glm/vec3.hpp"
 #include "glm/gtc/quaternion.hpp"
 #include "glm/mat4x4.hpp"
+#include "glm/vec3.hpp"
 
-namespace bl
-{
+namespace bl {
 
-/** 
+/**
  * @class Node3D
  * @brief Represents a 3D node in the scene graph.
  */
-class Node3D : public Node
-{
+class Node3D : public Node {
     glm::mat4 _transform;
     glm::vec3 _position;
     glm::quat _rotation;

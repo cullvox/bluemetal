@@ -36,7 +36,8 @@ public:
      * \since BloodLust 1.0.0
      *
      */
-    void operator()(TArgs... args) const {
+    void operator()(TArgs... args) const
+    {
         for (const auto& cb : _callbacks)
             cb(std::forward<TArgs>(args)...);
     }
@@ -48,11 +49,13 @@ public:
      *
      *
      */
-    void add(const Func& cb) noexcept {
+    void add(const Func& cb) noexcept
+    {
         _callbacks.push_back(cb);
     }
 
-    void operator+=(const Func& cb) {
+    void operator+=(const Func& cb)
+    {
         add(cb);
     }
 

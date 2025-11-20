@@ -1,8 +1,7 @@
 #include "Shader.h"
 #include "Engine/Engine.h"
 
-namespace bl 
-{
+namespace bl {
 
 Shader::Shader(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
@@ -12,8 +11,7 @@ Shader::Shader(ResourceSystem* resourceSystem, GraphicsSystem* system, const std
 
     const auto fullPath = std::filesystem::current_path() / path;
     std::ifstream file(fullPath, std::ios::in | std::ios::binary);
-    if (!file.good())
-    {
+    if (!file.good()) {
         throw std::runtime_error("Could not open shader file!");
     }
 
@@ -21,8 +19,7 @@ Shader::Shader(ResourceSystem* resourceSystem, GraphicsSystem* system, const std
 
     file.read(reinterpret_cast<char*>(code.data()), code.size());
 
-    if (code.size() % 4 != 0)
-    {
+    if (code.size() % 4 != 0) {
         throw std::runtime_error("Code byte size must be divisible by 4 for valid SPIR-V code!");
     }
 

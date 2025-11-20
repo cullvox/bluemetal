@@ -1,8 +1,7 @@
-#include "Core/Print.h"
 #include "ResourceSystem.h"
+#include "Core/Print.h"
 
-namespace bl 
-{
+namespace bl {
 
 ResourceSystem::ResourceSystem(Engine& engine)
     : System(engine)

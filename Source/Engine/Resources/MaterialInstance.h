@@ -1,14 +1,13 @@
 #pragma once
 
+#include "Graphics/VulkanMaterialInstance.h"
+#include "Graphics/VulkanRenderData.h"
 #include "Math/Math.h"
 #include "Resource.h"
 #include "Sampler.h"
 #include "Texture.h"
-#include "Graphics/VulkanMaterialInstance.h"
-#include "Graphics/VulkanRenderData.h"
 
-namespace bl
-{
+namespace bl {
 
 class ResourceSystem;
 class GraphicsSystem;
@@ -20,10 +19,7 @@ class Material;
 ///
 /// A material instance holds its own uniform buffers and sampled images,
 /// allowing multiple objects to use the same base material with different parameters.
-///
-class MaterialInstance : public Resource 
-{
-private:
+class MaterialInstance : public Resource {
     Renderer* _renderer;
     std::unique_ptr<VulkanMaterialInstance> _materialInstance; // Set by either Material or is created.
 
@@ -31,13 +27,11 @@ protected:
     virtual VulkanMaterialInstance* GetInstance() const;
 
 public:
-
     /// @brief Creates an empty material instance, used for constructing materials.
     /// This constructor is designated for the Material Resource.
     ///
     /// @param resourceSystem Pointer to the resource system.
     /// @param graphicsSystem Pointer to the graphics system.
-    ///
     MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem);
 
     MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance);

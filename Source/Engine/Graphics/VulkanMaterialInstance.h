@@ -28,7 +28,7 @@ public:
     /**
      * @brief Base constructor for a material object.
      * Only used for material constructor.
-     * 
+     *
      * @param device The vulkan device used.
      */
     VulkanMaterialInstance(VulkanDevice* device);
@@ -37,7 +37,7 @@ public:
      * @brief Creates a material instance.
      * @param device Vulkan device to create the material instance with.
      * @param material Vulkan material to create the instance for.
-     * 
+     *
      * This constructor initializes the material instance with the given device and material.
      * Only the material should call this constructor.
      */

@@ -1,9 +1,8 @@
 #include "AudioSystem.h"
-#include "Resources/Sound.h"
 #include "Engine/Engine.h"
+#include "Resources/Sound.h"
 
-namespace bl 
-{
+namespace bl {
 
 AudioSystem::AudioSystem(Engine& _engine)
     : System(_engine)
@@ -15,15 +14,14 @@ AudioSystem::AudioSystem(Engine& _engine)
     FMOD_CHECK(_fmod->init(128, FMOD_INIT_NORMAL, nullptr))
 }
 
-AudioSystem::~AudioSystem() 
-{ 
+AudioSystem::~AudioSystem()
+{
     _fmod->close();
 }
 
 std::shared_ptr<Resource> AudioSystem::ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path)
 {
-    if (typeHash == typeid(Sound).hash_code()) 
-    {
+    if (typeHash == typeid(Sound).hash_code()) {
         return std::make_shared<Sound>(resourceSystem, this, path);
     }
 
@@ -31,19 +29,18 @@ std::shared_ptr<Resource> AudioSystem::ConstructResource(ResourceSystem* resourc
 }
 
 FMOD::System* AudioSystem::GetFMOD()
-{ 
-    return _fmod; 
+{
+    return _fmod;
 }
 
-void AudioSystem::Update()
-{
-    FMOD_CHECK(_fmod->update())
+void AudioSystem::Update() {
+    FMOD_CHECK(_fmod -> update())
 }
 
 std::string AudioSystem::GetDriverName()
 {
     int driverId = 0;
-    char name[128] = {0};
+    char name[128] = { 0 };
     FMOD_CHECK(_fmod->getDriver(&driverId))
     FMOD_CHECK(_fmod->getDriverInfo(driverId, name, sizeof(name), nullptr, nullptr, nullptr, nullptr))
 

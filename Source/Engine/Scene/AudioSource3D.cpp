@@ -1,8 +1,7 @@
 #include "AudioSource3D.h"
 #include "Engine/Engine.h"
 
-namespace bl
-{
+namespace bl {
 
 AudioSource3D::AudioSource3D(Engine* engine)
     : Node3D(engine)
@@ -10,7 +9,7 @@ AudioSource3D::AudioSource3D(Engine* engine)
     _system = GetEngine()->GetAudio();
 }
 
-AudioSource3D::~AudioSource3D() 
+AudioSource3D::~AudioSource3D()
 {
 }
 
@@ -18,15 +17,16 @@ void AudioSource3D::Update(float dt)
 {
     Node3D::Update(dt);
 
-    if (!IsPlaying()) return;
+    if (!IsPlaying())
+        return;
 
     // Update the sources 3D attributes.
     glm::vec3 pos = GetWorldPosition();
     glm::vec3 vel = pos - _prevPosition;
     _prevPosition = pos;
 
-    FMOD_VECTOR fmodPosition{pos.x, pos.y, pos.z};
-    FMOD_VECTOR fmodVelocity{vel.x, vel.y, vel.z};
+    FMOD_VECTOR fmodPosition { pos.x, pos.y, pos.z };
+    FMOD_VECTOR fmodVelocity { vel.x, vel.y, vel.z };
 
     FMOD_CHECK(_channel->set3DAttributes(&fmodPosition, &fmodVelocity))
 }

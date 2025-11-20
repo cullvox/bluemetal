@@ -1,7 +1,6 @@
 #include "Print.h"
 
-namespace bl
-{
+namespace bl {
 
 bool Print::useVerboseLogging;
 

@@ -1,17 +1,15 @@
 #pragma once
 
-#include "Precompiled.h"
 #include "Core/Version.h"
+#include "Precompiled.h"
 #include "Vulkan.h"
 #include "VulkanConfig.h"
 #include "VulkanPhysicalDevice.h"
 
-namespace bl 
-{
+namespace bl {
 
 /// @brief Vulkan instance object, used to create a vulkan device and choose physical devices.
-class VulkanInstance 
-{
+class VulkanInstance {
     VkInstance _instance;
     bool _enableValidation;
     VkDebugUtilsMessengerEXT _messenger;
@@ -35,7 +33,7 @@ public:
     /// @brief Returns all physical devices available to choose from.
     std::vector<VulkanPhysicalDevice*> GetPhysicalDevices();
 
-    /// @brief Chooses a physical device automagically and returns the best candidate for device creation. 
+    /// @brief Chooses a physical device automagically and returns the best candidate for device creation.
     VulkanPhysicalDevice* ChoosePhysicalDevice();
 
 private:

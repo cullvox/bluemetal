@@ -2,17 +2,14 @@
 
 #include "Node3D.h"
 
-namespace bl
-{
+namespace bl {
 
-enum class CameraProjection
-{
+enum class CameraProjection {
     ePerspective,
     eOrthographic
 };
 
-class Camera3D : public Node3D
-{
+class Camera3D : public Node3D {
     CameraProjection _projection;
     float _fov;
     float _nearClip;

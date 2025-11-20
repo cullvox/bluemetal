@@ -9,10 +9,48 @@
 namespace bl {
 
 /// @brief Swap present images for rendering multiple frames at a time.
-class VulkanSwapchain 
-{
-public:
+class VulkanSwapchain {
+private:
+    /// @brief Throws if a surface isn't supported for some strange reason.
+    void EnsureSurfaceSupported();
 
+    /// @brief Returns true if an image count was chosen successfully.
+    void ChooseImageCount();
+
+    /// @brief Returns true if the surface format was properly found.
+    void ChooseFormat();
+
+    /// @brief Returns true if the present mode was properly found.
+    void ChoosePresentMode();
+
+    /// @brief Returns true if an extent was found.
+    void ChooseExtent();
+
+    /// @brief Returns true if swapchain images could be obtained.
+    void ObtainImages();
+
+    /// @brief Creates image views for frame buffers.
+    void CreateImageViews();
+
+    /// @brief Destroys all the swapchain's image views.
+    void DestroyImageViews();
+
+    VulkanDevice* _device;
+    VulkanPhysicalDevice* _physicalDevice;
+    VulkanWindow* _window;
+    uint32_t _imageCount;
+    VkSurfaceFormatKHR _surfaceFormat;
+    VkPresentModeKHR _presentMode;
+    VkExtent2D _extent;
+    VkSwapchainKHR _swapchain;
+    std::vector<VkImage> _swapImages;
+    std::vector<VkImageView> _swapImageViews;
+    uint32_t _imageIndex;
+    bool _isMailboxSupported;
+    bool _isImmediateSupported;
+    std::size_t _hash;
+
+public:
     /**
      * @brief Default constructor for VulkanSwapchain.
      */
@@ -45,7 +83,7 @@ public:
     /**
      * @brief Returns the pixel extent of the swapchain.
      * @return The extent of the swapchain in pixels.
-     * 
+     *
      * This is the size of the images that are being swapped. Use this to set the viewport size.
      */
     VkExtent2D GetExtent() const;
@@ -54,7 +92,7 @@ public:
      * @brief Returns the number of images in the swapchain.
      * @return The number of images in the swapchain.
      */
-    uint32_t GetImageCount() const; 
+    uint32_t GetImageCount() const;
 
     /**
      * @brief Returns the present mode of the swapchain.
@@ -102,46 +140,6 @@ public:
     bool AcquireNext(VkSemaphore semaphore, VkFence fence);
     bool QueuePresent(VkSemaphore semaphore); /** Presents the image at GetImageIndex() to the screen. */
     void Destroy();
-
-private:
-    /// @brief Throws if a surface isn't supported for some strange reason.
-    void EnsureSurfaceSupported();
-
-    /// @brief Returns true if an image count was chosen successfully.
-    void ChooseImageCount();
-
-    /// @brief Returns true if the surface format was properly found.
-    void ChooseFormat();
-
-    /// @brief Returns true if the present mode was properly found.
-    void ChoosePresentMode();
-
-    /// @brief Returns true if an extent was found.
-    void ChooseExtent();
-
-    /// @brief Returns true if swapchain images could be obtained.
-    void ObtainImages();
-
-    /// @brief Creates image views for frame buffers.
-    void CreateImageViews();
-
-    /// @brief Destroys all the swapchain's image views.
-    void DestroyImageViews();
-
-    VulkanDevice* _device;
-    VulkanPhysicalDevice* _physicalDevice;
-    VulkanWindow* _window;
-    uint32_t _imageCount;
-    VkSurfaceFormatKHR _surfaceFormat;
-    VkPresentModeKHR _presentMode;
-    VkExtent2D _extent;
-    VkSwapchainKHR _swapchain;
-    std::vector<VkImage> _swapImages;
-    std::vector<VkImageView> _swapImageViews;
-    uint32_t _imageIndex;
-    bool _isMailboxSupported;
-    bool _isImmediateSupported;
-    std::size_t _hash;
 };
 
 } // namespace bl

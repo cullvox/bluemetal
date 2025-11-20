@@ -1,24 +1,20 @@
 #pragma once
 
 #include "Core/System.h"
-#include "Window/Window.h"
-
 #include "Engine/SDL.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/Vulkan.h"
+#include "Window/Window.h"
 
 #define IMGUI_IMPL_VULKAN_NO_PROTOTYPES
 #include "imgui.h"
 
-
-namespace bl
-{
+namespace bl {
 
 class Engine;
 class GraphicsSystem;
 
-class ImGuiSystem : public System
-{
+class ImGuiSystem : public System {
     VulkanWindow* _window;
     Renderer* _renderer;
     VkDescriptorPool _descriptorPool;
@@ -40,8 +36,7 @@ public:
 
 } // namespace bl
 
-namespace ImGui
-{
+namespace ImGui {
 // Helper to display a little (?) mark which shows a tooltip when hovered.
 // In your own code you may want to display an actual icon if you are using a merged icon fonts (see
 // docs/FONTS.md)

@@ -3,8 +3,7 @@
 #include "Math/Math.h"
 #include "Window.h"
 
-namespace bl
-{
+namespace bl {
 
 enum class MouseButton {
     Left = 0, ///!< Left mouse button.
@@ -17,16 +16,16 @@ enum class MouseButton {
 enum class MouseInputMode {
     Normal, ///<! Uses whatever mouse data the system gives us.
     Hidden, ///<! Hides the cursor over our applications windows.
-    HiddenLocked, ///<! Hidden + locks the cursor to the center of the window. 
+    HiddenLocked, ///<! Hidden + locks the cursor to the center of the window.
     Raw, ///<! Hides the cursor and and uses raw mouse input directly from the device, no acceleration is applied. This input mode acts a lot like HiddenLocked.
 };
 
 class Mouse {
-    SDL_MouseButtonFlags _buttonFlags{0};
-    glm::vec2 _lastLocation{};
-    glm::vec2 _relative{};
-    glm::vec2 _location{};
-    glm::vec2 _wheel{};
+    SDL_MouseButtonFlags _buttonFlags { 0 };
+    glm::vec2 _lastLocation {};
+    glm::vec2 _relative {};
+    glm::vec2 _location {};
+    glm::vec2 _wheel {};
 
     MouseButton MouseButtonFromSDL(int buttonFlag);
     int MouseButtonToSDL(MouseButton button);
@@ -76,7 +75,7 @@ public:
 
     /// @brief Returns the delta between the previous poll and the latest one.
     ///
-    /// 
+    ///
     ///
     glm::vec2 GetMouseDelta();
 

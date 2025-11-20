@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Graphics/GraphicsSystem.h"
 #include "Graphics/VulkanDevice.h"
 #include "Graphics/VulkanSampler.h"
-#include "Graphics/GraphicsSystem.h"
 #include "Resource.h"
 
 namespace bl {

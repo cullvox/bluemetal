@@ -1,4 +1,3 @@
-
 #include "MaterialInstance.h"
 #include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"

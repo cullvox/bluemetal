@@ -4,13 +4,11 @@
 #include "Graphics/VulkanMaterial.h"
 #include "MaterialInstance.h"
 
-namespace bl 
-{
+namespace bl {
 
 /// @class Material
 /// @brief A material resource defining how to render objects.
-class Material : public MaterialInstance
-{
+class Material : public MaterialInstance {
     ResourceSystem* _resourceSystem;
     GraphicsSystem* _graphicsSystem;
     Renderer* _renderer;
@@ -20,7 +18,6 @@ protected:
     virtual VulkanMaterialInstance* GetInstance() const;
 
 public:
-
     /// @brief Loads a material from file.
     /// @param resourceSystem Pointer to the resource system.
     /// @param graphicsSystem Pointer to the graphics system.

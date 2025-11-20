@@ -1,10 +1,10 @@
-#include "VulkanDevice.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
+#include "VulkanDevice.h"
 
 namespace bl {
 
 VulkanDescriptorSetAllocatorCache::VulkanDescriptorSetAllocatorCache(const VulkanDevice* device, uint32_t maxSets, std::span<VulkanDescriptorRatio> ratios)
-    : _device(device) 
+    : _device(device)
 {
     for (auto ratio : ratios)
         _ratios.push_back(ratio);
@@ -15,7 +15,7 @@ VulkanDescriptorSetAllocatorCache::VulkanDescriptorSetAllocatorCache(const Vulka
     _freePools.push_back(pool);
 }
 
-VulkanDescriptorSetAllocatorCache::~VulkanDescriptorSetAllocatorCache() 
+VulkanDescriptorSetAllocatorCache::~VulkanDescriptorSetAllocatorCache()
 {
     for (auto pool : _freePools)
         vkDestroyDescriptorPool(_device->Get(), pool, nullptr);
@@ -28,12 +28,10 @@ VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayou
 
     // Check if there is already a free set from the same layout.
     auto it = _freeSets.find(layout);
-    if (it != _freeSets.end())
-    {
+    if (it != _freeSets.end()) {
         auto& freeSets = (*it).second;
 
-        if (freeSets.size() > 0)
-        {
+        if (freeSets.size() > 0) {
             // Find the first descriptor set and then remove it from the set.
             auto first = freeSets.begin();
             auto set = (*first);
@@ -41,14 +39,14 @@ VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayou
             freeSets.erase(set);
 
             // The descriptor set is no longer considered free, return it.
-            return set; 
+            return set;
         }
     }
 
     // Grab ourselves a useful pool and allocate a new set.
     VkDescriptorPool pool = GrabPool();
 
-    VkDescriptorSetAllocateInfo allocInfo{};
+    VkDescriptorSetAllocateInfo allocInfo {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.pNext = nullptr;
     allocInfo.descriptorPool = pool;
@@ -58,8 +56,7 @@ VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayou
     VkDescriptorSet set;
     VkResult result = vkAllocateDescriptorSets(_device->Get(), &allocInfo, &set);
 
-    if (result == VK_ERROR_OUT_OF_POOL_MEMORY || result == VK_ERROR_FRAGMENTED_POOL)
-    {
+    if (result == VK_ERROR_OUT_OF_POOL_MEMORY || result == VK_ERROR_FRAGMENTED_POOL) {
         // Uh oh. Our pool wasn't large enough.
         // Allocate again with another pool.
         _usedPools.push_back(pool);
@@ -86,8 +83,7 @@ VkDescriptorPool VulkanDescriptorSetAllocatorCache::GrabPool()
 {
     VkDescriptorPool pool;
 
-    if (_freePools.size() != 0)
-    {
+    if (_freePools.size() != 0) {
         pool = _freePools.back();
         _freePools.pop_back();
         return pool;
@@ -97,8 +93,7 @@ VkDescriptorPool VulkanDescriptorSetAllocatorCache::GrabPool()
 
     // Increment the amount of sets per pool up to a limit.
     _setsPerPool = uint32_t(_setsPerPool * 1.5);
-    if (_setsPerPool > 4092)
-    {
+    if (_setsPerPool > 4092) {
         _setsPerPool = 4092;
     }
 
@@ -108,12 +103,11 @@ VkDescriptorPool VulkanDescriptorSetAllocatorCache::GrabPool()
 VkDescriptorPool VulkanDescriptorSetAllocatorCache::CreatePool(uint32_t setCount)
 {
     std::vector<VkDescriptorPoolSize> poolSizes;
-    for (const auto& ratio : _ratios)
-    {
-        poolSizes.emplace_back(VkDescriptorPoolSize{ratio.type, (uint32_t)(ratio.ratio * setCount)});
+    for (const auto& ratio : _ratios) {
+        poolSizes.emplace_back(VkDescriptorPoolSize { ratio.type, (uint32_t)(ratio.ratio * setCount) });
     }
 
-    VkDescriptorPoolCreateInfo createInfo{};
+    VkDescriptorPoolCreateInfo createInfo {};
     createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     createInfo.flags = 0;
     createInfo.maxSets = setCount;

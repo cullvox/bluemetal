@@ -1,7 +1,6 @@
 #include "Node3D.h"
 
-namespace bl
-{
+namespace bl {
 
 Node3D::Node3D(Engine* engine)
     : Node(engine)

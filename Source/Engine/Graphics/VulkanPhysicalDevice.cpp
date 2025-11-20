@@ -1,44 +1,51 @@
+#include "VulkanPhysicalDevice.h"
 #include "Core/Print.h"
 #include "VulkanWindow.h"
-#include "VulkanPhysicalDevice.h"
 
 namespace bl {
 
 VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice physicalDevice)
-    : _physicalDevice(physicalDevice) 
+    : _physicalDevice(physicalDevice)
 {
     vkGetPhysicalDeviceProperties(_physicalDevice, &_properties);
 }
 
-VkPhysicalDevice VulkanPhysicalDevice::Get() const 
+VkPhysicalDevice VulkanPhysicalDevice::Get() const
 {
-    return _physicalDevice; 
+    return _physicalDevice;
 }
 
-std::string VulkanPhysicalDevice::GetVendorName() const 
+std::string VulkanPhysicalDevice::GetVendorName() const
 {
     switch (_properties.vendorID) {
-    case 0x1002: return "AMD";
-    case 0x1010: return "ImgTec";
-    case 0x10DE: return "NVIDIA";
-    case 0x13B5: return "ARM";
-    case 0x5143: return "Qualcomm";
-    case 0x8086: return "INTEL";
-    default: return "Undefined Vendor";
+    case 0x1002:
+        return "AMD";
+    case 0x1010:
+        return "ImgTec";
+    case 0x10DE:
+        return "NVIDIA";
+    case 0x13B5:
+        return "ARM";
+    case 0x5143:
+        return "Qualcomm";
+    case 0x8086:
+        return "INTEL";
+    default:
+        return "Undefined Vendor";
     }
 }
 
-std::string VulkanPhysicalDevice::GetDeviceName() const 
+std::string VulkanPhysicalDevice::GetDeviceName() const
 {
     return std::string(_properties.deviceName);
 }
 
-VkPhysicalDeviceType VulkanPhysicalDevice::GetType() const 
+VkPhysicalDeviceType VulkanPhysicalDevice::GetType() const
 {
     return _properties.deviceType;
 }
 
-const std::vector<VkPresentModeKHR>& VulkanPhysicalDevice::GetPresentModes(VulkanWindow* window) 
+const std::vector<VkPresentModeKHR>& VulkanPhysicalDevice::GetPresentModes(VulkanWindow* window)
 {
     if (!_presentModes.empty())
         return _presentModes;
@@ -52,7 +59,7 @@ const std::vector<VkPresentModeKHR>& VulkanPhysicalDevice::GetPresentModes(Vulka
     return _presentModes;
 }
 
-const std::vector<VkSurfaceFormatKHR>& VulkanPhysicalDevice::GetSurfaceFormats(VulkanWindow* window) 
+const std::vector<VkSurfaceFormatKHR>& VulkanPhysicalDevice::GetSurfaceFormats(VulkanWindow* window)
 {
     if (!_surfaceFormats.empty())
         return _surfaceFormats;
@@ -68,7 +75,7 @@ const std::vector<VkSurfaceFormatKHR>& VulkanPhysicalDevice::GetSurfaceFormats(V
 
 std::optional<VkImageFormatProperties2> VulkanPhysicalDevice::GetImageFormatProperties(const VkPhysicalDeviceImageFormatInfo2& info)
 {
-    VkImageFormatProperties2 properties{};
+    VkImageFormatProperties2 properties {};
     properties.sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2;
     properties.pNext = nullptr;
 
@@ -83,19 +90,15 @@ std::optional<VkImageFormatProperties2> VulkanPhysicalDevice::GetImageFormatProp
     return std::nullopt;
 }
 
-VkFormat VulkanPhysicalDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const 
+VkFormat VulkanPhysicalDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
-    for (VkFormat format : candidates) 
-    {
-        VkFormatProperties properties{};
+    for (VkFormat format : candidates) {
+        VkFormatProperties properties {};
         vkGetPhysicalDeviceFormatProperties(_physicalDevice, format, &properties);
 
-        if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features) 
-        {
+        if (tiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & features) == features) {
             return format;
-        }
-        else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features) 
-        {
+        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & features) == features) {
             return format;
         }
     }
@@ -103,7 +106,7 @@ VkFormat VulkanPhysicalDevice::FindSupportedFormat(const std::vector<VkFormat>& 
     throw std::runtime_error("Could not find a valid format!");
 }
 
-const VkPhysicalDeviceProperties& VulkanPhysicalDevice::GetProperties() const 
+const VkPhysicalDeviceProperties& VulkanPhysicalDevice::GetProperties() const
 {
     return _properties;
 }

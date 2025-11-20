@@ -1,7 +1,6 @@
 #include "Input.h"
 
-namespace bl
-{
+namespace bl {
 
 InputSystem::InputSystem(Engine& engine)
     : System(engine)
@@ -15,14 +14,12 @@ std::shared_ptr<Resource> InputSystem::ConstructResource(ResourceSystem*, std::s
 
 void InputSystem::Poll(std::function<void(SDL_Event&)> extraFunc)
 {
-    SDL_Event event{};
-    while(SDL_PollEvent(&event))
-    {
+    SDL_Event event {};
+    while (SDL_PollEvent(&event)) {
         SDL_PropertiesID props = SDL_GetWindowProperties(SDL_GetWindowFromEvent(&event));
         Window* window = static_cast<Window*>(SDL_GetPointerProperty(props, "user", nullptr));
 
-        switch (event.type)
-        {
+        switch (event.type) {
         case SDL_EVENT_WINDOW_MINIMIZED:
             if (window)
                 window->SetMinimized(true);
@@ -43,20 +40,19 @@ void InputSystem::Poll(std::function<void(SDL_Event&)> extraFunc)
             if (window)
                 window->SetClose(true);
             break;
-        //case SDL_EVENT_MOUSE_MOTION:
-        //    _mouse.SetLocation({event.motion.x, event.motion.y});
-        //    _mouse.SetRelativeMotion({event.motion.xrel, event.motion.yrel});
-        //    break;
-        // case SDL_EVENT_MOUSE_BUTTON_DOWN:
-        //     _mouse.SetMouseButtonFlag(event.button.button, true);
+        // case SDL_EVENT_MOUSE_MOTION:
+        //     _mouse.SetLocation({event.motion.x, event.motion.y});
+        //     _mouse.SetRelativeMotion({event.motion.xrel, event.motion.yrel});
         //     break;
-        // case SDL_EVENT_MOUSE_BUTTON_UP:
-        //     _mouse.SetMouseButtonFlag(event.button.button, false);
-        //     break;
+        //  case SDL_EVENT_MOUSE_BUTTON_DOWN:
+        //      _mouse.SetMouseButtonFlag(event.button.button, true);
+        //      break;
+        //  case SDL_EVENT_MOUSE_BUTTON_UP:
+        //      _mouse.SetMouseButtonFlag(event.button.button, false);
+        //      break;
         case SDL_EVENT_MOUSE_WHEEL:
-            _mouse.SetWheel({event.wheel.x, event.wheel.y});
+            _mouse.SetWheel({ event.wheel.x, event.wheel.y });
             break;
-
         }
 
         extraFunc(event);
@@ -65,7 +61,6 @@ void InputSystem::Poll(std::function<void(SDL_Event&)> extraFunc)
     SDL_PumpEvents();
     _keyboard.Poll();
     _mouse.Poll();
-
 }
 
 Keyboard& InputSystem::GetKeyboard()

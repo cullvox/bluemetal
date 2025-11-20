@@ -1,8 +1,8 @@
 #include "Material.h"
 #include "Engine/Engine.h"
-#include "Shader.h"
-#include "Graphics/VulkanShader.h"
 #include "Graphics/Renderer.h"
+#include "Graphics/VulkanShader.h"
+#include "Shader.h"
 
 namespace bl {
 
@@ -12,9 +12,8 @@ Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSyste
     , _graphicsSystem(graphicsSystem)
     , _renderer(graphicsSystem->GetRenderer())
 {
-    std::ifstream materialFile{path};
-    if (!materialFile.is_open()) 
-    {
+    std::ifstream materialFile { path };
+    if (!materialFile.is_open()) {
         throw std::runtime_error("Could not open material JSON file.");
     }
 
@@ -23,8 +22,7 @@ Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSyste
     VulkanPipelineStateInfo info;
     RenderPassType passType;
 
-    try 
-    {
+    try {
         json = nlohmann::json::parse(materialFile);
 
         passType = json["renderPass"];
@@ -35,10 +33,8 @@ Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSyste
 
         auto vertexShader = resourceSystem->Load<Shader>(vertexPath);
         auto fragmentShader = resourceSystem->Load<Shader>(fragmentPath);
-        info.stages.shaders = std::vector<VulkanShader*>{ vertexShader->Get(), fragmentShader->Get() };
-    }
-    catch (...)
-    {
+        info.stages.shaders = std::vector<VulkanShader*> { vertexShader->Get(), fragmentShader->Get() };
+    } catch (...) {
         throw std::runtime_error("Could not parse material JSON file.");
     }
 

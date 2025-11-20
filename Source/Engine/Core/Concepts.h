@@ -17,5 +17,4 @@ concept ObjectType = std::is_convertible_v<T, Object> && (std::is_default_constr
     { T::GetObjectClass() } -> std::same_as<const ObjectClass&>;
 };
 
-
 }

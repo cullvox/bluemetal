@@ -10,8 +10,7 @@ Sampler::Sampler(ResourceSystem* resourceSystem, GraphicsSystem* system, const s
 {
     nlohmann::json data;
     std::ifstream file(path);
-    if (!file.is_open()) 
-    {
+    if (!file.is_open()) {
         throw std::runtime_error("Could not open sampler JSON file.");
     }
     file >> data;

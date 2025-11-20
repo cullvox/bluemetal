@@ -4,11 +4,9 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
-namespace bl 
-{
+namespace bl {
 
-class SDLInitializer 
-{
+class SDLInitializer {
 public:
     SDLInitializer();
     ~SDLInitializer();
@@ -16,5 +14,7 @@ public:
 
 } /* namespace bl*/
 
-#define SDL_CHECK(result) \
-    if ((result) == false) { throw std::runtime_error(SDL_GetError()); }
+#define SDL_CHECK(result)                         \
+    if ((result) == false) {                      \
+        throw std::runtime_error(SDL_GetError()); \
+    }

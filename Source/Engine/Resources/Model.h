@@ -1,13 +1,11 @@
 #pragma once
 
-
-
 #include "Precompiled.h"
 
-#include "Resources/Resource.h"
-#include "Resources/Texture2D.h"
 #include "Resources/MaterialInstance.h"
 #include "Resources/Mesh.h"
+#include "Resources/Resource.h"
+#include "Resources/Texture2D.h"
 
 #include "Scene/Node3D.h"
 
@@ -16,11 +14,9 @@ class Model;
 class Node;
 }
 
-namespace bl
-{
+namespace bl {
 
-class Model : public Resource
-{
+class Model : public Resource {
     GraphicsSystem* _graphicsSystem;
     std::vector<Ref<Mesh>> _meshes; // For every primitive, for each mesh
     std::vector<Ref<MaterialInstance>> _materials;

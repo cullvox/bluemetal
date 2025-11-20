@@ -14,8 +14,9 @@ namespace bl {
  * It includes the stages it is used in, the offset, and the size of the push constant.
  */
 class VulkanReflectedPushConstant : public VulkanReflectedBlock {
-public:
+    VkPushConstantRange _range;
 
+public:
     /**
      * @brief Default constructor for VulkanReflectedPushConstant.
      */
@@ -28,7 +29,7 @@ public:
      * @param size The size in bytes of the push constant.
      */
     VulkanReflectedPushConstant(VkShaderStageFlags stages, uint32_t offset, uint32_t size);
-    
+
     /**
      * @brief Default destructor for VulkanReflectedPushConstant.
      */
@@ -67,9 +68,6 @@ public:
      * @return The shader stages this push constant is used in.
      */
     VkShaderStageFlags GetStages() const;
-
-private:
-    VkPushConstantRange _range;
 };
 
 } // namespace bl

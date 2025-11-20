@@ -1,8 +1,7 @@
+#include "VulkanImage.h"
 #include "Core/Print.h"
 #include "Graphics/VulkanConversions.h"
 #include "VulkanBuffer.h"
-#include "VulkanImage.h"
-#include "vulkan/vulkan_core.h"
 
 namespace bl {
 
@@ -18,7 +17,7 @@ VulkanImage::VulkanImage()
 {
 }
 
-VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage,  uint32_t mipLevels, VkImageLayout initialLayout)
+VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, uint32_t mipLevels, VkImageLayout initialLayout)
     : _device(device)
     , _extent(extent)
     , _type(type)
@@ -32,7 +31,7 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     auto physicalDevice = _device->GetPhysicalDevice();
 
     // Ensure that the format is supported.
-    VkPhysicalDeviceImageFormatInfo2 imageFormatInfo{};
+    VkPhysicalDeviceImageFormatInfo2 imageFormatInfo {};
     imageFormatInfo.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2;
     imageFormatInfo.pNext = nullptr;
     imageFormatInfo.flags = 0;
@@ -79,17 +78,17 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     _defaultView = CreateView(_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
-VulkanImage::VulkanImage(VulkanImage&& rhs) 
+VulkanImage::VulkanImage(VulkanImage&& rhs)
 {
     this->operator=(std::move(rhs));
 }
 
-VulkanImage::~VulkanImage() 
-{ 
-    if (!_device) return;
+VulkanImage::~VulkanImage()
+{
+    if (!_device)
+        return;
 
-    for (auto view : _views)
-    {
+    for (auto view : _views) {
         vkDestroyImageView(_device->Get(), view, nullptr);
     }
 
@@ -97,7 +96,7 @@ VulkanImage::~VulkanImage()
         vmaDestroyImage(_device->GetAllocator(), _image, _allocation);
 }
 
-VulkanImage& VulkanImage::operator=(VulkanImage&& rhs) 
+VulkanImage& VulkanImage::operator=(VulkanImage&& rhs)
 {
     _device = rhs._device;
     _extent = rhs._extent;
@@ -122,31 +121,30 @@ VulkanImage& VulkanImage::operator=(VulkanImage&& rhs)
     return *this;
 }
 
-VkExtent3D VulkanImage::GetExtent() const 
-{ 
-    return _extent; 
+VkExtent3D VulkanImage::GetExtent() const
+{
+    return _extent;
 }
 
-VkFormat VulkanImage::GetFormat() const 
-{ 
+VkFormat VulkanImage::GetFormat() const
+{
     return _format;
 }
 
-VkImageUsageFlags VulkanImage::GetUsage() const 
+VkImageUsageFlags VulkanImage::GetUsage() const
 {
     return _usage;
 }
 
-VkImageLayout VulkanImage::GetLayout() const 
+VkImageLayout VulkanImage::GetLayout() const
 {
     return _layout;
 }
 
-VkImage VulkanImage::Get() const 
+VkImage VulkanImage::Get() const
 {
     return _image;
 }
-
 
 VkImageView VulkanImage::GetDefaultView() const
 {
@@ -192,19 +190,20 @@ void VulkanImage::DestroyViews()
         vkDestroyImageView(_device->Get(), view, nullptr);
 }
 
-void VulkanImage::UploadData(const std::span<const std::byte> data, VkImageLayout finalLayout) {
+void VulkanImage::UploadData(const std::span<const std::byte> data, VkImageLayout finalLayout)
+{
 
     // Create a staging buffer.
     VmaAllocationInfo allocInfo = {};
-    VulkanBuffer stagingBuffer{_device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, (VkDeviceSize)data.size(), &allocInfo, true};
+    VulkanBuffer stagingBuffer { _device, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, (VkDeviceSize)data.size(), &allocInfo, true };
 
     // Copy image memory to the staging buffer.
     std::memcpy(allocInfo.pMappedData, data.data(), data.size());
 
-    _device->ImmediateSubmit([&](VkCommandBuffer cmd){
+    _device->ImmediateSubmit([&](VkCommandBuffer cmd) {
         Transition(cmd, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
-        VkBufferImageCopy region{};
+        VkBufferImageCopy region {};
         region.bufferOffset = 0;
         region.bufferRowLength = 0;
         region.bufferImageHeight = 0;
@@ -212,7 +211,7 @@ void VulkanImage::UploadData(const std::span<const std::byte> data, VkImageLayou
         region.imageSubresource.mipLevel = 0;
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = 1;
-        region.imageOffset = {0, 0, 0};
+        region.imageOffset = { 0, 0, 0 };
         region.imageExtent = _extent;
 
         vkCmdCopyBufferToImage(cmd, stagingBuffer.Get(), _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
@@ -221,14 +220,15 @@ void VulkanImage::UploadData(const std::span<const std::byte> data, VkImageLayou
     });
 }
 
-void VulkanImage::Transition(VkCommandBuffer cmd, VkImageLayout layout) {
+void VulkanImage::Transition(VkCommandBuffer cmd, VkImageLayout layout)
+{
     VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_NONE;
     VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_NONE;
 
     VkImageMemoryBarrier barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.pNext = nullptr;
-    
+
     if (_layout == VK_IMAGE_LAYOUT_UNDEFINED && layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
         barrier.srcAccessMask = 0;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -244,7 +244,7 @@ void VulkanImage::Transition(VkCommandBuffer cmd, VkImageLayout layout) {
     } else {
         throw std::runtime_error("Unsupported VulkanImage layout transition!");
     }
-    
+
     barrier.oldLayout = _layout;
     barrier.newLayout = layout;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -267,8 +267,9 @@ void VulkanImage::Transition(VkCommandBuffer cmd, VkImageLayout layout) {
     _layout = layout;
 }
 
-void VulkanImage::Transition(VkImageLayout layout) {
-    _device->ImmediateSubmit([&](VkCommandBuffer cmd){
+void VulkanImage::Transition(VkImageLayout layout)
+{
+    _device->ImmediateSubmit([&](VkCommandBuffer cmd) {
         Transition(cmd, layout);
     });
 }

@@ -1,7 +1,6 @@
 #include "Mouse.h"
 
-namespace bl
-{
+namespace bl {
 
 // MouseButton Mouse::MouseButtonFromSDL(int buttonFlag)
 // {
@@ -19,14 +18,19 @@ void Mouse::Poll()
 
 int Mouse::MouseButtonToSDL(MouseButton button)
 {
-    switch (button)
-    {
-    case MouseButton::Left: return SDL_BUTTON_LEFT;
-    case MouseButton::Middle: return SDL_BUTTON_MIDDLE;
-    case MouseButton::Right: return SDL_BUTTON_RIGHT;
-    case MouseButton::SideFront: return SDL_BUTTON_X1;
-    case MouseButton::SideBack: return SDL_BUTTON_X2;
-    default: return 0;
+    switch (button) {
+    case MouseButton::Left:
+        return SDL_BUTTON_LEFT;
+    case MouseButton::Middle:
+        return SDL_BUTTON_MIDDLE;
+    case MouseButton::Right:
+        return SDL_BUTTON_RIGHT;
+    case MouseButton::SideFront:
+        return SDL_BUTTON_X1;
+    case MouseButton::SideBack:
+        return SDL_BUTTON_X2;
+    default:
+        return 0;
     }
 }
 
@@ -53,7 +57,7 @@ void Mouse::SetMouseButtonFlag(int pos, bool value)
         _buttonFlags |= mask;
     } else {
         // turn the bit off
-        _buttonFlags &= ~mask;   // complement flips the 1 to 0, leaving others unchanged
+        _buttonFlags &= ~mask; // complement flips the 1 to 0, leaving others unchanged
     }
 }
 
@@ -61,7 +65,6 @@ void Mouse::SetWheel(glm::vec2 wheel)
 {
     _wheel = wheel;
 }
-
 
 void Mouse::SetCaptured(Window* window, bool relative)
 {

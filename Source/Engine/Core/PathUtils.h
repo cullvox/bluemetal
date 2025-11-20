@@ -5,22 +5,23 @@
 namespace bl {
 namespace PathUtils {
 
-static constexpr const char* GetFilename(const char* path) {
+    static constexpr const char* GetFilename(const char* path)
+    {
 
 #ifdef BLUEMETAL_SYSTEM_WINDOWS
-    const char Slash = '\\';
+        const char Slash = '\\';
 #else
-    const char Slash = '/';
+        const char Slash = '/';
 #endif
 
-    const char* file = path;
-    while (*path) {
-        if (*path++ == Slash) {
-            file = path;
+        const char* file = path;
+        while (*path) {
+            if (*path++ == Slash) {
+                file = path;
+            }
         }
+        return file;
     }
-    return file;
-}
 
 } // namespace PathUtils
 } // namespace bl

@@ -20,15 +20,15 @@ public:
 private:
     using time_point = std::chrono::high_resolution_clock::time_point;
 
-    uint32_t                             _frameCount = 0;
-    time_point                           _startOfFrame;
-    time_point                           _endOfFrame;
-    time_point                           _lastSecond;
-    uint32_t                             _maximumHeldFramesPerSecond = 120;
-    uint32_t                             _maximumHeldMillisecondsPerFrame = 144;
-    std::list<uint32_t>                  _framesPerSecond;
-    std::list<std::chrono::nanoseconds>  _millisecondsPerFrame;
-    float                                _delta;
+    uint32_t _frameCount = 0;
+    time_point _startOfFrame;
+    time_point _endOfFrame;
+    time_point _lastSecond;
+    uint32_t _maximumHeldFramesPerSecond = 120;
+    uint32_t _maximumHeldMillisecondsPerFrame = 144;
+    std::list<uint32_t> _framesPerSecond;
+    std::list<std::chrono::nanoseconds> _millisecondsPerFrame;
+    float _delta;
 };
 
 } // namespace bl

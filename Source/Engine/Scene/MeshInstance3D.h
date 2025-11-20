@@ -5,11 +5,9 @@
 #include "Resources/MaterialInstance.h"
 #include "Resources/Mesh.h"
 
-namespace bl
-{
+namespace bl {
 
-class MeshInstance3D : public Node3D
-{
+class MeshInstance3D : public Node3D {
     Ref<MaterialInstance> _material;
     Ref<Mesh> _mesh;
 

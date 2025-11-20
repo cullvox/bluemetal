@@ -4,14 +4,14 @@
 
 namespace bl {
 
-template<typename TExt, typename TOff>
+template <typename TExt, typename TOff>
 struct TRect2D {
     TOffset2D<TOff> offset;
     TExtent2D<TExt> extent;
 
-    TOffset2D<TExt> Midpoint() 
+    TOffset2D<TExt> Midpoint()
     {
-        return {offset.x + extent.x / 2, offset.y + extent.y / 2};
+        return { offset.x + extent.x / 2, offset.y + extent.y / 2 };
     }
 };
 

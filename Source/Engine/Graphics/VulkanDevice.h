@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Vulkan.h"
+#include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanInstance.h"
 #include "VulkanPhysicalDevice.h"
-#include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineLayoutCache.h"
 
 namespace bl {
@@ -31,7 +31,6 @@ class VulkanDevice {
     void CreateCaches();
 
 public:
-
     /**
      * @brief Default constructor for VulkanDevice.
      */
@@ -81,7 +80,7 @@ public:
      */
     uint32_t GetGraphicsFamilyIndex() const;
 
-    /** 
+    /**
      * @brief Returns the present family index used for present operations.
      * @return The present family index.
      */

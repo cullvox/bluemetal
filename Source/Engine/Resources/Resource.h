@@ -21,8 +21,7 @@ class ResourceSystem;
  * be instantiated throughout the program lifetime. Once the @ref Load function is
  * called, the heavy data lifting will begin.
  */
-class Resource : public std::enable_shared_from_this<Resource> 
-{
+class Resource : public std::enable_shared_from_this<Resource> {
     friend class ResourceSystem;
     ResourceSystem* _resourceSystem; /** @brief Pointer to the resource manager that manages this resource. */
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
@@ -48,7 +47,6 @@ public:
     const std::filesystem::path& GetPath() const { return _path; }
 
     void AddSubResource(std::shared_ptr<Resource> res);
-
 };
 
 } // namespace bl
