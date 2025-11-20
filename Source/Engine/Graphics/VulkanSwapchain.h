@@ -3,7 +3,6 @@
 #include "Precompiled.h"
 #include "Vulkan.h"
 #include "VulkanDevice.h"
-#include "VulkanMutable.h"
 #include "Window/Window.h"
 
 namespace bl {

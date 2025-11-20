@@ -2,7 +2,6 @@
 
 #include "Engine/SDL.h"
 #include "Precompiled.h"
-#include "VulkanDeviceObject.h"
 #include "VulkanSwapchain.h"
 #include "Window/Display.h"
 #include "Window/Window.h"

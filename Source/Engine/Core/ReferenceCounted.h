@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Object.h"
 #include "Precompiled.h"
 
 namespace bl {
