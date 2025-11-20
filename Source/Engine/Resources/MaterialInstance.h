@@ -12,7 +12,8 @@ namespace bl
 
 class ResourceSystem;
 class GraphicsSystem;
-class Material; // Material Resource
+class Renderer;
+class Material;
 
 /// @class Material Instance
 /// @brief An instance of a material containing it's own buffers.
@@ -23,9 +24,13 @@ class Material; // Material Resource
 class MaterialInstance : public Resource 
 {
 private:
-    friend class Material;
-    Ref<Material> _baseMaterial;
+    Renderer* _renderer;
     std::unique_ptr<VulkanMaterialInstance> _materialInstance; // Set by either Material or is created.
+
+protected:
+    virtual VulkanMaterialInstance* GetInstance() const;
+
+public:
 
     /// @brief Creates an empty material instance, used for constructing materials.
     /// This constructor is designated for the Material Resource.
@@ -35,7 +40,7 @@ private:
     ///
     MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem);
 
-public:
+    MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance);
 
     /// @brief Loads a material instance from file.
     /// This constructor is designated for the ResourceSystem.
@@ -62,7 +67,7 @@ public:
     void SetVector3(const std::string& name, glm::vec3 value);
     void SetVector4(const std::string& name, glm::vec4 value);
     void SetMatrix(const std::string& name, glm::mat4 value);
-    void SetSampledTexture(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image);
+    void SetSampledTexture2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image);
     void UpdateUniforms(); /** @brief This function must be called before the renderer starts rendering the frame. */
 
     void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */

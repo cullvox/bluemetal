@@ -13,7 +13,7 @@ class Material;
 class VulkanWindow;
 class VulkanDevice;
 class VulkanSwapchain;
-class VulkanMaterial;
+class VulkanMaterialInstance;
 struct VulkanRenderData;
 
 using RenderFunction = std::function<void(VulkanRenderData& rd)>;
@@ -37,10 +37,10 @@ public:
     void SetView(const glm::mat4& view);
 
 protected:
-    friend class VulkanMaterial;
     friend class Material;
-    void AddMaterial(VulkanMaterial* material);
-    void RemoveMaterial(VulkanMaterial* material);
+    friend class MaterialInstance;
+    void AddMaterial(VulkanMaterialInstance* instance);
+    void RemoveMaterial(VulkanMaterialInstance* instance);
 
 private:
     void CreateSyncObjects();
@@ -81,7 +81,7 @@ private:
     void* _globalBufferMap;
     float _prevTime;
 
-    std::unordered_set<VulkanMaterial*> _materials;
+    std::unordered_set<VulkanMaterialInstance*> _materials;
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RenderPassType, {

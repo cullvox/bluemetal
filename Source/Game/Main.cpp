@@ -56,7 +56,7 @@ int main(int argc, const char** argv)
     auto frag = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.frag.spv");
     auto material = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
     auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.glb");
-    auto dragonModel = resourceMgr->Load<bl::Model>("Resources/Models/dragon_quick_sculpt.glb");
+    // auto dragonModel = resourceMgr->Load<bl::Model>("Resources/Models/dragon_quick_sculpt.glb");
     auto texture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/furry.qoi");
     auto sampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/LinearSampler.bmr");
 
@@ -70,7 +70,7 @@ int main(int argc, const char** argv)
     bl::FrameCounter frameCounter;
 
 
-    material->SetSampledImage2D("inAlbedo", sampler, texture);
+    material->SetSampledTexture2D("inAlbedo", sampler, texture);
 
     glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
     glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);

@@ -11,6 +11,10 @@ Resource::Resource(ResourceSystem* resourceSystem, System*, const std::filesyste
 
 Resource::~Resource()
 {
+    // Delete all subresources
+    for (auto subResource : _subResources) {
+        subResource.reset();
+    }
 }
 
 void Resource::AddSubResource(std::shared_ptr<Resource> res)

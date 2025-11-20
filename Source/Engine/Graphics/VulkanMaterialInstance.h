@@ -26,6 +26,14 @@ class VulkanMaterial;
 class VulkanMaterialInstance {
 public:
     /**
+     * @brief Base constructor for a material object.
+     * Only used for material constructor.
+     * 
+     * @param device The vulkan device used.
+     */
+    VulkanMaterialInstance(VulkanDevice* device);
+
+    /**
      * @brief Creates a material instance.
      * @param device Vulkan device to create the material instance with.
      * @param material Vulkan material to create the instance for.

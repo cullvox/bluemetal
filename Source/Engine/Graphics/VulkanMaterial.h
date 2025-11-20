@@ -94,7 +94,6 @@ public:
 private:
     friend class VulkanMaterialInstance;
 
-    VulkanDevice* _device;
     std::unique_ptr<VulkanPipeline> _pipeline;
     UniformMap _uniforms;
     SamplerMap _samplers;

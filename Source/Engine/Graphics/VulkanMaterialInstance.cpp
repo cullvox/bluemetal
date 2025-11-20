@@ -3,12 +3,19 @@
 
 namespace bl {
 
+VulkanMaterialInstance::VulkanMaterialInstance(VulkanDevice* device)
+    : _device(device)
+    , _currentFrame(0)
+{
+}
+
 VulkanMaterialInstance::VulkanMaterialInstance(VulkanDevice* device, VulkanMaterial* material)
     : _device(device)
     , _material(material)
     , _materialSet(material->_materialSet)
     , _currentFrame(0)
 {
+    BuildPerFrameBindings(material->_layout);
 }
 
 VulkanMaterialInstance::~VulkanMaterialInstance()

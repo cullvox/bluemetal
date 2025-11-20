@@ -44,22 +44,23 @@ Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSyste
 
     auto [pass, subpass] = _renderer->GetRenderPass(passType);
 
-    auto newMat = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), pass, subpass, info, _renderer->GetSwapchainImageCount());
-    _material = newMat.get();
-
-    _materialInstance = std::unique_ptr<VulkanMaterialInstance>(newMat.release());
-
-    _renderer->AddMaterial(_material); // Ensures that the material buffers get properly cleaned updated every frame.
+    _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), pass, subpass, info, _renderer->GetSwapchainImageCount());
+    _renderer->AddMaterial(_material.get());
 }
 
 Material::~Material()
 {
-    _renderer->RemoveMaterial(_material);
+    _renderer->RemoveMaterial(_material.get());
+}
+
+VulkanMaterialInstance* Material::GetInstance() const
+{
+    return _material.get();
 }
 
 Ref<MaterialInstance> Material::CreateInstance()
 {
-    return std::make_shared<MaterialInstance>(_resourceSystem, _graphicsSystem, _material->CreateInstance());
+    return std::make_shared<MaterialInstance>(_resourceSystem, _graphicsSystem, std::move(_material->CreateInstance()));
 }
 
 const VulkanPipeline* Material::GetVulkanPipeline()
@@ -69,7 +70,7 @@ const VulkanPipeline* Material::GetVulkanPipeline()
 
 VulkanMaterial* Material::GetVulkanMaterial()
 {
-    return _material;
+    return _material.get();
 }
 
 }

@@ -5,10 +5,11 @@
 namespace bl {
 
 VulkanMaterial::VulkanMaterial(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, const VulkanPipelineStateInfo& state, uint32_t imageCount, uint32_t materialSet)
-    : VulkanMaterialInstance(device, this)
+    : VulkanMaterialInstance(device)
     , _swapchainImageCount(imageCount)
     , _descriptorSetCache(device, 1024, VulkanDescriptorRatio::Default())
 {
+    _material = this;
     _materialSet = materialSet;
 
     // Preform reflection on the pipeline shaders to retrieve detailed descriptor set info.
@@ -69,7 +70,8 @@ VulkanMaterial::~VulkanMaterial()
 
 std::unique_ptr<VulkanMaterialInstance> VulkanMaterial::CreateInstance()
 {
-    return std::make_unique<VulkanMaterialInstance>(_device, this);
+    auto instance = std::make_unique<VulkanMaterialInstance>(_device, this);
+    return instance;
 }
 
 

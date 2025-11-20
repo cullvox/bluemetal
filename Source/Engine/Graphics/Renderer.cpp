@@ -203,8 +203,8 @@ void Renderer::Render(RenderFunction func)
     _imageIndex = _swapchain->GetImageIndex();
 
     // Update all material buffers.
-    for (auto material : _materials) {
-        material->UpdateUniforms();
+    for (auto instance : _materials) {
+        instance->UpdateUniforms();
     }
 
     // Reset the fence for this image so it can signal when it's done.
@@ -415,12 +415,12 @@ void Renderer::CreateGlobalUniform()
     vkUpdateDescriptorSets(_device->Get(), 1, &write, 0, nullptr);
 }
 
-void Renderer::AddMaterial(VulkanMaterial* material)
+void Renderer::AddMaterial(VulkanMaterialInstance* material)
 {
     _materials.emplace(material);
 }
 
-void Renderer::RemoveMaterial(VulkanMaterial* material)
+void Renderer::RemoveMaterial(VulkanMaterialInstance* material)
 {
     _materials.erase(material);
 }

@@ -1,101 +1,119 @@
 
-#include "ResourceSystem.h"
-#include "Graphics/GraphicsSystem.h"
 #include "MaterialInstance.h"
-#include "Material.h"
 #include "Engine/Engine.h"
+#include "Graphics/GraphicsSystem.h"
+#include "Material.h"
+#include "ResourceSystem.h"
 
-namespace bl
-{
+namespace bl {
 
 MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem)
     : Resource(resourceSystem, graphicsSystem, "")
+    , _renderer(graphicsSystem->GetRenderer())
+    , _materialInstance(nullptr)
 {
     // Empty constructor for creating material instances from a base material.
 }
 
+MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance)
+    : Resource(resourceSystem, graphicsSystem, "")
+    , _renderer(graphicsSystem->GetRenderer())
+    , _materialInstance(std::move(instance))
+{
+    // Since the material instance now owns this, it's responsible
+    // for adding and removing the material from the renderer.
+    _renderer->AddMaterial(_materialInstance.get());
+}
+
 MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
     : Resource(resourceSystem, graphicsSystem, path)
+    , _renderer(graphicsSystem->GetRenderer())
+    , _materialInstance(nullptr)
 {
-    std::ifstream file{path};
-    if (!file.is_open())
-    {
+    std::ifstream file { path };
+    if (!file.is_open()) {
         throw std::runtime_error("Could not open material instance JSON file.");
     }
 
     nlohmann::json json;
-    try 
-    {
+    try {
         json = nlohmann::json::parse(file);
         // TODO: Parse the JSON and set up the material instance.
-    }
-    catch (...)
-    {
+    } catch (...) {
         throw std::runtime_error("Could not parse material JSON file.");
     }
 
     auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
     _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat->GetVulkanMaterial()->CreateInstance());
+
+    // Ensure that the material buffers get properly cleaned updated every frame.
+    _renderer->AddMaterial(_materialInstance.get());
 }
 
 MaterialInstance::~MaterialInstance()
 {
+    if (_materialInstance)
+        _renderer->RemoveMaterial(_materialInstance.get());
+}
+
+VulkanMaterialInstance* MaterialInstance::GetInstance() const
+{
+    return _materialInstance.get();
 }
 
 void MaterialInstance::SetBool(const std::string& name, bool value)
 {
-    _materialInstance->SetBool(name, value);
+    GetInstance()->SetBool(name, value);
 }
 
 void MaterialInstance::SetInteger(const std::string& name, int value)
 {
-    _materialInstance->SetInteger(name, value);
+    GetInstance()->SetInteger(name, value);
 }
 
 void MaterialInstance::SetScaler(const std::string& name, float value)
 {
-    _materialInstance->SetScaler(name, value);
+    GetInstance()->SetScaler(name, value);
 }
 
 void MaterialInstance::SetVector2(const std::string& name, glm::vec2 value)
 {
-    _materialInstance->SetVector2(name, value);
+    GetInstance()->SetVector2(name, value);
 }
 
 void MaterialInstance::SetVector3(const std::string& name, glm::vec3 value)
 {
-    _materialInstance->SetVector3(name, value);
+    GetInstance()->SetVector3(name, value);
 }
 
 void MaterialInstance::SetVector4(const std::string& name, glm::vec4 value)
 {
-    _materialInstance->SetVector4(name, value);
+    GetInstance()->SetVector4(name, value);
 }
 
 void MaterialInstance::SetMatrix(const std::string& name, glm::mat4 value)
 {
-    _materialInstance->SetMatrix(name, value);
+    GetInstance()->SetMatrix(name, value);
 }
 
-void MaterialInstance::SetSampledTexture(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image)
+void MaterialInstance::SetSampledTexture2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image)
 {
-    _materialInstance->SetSampledImage2D(name, sampler->GetSampler(), image->GetImage());
+    GetInstance()->SetSampledImage2D(name, sampler->GetSampler(), image->GetImage());
 }
 
 void MaterialInstance::UpdateUniforms()
 {
-    _materialInstance->UpdateUniforms();
+    GetInstance()->UpdateUniforms();
 }
 
 void MaterialInstance::Bind(VulkanRenderData& rd)
 {
-    _materialInstance->Bind(rd);
+    GetInstance()->Bind(rd);
 }
 
 void MaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value)
 {
-    _materialInstance->PushConstant(rd, offset, size, value);
+    GetInstance()->PushConstant(rd, offset, size, value);
 }
-
 
 } // namespace bl

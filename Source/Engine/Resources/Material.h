@@ -14,7 +14,10 @@ class Material : public MaterialInstance
     ResourceSystem* _resourceSystem;
     GraphicsSystem* _graphicsSystem;
     Renderer* _renderer;
-    VulkanMaterial* _material;
+    std::unique_ptr<VulkanMaterial> _material;
+
+protected:
+    virtual VulkanMaterialInstance* GetInstance() const;
 
 public:
 

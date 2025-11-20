@@ -76,6 +76,7 @@ std::shared_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
 
 Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
+    , _graphicsSystem(system)
 {
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
@@ -141,12 +142,14 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
 
         {
             auto texture = _textures[material.pbrMetallicRoughness.baseColorTexture.index];
-            instance->SetSampledTexture("inAlbedo", defaultSampler, texture);
+            instance->SetSampledTexture2D("inAlbedo", defaultSampler, texture);
         }
+
+        _materials.push_back(instance);
     }
 
     // Load meshes 
-    _meshes.resize(model.meshes.size());
+    _meshes.reserve(model.meshes.size());
     for (int i = 0; i < model.meshes.size(); i ++) {
         auto& mesh = model.meshes[i];
 
@@ -193,7 +196,7 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
                 if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC3) {
                     throw std::runtime_error("Invalid position type.");
                 }
-                for (int j = 0; i < attribAccessor.count; j++) {
+                for (int j = 0; j < attribAccessor.count; j++) {
                     // sorta unsafe
                     size_t offset = bufferView.byteOffset + (j * sizeof(glm::vec3));
                     std::memcpy(&vertices[j].position, &buffer.data[offset], sizeof(glm::vec3));
