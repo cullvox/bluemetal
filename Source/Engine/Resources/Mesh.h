@@ -20,7 +20,7 @@ class Mesh : public Resource {
 public:
     Mesh(GraphicsSystem* system);
     Mesh(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
-    ~Mesh() = default;
+    ~Mesh();
 
     template <VertexType T>
     void UploadVertices(std::span<T> vertices)

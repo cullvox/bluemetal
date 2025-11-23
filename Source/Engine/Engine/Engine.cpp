@@ -13,6 +13,7 @@ Engine::Engine()
 
 Engine::~Engine()
 {
+    bl::Print::Info("Shutting down BlueMetal...");
 }
 
 void Engine::Initialize()

@@ -35,21 +35,12 @@ void Node3D::UpdateTransform()
     _transform = glm::translate(_transform, _position);
     _transform *= glm::mat4_cast(_rotation);
     _transform = glm::scale(_transform, _scale);
-
-    if (auto parent = std::dynamic_pointer_cast<Node3D>(GetParent())) {
-        _transform = parent->GetWorldTransform() * _transform;
-    }
-
-    for (const auto& child : GetChildren()) {
-        if (auto child3D = std::dynamic_pointer_cast<Node3D>(child)) {
-            child3D->UpdateTransform();
-        }
-    }
 }
 
 void Node3D::SetPosition(const glm::vec3& position)
 {
     _position = position;
+    UpdateTransform();
 }
 
 void Node3D::SetWorldPosition(const glm::vec3& position)
@@ -66,17 +57,19 @@ void Node3D::SetWorldPosition(const glm::vec3& position)
 
 void Node3D::SetRotation(const glm::vec3& eulerAngles)
 {
-    _rotation = glm::quat(eulerAngles);
+    SetRotation(glm::quat(glm::radians(eulerAngles)));
+    UpdateTransform();
 }
 
 void Node3D::SetRotation(const glm::quat& rotation)
 {
     _rotation = rotation;
+    UpdateTransform();
 }
 
 void Node3D::SetWorldRotation(const glm::vec3& eulerAngles)
 {
-    SetWorldRotation(glm::quat(eulerAngles));
+    SetWorldRotation(glm::quat(glm::radians(eulerAngles)));
 }
 
 void Node3D::SetWorldRotation(const glm::quat& rotation)
@@ -93,21 +86,27 @@ void Node3D::SetWorldRotation(const glm::quat& rotation)
 void Node3D::SetScale(const glm::vec3& scale)
 {
     _scale = scale;
-}
-
-void Node3D::SetWorldScale(const glm::vec3& scale)
-{
-    if (auto parent = std::dynamic_pointer_cast<Node3D>(GetParent())) {
-        glm::vec3 parentWorldScale = parent->GetWorldScale();
-        _scale = scale / parentWorldScale;
-    } else {
-        _scale = scale;
-    }
+    UpdateTransform();
 }
 
 glm::vec3 Node3D::GetPosition() const
 {
     return _position;
+}
+
+glm::vec3 Node3D::GetRotation() const
+{
+    return glm::degrees(glm::eulerAngles(_rotation));
+}
+
+glm::quat Node3D::GetRotationQuat() const
+{
+    return _rotation;
+}
+
+glm::vec3 Node3D::GetScale() const
+{
+    return _scale;
 }
 
 glm::vec3 Node3D::GetWorldPosition() const
@@ -119,20 +118,11 @@ glm::vec3 Node3D::GetWorldPosition() const
     }
 }
 
-glm::vec3 Node3D::GetRotation() const
-{
-    return glm::eulerAngles(_rotation);
-}
-
-glm::quat Node3D::GetRotationQuat() const
-{
-    return _rotation;
-}
-
 glm::vec3 Node3D::GetWorldRotation() const
 {
-    return glm::eulerAngles(GetWorldRotationQuat());
+    return glm::degrees(glm::eulerAngles(GetWorldRotationQuat()));
 }
+
 
 glm::quat Node3D::GetWorldRotationQuat() const
 {
@@ -141,11 +131,6 @@ glm::quat Node3D::GetWorldRotationQuat() const
     } else {
         return _rotation;
     }
-}
-
-glm::vec3 Node3D::GetScale() const
-{
-    return _scale;
 }
 
 glm::vec3 Node3D::GetWorldScale() const
@@ -157,7 +142,7 @@ glm::vec3 Node3D::GetWorldScale() const
     }
 }
 
-glm::mat4 Node3D::GetTransform() const
+glm::mat4 Node3D::GetTransform()
 {
     return _transform;
 }

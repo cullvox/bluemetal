@@ -15,6 +15,7 @@
 #include "Resources/Texture2D.h"
 
 #include "Scene/MeshInstance3D.h"
+#include <glm/gtc/type_ptr.hpp>
 
 namespace bl {
 
@@ -36,8 +37,8 @@ std::shared_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
 
     // Load transform
     if (node.matrix.size() == 16) {
-        glm::mat4 transform;
-        std::memcpy(&transform, node.matrix.data(), sizeof(glm::mat4));
+        glm::mat4 transform = glm::make_mat4x4(node.matrix.data());
+
         // Decompose matrix
         glm::vec3 scale;
         glm::quat rotation;
@@ -135,7 +136,7 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
     auto defaultSampler = resourceSystem->Load<Sampler>("Resources/Samplers/Default.json");
 
     for (auto& material : model.materials) {
-        auto instance = defaultMaterial->CreateInstance();
+        auto instance = defaultMaterial.lock()->CreateInstance();
         AddSubResource(instance);
 
         {

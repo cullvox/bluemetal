@@ -7,6 +7,8 @@
 #pragma clang diagnostic ignored "-Wnullable-to-nonnull-conversion"
 #endif
 
+#define VMA_DEBUG_LOG_FORMAT(...) printf(__VA_ARGS__); putc('\n', stdout)
+
 #include <vk_mem_alloc.h>
 
 #ifdef BLUEMETAL_COMPILER_APPLE_CLANG

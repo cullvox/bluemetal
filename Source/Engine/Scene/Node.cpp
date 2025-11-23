@@ -39,9 +39,9 @@ Engine* Node::GetEngine()
 void Node::SetName(const std::string& name)
 {
     _name = name;
-    if (auto parent = _parent.lock()) {
-        parent->_children.erase(_name);
-        parent->_children[name] = shared_from_this();
+    if (_parent) {
+        _parent->_children.erase(_name);
+        _parent->_children[name] = shared_from_this();
     }
 }
 
@@ -53,20 +53,20 @@ std::string Node::GetName() const
 void Node::SetParent(std::shared_ptr<Node> parent)
 {
     // Remove from current parent if exists.
-    if (auto currentParent = _parent.lock()) {
-        currentParent->RemoveChild(this->GetName());
+    if (_parent) {
+        _parent->RemoveChild(this->GetName());
     }
 
     _parent = parent;
 
-    if (parent) {
-        parent->AddChild(shared_from_this());
+    if (_parent) {
+        _parent->AddChild(shared_from_this());
     }
 }
 
 std::shared_ptr<Node> Node::GetParent() const
 {
-    return _parent.lock();
+    return _parent;
 }
 
 std::shared_ptr<Node> Node::GetChild(const std::string& name) const

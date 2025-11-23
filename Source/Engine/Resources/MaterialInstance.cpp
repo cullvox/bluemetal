@@ -43,7 +43,7 @@ MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSyste
     }
 
     auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
-    _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat->GetVulkanMaterial()->CreateInstance());
+    _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat.lock()->GetVulkanMaterial()->CreateInstance());
 
     // Ensure that the material buffers get properly cleaned updated every frame.
     _renderer->AddMaterial(_materialInstance.get());
@@ -97,7 +97,7 @@ void MaterialInstance::SetMatrix(const std::string& name, glm::mat4 value)
 
 void MaterialInstance::SetSampledTexture2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image)
 {
-    GetInstance()->SetSampledImage2D(name, sampler->GetSampler(), image->GetImage());
+    GetInstance()->SetSampledImage2D(name, sampler.lock()->GetSampler(), image.lock()->GetImage());
 }
 
 void MaterialInstance::UpdateUniforms()

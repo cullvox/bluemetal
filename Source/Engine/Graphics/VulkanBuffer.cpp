@@ -1,6 +1,5 @@
 #include "VulkanBuffer.h"
 #include "Core/Print.h"
-#include "vulkan/vulkan_core.h"
 
 namespace bl {
 
@@ -28,6 +27,17 @@ VulkanBuffer::VulkanBuffer(VulkanBuffer&& rhs) noexcept
     rhs._size = 0;
     rhs._buffer = VK_NULL_HANDLE;
     rhs._allocation = VK_NULL_HANDLE;
+}
+
+static std::string VkBufferUsageFlags_ToString(VkBufferUsageFlags usage)
+{
+    std::string out;
+    if (usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
+        out += "VK_BUFFER_USAGE_VERTEX_BUFFER_BIT ";
+    if (usage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+        out += "VK_BUFFER_USAGE_INDEX_BUFFER_BIT";
+
+    return out;
 }
 
 VulkanBuffer::VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkDeviceSize size, VmaAllocationInfo* allocationInfo, bool mapped)
@@ -60,6 +70,8 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMe
     allocationCreateInfo.priority = 0.0f;
 
     VK_CHECK(vmaCreateBuffer(_device->GetAllocator(), &bufferCreateInfo, &allocationCreateInfo, &_buffer, &_allocation, allocationInfo))
+
+    vmaSetAllocationName(_device->GetAllocator(), _allocation, VkBufferUsageFlags_ToString(usage).c_str());
 }
 
 VulkanBuffer::~VulkanBuffer()

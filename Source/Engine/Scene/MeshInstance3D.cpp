@@ -13,17 +13,14 @@ MeshInstance3D::MeshInstance3D(Engine* engine)
 void MeshInstance3D::Draw(VulkanRenderData& rd)
 {
     // TODO: This isn't really instancing, the renderer will have to buffer instances.
-    _material->Bind(rd);
-
     bl::ObjectPC object {};
-    object.model = glm::identity<glm::mat4>();
-    object.model = glm::translate(object.model, glm::vec3 { 0.0f, 0.0f, -30.0f });
-    object.model = glm::scale(object.model, glm::vec3 { 1 / 100.0f, 1 / 100.0f, 1 / 100.0f });
+    object.model = GetWorldTransform();
 
-    _material->PushConstant(rd, 0, sizeof(ObjectPC), &object);
+    _material.lock()->Bind(rd);
+    _mesh.lock()->Bind(rd.cmd);
+    _material.lock()->PushConstant(rd, 0, sizeof(ObjectPC), &object);
 
-    _mesh->Bind(rd.cmd);
-    vkCmdDrawIndexed(rd.cmd, _mesh->GetIndicesCount(), 1, 0, 0, 0);
+    vkCmdDrawIndexed(rd.cmd, _mesh.lock()->GetIndicesCount(), 1, 0, 0, 0);
 
     Node3D::Draw(rd);
 }

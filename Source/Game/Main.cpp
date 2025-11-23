@@ -4,12 +4,6 @@
 #include "Engine/Engine.h"
 #include "Graphics/UniformData.h"
 #include "Graphics/Vertex.h"
-#include "Graphics/VulkanConversions.h"
-#include "Graphics/VulkanPhysicalDevice.h"
-#include "Graphics/VulkanPipeline.h"
-#include "Graphics/VulkanShader.h"
-#include "Graphics/VulkanWindow.h"
-#include "Math/Transform.h"
 #include "Resources/Material.h"
 #include "Resources/Model.h"
 #include "Resources/Shader.h"
@@ -54,15 +48,12 @@ int main(int argc, const char** argv)
         auto renderer = engine.GetRenderer();
 
         auto window = engine.GetWindow();
-        auto vulkanWindow = dynamic_cast<bl::VulkanWindow*>(window);
-
-        auto presentModes = graphics->GetPhysicalDevice()->GetPresentModes(vulkanWindow);
 
         bl::FrameCounter frameCounter;
 
-        glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 5.0f);
-        glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-        glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 cameraPos = { 0.0f, 0.0f, 5.0f };
+        glm::vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
+        glm::vec3 cameraUp = { 0.0f, 1.0f, 0.0f };
         glm::mat4 view = glm::identity<glm::mat4>();
         float yaw = -90.0f, pitch = 0.0f;
         float walkingSpeed = 9.0f;
@@ -72,10 +63,14 @@ int main(int argc, const char** argv)
         auto extenti = glm::ivec2 { (int)extent.width, (int)extent.height };
         auto extentf = glm::vec2 { (float)extent.width, (float)extent.height };
 
+        auto tree = model.lock()->GetTree();
+        //tree->SetPosition({ 0.0f, 0.0f, -30.0f });
+        //tree->SetScale({ 0.01f, 0.01f, 0.01f });
+
         while (!window->GetCloseRequested()) {
             frameCounter.BeginFrame();
 
-            input->Poll([imgui, &mouse, window](SDL_Event& event) {
+            input->Poll([imgui](SDL_Event& event) {
                 imgui->Process(event);
             });
 
@@ -168,7 +163,7 @@ int main(int argc, const char** argv)
                 scissor.extent = { extent.width, extent.height };
                 vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
 
-                model->GetTree()->Draw(rd);
+                model.lock()->GetTree()->Draw(rd);
 
                 // dragonModel.Get()->Draw(rd, material->GetMaterial());
 

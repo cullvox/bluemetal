@@ -33,7 +33,7 @@ Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSyste
 
         auto vertexShader = resourceSystem->Load<Shader>(vertexPath);
         auto fragmentShader = resourceSystem->Load<Shader>(fragmentPath);
-        info.stages.shaders = std::vector<VulkanShader*> { vertexShader->Get(), fragmentShader->Get() };
+        info.stages.shaders = std::vector<VulkanShader*> { vertexShader.lock()->Get(), fragmentShader.lock()->Get() };
     } catch (...) {
         throw std::runtime_error("Could not parse material JSON file.");
     }
@@ -54,7 +54,7 @@ VulkanMaterialInstance* Material::GetInstance() const
     return _material.get();
 }
 
-Ref<MaterialInstance> Material::CreateInstance()
+std::shared_ptr<MaterialInstance> Material::CreateInstance()
 {
     return std::make_shared<MaterialInstance>(_resourceSystem, _graphicsSystem, std::move(_material->CreateInstance()));
 }

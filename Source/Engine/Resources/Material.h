@@ -34,7 +34,7 @@ public:
     const VulkanPipeline* GetVulkanPipeline();
 
     /// @brief Creates a material instance for this material.
-    Ref<MaterialInstance> CreateInstance();
+    std::shared_ptr<MaterialInstance> CreateInstance();
 };
 
 }
