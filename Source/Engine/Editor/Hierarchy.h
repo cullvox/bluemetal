@@ -3,9 +3,9 @@
 class EditorHierarchy {
 
 public:
-    EditorHierarchy();
+    EditorHierarchy(std::shared_ptr<Node> );
     ~EditorHierarchy();
 
-    void Draw();
+    virtual void Draw();
 
 };
