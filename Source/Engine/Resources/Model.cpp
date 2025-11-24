@@ -19,9 +19,9 @@
 
 namespace bl {
 
-std::shared_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tinygltf::Node& node)
+std::unique_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tinygltf::Node& node)
 {
-    std::shared_ptr<Node3D> newNode { nullptr };
+    std::unique_ptr<Node3D> newNode { nullptr };
     if (node.mesh < 0) {
         newNode = std::make_unique<Node3D>(&_graphicsSystem->GetEngine());
     } else {
@@ -69,7 +69,7 @@ std::shared_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
     }
 
     for (int i : node.children) {
-        newNode->AddChild(LoadNode(model, model.nodes[i]));
+        newNode->AddChild(std::move(LoadNode(model, model.nodes[i])));
     }
     return newNode;
 }
@@ -248,9 +248,9 @@ Model::~Model()
 {
 }
 
-std::shared_ptr<Node3D> Model::GetTree()
+Node3D* Model::GetTree()
 {
-    return _root;
+    return _root.get();
 }
 
 }

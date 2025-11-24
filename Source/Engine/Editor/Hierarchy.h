@@ -1,11 +1,17 @@
 #pragma once
 
+#include "Scene/Node.h"
+
+namespace bl {
+
 class EditorHierarchy {
 
 public:
-    EditorHierarchy(std::shared_ptr<Node> );
+    EditorHierarchy(Node* root);
     ~EditorHierarchy();
 
     virtual void Draw();
 
 };
+
+} // namespace bl

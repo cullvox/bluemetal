@@ -45,7 +45,7 @@ void Node3D::SetPosition(const glm::vec3& position)
 
 void Node3D::SetWorldPosition(const glm::vec3& position)
 {
-    if (auto parent = std::dynamic_pointer_cast<Node3D>(GetParent())) {
+    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
         glm::mat4 parentWorldTransform = parent->GetWorldTransform();
         glm::mat4 parentInverse = glm::inverse(parentWorldTransform);
         glm::vec4 localPos = parentInverse * glm::vec4(position, 1.0f);
@@ -74,7 +74,7 @@ void Node3D::SetWorldRotation(const glm::vec3& eulerAngles)
 
 void Node3D::SetWorldRotation(const glm::quat& rotation)
 {
-    if (auto parent = std::dynamic_pointer_cast<Node3D>(GetParent())) {
+    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
         glm::quat parentWorldRotation = parent->GetWorldRotationQuat();
         glm::quat localRotation = glm::inverse(parentWorldRotation) * rotation;
         _rotation = localRotation;
@@ -111,7 +111,7 @@ glm::vec3 Node3D::GetScale() const
 
 glm::vec3 Node3D::GetWorldPosition() const
 {
-    if (auto parent = std::dynamic_pointer_cast<Node3D>(GetParent())) {
+    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
         return glm::vec3(parent->GetWorldTransform() * glm::vec4(_position, 1.0f));
     } else {
         return _position;
@@ -126,7 +126,7 @@ glm::vec3 Node3D::GetWorldRotation() const
 
 glm::quat Node3D::GetWorldRotationQuat() const
 {
-    if (auto parent = std::dynamic_pointer_cast<Node3D>(GetParent())) {
+    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
         return parent->GetWorldRotationQuat() * _rotation;
     } else {
         return _rotation;
@@ -135,7 +135,7 @@ glm::quat Node3D::GetWorldRotationQuat() const
 
 glm::vec3 Node3D::GetWorldScale() const
 {
-    if (auto parent = std::dynamic_pointer_cast<Node3D>(GetParent())) {
+    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
         return parent->GetWorldScale() * _scale;
     } else {
         return _scale;
@@ -149,7 +149,7 @@ glm::mat4 Node3D::GetTransform()
 
 glm::mat4 Node3D::GetWorldTransform() const
 {
-    if (auto parent = std::dynamic_pointer_cast<Node3D>(GetParent())) {
+    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
         return parent->GetWorldTransform() * _transform;
     } else {
         return _transform;

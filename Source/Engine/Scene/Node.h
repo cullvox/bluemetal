@@ -7,10 +7,10 @@ namespace bl {
 
 class Engine;
 
-class Node : public std::enable_shared_from_this<Node> {
+class Node {
     std::string _name;
-    std::weak_ptr<Node> _parent;
-    std::unordered_map<std::string, std::weak_ptr<Node>> _children;
+    Node* _parent;
+    std::unordered_map<std::string, std::unique_ptr<Node>> _children;
     Engine* _engine;
 
 public:
@@ -23,15 +23,16 @@ public:
     virtual Node* Clone();
 
     Engine* GetEngine();
-    void SetName(const std::string& name);
+    bool SetName(const std::string& name);
     std::string GetName() const;
-    void SetParent(std::shared_ptr<Node> parent);
-    virtual std::shared_ptr<Node> GetParent() const;
-    std::shared_ptr<Node> GetChild(const std::string& name) const;
-    std::vector<std::weak_ptr<Node>> GetChildren() const;
-    virtual void AddChild(std::shared_ptr<Node> child);
-    void RemoveChild(const std::string& child);
-    void ClearChildren();
+    void SetParent(Node* parent);
+    virtual Node* GetParent() const;
+    Node* GetChild(const std::string& name) const;
+    std::vector<Node*> GetChildren() const;
+    virtual void AddChild(Node* child);
+    virtual void AddChild(std::unique_ptr<Node> child);
+    std::unique_ptr<Node> UnlinkChild(const std::string& child);
+    void DeleteChild(const std::string& child);
 };
 
 } // namespace bl
