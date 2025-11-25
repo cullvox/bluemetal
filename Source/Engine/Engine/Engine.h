@@ -25,7 +25,7 @@ class Engine {
     std::unique_ptr<Renderer> _renderer;
 
 public:
-    Engine();
+    Engine(int argc, const char** argv);
     ~Engine();
 
     void Initialize();

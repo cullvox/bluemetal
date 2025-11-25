@@ -23,31 +23,26 @@ int main(int argc, const char** argv)
     (void)argv;
 
     try {
-        auto engine = bl::Engine {};
+        bl::Engine engine{ argc, argv };
         engine.Initialize();
-        auto resourceMgr = engine.GetResourceManager();
 
+        auto resourceMgr = engine.GetResourceManager();
         auto audio = engine.GetAudio();
+        auto graphics = engine.GetGraphics();
+        auto imgui = engine.GetImGui();
+        auto input = engine.GetInput();
+        auto& keyboard = input->GetKeyboard();
+        auto& mouse = input->GetMouse();
+        auto renderer = engine.GetRenderer();
+        auto window = engine.GetWindow();
+
         auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Taswell.flac");
 
         auto source = std::make_unique<bl::AudioSource3D>(&engine);
 
         source->Play(sound, true);
 
-        auto graphics = engine.GetGraphics();
-        auto imgui = engine.GetImGui();
-
-        auto input = engine.GetInput();
-        auto& keyboard = input->GetKeyboard();
-        auto& mouse = input->GetMouse();
-
-        auto vert = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.vert.spv");
-        auto frag = resourceMgr->Load<bl::Shader>("Resources/Shaders/Default.frag.spv");
         auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.glb");
-
-        auto renderer = engine.GetRenderer();
-
-        auto window = engine.GetWindow();
 
         bl::FrameCounter frameCounter;
 

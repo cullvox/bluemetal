@@ -14,20 +14,22 @@ namespace bl {
  */
 class Node3D : public Node {
     glm::mat4 _transform;
-    glm::vec3 _position;
-    glm::quat _rotation;
-    glm::vec3 _scale;
-
-    void UpdateTransform();
 
 public:
+    glm::vec3 position;
+    glm::quat rotation;
+    glm::vec3 scale;
+
     Node3D(Engine* engine);
+    Node3D(const Node3D&);
     virtual ~Node3D();
 
+    virtual Node3D* Clone();
     virtual void Update(float deltaTime);
     virtual void PhysicsUpdate(float delta);
     virtual void Draw(VulkanRenderData& rd);
 
+    void UpdateTransform();
     void SetPosition(const glm::vec3& position);
     void SetRotation(const glm::vec3& eulerAngleDegrees);
     void SetRotation(const glm::quat& rotation);

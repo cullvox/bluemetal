@@ -13,8 +13,10 @@ class MeshInstance3D : public Node3D {
 
 public:
     MeshInstance3D(Engine* engine);
+    MeshInstance3D(const MeshInstance3D&);
     virtual ~MeshInstance3D() = default;
 
+    virtual MeshInstance3D* Clone() override;
     virtual void Draw(VulkanRenderData& rd) override; // Just sets up the instance data, actual draw call is done in renderer
 
     void SetMesh(Ref<Mesh> mesh);

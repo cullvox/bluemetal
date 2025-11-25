@@ -9,6 +9,17 @@ Node::Node(Engine* engine)
 {
 }
 
+Node::Node(const Node& node)
+    : _engine(node._engine)
+    , _name(node._name)
+    , _parent(nullptr) // Parent is not copied
+{
+    // Deep copy children
+    for (const auto& [name, child] : node._children) {
+        AddChild(child->Clone());
+    }
+}
+
 Node::~Node() = default;
 
 void Node::Update(float)
@@ -16,6 +27,10 @@ void Node::Update(float)
 }
 
 void Node::PhysicsUpdate(float)
+{
+}
+
+void Node::Ready()
 {
 }
 
@@ -30,6 +45,11 @@ Node* Node::Clone()
 {
     Node* node = new Node(_engine);
     node->SetName(_name);
+
+    for (auto& [name, child] : _children) {
+        node->AddChild(child->Clone());
+    }
+
     return node;
 }
 

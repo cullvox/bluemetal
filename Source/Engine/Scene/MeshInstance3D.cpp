@@ -10,6 +10,18 @@ MeshInstance3D::MeshInstance3D(Engine* engine)
     _material = engine->GetResourceManager()->Load<bl::Material>("Resources/Materials/Default.mat");
 }
 
+MeshInstance3D::MeshInstance3D(const MeshInstance3D& node)
+    : Node3D(node)
+    , _material(node._material)
+    , _mesh(node._mesh)
+{
+}
+
+MeshInstance3D* MeshInstance3D::Clone()
+{
+    return new MeshInstance3D(*this);
+}
+
 void MeshInstance3D::Draw(VulkanRenderData& rd)
 {
     // TODO: This isn't really instancing, the renderer will have to buffer instances.

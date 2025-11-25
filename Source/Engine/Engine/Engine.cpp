@@ -3,12 +3,31 @@
 #include "Graphics/Renderer.h"
 #include "Graphics/VulkanWindow.h"
 #include "Math/Rect.h"
+#include "argparse/argparse.hpp"
 
 namespace bl {
 
-Engine::Engine()
+Engine::Engine(int argc, const char** argv)
     : _sdl()
 {
+    argparse::ArgumentParser program("BlueMetal Engine");
+
+    program.add_argument("-v", "--verbose")
+        .help("Enable verbose logging")
+        .default_value(false)
+        .implicit_value(true);
+
+    try {
+        program.parse_args(argc, argv);
+    } catch (const std::runtime_error& err) {
+        Print::Error("Argument parsing error: {}", err.what());
+        Print::Info("Use --help to see available options.");
+        throw;
+    }
+
+    bool verbose = program.get<bool>("--verbose");
+    Print::EnableVerboseLogging(verbose);
+
 }
 
 Engine::~Engine()
