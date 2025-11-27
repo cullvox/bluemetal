@@ -32,12 +32,12 @@ Engine::Engine(int argc, const char** argv)
 
 Engine::~Engine()
 {
-    bl::Print::Info("Shutting down BlueMetal...");
+    Print::Info("Shutting down BlueMetal...");
 }
 
 void Engine::Initialize()
 {
-    bl::Print::Info("Initializing BlueMetal v{}", bl::to_string(bl::engineVersion));
+    Print::Info("Initializing BlueMetal v{}", bl::to_string(bl::engineVersion));
 
     _resourceManager = std::make_unique<ResourceSystem>(*this);
     _audio = std::make_unique<AudioSystem>(*this);
@@ -48,7 +48,7 @@ void Engine::Initialize()
 
 void Engine::Shutdown()
 {
-    bl::Print::Info("Shutting down BlueMetal...");
+    Print::Info("Shutting down BlueMetal...");
     _imgui.reset();
     _graphics.reset();
     _audio.reset();

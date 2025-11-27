@@ -10,6 +10,7 @@ ResourceSystem::ResourceSystem(Engine& engine)
 
 ResourceSystem::~ResourceSystem()
 {
+    UnloadAll();
 }
 
 std::shared_ptr<Resource> ResourceSystem::ConstructResource(ResourceSystem*, std::size_t, const std::filesystem::path&)

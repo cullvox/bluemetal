@@ -19,7 +19,7 @@ public:
 
     virtual ~System() = default;
 
-    virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path) = 0;
+    virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path);
 
     Engine& GetEngine() { return engine; }
 };
