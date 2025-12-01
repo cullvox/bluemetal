@@ -1,0 +1,92 @@
+#include "PhysicsBody3D.h"
+#include "Engine/Engine.h"
+
+#include <Jolt/Jolt.h>
+#include <Jolt/Physics/PhysicsSystem.h>
+#include <Jolt/Physics/Body/BodyInterface.h>
+#include <Jolt/Physics/Body/BodyCreationSettings.h>
+
+
+namespace bl {
+
+PhysicsBody3D::PhysicsBody3D(Engine& engine)
+    : Node3D(&engine)
+{
+}
+
+PhysicsBody3D::PhysicsBody3D(const PhysicsBody3D& copy)
+    : Node3D(copy)
+{
+    _shape = copy._shape;
+    _objectLayer = copy._objectLayer;
+    _motionType = copy._motionType;
+
+    ResetBody();
+}
+
+PhysicsBody3D::~PhysicsBody3D()
+{
+    if (!_bodyId.IsInvalid()) {
+        auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+        bodyInterface.RemoveBody(_bodyId);
+        bodyInterface.DestroyBody(_bodyId);
+    }
+}
+
+PhysicsBody3D* PhysicsBody3D::Clone()
+{
+    return new PhysicsBody3D(*this);
+}
+
+void PhysicsBody3D::Update(float deltaTime)
+{
+    Node3D::Update(deltaTime);
+
+    // Update the body's transform to match the node's transform
+    auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+
+    JPH::Vec3 positionVec{};
+    JPH::Quat rotationQuat{};
+    bodyInterface.GetPositionAndRotation(_bodyId, positionVec, rotationQuat);
+
+    SetPosition(glm::vec3(positionVec.GetX(), positionVec.GetY(), positionVec.GetZ()));
+    SetRotation(glm::quat(rotationQuat.GetW(), rotationQuat.GetX(), rotationQuat.GetY(), rotationQuat.GetZ()));
+
+    Print::Info("PhysicsBody3D Position: {}, {}, {}", position.x, position.y, position.z);
+}
+
+void PhysicsBody3D::ResetBody()
+{
+    auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+
+    JPH::BodyCreationSettings settings;
+    settings.SetShape(_shape);
+    settings.mPosition = JPH::Vec3(position.x, position.y, position.z);
+    settings.mRotation = JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w);
+    settings.mObjectLayer = ObjectLayers::MOVABLE;
+    settings.mMotionType = _motionType;
+
+    if (!_bodyId.IsInvalid())
+        bodyInterface.RemoveBody(_bodyId);
+
+    _bodyId = bodyInterface.CreateAndAddBody(settings, JPH::EActivation::Activate);
+}
+
+void PhysicsBody3D::SetObjectLayer(JPH::ObjectLayer objectLayer)
+{
+    auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+    bodyInterface.SetObjectLayer(_bodyId, objectLayer);
+}
+
+void PhysicsBody3D::SetShape(JPH::Shape* shape)
+{
+    _shape = shape;
+    if (_bodyId.IsInvalid()) {
+        return;
+    }
+
+    auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+    bodyInterface.SetShape(_bodyId, shape, false, JPH::EActivation::Activate);
+}
+
+} // namespace bl

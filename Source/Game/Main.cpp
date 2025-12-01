@@ -9,8 +9,12 @@
 #include "Resources/Shader.h"
 #include "Resources/Texture2D.h"
 #include "Scene/AudioSource3D.h"
+#include "Scene/PhysicsBody3D.h"
+#include "Scene/MeshInstance3D.h"
 #include "Window/Keyboard.h"
 #include "Window/Mouse.h"
+
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
 
 static inline float randomValue()
 {
@@ -33,6 +37,7 @@ int main(int argc, const char** argv)
         auto input = engine.GetInput();
         auto& keyboard = input->GetKeyboard();
         auto& mouse = input->GetMouse();
+        auto& physics = engine.GetPhysics();
         auto renderer = engine.GetRenderer();
         auto window = engine.GetWindow();
 
@@ -44,8 +49,86 @@ int main(int argc, const char** argv)
 
         auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.glb");
 
-        bl::FrameCounter frameCounter;
 
+        auto tree = model.lock()->GetTree();
+
+        auto newTree = tree->Clone();
+
+        JPH::Ref<JPH::SphereShape> shape = new JPH::SphereShape(1.0f);
+        auto physicsBody = std::make_unique<bl::PhysicsBody3D>(engine);
+        physicsBody->SetPosition({ 0.0f, 0.0f, -20.0f });
+
+
+        physicsBody->SetShape(shape.GetPtr());
+        physicsBody->ResetBody();
+
+        physicsBody->AddChild(newTree);
+
+        std::array<bl::Vertex, 8 * 3> cubeVertices = {{
+            {{ -0.5f, -0.5f, -0.5f}, {}, {}, { 0.0f, 0.0f}},  // A 0
+            {{ 0.5f, -0.5f, -0.5f}, {}, {}, { 1.0f, 0.0f}},  // B 1
+            {{ 0.5f,  0.5f, -0.5f}, {}, {}, { 1.0f, 1.0f}},  // C 2
+            {{ -0.5f,  0.5f, -0.5f}, {}, {}, { 0.0f, 1.0f}},  // D 3
+            {{ -0.5f, -0.5f,  0.5f}, {}, {}, { 0.0f, 0.0f}},  // E 4
+            {{ 0.5f, -0.5f,  0.5f}, {}, {}, { 1.0f, 0.0f}},   // F 5
+            {{ 0.5f,  0.5f,  0.5f}, {}, {}, { 1.0f, 1.0f}},   // G 6
+            {{ -0.5f,  0.5f,  0.5f}, {}, {}, { 0.0f, 1.0f}},   // H 7
+    
+            {{-0.5f,  0.5f, -0.5f}, {}, {},  {0.0f, 0.0f}},  // D 8
+            {{-0.5f, -0.5f, -0.5f}, {}, {},  {1.0f, 0.0f}},  // A 9
+            {{-0.5f, -0.5f,  0.5f}, {}, {},  {1.0f, 1.0f}},  // E 10
+            {{-0.5f,  0.5f,  0.5f}, {}, {},  {0.0f, 1.0f}},  // H 11
+            {{0.5f, -0.5f, -0.5f}, {}, {},  {0.0f, 0.0f}},   // B 12
+            {{0.5f,  0.5f, -0.5f}, {}, {},  {1.0f, 0.0f}},   // C 13
+            {{0.5f,  0.5f,  0.5f}, {}, {},  {1.0f, 1.0f}},   // G 14
+            {{0.5f, -0.5f,  0.5f}, {}, {},  {0.0f, 1.0f}},   // F 15
+    
+            {{-0.5f, -0.5f, -0.5f}, {}, {}, { 0.0f, 0.0f }},  // A 16
+            {{0.5f, -0.5f, -0.5f}, {}, {}, { 1.0f, 0.0f }},   // B 17
+            {{0.5f, -0.5f,  0.5f}, {}, {}, { 1.0f, 1.0f }},   // F 18
+            {{-0.5f, -0.5f,  0.5f}, {}, {}, { 0.0f, 1.0f }},  // E 19
+            {{0.5f,  0.5f, -0.5f}, {}, {}, {  0.0f, 0.0f }},  // C 20
+            {{-0.5f,  0.5f, -0.5f}, {}, {}, { 1.0f, 0.0f }},  // D 21
+            {{-0.5f,  0.5f,  0.5f}, {}, {}, { 1.0f, 1.0f }},  // H 22
+            {{0.5f,  0.5f,  0.5f}, {}, {}, {  0.0f, 1.0f }},  // G 23
+
+        }};
+
+        std::array<uint32_t, 36> cubeIndices = {{
+            // front and back
+            0, 3, 2,
+            2, 1, 0,
+            4, 5, 6,
+            6, 7 ,4,
+            // left and right
+            11, 8, 9,
+            9, 10, 11,
+            12, 13, 14,
+            14, 15, 12,
+            // bottom and top
+            16, 17, 18,
+            18, 19, 16,
+            20, 21, 22,
+            22, 23, 20
+        }};
+
+        auto cubeMesh = resourceMgr->Add<bl::Mesh>("", std::make_shared<bl::Mesh>(graphics));
+        cubeMesh.lock()->UploadVertices<bl::Vertex>(cubeVertices);
+        cubeMesh.lock()->UploadIndices(cubeIndices);
+
+        auto floorNode = std::make_unique<bl::MeshInstance3D>(&engine);
+        floorNode->SetName("Floor");
+        floorNode->SetMesh(cubeMesh);
+        floorNode->SetMaterial(resourceMgr->Load<bl::MaterialInstance>("Resources/Materials/Default.mat"));
+        floorNode->SetScale({ 100.0f, 1.0f, 100.0f });
+        floorNode->SetPosition({ 0.0f, -5.0f, 0.0f });
+
+        physicsBody->AddChild(std::move(floorNode));
+
+        //tree->SetPosition({ 0.0f, 0.0f, -30.0f });
+        //tree->SetScale({ 0.01f, 0.01f, 0.01f });
+
+        bl::FrameCounter frameCounter;
         glm::vec3 cameraPos = { 0.0f, 0.0f, 5.0f };
         glm::vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
         glm::vec3 cameraUp = { 0.0f, 1.0f, 0.0f };
@@ -54,16 +137,10 @@ int main(int argc, const char** argv)
         float walkingSpeed = 9.0f;
         glm::vec3 direction;
 
-        auto extent = window->GetExtent();
-        auto extenti = glm::ivec2 { (int)extent.width, (int)extent.height };
-        auto extentf = glm::vec2 { (float)extent.width, (float)extent.height };
-
-        auto tree = model.lock()->GetTree();
-        //tree->SetPosition({ 0.0f, 0.0f, -30.0f });
-        //tree->SetScale({ 0.01f, 0.01f, 0.01f });
-
         while (!window->GetCloseRequested()) {
             frameCounter.BeginFrame();
+
+            physics.Update(frameCounter.GetDeltaTime());
 
             input->Poll([imgui](SDL_Event& event) {
                 imgui->Process(event);
@@ -113,15 +190,15 @@ int main(int argc, const char** argv)
                 direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
                 cameraFront = glm::normalize(direction);
 
-                bl::Print::Info("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
+                //bl::Print::Info("Camera direction: {}, {}, {}", direction.x, direction.y, direction.z);
             }
 
             view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-            bl::Print::Info("Mouse: {}, {}", mousePos.x, mousePos.y);
-            bl::Print::Info("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
+            //bl::Print::Info("Mouse: {}, {}", mousePos.x, mousePos.y);
+            //bl::Print::Info("Camera Pos: {}, {}, {}", cameraPos.x, cameraPos.y, cameraPos.z);
 
-            extent = window->GetExtent();
-            extentf = glm::vec2 { (float)extent.width, (float)extent.height };
+            bl::Extent2D extent = window->GetExtent();
+            glm::vec2 extentf = glm::vec2 { (float)extent.width, (float)extent.height };
             glm::mat4 projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 1000.0f);
             projection[1][1] *= -1; // Invert the projection for Vulkan y (0, 1)
 
@@ -141,6 +218,8 @@ int main(int argc, const char** argv)
 
             audio->Update();
 
+            physicsBody->Update(frameCounter.GetDeltaTime());
+
             renderer->Render([&](bl::VulkanRenderData& rd) {
                 auto extent = window->GetExtent();
 
@@ -158,7 +237,7 @@ int main(int argc, const char** argv)
                 scissor.extent = { extent.width, extent.height };
                 vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
 
-                model.lock()->GetTree()->Draw(rd);
+                physicsBody->Draw(rd);
 
                 // dragonModel.Get()->Draw(rd, material->GetMaterial());
 

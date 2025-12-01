@@ -8,6 +8,7 @@
 #include "ImGui/ImGuiSystem.h"
 #include "Precompiled.h"
 #include "Resources/ResourceSystem.h"
+#include "Physics/PhysicsSystem.h"
 #include "Window/Input.h"
 
 namespace bl {
@@ -23,6 +24,7 @@ class Engine {
     std::unique_ptr<InputSystem> _input;
     std::unique_ptr<Window> _window;
     std::unique_ptr<Renderer> _renderer;
+    PhysicsSystem _physics;
 
 public:
     Engine(int argc, const char** argv);
@@ -39,6 +41,7 @@ public:
     AudioSystem* GetAudio();
     Window* GetWindow();
     Renderer* GetRenderer();
+    PhysicsSystem& GetPhysics();
 };
 
 } // namespace bl

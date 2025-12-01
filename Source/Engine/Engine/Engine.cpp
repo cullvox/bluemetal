@@ -9,6 +9,7 @@ namespace bl {
 
 Engine::Engine(int argc, const char** argv)
     : _sdl()
+    , _physics(*this)
 {
     argparse::ArgumentParser program("BlueMetal Engine");
 
@@ -93,6 +94,11 @@ Window* Engine::GetWindow()
 Renderer* Engine::GetRenderer()
 {
     return _graphics->GetRenderer();
+}
+
+PhysicsSystem& Engine::GetPhysics()
+{
+    return _physics;
 }
 
 } // namespace bl

@@ -47,6 +47,13 @@ list(APPEND Sources
   "ImGui/imgui_impl_vulkan.cpp"
   "ImGui/ImGuiSystem.cpp"
 
+  "Physics/PhysicsSystem.cpp"
+  "Physics/BroadPhaseLayerImpl.cpp"
+  "Physics/ObjectLayerPairFilterImpl.cpp"
+  "Physics/ObjectVsBroadPhaseLayerFilterImpl.cpp"
+
+
+
   "Resources/ResourceSystem.cpp"
   "Resources/Resource.cpp"
   "Resources/Sampler.cpp"
@@ -64,8 +71,10 @@ list(APPEND Sources
   "Scene/AudioSource3D.cpp"
   "Scene/MeshInstance3D.cpp"
   "Scene/Camera3D.cpp"
+  "Scene/PhysicsBody3D.cpp"
 
   "Engine/SDL.cpp"
+  "Engine/System.cpp"
   
   "Engine/Engine.cpp"
   )
@@ -87,6 +96,7 @@ target_link_libraries(Bluemetal PUBLIC
   GPUOpen::VulkanMemoryAllocator
   nlohmann_json
   qoixx::qoixx
-  tinygltf)
+  tinygltf
+  Jolt::Jolt)
 
-target_precompile_headers(Bluemetal PUBLIC "Precompiled.h")
+target_precompile_headers(Bluemetal PRIVATE "Precompiled.h")

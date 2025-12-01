@@ -28,7 +28,7 @@ private:
     uint32_t _maximumHeldMillisecondsPerFrame = 144;
     std::list<uint32_t> _framesPerSecond;
     std::list<std::chrono::nanoseconds> _millisecondsPerFrame;
-    float _delta;
+    float _delta = 0.0f;
 };
 
 } // namespace bl

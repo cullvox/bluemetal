@@ -22,8 +22,12 @@ Node::Node(const Node& node)
 
 Node::~Node() = default;
 
-void Node::Update(float)
+void Node::Update(float dt)
 {
+    // Update children
+    for (auto& [name, child] : _children) {
+        child->Update(dt);
+    }
 }
 
 void Node::PhysicsUpdate(float)

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Flags.h"
-#include "Core/System.h"
+#include "Engine/System.h"
 #include "Engine/SDL.h"
 #include "Keyboard.h"
 #include "Mouse.h"

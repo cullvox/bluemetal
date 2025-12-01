@@ -53,6 +53,7 @@ set(SDL_TEST OFF)
 set(SPIRV_REFLECT_EXAMPLES OFF CACHE BOOL "")
 set(SPIRV_REFLECT_STATIC_LIB ON CACHE BOOL "")
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF)
 set(SPNG_SHARED OFF)
 
@@ -63,6 +64,11 @@ set(ASSIMP_INSTALL OFF)
 
 set(ZLIB_FOUND FALSE)
 #set(ZLIB_INCLUDE_DIR "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/zlib")
+
+set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF)
+
+add_subdirectory("ThirdParty/JoltPhysics/Build")
+
 
 # add_subdirectory("ThirdParty/zlib")
 add_subdirectory("ThirdParty/fmod") # FMOD is special
@@ -79,7 +85,6 @@ CPMAddPackage("gh:auburn/fastnoise2@0.10.0-alpha")
 CPMAddPackage("gh:zeux/volk#1.4.304")
 CPMAddPackage("gh:gpuopen-librariesandsdks/vulkanmemoryallocator@3.1.0")
 CPMAddPackage("gh:cullvox/qoixx#addspan")
-
 
 #===============================================================================
 # add bluemetal compile options

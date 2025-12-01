@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Print.h"
-#include "Core/System.h"
+#include "Engine/System.h"
 #include "Precompiled.h"
 #include "Resource.h"
 
@@ -117,7 +117,7 @@ Ref<T> ResourceSystem::Add(const std::filesystem::path& path, std::shared_ptr<T>
 
     _resources[path] = resource;
 
-    return _resources[path];
+    return std::dynamic_pointer_cast<T>(_resources[path]);
 }
 
 template <typename T>
