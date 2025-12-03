@@ -16,7 +16,7 @@ class Camera3D : public Node3D {
     float _farClip;
 
 public:
-    Camera3D(Engine* engine);
+    Camera3D(Engine& engine);
     ~Camera3D();
 
     void SetProjection(CameraProjection projection);

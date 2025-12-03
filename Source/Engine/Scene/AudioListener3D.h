@@ -6,7 +6,7 @@ namespace bl {
 
 class AudioListener3D : public Node3D {
 public:
-    AudioListener3D(Engine* engine);
+    AudioListener3D(Engine& engine);
     ~AudioListener3D();
 
     virtual void Update(float dt) override;

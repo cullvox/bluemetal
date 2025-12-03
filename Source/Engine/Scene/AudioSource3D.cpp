@@ -3,10 +3,10 @@
 
 namespace bl {
 
-AudioSource3D::AudioSource3D(Engine* engine)
+AudioSource3D::AudioSource3D(Engine& engine)
     : Node3D(engine)
 {
-    _system = GetEngine()->GetAudio();
+    _system = GetEngine().GetAudio();
 }
 
 AudioSource3D::~AudioSource3D()

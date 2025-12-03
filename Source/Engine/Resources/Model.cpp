@@ -23,9 +23,9 @@ std::unique_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
 {
     std::unique_ptr<Node3D> newNode { nullptr };
     if (node.mesh < 0) {
-        newNode = std::make_unique<Node3D>(&_graphicsSystem->GetEngine());
+        newNode = std::make_unique<Node3D>(_graphicsSystem->GetEngine());
     } else {
-        auto meshNode = std::make_unique<MeshInstance3D>(&_graphicsSystem->GetEngine());
+        auto meshNode = std::make_unique<MeshInstance3D>(_graphicsSystem->GetEngine());
         auto& primitive = model.meshes[node.mesh].primitives[0];
 
         meshNode->SetMesh(_meshes[node.mesh]);
@@ -237,7 +237,7 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
     // Build out the scene tree for model loading.
     const auto& scene = model.scenes[model.defaultScene];
 
-    _root = std::make_unique<Node3D>(&system->GetEngine());
+    _root = std::make_unique<Node3D>(system->GetEngine());
 
     for (int i : scene.nodes) {
         _root->AddChild(LoadNode(model, model.nodes[i]));

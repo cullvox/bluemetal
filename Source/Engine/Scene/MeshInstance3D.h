@@ -12,7 +12,7 @@ class MeshInstance3D : public Node3D {
     Ref<Mesh> _mesh;
 
 public:
-    MeshInstance3D(Engine* engine);
+    MeshInstance3D(Engine& engine);
     MeshInstance3D(const MeshInstance3D&);
     virtual ~MeshInstance3D() = default;
 

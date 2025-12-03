@@ -20,7 +20,7 @@ public:
     glm::quat rotation;
     glm::vec3 scale;
 
-    Node3D(Engine* engine);
+    Node3D(Engine& engine);
     Node3D(const Node3D&);
     virtual ~Node3D();
 

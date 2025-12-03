@@ -11,10 +11,10 @@ class Node {
     std::string _name;
     Node* _parent;
     std::unordered_map<std::string, std::unique_ptr<Node>> _children;
-    Engine* _engine;
+    Engine& _engine;
 
 public:
-    Node(Engine* engine);
+    Node(Engine& engine);
     Node(const Node&);
     virtual ~Node();
 
@@ -24,7 +24,7 @@ public:
     virtual void Draw(VulkanRenderData& rd);
     virtual Node* Clone(); // Creates a non-owning deep copy of this node and its children.
 
-    Engine* GetEngine();
+    Engine& GetEngine();
     bool SetName(const std::string& name);
     std::string GetName() const;
     void SetParent(Node* parent);

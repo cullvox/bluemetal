@@ -3,10 +3,9 @@
 
 namespace bl {
 
-Camera3D::Camera3D(Engine* engine)
+Camera3D::Camera3D(Engine& engine)
     : Node3D(engine)
 {
-    engine->GetGraphics();
     _projection = CameraProjection::ePerspective;
     _nearClip = 0.01f;
     _farClip = 1000.0f;
@@ -35,7 +34,7 @@ void Camera3D::SetFOV(float fov)
 
 glm::mat4 Camera3D::GetProjectionMatrix()
 {
-    Extent2D extent = GetEngine()->GetWindow()->GetExtent();
+    Extent2D extent = GetEngine().GetWindow()->GetExtent();
     switch (_projection) {
     case CameraProjection::ePerspective:
         return glm::perspectiveFov(_fov, (float)extent.width, (float)extent.height, _nearClip, _farClip);

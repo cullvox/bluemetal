@@ -15,7 +15,7 @@ class AudioSource3D : public Node3D {
     FMOD::Channel* _channel;
 
 public:
-    AudioSource3D(Engine* engine);
+    AudioSource3D(Engine& engine);
     ~AudioSource3D();
 
     virtual void Update(float dt) override;

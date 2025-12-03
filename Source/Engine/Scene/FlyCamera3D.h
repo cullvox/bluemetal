@@ -10,7 +10,7 @@ class FlyCamera3D : public Camera3D {
     float _smooth;
 
 public:
-    FlyCamera3D(Engine* engine);
+    FlyCamera3D(Engine& engine);
     ~FlyCamera3D();
 
     virtual void Update(float dt);

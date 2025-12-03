@@ -2,7 +2,7 @@
 
 namespace bl {
 
-Node3D::Node3D(Engine* engine)
+Node3D::Node3D(Engine& engine)
     : Node(engine)
     , _transform(1.0f)
     , position(0.0f, 0.0f, 0.0f)

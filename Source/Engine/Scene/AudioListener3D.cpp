@@ -3,7 +3,7 @@
 
 namespace bl {
 
-AudioListener3D::AudioListener3D(Engine* engine)
+AudioListener3D::AudioListener3D(Engine& engine)
     : Node3D(engine)
 {
 }

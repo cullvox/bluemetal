@@ -10,7 +10,7 @@
 namespace bl {
 
 PhysicsBody3D::PhysicsBody3D(Engine& engine)
-    : Node3D(&engine)
+    : Node3D(engine)
 {
 }
 
@@ -27,7 +27,7 @@ PhysicsBody3D::PhysicsBody3D(const PhysicsBody3D& copy)
 PhysicsBody3D::~PhysicsBody3D()
 {
     if (!_bodyId.IsInvalid()) {
-        auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+        auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
         bodyInterface.RemoveBody(_bodyId);
         bodyInterface.DestroyBody(_bodyId);
     }
@@ -43,7 +43,7 @@ void PhysicsBody3D::Update(float deltaTime)
     Node3D::Update(deltaTime);
 
     // Update the body's transform to match the node's transform
-    auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
 
     JPH::Vec3 positionVec{};
     JPH::Quat rotationQuat{};
@@ -57,13 +57,13 @@ void PhysicsBody3D::Update(float deltaTime)
 
 void PhysicsBody3D::ResetBody()
 {
-    auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
 
     JPH::BodyCreationSettings settings;
     settings.SetShape(_shape);
     settings.mPosition = JPH::Vec3(position.x, position.y, position.z);
     settings.mRotation = JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w);
-    settings.mObjectLayer = ObjectLayers::MOVABLE;
+    settings.mObjectLayer = _objectLayer;
     settings.mMotionType = _motionType;
 
     if (!_bodyId.IsInvalid())
@@ -74,8 +74,13 @@ void PhysicsBody3D::ResetBody()
 
 void PhysicsBody3D::SetObjectLayer(JPH::ObjectLayer objectLayer)
 {
-    auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
     bodyInterface.SetObjectLayer(_bodyId, objectLayer);
+}
+
+void PhysicsBody3D::SetMotionType(JPH::EMotionType motionType)
+{
+    _motionType = motionType;
 }
 
 void PhysicsBody3D::SetShape(JPH::Shape* shape)
@@ -85,7 +90,7 @@ void PhysicsBody3D::SetShape(JPH::Shape* shape)
         return;
     }
 
-    auto& bodyInterface = GetEngine()->GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
     bodyInterface.SetShape(_bodyId, shape, false, JPH::EActivation::Activate);
 }
 

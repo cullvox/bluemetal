@@ -4,10 +4,10 @@
 
 namespace bl {
 
-MeshInstance3D::MeshInstance3D(Engine* engine)
+MeshInstance3D::MeshInstance3D(Engine& engine)
     : Node3D(engine)
 {
-    _material = engine->GetResourceManager()->Load<bl::Material>("Resources/Materials/Default.mat");
+    _material = GetEngine().GetResourceManager()->Load<bl::Material>("Resources/Materials/Default.mat");
 }
 
 MeshInstance3D::MeshInstance3D(const MeshInstance3D& node)

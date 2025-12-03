@@ -13,8 +13,11 @@
 #include "Scene/MeshInstance3D.h"
 #include "Window/Keyboard.h"
 #include "Window/Mouse.h"
+#include "Physics/ObjectLayers.h"
 
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/BoxShape.h>
 
 static inline float randomValue()
 {
@@ -43,26 +46,25 @@ int main(int argc, const char** argv)
 
         auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Taswell.flac");
 
-        auto source = std::make_unique<bl::AudioSource3D>(&engine);
+        auto source = std::make_unique<bl::AudioSource3D>(engine);
 
         source->Play(sound, true);
 
         auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.glb");
 
+        auto rootNode = std::make_unique<bl::Node3D>(engine);
 
-        auto tree = model.lock()->GetTree();
+        auto characterNode = model.lock()->GetTree()->Clone();
+        characterNode->SetPosition({0.0f, -1.0f, 0.0f});
 
-        auto newTree = tree->Clone();
-
-        JPH::Ref<JPH::SphereShape> shape = new JPH::SphereShape(1.0f);
+        JPH::Ref<JPH::CapsuleShape> shape = new JPH::CapsuleShape(0.8f, 0.3f);
         auto physicsBody = std::make_unique<bl::PhysicsBody3D>(engine);
-        physicsBody->SetPosition({ 0.0f, 0.0f, -20.0f });
-
-
+        physicsBody->SetName("Character");
+        physicsBody->SetPosition({ 0.0f, 0.0f, -5.0f });
         physicsBody->SetShape(shape.GetPtr());
         physicsBody->ResetBody();
-
-        physicsBody->AddChild(newTree);
+        physicsBody->AddChild(characterNode);
+        rootNode->AddChild(std::move(physicsBody));
 
         std::array<bl::Vertex, 8 * 3> cubeVertices = {{
             {{ -0.5f, -0.5f, -0.5f}, {}, {}, { 0.0f, 0.0f}},  // A 0
@@ -116,14 +118,31 @@ int main(int argc, const char** argv)
         cubeMesh.lock()->UploadVertices<bl::Vertex>(cubeVertices);
         cubeMesh.lock()->UploadIndices(cubeIndices);
 
-        auto floorNode = std::make_unique<bl::MeshInstance3D>(&engine);
+        auto floorMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
+        auto floorTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/floor.jpg");
+        auto defaultSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Default.json");
+
+        floorMaterial.lock()->SetSampledTexture2D("inAlbedo", defaultSampler, floorTexture);
+
+        auto floorNode = std::make_unique<bl::MeshInstance3D>(engine);
         floorNode->SetName("Floor");
         floorNode->SetMesh(cubeMesh);
-        floorNode->SetMaterial(resourceMgr->Load<bl::MaterialInstance>("Resources/Materials/Default.mat"));
+        floorNode->SetMaterial(floorMaterial);
         floorNode->SetScale({ 100.0f, 1.0f, 100.0f });
-        floorNode->SetPosition({ 0.0f, -5.0f, 0.0f });
+        floorNode->SetPosition({ 0.0f, 0, 0.0f });
 
-        physicsBody->AddChild(std::move(floorNode));
+        JPH::Ref<JPH::Shape> floorShape = new JPH::BoxShape({50.0f, 0.5f, 50.0f});
+        auto floorStaticBody = std::make_unique<bl::PhysicsBody3D>(engine);
+        floorStaticBody->SetName("FloorBody");
+        floorStaticBody->SetMotionType(JPH::EMotionType::Static);
+        floorStaticBody->SetObjectLayer(bl::ObjectLayers::STATIC);
+        floorStaticBody->SetShape(floorShape);
+        floorStaticBody->SetPosition({0.0f, -5.0f, 0.0f});
+        floorStaticBody->ResetBody();
+
+        floorStaticBody->AddChild(std::move(floorNode));
+
+        rootNode->AddChild(std::move(floorStaticBody));
 
         //tree->SetPosition({ 0.0f, 0.0f, -30.0f });
         //tree->SetScale({ 0.01f, 0.01f, 0.01f });
@@ -218,7 +237,7 @@ int main(int argc, const char** argv)
 
             audio->Update();
 
-            physicsBody->Update(frameCounter.GetDeltaTime());
+            rootNode->Update(frameCounter.GetDeltaTime());
 
             renderer->Render([&](bl::VulkanRenderData& rd) {
                 auto extent = window->GetExtent();
@@ -237,7 +256,7 @@ int main(int argc, const char** argv)
                 scissor.extent = { extent.width, extent.height };
                 vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
 
-                physicsBody->Draw(rd);
+                rootNode->Draw(rd);
 
                 // dragonModel.Get()->Draw(rd, material->GetMaterial());
 

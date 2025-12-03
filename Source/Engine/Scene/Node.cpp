@@ -3,7 +3,7 @@
 
 namespace bl {
 
-Node::Node(Engine* engine)
+Node::Node(Engine& engine)
     : _engine(engine)
     , _parent(nullptr)
 {
@@ -57,7 +57,7 @@ Node* Node::Clone()
     return node;
 }
 
-Engine* Node::GetEngine()
+Engine& Node::GetEngine()
 {
     return _engine;
 }
