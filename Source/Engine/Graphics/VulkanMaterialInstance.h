@@ -154,16 +154,6 @@ protected:
     void SetBindingDirty(uint32_t binding);
 
     /**
-     * @brief Calculates the dynamic alignment for a uniform buffer.
-     * @param uboSize Size of the uniform buffer in bytes.
-     * @return The dynamic alignment size for the uniform buffer.
-     *
-     * This is used to ensure that the uniform buffer is aligned to the
-     * dynamic uniform buffer alignment requirements of Vulkan.
-     */
-    std::size_t CalculateDynamicAlignment(size_t uboSize);
-
-    /**
      * @brief Sets a generic uniform value in the material instance.
      * @param name Name of the material uniform parameter to set.
      * @param value Value to set the uniform.

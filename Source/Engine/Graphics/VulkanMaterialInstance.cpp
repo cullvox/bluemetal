@@ -1,5 +1,6 @@
 #include "VulkanMaterialInstance.h"
 #include "VulkanMaterial.h"
+#include "UniformData.h"
 
 namespace bl {
 
@@ -61,8 +62,14 @@ void VulkanMaterialInstance::Bind(VulkanRenderData& rd)
 {
     PerFrameData& currentFrameData = _perFrameData[rd.currentFrame];
 
-    // Compute the dynamic offsets for each uniform buffer.
     std::vector<uint32_t> offsets;
+    // Add global buffer offset if it exists.
+    if (rd.globalSet) {
+        VkDeviceSize globalBlockSize = _device->GetDynamicAlignment(sizeof(GlobalUBO));
+        offsets.push_back((uint32_t)(globalBlockSize * rd.currentFrame));
+    }
+
+    // Compute the dynamic offsets for each uniform buffer.
     for (const auto& binding : _bindings) {
         if (binding.second.index() == 0) {
             auto& variant = _bindings[binding.first];
@@ -79,7 +86,7 @@ void VulkanMaterialInstance::Bind(VulkanRenderData& rd)
     auto descriptorSetCount = rd.globalSet ? 2 : 1;
     auto sets = rd.globalSet ? descriptorSets.data() : &descriptorSets[1];
     vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), firstSet, descriptorSetCount, sets, (uint32_t)offsets.size(), offsets.data());
-
+    
     // Save the next frame number for when updating what bindings are dirty/not updated.
     if (_currentFrame == rd.currentFrame)
         _currentFrame = (rd.currentFrame + 1) % _material->_swapchainImageCount;
@@ -227,7 +234,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
     for (const auto& binding : bindings) {
         switch (binding.GetType()) {
         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
-            auto dynamicAlignment = CalculateDynamicAlignment(binding.GetSize());
+            auto dynamicAlignment = _device->GetDynamicAlignment(binding.GetSize());
             auto bufferSize = dynamicAlignment * _material->_swapchainImageCount;
             auto& variant = (_bindings[binding.GetLocation()] = VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, bufferSize, nullptr });
 
@@ -268,17 +275,6 @@ void VulkanMaterialInstance::SetBindingDirty(uint32_t binding)
     for (uint32_t i = (_currentFrame + 1) % _material->_swapchainImageCount; i != _currentFrame; i = (i + 1) % _material->_swapchainImageCount) {
         _perFrameData[i].dirty[binding] = true;
     }
-}
-
-std::size_t VulkanMaterialInstance::CalculateDynamicAlignment(size_t uboSize)
-{
-    const std::size_t minUboAlignment = _device->GetPhysicalDevice()->GetProperties().limits.minUniformBufferOffsetAlignment;
-    std::size_t dynamicAlignment = uboSize;
-
-    if (minUboAlignment > 0)
-        return (dynamicAlignment + minUboAlignment - 1) & ~(minUboAlignment - 1);
-
-    return dynamicAlignment;
 }
 
 }

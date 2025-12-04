@@ -148,11 +148,16 @@ int main(int argc, const char** argv)
         //tree->SetScale({ 0.01f, 0.01f, 0.01f });
 
         bl::FrameCounter frameCounter;
+        float cameraAcceleration = 00.5f;
+        float maxCameraSpeed = 8.f;
+        bool useCameraAcceleration = true;
+        glm::vec3 cameraVelocity = { 0.0f, 0.0f, 0.0f };
         glm::vec3 cameraPos = { 0.0f, 0.0f, 5.0f };
         glm::vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
         glm::vec3 cameraUp = { 0.0f, 1.0f, 0.0f };
         glm::mat4 view = glm::identity<glm::mat4>();
         float yaw = -90.0f, pitch = 0.0f;
+        float yawVelocity = 0.0f, pitchVelocity = 0.0f;
         float walkingSpeed = 9.0f;
         glm::vec3 direction;
 
@@ -165,18 +170,31 @@ int main(int argc, const char** argv)
                 imgui->Process(event);
             });
 
+            // Compute camera velocity
             if (keyboard.GetKeyDown(bl::Scancode::W))
-                cameraPos += walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
+                cameraVelocity += cameraFront * cameraAcceleration * frameCounter.GetDeltaTime();
             if (keyboard.GetKeyDown(bl::Scancode::S))
-                cameraPos -= walkingSpeed * cameraFront * frameCounter.GetDeltaTime();
+                cameraVelocity -= cameraFront * cameraAcceleration * frameCounter.GetDeltaTime();
             if (keyboard.GetKeyDown(bl::Scancode::A))
-                cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * walkingSpeed * frameCounter.GetDeltaTime();
+                cameraVelocity -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraAcceleration * frameCounter.GetDeltaTime();
             if (keyboard.GetKeyDown(bl::Scancode::D))
-                cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * walkingSpeed * frameCounter.GetDeltaTime();
+                cameraVelocity += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraAcceleration * frameCounter.GetDeltaTime();
             if (keyboard.GetKeyDown(bl::Scancode::Space))
-                cameraPos += walkingSpeed * cameraUp * frameCounter.GetDeltaTime();
+                cameraVelocity += cameraUp * cameraAcceleration * frameCounter.GetDeltaTime();
             if (keyboard.GetKeyDown(bl::Scancode::LeftShift))
-                cameraPos -= walkingSpeed * cameraUp * frameCounter.GetDeltaTime();
+                cameraVelocity -= cameraUp * cameraAcceleration * frameCounter.GetDeltaTime();
+                
+
+            if (glm::length(cameraVelocity) > maxCameraSpeed) {
+                cameraVelocity = glm::normalize(cameraVelocity) * maxCameraSpeed;
+            }
+            
+            // Apply camera velocity
+            cameraPos += cameraVelocity;
+
+            // Apply friction to camera velocity
+            cameraVelocity = bl::DampExponential(cameraVelocity, glm::vec3 { 0.0f, 0.0f, 0.0f }, 5.0f, frameCounter.GetDeltaTime());
+
             if (keyboard.GetKeyDown(bl::Scancode::Escape)) {
                 mouse.SetCaptured(window, false);
                 ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
@@ -192,12 +210,21 @@ int main(int argc, const char** argv)
                 ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
             }
 
+            // Update camera direction based on mouse movement, use acceleration for smoother movement
             if (mouse.GetCaptured(window)) {
                 float sensitivity = 0.1f;
                 mouseDelta *= sensitivity;
 
-                yaw += mouseDelta.x;
-                pitch -= mouseDelta.y;
+                if (useCameraAcceleration) {
+                    yawVelocity = bl::DampExponential(yawVelocity, mouseDelta.x, 5.0f, frameCounter.GetDeltaTime());
+                    pitchVelocity = bl::DampExponential(pitchVelocity, mouseDelta.y, 5.0f, frameCounter.GetDeltaTime());
+                } else {
+                    yawVelocity = mouseDelta.x;
+                    pitchVelocity = mouseDelta.y;
+                }
+
+                yaw += yawVelocity;
+                pitch -= pitchVelocity;
 
                 if (pitch > 89.0f)
                     pitch = 89.0f;

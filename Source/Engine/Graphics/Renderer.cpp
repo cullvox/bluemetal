@@ -183,7 +183,10 @@ void Renderer::Render(RenderFunction func)
 
     _prevTime = currentTime;
 
-    std::memcpy(_globalBufferMap, &_uboData, sizeof(_uboData));
+    std::size_t alignedSize = _device->GetDynamicAlignment(sizeof(bl::GlobalUBO));
+    std::memcpy(reinterpret_cast<char*>(_globalBufferMap) + (alignedSize * _currentFrame), &_uboData, sizeof(_uboData));
+
+    _globalBuffer.Flush(alignedSize * _currentFrame, sizeof(_uboData));
 
     // Swapchain must be valid.
     if (!_swapchain->Get()) {
@@ -383,12 +386,15 @@ void Renderer::DestroyRenderPasses()
 
 void Renderer::CreateGlobalUniform()
 {
-    _globalBuffer = bl::VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO) };
+    // Creates a dynamic uniform buffer for global data per frame.
+    std::size_t alignedSize = _device->GetDynamicAlignment(sizeof(bl::GlobalUBO));
+
+    _globalBuffer = bl::VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, alignedSize * _swapchain->GetImageCount() };
     _globalBuffer.Map(&_globalBufferMap);
 
     std::vector<VkDescriptorSetLayoutBinding> bindings { 1 };
     bindings[0].binding = 0;
-    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     bindings[0].descriptorCount = 1;
     bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     bindings[0].pImmutableSamplers = nullptr;
@@ -400,7 +406,7 @@ void Renderer::CreateGlobalUniform()
     VkDescriptorBufferInfo bufferInfo = {};
     bufferInfo.buffer = _globalBuffer.Get();
     bufferInfo.offset = 0;
-    bufferInfo.range = VK_WHOLE_SIZE;
+    bufferInfo.range = alignedSize;
 
     VkWriteDescriptorSet write = {};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -409,7 +415,7 @@ void Renderer::CreateGlobalUniform()
     write.dstBinding = 0;
     write.dstArrayElement = 0;
     write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
     write.pBufferInfo = &bufferInfo;
 
     vkUpdateDescriptorSets(_device->Get(), 1, &write, 0, nullptr);

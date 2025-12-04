@@ -366,4 +366,13 @@ void VulkanDevice::CreateCaches()
     _pipelineLayoutCache = std::make_unique<VulkanPipelineLayoutCache>(this);
 }
 
+std::size_t VulkanDevice::GetDynamicAlignment(size_t uboSize)
+{
+    std::size_t minAlignment = _physicalDevice->GetProperties().limits.minUniformBufferOffsetAlignment;
+    if (minAlignment > 0) {
+        return (uboSize + minAlignment - 1) & ~(minAlignment - 1);
+    }
+    return uboSize;
+}
+
 } // namespace bl
