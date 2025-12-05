@@ -100,11 +100,6 @@ void MaterialInstance::SetSampledTexture2D(const std::string& name, Ref<Sampler>
     GetInstance()->SetSampledImage2D(name, sampler.lock()->GetSampler(), image.lock()->GetImage());
 }
 
-void MaterialInstance::UpdateUniforms()
-{
-    GetInstance()->UpdateUniforms();
-}
-
 void MaterialInstance::Bind(VulkanRenderData& rd)
 {
     GetInstance()->Bind(rd);

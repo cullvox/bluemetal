@@ -5,7 +5,9 @@ layout(location=1) in vec3 inNormal;
 layout(location=2) in vec3 inTangent;
 layout(location=3) in vec2 inTextureCoordinates;
 
-layout(location=0) out vec2 outTextureCoordinates;
+layout(location=0) out vec3 outPosition;
+layout(location=1) out vec2 outTextureCoordinates;
+layout(location=2) out vec3 outNormal;
 
 layout(set=0, binding=0) uniform GlobalUniform
 {
@@ -17,6 +19,11 @@ layout(set=0, binding=0) uniform GlobalUniform
     float dt;
 } global;
 
+layout(set=1, binding=0) uniform MaterialUniform
+{
+    bool useTriplanar;
+} material;
+
 layout(push_constant) uniform Constants
 {
     mat4 model;
@@ -24,6 +31,10 @@ layout(push_constant) uniform Constants
 
 void main()
 {
+    vec4 worldPos = object.model * vec4(inPosition, 1.0);
+    outPosition = worldPos.xyz;
+    outNormal = normalize(mat3(transpose(inverse(object.model))) * inNormal);
     outTextureCoordinates = inTextureCoordinates;
+
     gl_Position = global.projection * global.view * object.model * vec4(inPosition, 1.0);
 }

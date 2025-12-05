@@ -145,7 +145,7 @@ void VulkanSwapchain::ChooseImageCount()
             _imageCount = capabilities.minImageCount;
         else
             _imageCount = VulkanConfig::desiredImageCount;
-    } else if (capabilities.minImageCount >= VulkanConfig::desiredImageCount && capabilities.maxImageCount <= VulkanConfig::desiredImageCount) {
+    } else if (VulkanConfig::desiredImageCount >=capabilities.minImageCount  && VulkanConfig::desiredImageCount <= capabilities.maxImageCount) {
         _imageCount = VulkanConfig::desiredImageCount; // we got this.
     } else {
         _imageCount = capabilities.minImageCount;

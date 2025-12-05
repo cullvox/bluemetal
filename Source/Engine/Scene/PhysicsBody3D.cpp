@@ -52,7 +52,6 @@ void PhysicsBody3D::Update(float deltaTime)
     SetPosition(glm::vec3(positionVec.GetX(), positionVec.GetY(), positionVec.GetZ()));
     SetRotation(glm::quat(rotationQuat.GetW(), rotationQuat.GetX(), rotationQuat.GetY(), rotationQuat.GetZ()));
 
-    Print::Info("PhysicsBody3D Position: {}, {}, {}", position.x, position.y, position.z);
 }
 
 void PhysicsBody3D::ResetBody()

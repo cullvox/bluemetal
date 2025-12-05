@@ -135,7 +135,7 @@ public:
     void SetSurfaceFormat(VkSurfaceFormatKHR format);
     void SetPresentMode(VkPresentModeKHR mode);
     void Resize(VkExtent2D extent);
-    void Recreate(std::optional<VkPresentModeKHR> presentMode = VK_PRESENT_MODE_FIFO_KHR, std::optional<VkSurfaceFormatKHR> surfaceFormat = {});
+    void Recreate(std::optional<VkPresentModeKHR> presentMode = {}, std::optional<VkSurfaceFormatKHR> surfaceFormat = {});
     bool AcquireNext(VkSemaphore semaphore, VkFence fence);
     bool QueuePresent(VkSemaphore semaphore); /** Presents the image at GetImageIndex() to the screen. */
     void Destroy();

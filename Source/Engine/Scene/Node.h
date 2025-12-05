@@ -24,6 +24,17 @@ public:
     virtual void Draw(VulkanRenderData& rd);
     virtual Node* Clone(); // Creates a non-owning deep copy of this node and its children.
 
+    template <typename T>
+    T* As()
+    {
+        T* value = dynamic_cast<T*>(this);
+        if (value) {
+            return value;
+        } else {
+            throw std::runtime_error("Failed to cast Node to desired type!");
+        }
+    }
+
     Engine& GetEngine();
     bool SetName(const std::string& name);
     std::string GetName() const;

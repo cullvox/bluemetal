@@ -137,8 +137,10 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
 
     for (auto& material : model.materials) {
         auto instance = defaultMaterial.lock()->CreateInstance();
+        instance->SetBool("material.useTriplanar", false);
         AddSubResource(instance);
 
+        if (material.pbrMetallicRoughness.baseColorTexture.index >= 0)
         {
             auto texture = _textures[material.pbrMetallicRoughness.baseColorTexture.index];
             instance->SetSampledTexture2D("inAlbedo", defaultSampler, texture);
@@ -208,7 +210,7 @@ Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::
                 }
                 for (int j = 0; j < attribAccessor.count; j++) {
                     // sorta unsafe
-                    size_t offset = i * sizeof(glm::vec3) + bufferView.byteOffset;
+                    size_t offset = bufferView.byteOffset + (j * sizeof(glm::vec3));
                     std::memcpy(&vertices[j].normal, &buffer.data[offset], sizeof(glm::vec3));
                 }
             }

@@ -75,10 +75,11 @@ private:
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
 
     // Uniform data
-    VulkanBuffer _globalBuffer;
     GlobalUBO _uboData;
-    VkDescriptorSet _globalSet;
-    void* _globalBufferMap;
+    VkDescriptorSetLayout _globalLayout;
+    std::array<VulkanBuffer, VulkanConfig::numFramesInFlight> _globalBuffer;
+    std::array<VkDescriptorSet, VulkanConfig::numFramesInFlight> _globalSet;
+    std::array<void*, VulkanConfig::numFramesInFlight> _globalBufferMap;
     float _prevTime;
 
     std::unordered_set<VulkanMaterialInstance*> _materials;

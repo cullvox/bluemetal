@@ -15,19 +15,19 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, VkRenderPass pass, uint32_t
     // Preform reflection on the pipeline shaders to retrieve detailed descriptor set info.
     auto reflection = VulkanReflectedPipeline::Reflect(state.stages);
 
-    // If the material contains the global descriptor set, we need to modify it to use dynamic uniform buffers.
-    if (reflection.descriptorSetMetadata.contains(0)) {
-        auto& globalSet = reflection.descriptorSetMetadata.at(0);
-        auto& globalBindings = globalSet.GetBindings();
+    // // If the material contains the global descriptor set, we need to modify it to use dynamic uniform buffers.
+    // if (reflection.descriptorSetMetadata.contains(0)) {
+    //     auto& globalSet = reflection.descriptorSetMetadata.at(0);
+    //     auto& globalBindings = globalSet.GetBindings();
 
-        for (auto& pair : globalBindings) {
-            auto binding = pair.second.GetBinding();
+    //     for (auto& pair : globalBindings) {
+    //         auto binding = pair.second.GetBinding();
 
-            if (binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
-                pair.second.SetType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
-            }
-        }
-    }
+    //         if (binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+    //             pair.second.SetType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+    //         }
+    //     }
+    // }
 
     auto& sets = reflection.descriptorSetMetadata;
     if (!sets.contains(materialSet))

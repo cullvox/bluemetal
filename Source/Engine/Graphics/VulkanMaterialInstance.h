@@ -111,7 +111,7 @@ public:
      * It will update the descriptor sets for the current frame and ensure that all bindings are up
      * to date.
      */
-    void UpdateUniforms();
+    void UpdateUniforms(VkCommandBuffer cmd);
 
     /**
      * @brief Binds the material instance to the current render data.

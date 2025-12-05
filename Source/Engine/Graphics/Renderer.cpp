@@ -120,7 +120,13 @@ void Renderer::DestroyImagesAndFramebuffers()
 
 void Renderer::DestroyGlobalUniform()
 {
-    _globalBuffer.Unmap();
+    for (int i = 0; i < VulkanConfig::numFramesInFlight; i++)
+    {
+        _globalBuffer[i].Unmap();
+        _descriptorSetCache.Free(_globalLayout, _globalSet[i]);
+    }
+
+    _globalSet.fill(VK_NULL_HANDLE);
 }
 
 void Renderer::RecreateImages()
@@ -183,10 +189,9 @@ void Renderer::Render(RenderFunction func)
 
     _prevTime = currentTime;
 
-    std::size_t alignedSize = _device->GetDynamicAlignment(sizeof(bl::GlobalUBO));
-    std::memcpy(reinterpret_cast<char*>(_globalBufferMap) + (alignedSize * _currentFrame), &_uboData, sizeof(_uboData));
+    std::memcpy(_globalBufferMap[_currentFrame], &_uboData, sizeof(_uboData));
 
-    _globalBuffer.Flush(alignedSize * _currentFrame, sizeof(_uboData));
+    _globalBuffer[_currentFrame].Flush(0, sizeof(_uboData));
 
     // Swapchain must be valid.
     if (!_swapchain->Get()) {
@@ -205,10 +210,7 @@ void Renderer::Render(RenderFunction func)
 
     _imageIndex = _swapchain->GetImageIndex();
 
-    // Update all material buffers.
-    for (auto instance : _materials) {
-        instance->UpdateUniforms();
-    }
+
 
     // Reset the fence for this image so it can signal when it's done.
     VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
@@ -223,6 +225,11 @@ void Renderer::Render(RenderFunction func)
     beginInfo.pInheritanceInfo = nullptr;
 
     VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo))
+
+    // Update all material buffers.
+    for (auto instance : _materials) {
+        instance->UpdateUniforms(cmd);
+    }
 
     std::array clearColors = {
         VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Swapchain Image Clear Color
@@ -247,7 +254,7 @@ void Renderer::Render(RenderFunction func)
         cmd,
         _currentFrame,
         _imageIndex,
-        _globalSet
+        _globalSet[_currentFrame]
     };
 
     func(rd);
@@ -386,39 +393,39 @@ void Renderer::DestroyRenderPasses()
 
 void Renderer::CreateGlobalUniform()
 {
-    // Creates a dynamic uniform buffer for global data per frame.
-    std::size_t alignedSize = _device->GetDynamicAlignment(sizeof(bl::GlobalUBO));
-
-    _globalBuffer = bl::VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, alignedSize * _swapchain->GetImageCount() };
-    _globalBuffer.Map(&_globalBufferMap);
-
     std::vector<VkDescriptorSetLayoutBinding> bindings { 1 };
     bindings[0].binding = 0;
-    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
+    bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     bindings[0].descriptorCount = 1;
     bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
     bindings[0].pImmutableSamplers = nullptr;
 
-    auto layout = _device->AcquireDescriptorSetLayout(bindings);
+    _globalLayout = _device->AcquireDescriptorSetLayout(bindings);
 
-    _globalSet = _descriptorSetCache.Allocate(layout);
+    for (int i = 0; i < VulkanConfig::numFramesInFlight; i++) {
+        _globalBuffer[i] = bl::VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO), nullptr };
+        _globalBuffer[i].Map(&_globalBufferMap[i]);
 
-    VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = _globalBuffer.Get();
-    bufferInfo.offset = 0;
-    bufferInfo.range = alignedSize;
+        _globalSet[i] = _descriptorSetCache.Allocate(_globalLayout);
 
-    VkWriteDescriptorSet write = {};
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = _globalSet;
-    write.dstBinding = 0;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-    write.pBufferInfo = &bufferInfo;
+        VkDescriptorBufferInfo bufferInfo = {};
+        bufferInfo.buffer = _globalBuffer[i].Get();
+        bufferInfo.offset = 0;
+        bufferInfo.range = VK_WHOLE_SIZE;
 
-    vkUpdateDescriptorSets(_device->Get(), 1, &write, 0, nullptr);
+        VkWriteDescriptorSet write = {};
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.pNext = nullptr;
+        write.dstSet = _globalSet[i];
+        write.dstBinding = 0;
+        write.dstArrayElement = 0;
+        write.descriptorCount = 1;
+        write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        write.pBufferInfo = &bufferInfo;
+
+        vkUpdateDescriptorSets(_device->Get(), 1, &write, 0, nullptr);
+    }
+
 }
 
 void Renderer::AddMaterial(VulkanMaterialInstance* material)

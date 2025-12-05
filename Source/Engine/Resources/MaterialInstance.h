@@ -62,7 +62,6 @@ public:
     void SetVector4(const std::string& name, glm::vec4 value);
     void SetMatrix(const std::string& name, glm::mat4 value);
     void SetSampledTexture2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image);
-    void UpdateUniforms(); /** @brief This function must be called before the renderer starts rendering the frame. */
 
     void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */
     void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
