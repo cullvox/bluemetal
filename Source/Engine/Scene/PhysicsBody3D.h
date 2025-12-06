@@ -27,6 +27,8 @@ public:
     virtual PhysicsBody3D* Clone() override;
     void SetObjectLayer(JPH::ObjectLayer objectLayer);
     void SetMotionType(JPH::EMotionType motionType);
+    void SetDOF(bool allowTranslationX, bool allowTranslationY, bool allowTranslationZ,
+                bool allowRotationX, bool allowRotationY, bool allowRotationZ);
     void SetShape(JPH::Shape* shape);
     JPH::BodyID GetBodyID() const;
 };

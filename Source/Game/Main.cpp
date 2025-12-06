@@ -57,7 +57,7 @@ int main(int argc, const char** argv)
         auto rootNode = std::make_unique<bl::Node3D>(engine);
 
         auto characterNode = model.lock()->GetTree()->Clone();
-        characterNode->SetPosition({0.0f, 0.0f, 0.0f});
+        characterNode->SetPosition({0.0f, -0.6f, 0.0f});
 
         JPH::Ref<JPH::CapsuleShape> shape = new JPH::CapsuleShape(0.8f, 0.3f);
         auto physicsBody = std::make_unique<bl::PhysicsBody3D>(engine);
@@ -91,6 +91,7 @@ int main(int argc, const char** argv)
         floorStaticBody->SetShape(floorShape);
         floorStaticBody->SetPosition({0.0f, -5.0f, 0.0f});
         floorStaticBody->ResetBody();
+        floorStaticBody->SetDOF(true, true, true, false, true, false); // Lock rotation around Z axis
 
         floorStaticBody->AddChild(std::move(floorNode));
 
@@ -161,11 +162,16 @@ int main(int argc, const char** argv)
             cameraVelocity += acceleration * frameCounter.GetDeltaTime();
 
             // Apply camera velocity
-            cameraPos += cameraVelocity * frameCounter.GetDeltaTime();
+            if (enableCameraMovementDamping) {
+                cameraPos += cameraVelocity * frameCounter.GetDeltaTime();
 
-            float cameraSpeed = glm::length(cameraVelocity);
-            if (cameraSpeed > maxCameraSpeed) {
-                cameraVelocity = glm::normalize(cameraVelocity) * maxCameraSpeed;
+                float cameraSpeed = glm::length(cameraVelocity);
+                if (cameraSpeed > maxCameraSpeed) {
+                    cameraVelocity = glm::normalize(cameraVelocity) * maxCameraSpeed;
+                }
+            } else {
+                // Treat acceleration as direct position change
+                cameraPos += acceleration * frameCounter.GetDeltaTime();
             }
 
             // Apply friction to camera velocity
