@@ -3,7 +3,7 @@
 
 namespace bl {
 
-Shader::Shader(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
+Shader::Shader(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
     , _device(system->GetDevice())
 {

@@ -1,7 +1,11 @@
 #pragma once
 
+#include <stdexcept>
+#include <memory>
+#include <string>
+#include <unordered_map>
+
 #include "Graphics/VulkanRenderData.h"
-#include "Precompiled.h"
 
 namespace bl {
 

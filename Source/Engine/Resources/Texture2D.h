@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Precompiled.h"
+#include <cstddef>
+#include <span>
+
+
 #include "Texture.h"
 
 namespace bl {

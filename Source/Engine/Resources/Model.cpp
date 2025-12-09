@@ -132,8 +132,8 @@ Model::Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::
 
     // Load materials
     // Here we are assuming a default material type.
-    auto defaultMaterial = resourceSystem->Load<Material>("Resources/Materials/Default.mat");
-    auto defaultSampler = resourceSystem->Load<Sampler>("Resources/Samplers/Default.json");
+    auto defaultMaterial = resourceSystem.Load<Material>("Resources/Materials/Default.mat");
+    auto defaultSampler = resourceSystem.Load<Sampler>("Resources/Samplers/Default.json");
 
     for (auto& material : model.materials) {
         auto instance = defaultMaterial.lock()->CreateInstance();

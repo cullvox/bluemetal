@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Precompiled.h"
+#include <memory>
+#include <vector>
 
 #include "Resources/MaterialInstance.h"
 #include "Resources/Mesh.h"

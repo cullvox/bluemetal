@@ -4,12 +4,6 @@
 
 namespace bl {
 
-Mesh::Mesh(GraphicsSystem* system)
-    : Resource(nullptr, system, "")
-    , _system(system)
-{
-}
-
 Mesh::Mesh(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
     , _system(system)

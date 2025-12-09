@@ -1,7 +1,10 @@
 #pragma once
 
+#include <memory>
+#include <string>
+#include <span>
+
 #include "Engine/SDL.h"
-#include "Precompiled.h"
 #include "VulkanSwapchain.h"
 #include "Window/Display.h"
 #include "Window/Window.h"

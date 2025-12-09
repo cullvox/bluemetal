@@ -1,6 +1,7 @@
 #pragma once
 
 #include <unordered_map>
+#include <span>
 
 #include "Core/Hash.h"
 #include "Vulkan.h"

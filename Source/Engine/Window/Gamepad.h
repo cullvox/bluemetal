@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstdint>
+#include <string_view>
+
 #include "Math/Math.h"
-#include "Precompiled.h"
 
 namespace bl {
 

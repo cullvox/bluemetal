@@ -1,8 +1,11 @@
 #pragma once
 
+
+#include <cstdint>
+#include <span>
+
 #include "Graphics/Vertex.h"
 #include "Graphics/VulkanBuffer.h"
-#include "Precompiled.h"
 #include "Resource.h"
 
 namespace bl {
@@ -18,7 +21,6 @@ class Mesh : public Resource {
     void UploadVertices(std::span<const std::byte> bytes);
 
 public:
-    Mesh(GraphicsSystem* system);
     Mesh(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
     ~Mesh();
 

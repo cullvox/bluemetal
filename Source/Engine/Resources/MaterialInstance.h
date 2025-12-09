@@ -1,5 +1,9 @@
 #pragma once
 
+#include <cstdint>
+#include <memory>
+#include <string>
+
 #include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanRenderData.h"
 #include "Math/Math.h"

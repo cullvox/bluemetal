@@ -8,7 +8,6 @@ namespace bl {
 
 Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
     : MaterialInstance(resourceSystem, graphicsSystem)
-    , _resourceSystem(resourceSystem)
     , _graphicsSystem(graphicsSystem)
     , _renderer(graphicsSystem->GetRenderer())
 {
@@ -31,8 +30,8 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
 
         info = json["state"];
 
-        auto vertexShader = resourceSystem->Load<Shader>(vertexPath);
-        auto fragmentShader = resourceSystem->Load<Shader>(fragmentPath);
+        auto vertexShader = resourceSystem.Load<Shader>(vertexPath);
+        auto fragmentShader = resourceSystem.Load<Shader>(fragmentPath);
         info.stages.shaders = std::vector<VulkanShader*> { vertexShader.lock()->Get(), fragmentShader.lock()->Get() };
     } catch (...) {
         throw std::runtime_error("Could not parse material JSON file.");
@@ -56,7 +55,7 @@ VulkanMaterialInstance* Material::GetInstance() const
 
 std::shared_ptr<MaterialInstance> Material::CreateInstance()
 {
-    return std::make_shared<MaterialInstance>(_resourceSystem, _graphicsSystem, std::move(_material->CreateInstance()));
+    return std::make_shared<MaterialInstance>(GetResourceSystem(), _graphicsSystem, std::move(_material->CreateInstance()));
 }
 
 const VulkanPipeline* Material::GetVulkanPipeline()

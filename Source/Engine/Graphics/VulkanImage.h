@@ -1,5 +1,8 @@
 #pragma once
 
+#include <span>
+#include <vector>
+
 #include "Vulkan.h"
 
 namespace bl {

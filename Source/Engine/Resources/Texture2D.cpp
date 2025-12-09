@@ -45,7 +45,7 @@ bool DecodeSTBI(std::span<std::byte> data, std::vector<std::byte>& out, Extent2D
     return true;
 }
 
-Texture2D::Texture2D(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
+Texture2D::Texture2D(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Texture(resourceSystem, system, path)
 {
     std::ifstream file { path, std::ios::binary };
@@ -99,7 +99,7 @@ Texture2D::Texture2D(ResourceSystem* resourceSystem, GraphicsSystem* system, con
     _image->UploadData(imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-Texture2D::Texture2D(ResourceSystem* rs, GraphicsSystem* gs, std::span<std::byte> data)
+Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs, std::span<std::byte> data)
     : Texture(rs, gs, "")
 {
     std::vector<std::byte> imageData;
@@ -128,7 +128,7 @@ Texture2D::Texture2D(ResourceSystem* rs, GraphicsSystem* gs, std::span<std::byte
     _image->UploadData(imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-Texture2D::Texture2D(ResourceSystem* rs, GraphicsSystem* gs, const std::span<const std::byte> pixels, TextureFormat format, Extent2D extent)
+Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs, const std::span<const std::byte> pixels, TextureFormat format, Extent2D extent)
     : Texture(rs, gs, "")
 {
     _format = format;

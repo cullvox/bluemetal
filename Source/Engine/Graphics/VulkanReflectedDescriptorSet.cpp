@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "VulkanReflectedDescriptorSet.h"
 
 namespace bl {

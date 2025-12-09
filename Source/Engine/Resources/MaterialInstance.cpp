@@ -42,7 +42,7 @@ MaterialInstance::MaterialInstance(ResourceSystem& resourceSystem, GraphicsSyste
         throw std::runtime_error("Could not parse material JSON file.");
     }
 
-    auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
+    auto mat = resourceSystem.Load<Material>(json["material"].get<std::string>());
     _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat.lock()->GetVulkanMaterial()->CreateInstance());
 
     // Ensure that the material buffers get properly cleaned updated every frame.

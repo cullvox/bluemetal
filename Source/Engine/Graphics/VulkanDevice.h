@@ -1,5 +1,10 @@
 #pragma once
 
+#include <memory>
+#include <vector>
+#include <span>
+#include <functional>
+
 #include "Vulkan.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanInstance.h"

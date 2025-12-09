@@ -1,8 +1,10 @@
 #pragma once
 
+#include <vector>
+#include <string_view>
+
 #include "Math/Extent.h"
 #include "Math/Rect.h"
-#include "Precompiled.h"
 
 #include <SDL3/SDL.h>
 

@@ -1,9 +1,10 @@
 #pragma once
 
+#include <string>
+
 #include "Display.h"
 #include "Engine/SDL.h"
 #include "Math/Rect.h"
-#include "Precompiled.h"
 
 namespace bl {
 

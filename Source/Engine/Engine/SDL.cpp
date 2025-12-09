@@ -1,5 +1,6 @@
-#include "Engine/SDL.h"
+#include <stdexcept>
 
+#include "Engine/SDL.h"
 #include <SDL3/SDL_init.h>
 
 namespace bl 

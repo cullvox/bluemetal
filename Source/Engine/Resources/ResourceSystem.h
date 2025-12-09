@@ -5,6 +5,7 @@
 #include <unordered_map>
 
 #include "Core/Print.h"
+#include "Core/ReferenceCounted.h"
 #include "Engine/System.h"
 #include "Resource.h"
 
@@ -21,7 +22,7 @@ class ResourceSystem : public System {
 public:
     ResourceSystem(Engine& engine);
     ~ResourceSystem();
-    virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
+    virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
     template <typename T>
     void AddSystemType(System* system);
     template <typename T>
@@ -81,7 +82,7 @@ Ref<T> ResourceSystem::Load(const std::filesystem::path& path)
 
     // Create/load the resource since it doesn't exist.
     try {
-        _resources[path] = system->ConstructResource(this, typeid(T).hash_code(), path);
+        _resources[path] = system->ConstructResource(*this, typeid(T).hash_code(), path);
         if (!_resources[path]) {
             throw std::runtime_error("System failed to construct resource!");
         }
@@ -134,7 +135,7 @@ template <typename T>
 Ref<T> ResourceSystem::AddSubResource(Ref<Resource> parent)
 {
     System* system = GetSystemType<T>();
-    std::shared_ptr<Resource> resource = system->ConstructResource(this, typeid(T).hash_code(), ""); // Sub-resources do not have paths.
+    std::shared_ptr<Resource> resource = system->ConstructResource(*this, typeid(T).hash_code(), ""); // Sub-resources do not have paths.
 
     if (auto res = std::dynamic_pointer_cast<T>(resource)) {
         return AddSubResource<T>(parent, std::move(res));

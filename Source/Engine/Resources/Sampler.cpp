@@ -4,7 +4,7 @@
 
 namespace bl {
 
-Sampler::Sampler(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
+Sampler::Sampler(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
     , _device(system->GetDevice())
 {

@@ -17,6 +17,16 @@ Resource::~Resource()
     }
 }
 
+const std::filesystem::path& Resource::GetPath()
+{
+    return _path;
+}
+
+ResourceSystem& Resource::GetResourceSystem()
+{
+    return _resourceSystem;
+}
+
 void Resource::AddSubResource(std::shared_ptr<Resource> res)
 {
     _subResources.push_back(res);

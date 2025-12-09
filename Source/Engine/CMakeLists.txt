@@ -22,6 +22,7 @@ list(APPEND Sources
   "Graphics/VulkanReflectedDescriptorSet.cpp"
   "Graphics/VulkanDescriptorSetLayoutCache.cpp"
   "Graphics/VulkanReflectedPushConstant.cpp"
+  "Graphics/VulkanReflectedPipeline.cpp"
   "Graphics/VulkanPipelineLayoutCache.cpp"
   "Graphics/VulkanPipeline.cpp"
   "Graphics/VulkanDescriptorSetAllocatorCache.cpp"

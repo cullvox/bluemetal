@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Precompiled.h"
+#include <map>
+
+#include <nlohmann/json.hpp>
 
 #include "Vulkan.h"
 #include "VulkanConversions.h"

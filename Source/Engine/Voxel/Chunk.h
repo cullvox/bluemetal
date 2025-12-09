@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Precompiled.h"
 #include "Voxel.h"
 #include "VoxelLimits.h"
 

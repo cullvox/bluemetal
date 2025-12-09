@@ -1,11 +1,12 @@
 #pragma once
 
+#include <functional>
+
 #include "Core/Flags.h"
 #include "Engine/System.h"
 #include "Engine/SDL.h"
 #include "Keyboard.h"
 #include "Mouse.h"
-#include "Precompiled.h"
 
 namespace bl {
 
@@ -20,7 +21,7 @@ public:
     InputSystem(Engine& engine);
     ~InputSystem() = default;
 
-    virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
+    virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
 
     /// @brief Polls the system for events.
     ///

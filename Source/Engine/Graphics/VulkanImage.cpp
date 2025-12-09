@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 #include "VulkanImage.h"
 #include "Core/Print.h"
 #include "Graphics/VulkanConversions.h"

@@ -5,6 +5,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include "Core/ReferenceCounted.h"
+
 namespace bl {
 
 class System;
@@ -44,7 +46,9 @@ public:
      * @brief Returns the unique path of this resource.
      * @return The unique path of the resource.
      */
-    const std::filesystem::path& GetPath() const { return _path; }
+    const std::filesystem::path& GetPath();
+
+    ResourceSystem& GetResourceSystem();
 
     void AddSubResource(std::shared_ptr<Resource> res);
 };

@@ -7,7 +7,7 @@ InputSystem::InputSystem(Engine& engine)
 {
 }
 
-std::shared_ptr<Resource> InputSystem::ConstructResource(ResourceSystem*, std::size_t, const std::filesystem::path&)
+std::shared_ptr<Resource> InputSystem::ConstructResource(ResourceSystem&, std::size_t, const std::filesystem::path&)
 {
     throw std::runtime_error("Input system does not construct any resources!");
 }
