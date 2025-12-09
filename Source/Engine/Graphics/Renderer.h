@@ -31,7 +31,7 @@ public:
     ~Renderer(); /** @brief Destructor */
 
     uint32_t GetSwapchainImageCount() { return _imageCount; }
-    uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::numFramesInFlight - 1. */
+    uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::maxFramesInFlight - 1. */
     void Render(RenderFunction func);
     std::tuple<VkRenderPass, uint32_t> GetRenderPass(RenderPassType pass) const;
 
@@ -79,9 +79,9 @@ private:
     // Uniform data
     GlobalUBO _uboData;
     VkDescriptorSetLayout _globalLayout;
-    std::array<VulkanBuffer, VulkanConfig::numFramesInFlight> _globalBuffer;
-    std::array<VkDescriptorSet, VulkanConfig::numFramesInFlight> _globalSet;
-    std::array<void*, VulkanConfig::numFramesInFlight> _globalBufferMap;
+    std::array<VulkanBuffer, VulkanConfig::maxFramesInFlight> _globalBuffer;
+    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalSet;
+    std::array<void*, VulkanConfig::maxFramesInFlight> _globalBufferMap;
     float _prevTime;
 
     std::unordered_set<VulkanMaterialInstance*> _materials;

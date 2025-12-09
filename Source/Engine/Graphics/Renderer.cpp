@@ -17,10 +17,10 @@ Renderer::Renderer(VulkanWindow* window)
     , _currentFrame(0)
     , _descriptorSetCache(_device, 1024, VulkanDescriptorRatio::Default())
 {
-    _commandBuffers.resize(VulkanConfig::numFramesInFlight);
-    _imageAvailableSemaphores.resize(_swapchain->GetImageCount());
+    _commandBuffers.resize(VulkanConfig::maxFramesInFlight);
+    _imageAvailableSemaphores.resize(VulkanConfig::maxFramesInFlight);
     _renderFinishedSemaphores.resize(_swapchain->GetImageCount());
-    _inFlightFences.resize(_swapchain->GetImageCount());
+    _inFlightFences.resize(VulkanConfig::maxFramesInFlight);
 
     try {
         CreateSyncObjects();
@@ -76,7 +76,7 @@ void Renderer::CreateSyncObjects()
     allocateInfo.pNext = nullptr;
     allocateInfo.commandPool = _device->GetCommandPool();
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocateInfo.commandBufferCount = _swapchain->GetImageCount();
+    allocateInfo.commandBufferCount = VulkanConfig::maxFramesInFlight;
 
     VK_CHECK(vkAllocateCommandBuffers(_device->Get(), &allocateInfo, _commandBuffers.data()))
 
@@ -90,19 +90,25 @@ void Renderer::CreateSyncObjects()
     fenceInfo.pNext = nullptr;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
         VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]))
-        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
         VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_inFlightFences[i]))
+    }
+
+    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
+        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
     }
 }
 
 void Renderer::DestroySyncObjects()
 {
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
         vkDestroySemaphore(_device->Get(), _imageAvailableSemaphores[i], nullptr);
-        vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
         vkDestroyFence(_device->Get(), _inFlightFences[i], nullptr);
+    }
+
+    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
+        vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
     }
 
     vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), (uint32_t)_commandBuffers.size(), _commandBuffers.data());
@@ -120,7 +126,7 @@ void Renderer::DestroyImagesAndFramebuffers()
 
 void Renderer::DestroyGlobalUniform()
 {
-    for (int i = 0; i < VulkanConfig::numFramesInFlight; i++)
+    for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++)
     {
         _globalBuffer[i].Unmap();
         _descriptorSetCache.Free(_globalLayout, _globalSet[i]);
@@ -265,8 +271,8 @@ void Renderer::Render(RenderFunction func)
 
     // Submit the command buffer to the graphics queue.
     std::array waitSemaphores = { _imageAvailableSemaphores[_currentFrame] };
-    std::array signalSemaphores = { _renderFinishedSemaphores[_currentFrame] };
     std::array commandBuffers = { _commandBuffers[_currentFrame] };
+    std::array signalSemaphores = { _renderFinishedSemaphores[_imageIndex] };
     std::array waitStages = { (VkPipelineStageFlags)VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
     VkSubmitInfo submitInfo = {};
@@ -282,11 +288,11 @@ void Renderer::Render(RenderFunction func)
 
     VK_CHECK(vkQueueSubmit(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
 
-    if (_swapchain->QueuePresent(_renderFinishedSemaphores[_currentFrame])) {
+    if (_swapchain->QueuePresent(_renderFinishedSemaphores[_imageIndex])) {
         RecreateImages();
     }
 
-    _currentFrame = (_currentFrame + 1) % _imageCount;
+    _currentFrame = (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
 }
 
 void Renderer::CreateRenderPasses()
@@ -402,7 +408,7 @@ void Renderer::CreateGlobalUniform()
 
     _globalLayout = _device->AcquireDescriptorSetLayout(bindings);
 
-    for (int i = 0; i < VulkanConfig::numFramesInFlight; i++) {
+    for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
         _globalBuffer[i] = bl::VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO), nullptr };
         _globalBuffer[i].Map(&_globalBufferMap[i]);
 

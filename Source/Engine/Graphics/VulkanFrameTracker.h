@@ -14,17 +14,17 @@ public:
 
     void Next()
     {
-        _currentFrame = (_currentFrame + 1) % VulkanConfig::numFramesInFlight;
+        _currentFrame = (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
     }
 
     uint32_t PeekNext() const
     {
-        return (_currentFrame + 1) % VulkanConfig::numFramesInFlight;
+        return (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
     }
 
     uint32_t Prev() const
     {
-        return (_currentFrame - 1) % VulkanConfig::numFramesInFlight;
+        return (_currentFrame - 1) % VulkanConfig::maxFramesInFlight;
     }
 
     uint32_t Get() const

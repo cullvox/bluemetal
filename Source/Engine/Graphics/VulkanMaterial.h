@@ -116,7 +116,7 @@ void VulkanMaterialInstance::SetGenericUniform(const std::string& name, T value)
     assert(sizeof(T) == variable.GetSize() && "Type must be the same as the uniform size!");
 
     VulkanBuffer& buffer = std::get<VulkanBuffer>(_bindings[variable.GetBinding()]);
-    VkDeviceSize blockSize = buffer.GetSize() / VulkanConfig::numFramesInFlight;
+    VkDeviceSize blockSize = buffer.GetSize() / VulkanConfig::maxFramesInFlight;
 
     auto offset = (blockSize * _currentFrame) + variable.GetOffset();
 
