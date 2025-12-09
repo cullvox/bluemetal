@@ -19,7 +19,7 @@ class Mesh : public Resource {
 
 public:
     Mesh(GraphicsSystem* system);
-    Mesh(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
+    Mesh(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
     ~Mesh();
 
     template <VertexType T>

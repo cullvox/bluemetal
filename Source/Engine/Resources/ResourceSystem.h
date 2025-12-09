@@ -1,16 +1,19 @@
 #pragma once
 
+#include <memory>
+#include <filesystem>
+#include <unordered_map>
+
 #include "Core/Print.h"
 #include "Engine/System.h"
-#include "Precompiled.h"
 #include "Resource.h"
 
-#include <nlohmann/json.hpp>
 
 namespace bl {
 
-// concept ResourceType = std::is_base_of_t<Resource, T>;
-
+/**
+ * @brief A manager of all engine resources, including models, sounds, textures, +more.
+ */
 class ResourceSystem : public System {
     std::unordered_map<std::filesystem::path, std::shared_ptr<Resource>> _resources;
     std::unordered_map<std::size_t, System*> _resourceTypes; /** @brief Maps resource typeid(T).hash_code() to the system that handles it. */

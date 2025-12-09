@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Precompiled.h"
+#include <cstdint>
+#include <unordered_map>
+
 #include "Vulkan.h"
 #include "VulkanReflectedBlock.h"
 

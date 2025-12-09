@@ -6,7 +6,7 @@
 
 namespace bl {
 
-MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem)
+MaterialInstance::MaterialInstance(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem)
     : Resource(resourceSystem, graphicsSystem, "")
     , _renderer(graphicsSystem->GetRenderer())
     , _materialInstance(nullptr)
@@ -14,7 +14,7 @@ MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSyste
     // Empty constructor for creating material instances from a base material.
 }
 
-MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance)
+MaterialInstance::MaterialInstance(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance)
     : Resource(resourceSystem, graphicsSystem, "")
     , _renderer(graphicsSystem->GetRenderer())
     , _materialInstance(std::move(instance))
@@ -24,7 +24,7 @@ MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSyste
     _renderer->AddMaterial(_materialInstance.get());
 }
 
-MaterialInstance::MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
+MaterialInstance::MaterialInstance(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
     : Resource(resourceSystem, graphicsSystem, path)
     , _renderer(graphicsSystem->GetRenderer())
     , _materialInstance(nullptr)

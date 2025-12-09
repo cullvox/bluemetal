@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Core/Hash.h"
-#include "Precompiled.h"
 #include "Vulkan.h"
 
 namespace bl {

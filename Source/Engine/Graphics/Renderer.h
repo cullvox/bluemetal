@@ -2,6 +2,8 @@
 
 #include <nlohmann/json.hpp>
 
+#include <unordered_set>
+
 #include "UniformData.h"
 #include "VulkanBuffer.h"
 #include "VulkanDescriptorSetAllocatorCache.h"

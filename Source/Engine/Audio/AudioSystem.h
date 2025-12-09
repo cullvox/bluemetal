@@ -1,9 +1,9 @@
 #pragma once
 
+#include <string>
+
 #include "Core/MacroUtils.h"
 #include "Engine/System.h"
-#include "Precompiled.h"
-
 #include "FMOD.h"
 
 namespace bl {
@@ -21,7 +21,7 @@ public:
     AudioSystem& operator=(const AudioSystem&) = delete;
     AudioSystem& operator=(AudioSystem&&) = delete;
 
-    std::shared_ptr<Resource> ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
+    std::shared_ptr<Resource> ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
 
     FMOD::System* GetFMOD(); /** @brief Returns the internal FMOD system. */
     void Update(); /** @brief Ticks the audio system. */

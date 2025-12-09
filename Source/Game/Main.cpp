@@ -45,13 +45,11 @@ int main(int argc, const char** argv)
         auto window = engine.GetWindow();
 
         auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Taswell.flac");
-
         auto source = std::make_unique<bl::AudioSource3D>(engine);
 
         source->Play(sound, true);
 
         auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.glb");
-
         auto cube = resourceMgr->Load<bl::Model>("Resources/Models/cube.glb");
 
         auto rootNode = std::make_unique<bl::Node3D>(engine);
@@ -67,8 +65,6 @@ int main(int argc, const char** argv)
         physicsBody->ResetBody();
         physicsBody->AddChild(characterNode);
         rootNode->AddChild(std::move(physicsBody));
-
-
 
         auto floorMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
         auto floorTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/floor.jpg");
@@ -98,7 +94,7 @@ int main(int argc, const char** argv)
         rootNode->AddChild(std::move(floorStaticBody));
 
         bl::FrameCounter frameCounter;
-        float cameraAcceleration = 0.5f;
+        float cameraAcceleration = 015.f;
         float maxCameraSpeed = 8.f;
         bool enableCameraSmoothing = true;
         bool enableCameraMovementDamping = true;
@@ -257,6 +253,15 @@ int main(int argc, const char** argv)
                 imgui->BeginFrame();
 
                 imgui->DrawDebug();
+
+                ImGui::BeginMainMenuBar();
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("Exit")) {
+                        window->RequestClose();
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMainMenuBar();
 
                 ImGui::Begin("Settings");
 

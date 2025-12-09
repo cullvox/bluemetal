@@ -1,6 +1,6 @@
 #pragma once
 
-#include <spirv_reflect.h>
+#include <span>
 
 #include "VulkanDevice.h"
 

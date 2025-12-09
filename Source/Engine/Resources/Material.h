@@ -9,7 +9,6 @@ namespace bl {
 /// @class Material
 /// @brief A material resource defining how to render objects.
 class Material : public MaterialInstance {
-    ResourceSystem* _resourceSystem;
     GraphicsSystem* _graphicsSystem;
     Renderer* _renderer;
     std::unique_ptr<VulkanMaterial> _material;
@@ -22,7 +21,7 @@ public:
     /// @param resourceSystem Pointer to the resource system.
     /// @param graphicsSystem Pointer to the graphics system.
     /// @param path Filesystem path to the material JSON file.
-    Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
+    Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
 
     /// @brief Destructor
     virtual ~Material();

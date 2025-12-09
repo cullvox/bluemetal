@@ -1,7 +1,8 @@
 #pragma once
 
-#include "Precompiled.h"
-#include "Vulkan.h"
+#include <optional>
+#include <vector>
+
 #include "VulkanDevice.h"
 #include "Window/Window.h"
 

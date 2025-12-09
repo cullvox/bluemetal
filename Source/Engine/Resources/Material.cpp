@@ -6,7 +6,7 @@
 
 namespace bl {
 
-Material::Material(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
+Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
     : MaterialInstance(resourceSystem, graphicsSystem)
     , _resourceSystem(resourceSystem)
     , _graphicsSystem(graphicsSystem)

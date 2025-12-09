@@ -98,5 +98,3 @@ target_link_libraries(Bluemetal PUBLIC
   qoixx::qoixx
   tinygltf
   Jolt::Jolt)
-
-target_precompile_headers(Bluemetal PRIVATE "Precompiled.h")

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Math/Math.h"
-#include "Precompiled.h"
 
 namespace bl {
 

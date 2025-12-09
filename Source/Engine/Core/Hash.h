@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Precompiled.h"
+#include <cstdint>
+#include <string>
 
 namespace bl {
 

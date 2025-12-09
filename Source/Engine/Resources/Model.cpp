@@ -74,7 +74,7 @@ std::unique_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
     return newNode;
 }
 
-Model::Model(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
+Model::Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
     , _graphicsSystem(system)
 {

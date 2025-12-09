@@ -1,5 +1,8 @@
 #pragma once
 
+#include <bitset>
+#include <type_traits>
+
 namespace bl {
 
 constexpr int bit(int index)

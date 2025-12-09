@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Precompiled.h"
-
 #include <fmt/chrono.h>
 #include <fmt/color.h>
 #include <fmt/compile.h>

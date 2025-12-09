@@ -38,7 +38,7 @@ void InputSystem::Poll(std::function<void(SDL_Event&)> extraFunc)
             break;
         case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
             if (window)
-                window->SetClose(true);
+                window->RequestClose();
             break;
         // case SDL_EVENT_MOUSE_MOTION:
         //     _mouse.SetLocation({event.motion.x, event.motion.y});

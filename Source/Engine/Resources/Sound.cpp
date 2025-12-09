@@ -2,7 +2,7 @@
 
 namespace bl {
 
-Sound::Sound(ResourceSystem* resourceSystem, AudioSystem* system, const std::filesystem::path& path)
+Sound::Sound(ResourceSystem& resourceSystem, AudioSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
     , _sound(nullptr)
 {

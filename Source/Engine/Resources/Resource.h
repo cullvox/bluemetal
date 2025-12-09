@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/ReferenceCounted.h"
-#include "Precompiled.h"
+#include <filesystem>
+#include <memory>
 
 #include <nlohmann/json.hpp>
 
@@ -23,7 +23,7 @@ class ResourceSystem;
  */
 class Resource : public std::enable_shared_from_this<Resource> {
     friend class ResourceSystem;
-    ResourceSystem* _resourceSystem; /** @brief Pointer to the resource manager that manages this resource. */
+    ResourceSystem& _resourceSystem; /** @brief Pointer to the resource manager that manages this resource. */
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
     std::vector<std::shared_ptr<Resource>> _subResources; /** @brief Sub-resources that are part of this resource, but managed by it. */
 
@@ -33,7 +33,7 @@ public:
      * @param manager Pointer to the resource manager that manages this resource.
      * @param data JSON data describing the resource.
      */
-    Resource(ResourceSystem* resourceSystem, System* system, const std::filesystem::path& path);
+    Resource(ResourceSystem& resourceSystem, System* system, const std::filesystem::path& path);
 
     /**
      * @brief Destructor for the Resource class.

@@ -44,7 +44,7 @@ GraphicsSystem::~GraphicsSystem()
 {
 }
 
-std::shared_ptr<Resource> GraphicsSystem::ConstructResource(ResourceSystem* resourceSystem, std::size_t typeHash, const std::filesystem::path& path)
+std::shared_ptr<Resource> GraphicsSystem::ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path)
 {
     if (typeHash == typeid(Shader).hash_code()) {
         return std::make_shared<Shader>(resourceSystem, this, path);

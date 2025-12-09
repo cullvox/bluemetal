@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Precompiled.h"
+#include <string>
+#include <vector>
+#include <optional>
+
 #include "Vulkan.h"
 
 namespace bl {

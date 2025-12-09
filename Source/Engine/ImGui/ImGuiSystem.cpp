@@ -23,7 +23,7 @@ ImGuiSystem::~ImGuiSystem()
     Unload();
 }
 
-std::shared_ptr<Resource> ImGuiSystem::ConstructResource(ResourceSystem*, std::size_t, const std::filesystem::path&)
+std::shared_ptr<Resource> ImGuiSystem::ConstructResource(ResourceSystem&, std::size_t, const std::filesystem::path&)
 {
     throw std::runtime_error("ImGuiSystem does not handle any resources.");
 }

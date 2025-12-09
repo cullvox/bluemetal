@@ -1,12 +1,13 @@
 #pragma once
 
+#include <memory>
+
 #include "Audio/AudioSystem.h"
 #include "Core/Flags.h"
 #include "Core/FrameCounter.h"
 #include "Engine/SDL.h"
 #include "Graphics/GraphicsSystem.h"
 #include "ImGui/ImGuiSystem.h"
-#include "Precompiled.h"
 #include "Resources/ResourceSystem.h"
 #include "Physics/PhysicsSystem.h"
 #include "Window/Input.h"

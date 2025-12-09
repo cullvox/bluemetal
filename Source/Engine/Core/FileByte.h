@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Precompiled.h"
+#include <cstddef>
+#include <fstream>
+#include <vector>
 
 namespace bl {
 

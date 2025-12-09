@@ -29,9 +29,9 @@ Window::~Window()
     SDL_DestroyWindow(_window);
 }
 
-void Window::SetClose(bool close)
+void Window::RequestClose()
 {
-    _closeRequested = close;
+    _closeRequested = true;
 }
 
 void Window::SetMinimized(bool minimized)

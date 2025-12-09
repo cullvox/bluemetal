@@ -32,13 +32,13 @@ public:
     ///
     /// @param resourceSystem Pointer to the resource system.
     /// @param graphicsSystem Pointer to the graphics system.
-    MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem);
+    MaterialInstance(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem);
 
-    MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance);
+    MaterialInstance(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance);
 
     /// @brief Loads a material instance from file.
     /// This constructor is designated for the ResourceSystem.
-    MaterialInstance(ResourceSystem* resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
+    MaterialInstance(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
 
     /// @brief Destructor
     virtual ~MaterialInstance();

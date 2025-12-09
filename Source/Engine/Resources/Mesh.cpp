@@ -10,7 +10,7 @@ Mesh::Mesh(GraphicsSystem* system)
 {
 }
 
-Mesh::Mesh(ResourceSystem* resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
+Mesh::Mesh(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Resource(resourceSystem, system, path)
     , _system(system)
 {

@@ -3,7 +3,7 @@
 
 namespace bl {
 
-Resource::Resource(ResourceSystem* resourceSystem, System*, const std::filesystem::path& path)
+Resource::Resource(ResourceSystem& resourceSystem, System*, const std::filesystem::path& path)
     : _resourceSystem(resourceSystem)
     , _path(path)
 {

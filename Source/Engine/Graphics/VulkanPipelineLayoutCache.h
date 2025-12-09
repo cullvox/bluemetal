@@ -1,7 +1,8 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "Core/Hash.h"
-#include "Precompiled.h"
 #include "Vulkan.h"
 
 namespace bl {

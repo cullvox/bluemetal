@@ -17,7 +17,7 @@ class Window {
 
 protected:
     friend class InputSystem;
-    void SetClose(bool close);
+    void RequestClose(bool close);
     void SetMinimized(bool minimized);
     void SetFocused(bool focused);
 
@@ -31,6 +31,7 @@ public:
     VideoMode GetCurrentVideoMode() const; /** @brief Returns the current video mode. */
     void SetTitle(const std::string& title); /** @brief Changes the title displayed on the top of a windowed window. */
     void SetVideoMode(const VideoMode& mode); /** @brief Changes the windows dimensions and video mode. */
+    void RequestClose(); /** @brief Requests the window to close. */
 
     // Input
     bool GetCloseRequested() const;
