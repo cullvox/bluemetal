@@ -4,6 +4,8 @@
 #include "Graphics/VulkanShader.h"
 #include "Shader.h"
 
+#include "ResourceSystem.h"
+
 namespace bl {
 
 Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)

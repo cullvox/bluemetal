@@ -15,7 +15,7 @@ FrameCounter::~FrameCounter()
 void FrameCounter::BeginFrame()
 {
     _startOfFrame = std::chrono::high_resolution_clock::now();
-    _frameCount++;
+    _numFramesInSecond++;
 }
 
 bool FrameCounter::EndFrame()
@@ -23,6 +23,8 @@ bool FrameCounter::EndFrame()
     bool endedSecond {};
 
     _endOfFrame = std::chrono::high_resolution_clock::now();
+
+    _frameCount++;
 
     // Compute the frames per second if one second has passed.
     if (_endOfFrame - _lastSecond > std::chrono::seconds(1)) {
@@ -33,10 +35,10 @@ bool FrameCounter::EndFrame()
         }
 
         // Add this latest frame.
-        _framesPerSecond.push_back(_frameCount);
+        _framesPerSecond.push_back(_numFramesInSecond);
 
         // Reset the frame counter.
-        _frameCount = 0;
+        _numFramesInSecond = 0;
 
         // Set the last second to this now.
         _lastSecond = _endOfFrame;
@@ -58,6 +60,11 @@ bool FrameCounter::EndFrame()
     _delta = std::chrono::duration_cast<std::chrono::microseconds>(_endOfFrame - _startOfFrame).count() / 1000000.0f;
 
     return endedSecond;
+}
+
+uint64_t FrameCounter::GetFrameCount()
+{
+    return _frameCount;
 }
 
 int FrameCounter::GetFramesPerSecond()

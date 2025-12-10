@@ -1,5 +1,6 @@
 #include "PhysicsBody3D.h"
 #include "Engine/Engine.h"
+#include "Physics/PhysicsSystem.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>

@@ -14,6 +14,12 @@
 #include "Window/Keyboard.h"
 #include "Window/Mouse.h"
 #include "Physics/ObjectLayers.h"
+#include "Editor/Editor.h"
+
+#include "Window/Input.h"
+#include "Graphics/GraphicsSystem.h"
+#include "Resources/ResourceSystem.h"
+#include "Physics/PhysicsSystem.h"
 
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
@@ -33,9 +39,9 @@ int main(int argc, const char** argv)
         bl::Engine engine{ argc, argv };
         engine.Initialize();
 
-        auto resourceMgr = engine.GetResourceManager();
+        auto resourceMgr = engine.GetResourceSystem();
         auto audio = engine.GetAudio();
-        auto graphics = engine.GetGraphics();
+        auto& graphics = engine.GetGraphics();
         auto imgui = engine.GetImGui();
         auto input = engine.GetInput();
         auto& keyboard = input->GetKeyboard();
@@ -43,6 +49,7 @@ int main(int argc, const char** argv)
         auto& physics = engine.GetPhysics();
         auto renderer = engine.GetRenderer();
         auto window = engine.GetWindow();
+        auto& editor = engine.GetEditor();
 
         auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Taswell.flac");
         auto source = std::make_unique<bl::AudioSource3D>(engine);
@@ -93,7 +100,7 @@ int main(int argc, const char** argv)
 
         rootNode->AddChild(std::move(floorStaticBody));
 
-        bl::FrameCounter frameCounter;
+        bl::FrameCounter& frameCounter = engine.GetFrameCounter();
         float cameraAcceleration = 015.f;
         float maxCameraSpeed = 8.f;
         bool enableCameraSmoothing = true;
@@ -252,16 +259,9 @@ int main(int argc, const char** argv)
 
                 imgui->BeginFrame();
 
-                imgui->DrawDebug();
+                ImGui::ShowDemoWindow();
 
-                ImGui::BeginMainMenuBar();
-                if (ImGui::BeginMenu("File")) {
-                    if (ImGui::MenuItem("Exit")) {
-                        window->RequestClose();
-                    }
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMainMenuBar();
+                editor.Draw(rd);
 
                 ImGui::Begin("Settings");
 
@@ -286,13 +286,6 @@ int main(int argc, const char** argv)
                     ImGui::Text("Rotation: %.2f, %.2f deg", yaw, pitch);
                     ImGui::Text("Speed: %.2f m/s", glm::length(cameraVelocity));
 
-                    ImGui::Separator();
-                    ImGui::Text("Frame: %d", ImGui::GetFrameCount());
-                    ImGui::Text("Current Frame: %d", rd.currentFrame);
-                    ImGui::Text("Image Index: %d", rd.imageIndex);
-                    ImGui::Text("Frame Time: %.5f ms", frameCounter.GetAverageMillisecondsPerFrame(144));
-                    ImGui::Text("FPS: %d f/s", static_cast<int>(frameCounter.GetAverageFramesPerSecond(10)));
-
                     ImGui::TreePop();
                 }
 
@@ -304,7 +297,7 @@ int main(int argc, const char** argv)
             frameCounter.EndFrame();
         }
 
-        graphics->GetDevice()->WaitForDevice();
+        graphics.GetDevice()->WaitForDevice();
 
         resourceMgr->UnloadAll();
 

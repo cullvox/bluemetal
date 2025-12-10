@@ -21,13 +21,13 @@ namespace bl {
 GraphicsSystem::GraphicsSystem(Engine& engine)
     : System(engine)
 {
-    GetEngine().GetResourceManager()->AddSystemType<Shader>(this);
-    GetEngine().GetResourceManager()->AddSystemType<Sampler>(this);
-    GetEngine().GetResourceManager()->AddSystemType<Material>(this);
-    GetEngine().GetResourceManager()->AddSystemType<MaterialInstance>(this);
-    GetEngine().GetResourceManager()->AddSystemType<Texture2D>(this);
-    GetEngine().GetResourceManager()->AddSystemType<Mesh>(this);
-    GetEngine().GetResourceManager()->AddSystemType<Model>(this);
+    GetEngine().GetResourceSystem()->AddSystemType<Shader>(this);
+    GetEngine().GetResourceSystem()->AddSystemType<Sampler>(this);
+    GetEngine().GetResourceSystem()->AddSystemType<Material>(this);
+    GetEngine().GetResourceSystem()->AddSystemType<MaterialInstance>(this);
+    GetEngine().GetResourceSystem()->AddSystemType<Texture2D>(this);
+    GetEngine().GetResourceSystem()->AddSystemType<Mesh>(this);
+    GetEngine().GetResourceSystem()->AddSystemType<Model>(this);
 
     _vulkanInstance = std::make_unique<VulkanInstance>(bl::Version { bl::VersionRelease::eAlpha, 0, 1, 7 }, "bluemetal", true);
     _physicalDevice = _vulkanInstance->ChoosePhysicalDevice();

@@ -13,6 +13,7 @@ public:
 
     void BeginFrame();
     bool EndFrame(); // returns true if this frame ended at frame count.
+    uint64_t GetFrameCount();
     int GetFramesPerSecond();
     float GetAverageFramesPerSecond(uint32_t seconds);
     float GetMillisecondsPerFrame();
@@ -22,7 +23,8 @@ public:
 private:
     using time_point = std::chrono::high_resolution_clock::time_point;
 
-    uint32_t _frameCount = 0;
+    uint64_t _frameCount = 0;
+    uint32_t _numFramesInSecond = 0;
     time_point _startOfFrame;
     time_point _endOfFrame;
     time_point _lastSecond;

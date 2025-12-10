@@ -5,11 +5,21 @@
 #include "Math/Rect.h"
 #include "argparse/argparse.hpp"
 
+#include "Audio/AudioSystem.h"
+#include "Core/Flags.h"
+#include "Core/FrameCounter.h"
+#include "Engine/SDL.h"
+#include "Graphics/GraphicsSystem.h"
+#include "ImGui/ImGuiSystem.h"
+#include "Resources/ResourceSystem.h"
+#include "Physics/PhysicsSystem.h"
+#include "Window/Input.h"
+#include "Editor/Editor.h"
+
 namespace bl {
 
 Engine::Engine(int argc, const char** argv)
     : _sdl()
-    , _physics(*this)
 {
     argparse::ArgumentParser program("BlueMetal Engine");
 
@@ -38,13 +48,16 @@ Engine::~Engine()
 
 void Engine::Initialize()
 {
-    Print::Info("Initializing BlueMetal v{}", bl::to_string(bl::engineVersion));
+    Print::Info("Initializing BlueMetal v{}", bl::engineVersion.ToString());
 
     _resourceManager = std::make_unique<ResourceSystem>(*this);
     _audio = std::make_unique<AudioSystem>(*this);
+    _counter = std::make_unique<FrameCounter>();
     _graphics = std::make_unique<GraphicsSystem>(*this);
     _input = std::make_unique<InputSystem>(*this);
     _imgui = std::make_unique<ImGuiSystem>(*this, _graphics->GetWindow(), _graphics->GetRenderer());
+    _physics = std::make_unique<PhysicsSystem>(*this);
+    _editor = std::make_unique<Editor>(*this);
 }
 
 void Engine::Shutdown()
@@ -58,17 +71,17 @@ void Engine::Shutdown()
 
 FrameCounter& Engine::GetFrameCounter()
 {
-    return _counter;
+    return *(_counter.get());
 }
 
-ResourceSystem* Engine::GetResourceManager()
+ResourceSystem* Engine::GetResourceSystem()
 {
     return _resourceManager.get();
 }
 
-GraphicsSystem* Engine::GetGraphics()
+GraphicsSystem& Engine::GetGraphics()
 {
-    return _graphics.get();
+    return *_graphics.get();
 }
 
 AudioSystem* Engine::GetAudio()
@@ -98,7 +111,12 @@ Renderer* Engine::GetRenderer()
 
 PhysicsSystem& Engine::GetPhysics()
 {
-    return _physics;
+    return *_physics.get();
+}
+
+Editor& Engine::GetEditor()
+{
+    return *_editor.get();
 }
 
 } // namespace bl

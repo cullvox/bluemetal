@@ -74,6 +74,9 @@ list(APPEND Sources
   "Scene/Camera3D.cpp"
   "Scene/PhysicsBody3D.cpp"
 
+  "Editor/DebugEditor.cpp"
+  "Editor/Editor.cpp"
+
   "Engine/SDL.cpp"
   "Engine/System.cpp"
   

@@ -61,40 +61,15 @@ struct Version {
     uint32_t major;
     uint32_t minor;
     uint32_t patch;
-};
 
-static inline std::string to_string(Version version)
-{
-    return fmt::format("{} {}.{}.{}", bl::to_string(version.release), version.major, version.minor, version.patch);
-}
+    std::string ToString() const
+    {
+        return fmt::format("{} {}.{}.{}", bl::to_string(release), major, minor, patch);
+    }
+};
 
 const Version engineVersion(VersionRelease::eAlpha, 0, 1, 0);
 const std::string engineName = "Bluemetal Engine";
 
 } // namespace bl
 
-template <>
-struct fmt::formatter<bl::VersionRelease> {
-    constexpr auto parse(format_parse_context& ctx)
-    {
-        return ctx.begin();
-    }
-
-    format_context::iterator format(bl::VersionRelease release, format_context& ctx) const
-    {
-        return fmt::format_to(ctx.out(), "{}", bl::to_string(release));
-    }
-};
-
-template <>
-struct fmt::formatter<bl::Version> {
-    constexpr auto parse(format_parse_context& ctx)
-    {
-        return ctx.begin();
-    }
-
-    format_context::iterator format(const bl::Version& v, format_context& ctx) const
-    {
-        return fmt::format_to(ctx.out(), "{}", to_string(v));
-    }
-};

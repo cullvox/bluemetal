@@ -1,13 +1,14 @@
 #include "MeshInstance3D.h"
 #include "Engine/Engine.h"
 #include "Resources/Material.h"
+#include "Resources/ResourceSystem.h"
 
 namespace bl {
 
 MeshInstance3D::MeshInstance3D(Engine& engine)
     : Node3D(engine)
 {
-    _material = GetEngine().GetResourceManager()->Load<bl::Material>("Resources/Materials/Default.mat");
+    _material = GetEngine().GetResourceSystem()->Load<bl::Material>("Resources/Materials/Default.mat");
 }
 
 MeshInstance3D::MeshInstance3D(const MeshInstance3D& node)

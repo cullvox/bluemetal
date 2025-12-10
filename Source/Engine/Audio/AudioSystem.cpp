@@ -2,13 +2,15 @@
 #include "Engine/Engine.h"
 #include "Resources/Sound.h"
 
+#include "Resources/ResourceSystem.h"
+
 namespace bl {
 
 AudioSystem::AudioSystem(Engine& _engine)
     : System(_engine)
     , _fmod(nullptr)
 {
-    GetEngine().GetResourceManager()->AddSystemType<Sound>(this);
+    GetEngine().GetResourceSystem()->AddSystemType<Sound>(this);
 
     FMOD_CHECK(FMOD::System_Create(&_fmod, FMOD_VERSION))
     FMOD_CHECK(_fmod->init(128, FMOD_INIT_NORMAL, nullptr))

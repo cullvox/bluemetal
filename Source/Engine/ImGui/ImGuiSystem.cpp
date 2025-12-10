@@ -101,10 +101,10 @@ void ImGuiSystem::Process(const SDL_Event& event)
 
 void ImGuiSystem::Init()
 {
-    auto graphics = GetEngine().GetGraphics();
-    auto device = graphics->GetDevice();
-    auto instance = graphics->GetInstance();
-    auto physicalDevice = graphics->GetPhysicalDevice();
+    auto& graphics = GetEngine().GetGraphics();
+    auto device = graphics.GetDevice();
+    auto instance = graphics.GetInstance();
+    auto physicalDevice = graphics.GetPhysicalDevice();
     auto window = _window;
 
     auto [pass, subpass] = _renderer->GetRenderPass(RenderPassType::eUI);
@@ -150,11 +150,11 @@ void ImGuiSystem::Init()
     initInfo.Queue = device->GetGraphicsQueue();
     initInfo.PipelineCache = VK_NULL_HANDLE;
     initInfo.DescriptorPool = _descriptorPool;
-    initInfo.RenderPass = pass;
-    initInfo.Subpass = subpass;
     initInfo.MinImageCount = 3;
     initInfo.ImageCount = 3;
-    initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    initInfo.PipelineInfoMain.RenderPass = pass;
+    initInfo.PipelineInfoMain.Subpass = subpass;
+    initInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     initInfo.Allocator = nullptr;
     initInfo.CheckVkResultFn = nullptr;
 
@@ -172,16 +172,16 @@ void ImGuiSystem::Init()
     ImFont* pFont = io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto-Regular.ttf", 18.0f * scale);
     io.FontDefault = pFont;
 
-    ImGui_ImplVulkan_CreateFontsTexture();
-    ImGui_ImplVulkan_DestroyFontsTexture();
+    // ImGui_ImplVulkan_CreateFontsTexture();
+    // ImGui_ImplVulkan_DestroyFontsTexture();
 
     ApplyStyle();
 }
 
 void ImGuiSystem::Unload()
 {
-    auto graphics = GetEngine().GetGraphics();
-    auto device = graphics->GetDevice();
+    auto& graphics = GetEngine().GetGraphics();
+    auto device = graphics.GetDevice();
 
     device->WaitForDevice();
     ImGui_ImplSDL3_Shutdown();
@@ -205,111 +205,6 @@ void ImGuiSystem::EndFrame(VkCommandBuffer cmd)
 
 void ImGuiSystem::DrawDebug()
 {
-    auto gs = GetEngine().GetGraphics();
-    auto& counter = GetEngine().GetFrameCounter();
-    auto window = gs->GetWindow();
-    auto as = GetEngine().GetAudio();
-
-    ImGui::Begin("BlueMetal Debug Info");
-
-    if (ImGui::CollapsingHeader("Version")) {
-        ImGui::Text("Compiled " __DATE__ " " __TIME__);
-        ImGui::Text("Compiler ");
-        ImGui::SameLine();
-        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, "%s", bl::compiler.c_str());
-
-        ImGui::Text("Bluemetal");
-        ImGui::SameLine();
-        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, "%s", bl::to_string(bl::engineVersion).c_str());
-
-        ImGui::Text("SDL");
-        ImGui::SameLine();
-        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION));
-
-        ImGui::Text("Vulkan Header");
-        ImGui::SameLine();
-        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, "%d", VK_HEADER_VERSION);
-
-        ImGui::Text("Vulkan Version");
-        ImGui::SameLine();
-        auto instanceVersion = volkGetInstanceVersion();
-        ImGui::TextColored(ImVec4 { 0.7f, 0.1f, 0.1f, 1.0f }, "%d.%d.%d", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
-
-        ImGui::Text("ImGui");
-        ImGui::SameLine();
-        ImGui::TextColored(ImVec4 { 0.2f, 0.4f, 0.8f, 1.0f }, "%s", ImGui::GetVersion());
-    }
-
-    if (ImGui::CollapsingHeader("Input")) {
-        ImGui::Text("Window Focused: %s", window->GetFocused() ? "Yes" : "No");
-        ImGui::Text("ImGui Wants Mouse: %s", ImGui::GetIO().WantCaptureMouse ? "Yes" : "No");
-    }
-
-    if (ImGui::CollapsingHeader("Graphics")) {
-
-        ImGui::Text("Graphics Device: %s", gs->GetPhysicalDevice()->GetDeviceName().c_str());
-        ImGui::SameLine();
-        ImGui::HelpMarker("Your graphics card.");
-        ImGui::Text("Graphics Vendor: %s", gs->GetPhysicalDevice()->GetVendorName().c_str());
-        ImGui::Text("F/S: %d", counter.GetFramesPerSecond());
-        ImGui::Text("MS/F: %.2f", counter.GetMillisecondsPerFrame());
-        ImGui::Text("Average F/S (Over 10 Seconds): %.1f", counter.GetAverageFramesPerSecond(10));
-        ImGui::Text("Average MS/F (Over 144 Frames): %.2f", counter.GetAverageMillisecondsPerFrame(144));
-        ImGui::Text("Presenting: (%s | %s, %s)", bl::ToString(window->GetSwapchain()->GetPresentMode()).data(), bl::ToString(window->GetSwapchain()->GetSurfaceFormat().format).data(), bl::ToString(window->GetSwapchain()->GetSurfaceFormat().colorSpace).data());
-        // ImGui::Text("Surface Format: (%s, %s)", string_VkFormat(currentSurfaceFormat.format), string_VkColorSpaceKHR(currentSurfaceFormat.colorSpace));
-
-        if (ImGui::TreeNode("Physical Devices")) {
-            auto physicalDevices = gs->GetInstance()->GetPhysicalDevices();
-
-            for (size_t i = 0; i < physicalDevices.size(); i++) {
-                auto& physicalDevice = physicalDevices[i];
-
-                if (ImGui::TreeNode((void*)(intptr_t)i, "%s", physicalDevice->GetDeviceName().c_str())) {
-                    const char* deviceType = "";
-                    switch (physicalDevice->GetType()) {
-                    case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
-                        deviceType = "Integrated";
-                        break;
-                    case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
-                        deviceType = "Discrete";
-                        break;
-                    case VK_PHYSICAL_DEVICE_TYPE_CPU:
-                        deviceType = "CPU";
-                        break;
-                    default:
-                        deviceType = "Unknown";
-                        break;
-                    }
-
-                    ImGui::SameLine();
-                    ImGui::TextColored({ 0.2f, 0.8f, 0.4f, 1.0f }, "%s", deviceType);
-
-                    if (physicalDevice == gs->GetPhysicalDevice()) {
-                        ImGui::SameLine();
-                        ImGui::TextColored(ImVec4 { 0.2f, 0.5f, 0.8f, 1.0f }, "Current");
-                    }
-
-                    if (ImGui::TreeNode("Present Modes")) {
-                        for (VkPresentModeKHR mode : physicalDevice->GetPresentModes(window))
-                            ImGui::Text("%s", bl::ToString(mode).data());
-
-                        ImGui::TreePop();
-                    }
-
-                    ImGui::TreePop();
-                }
-            }
-
-            ImGui::TreePop();
-        }
-    }
-
-    if (ImGui::CollapsingHeader("Audio")) {
-        ImGui::Text("Audio Driver: %s", as->GetDriverName().c_str());
-        ImGui::Text("Num Channels: %d", as->GetNumChannelsPlaying());
-    }
-
-    ImGui::End();
 }
 
 } // namespace bl
