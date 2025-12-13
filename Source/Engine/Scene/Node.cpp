@@ -142,8 +142,13 @@ void Node::AddChild(Node* child)
     }
 
     if (child->_parent == this) {
-        Print::Warn("Node '{}' is already a child of node '{}'.", child->GetName(), this->GetName());
+        Print::Warn("Node with name '{}' is already a child of node '{}'.", child->GetName(), this->GetName());
         return; // Already a child of this node.
+    }
+
+    if (child->GetName().empty()) {
+        Print::Warn("A node with no name cannot be a child!");
+        return;
     }
 
     std::unique_ptr<Node> childPtr(nullptr);

@@ -57,11 +57,12 @@ int main(int argc, const char** argv)
         auto rootNode = std::make_unique<bl::Node3D>(engine);
 
         auto characterNode = model.lock()->GetTree()->Clone();
+        characterNode->SetName("Character");
         characterNode->SetPosition({ 0.0f, -0.6f, 0.0f });
 
         JPH::Ref<JPH::CapsuleShape> shape = new JPH::CapsuleShape(0.8f, 0.3f);
         auto physicsBody = std::make_unique<bl::PhysicsBody3D>(engine);
-        physicsBody->SetName("Character");
+        physicsBody->SetName("CharacterBody");
         physicsBody->SetPosition({ 0.0f, 0.0f, -5.0f });
         physicsBody->SetShape(shape.GetPtr());
         physicsBody->ResetBody();
