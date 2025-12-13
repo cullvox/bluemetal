@@ -13,6 +13,10 @@ Camera3D::Camera3D(Engine& engine)
     _fov = 85.0f;
 }
 
+Camera3D::~Camera3D()
+{
+}
+
 void Camera3D::SetProjection(CameraProjection projection)
 {
     _projection = projection;

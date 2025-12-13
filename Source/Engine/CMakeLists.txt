@@ -72,14 +72,13 @@ list(APPEND Sources
   "Scene/AudioSource3D.cpp"
   "Scene/MeshInstance3D.cpp"
   "Scene/Camera3D.cpp"
+  "Scene/FlyCamera3D.cpp"
   "Scene/PhysicsBody3D.cpp"
 
   "Editor/DebugEditor.cpp"
   "Editor/Editor.cpp"
 
-  "Engine/SDL.cpp"
   "Engine/System.cpp"
-  
   "Engine/Engine.cpp"
   )
 

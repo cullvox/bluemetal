@@ -28,8 +28,14 @@ std::unique_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
         auto meshNode = std::make_unique<MeshInstance3D>(_graphicsSystem->GetEngine());
         auto& primitive = model.meshes[node.mesh].primitives[0];
 
+        if (primitive.material == -1) {
+            meshNode->SetMaterial(_materials[0]);
+        } else {
+            meshNode->SetMaterial(_materials[primitive.material]);
+        }
+
         meshNode->SetMesh(_meshes[node.mesh]);
-        meshNode->SetMaterial(_materials[primitive.material]);
+
         newNode = std::move(meshNode);
     }
 
@@ -145,6 +151,14 @@ Model::Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::
             auto texture = _textures[material.pbrMetallicRoughness.baseColorTexture.index];
             instance->SetSampledTexture2D("inAlbedo", defaultSampler, texture);
         }
+
+        _materials.push_back(instance);
+    }
+
+    if (model.materials.size() == 0) {
+        auto instance = defaultMaterial.lock()->CreateInstance();
+        instance->SetBool("material.useTriplanar", false);
+        AddSubResource(instance);
 
         _materials.push_back(instance);
     }

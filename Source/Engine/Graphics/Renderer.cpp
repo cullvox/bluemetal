@@ -184,6 +184,14 @@ void Renderer::Render(RenderFunction func)
     if (_window->GetMinimized())
         return;
 
+    if (recreateRequested) {
+        _device->WaitForDevice(); // Wait for previous commands to complete.
+
+        _swapchain->Recreate(recreatePresentMode);
+        RecreateImages();
+        recreateRequested = false;
+    }
+
     // Compute the per frame UBO.
     const auto currentTime = Time::Current();
     const auto extent = _swapchain->GetExtent();
@@ -262,6 +270,20 @@ void Renderer::Render(RenderFunction func)
         _imageIndex,
         _globalSet[_currentFrame]
     };
+
+    VkViewport viewport;
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)extent.width;
+    viewport.height = (float)extent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewport(rd.cmd, 0, 1, &viewport);
+
+    VkRect2D scissor;
+    scissor.offset = { 0, 0 };
+    scissor.extent = { extent.width, extent.height };
+    vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
 
     func(rd);
 
@@ -442,6 +464,22 @@ void Renderer::AddMaterial(VulkanMaterialInstance* material)
 void Renderer::RemoveMaterial(VulkanMaterialInstance* material)
 {
     _materials.erase(material);
+}
+
+std::vector<VkPresentModeKHR> Renderer::GetPresentModes()
+{
+    return _device->GetPhysicalDevice()->GetPresentModes(_window);
+}
+
+void Renderer::SetPresentMode(VkPresentModeKHR mode)
+{
+    recreatePresentMode = mode;
+    recreateRequested = true;
+}
+
+VkPresentModeKHR Renderer::GetPresentMode() const
+{
+    return _swapchain->GetPresentMode();
 }
 
 } // namespace bl

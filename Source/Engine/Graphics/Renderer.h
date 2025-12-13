@@ -37,6 +37,9 @@ public:
 
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
+    std::vector<VkPresentModeKHR> GetPresentModes();
+    void SetPresentMode(VkPresentModeKHR mode);
+    VkPresentModeKHR GetPresentMode() const;
 
 protected:
     friend class Material;
@@ -73,6 +76,8 @@ private:
     std::vector<VulkanImage> _positionImages;
     std::vector<VulkanImage> _depthImages;
     std::vector<VkFramebuffer> _framebuffers;
+    bool recreateRequested = false;
+    VkPresentModeKHR recreatePresentMode;
 
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
 

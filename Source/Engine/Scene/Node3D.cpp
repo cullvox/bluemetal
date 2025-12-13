@@ -93,6 +93,12 @@ void Node3D::SetRotation(const glm::quat& newRotation)
     UpdateTransform();
 }
 
+void Node3D::SetTransform(const glm::mat4& transform)
+{
+    _transform = transform;
+    UpdateTransform();
+}
+
 void Node3D::SetWorldRotation(const glm::vec3& eulerAngles)
 {
     SetWorldRotation(glm::quat(glm::radians(eulerAngles)));

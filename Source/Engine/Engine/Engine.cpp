@@ -1,25 +1,22 @@
-#include "Engine/Engine.h"
-#include "Core/Print.h"
-#include "Graphics/Renderer.h"
-#include "Graphics/VulkanWindow.h"
-#include "Math/Rect.h"
 #include "argparse/argparse.hpp"
 
 #include "Audio/AudioSystem.h"
-#include "Core/Flags.h"
 #include "Core/FrameCounter.h"
+#include "Core/Print.h"
+#include "Editor/Editor.h"
+#include "Engine/Engine.h"
 #include "Engine/SDL.h"
 #include "Graphics/GraphicsSystem.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/VulkanWindow.h"
 #include "ImGui/ImGuiSystem.h"
-#include "Resources/ResourceSystem.h"
 #include "Physics/PhysicsSystem.h"
+#include "Resources/ResourceSystem.h"
 #include "Window/Input.h"
-#include "Editor/Editor.h"
 
 namespace bl {
 
 Engine::Engine(int argc, const char** argv)
-    : _sdl()
 {
     argparse::ArgumentParser program("BlueMetal Engine");
 
@@ -39,16 +36,13 @@ Engine::Engine(int argc, const char** argv)
     bool verbose = program.get<bool>("--verbose");
     Print::EnableVerboseLogging(verbose);
 
-}
-
-Engine::~Engine()
-{
-    Print::Info("Shutting down BlueMetal...");
-}
-
-void Engine::Initialize()
-{
     Print::Info("Initializing BlueMetal v{}", bl::engineVersion.ToString());
+
+    uint32_t flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS;
+
+    if (SDL_Init(flags) == false) {
+        throw std::runtime_error("Could not initialize SDL!");
+    }
 
     _resourceManager = std::make_unique<ResourceSystem>(*this);
     _audio = std::make_unique<AudioSystem>(*this);
@@ -60,13 +54,10 @@ void Engine::Initialize()
     _editor = std::make_unique<Editor>(*this);
 }
 
-void Engine::Shutdown()
+Engine::~Engine()
 {
+    SDL_Quit();
     Print::Info("Shutting down BlueMetal...");
-    _imgui.reset();
-    _graphics.reset();
-    _audio.reset();
-    _resourceManager.reset();
 }
 
 FrameCounter& Engine::GetFrameCounter()

@@ -1,34 +1,29 @@
 #include "Core/FrameCounter.h"
 #include "Core/Print.h"
 #include "Core/Time.h"
+#include "Editor/Editor.h"
 #include "Engine/Engine.h"
+#include "Graphics/GraphicsSystem.h"
 #include "Graphics/UniformData.h"
 #include "Graphics/Vertex.h"
+#include "Physics/ObjectLayers.h"
+#include "Physics/PhysicsSystem.h"
 #include "Resources/Material.h"
 #include "Resources/Model.h"
+#include "Resources/ResourceSystem.h"
 #include "Resources/Shader.h"
 #include "Resources/Texture2D.h"
 #include "Scene/AudioSource3D.h"
-#include "Scene/PhysicsBody3D.h"
 #include "Scene/MeshInstance3D.h"
+#include "Scene/PhysicsBody3D.h"
+#include "Window/Input.h"
 #include "Window/Keyboard.h"
 #include "Window/Mouse.h"
-#include "Physics/ObjectLayers.h"
-#include "Editor/Editor.h"
+#include <Scene/FlyCamera3D.h>
 
-#include "Window/Input.h"
-#include "Graphics/GraphicsSystem.h"
-#include "Resources/ResourceSystem.h"
-#include "Physics/PhysicsSystem.h"
-
-#include <Jolt/Physics/Collision/Shape/SphereShape.h>
-#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
-
-static inline float randomValue()
-{
-    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-}
+#include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
+#include <Jolt/Physics/Collision/Shape/SphereShape.h>
 
 int main(int argc, const char** argv)
 {
@@ -36,8 +31,7 @@ int main(int argc, const char** argv)
     (void)argv;
 
     try {
-        bl::Engine engine{ argc, argv };
-        engine.Initialize();
+        bl::Engine engine { argc, argv };
 
         auto resourceMgr = engine.GetResourceSystem();
         auto audio = engine.GetAudio();
@@ -58,11 +52,12 @@ int main(int argc, const char** argv)
 
         auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.glb");
         auto cube = resourceMgr->Load<bl::Model>("Resources/Models/cube.glb");
+        auto grass = resourceMgr->Load<bl::Model>("Resources/Models/Grass.glb");
 
         auto rootNode = std::make_unique<bl::Node3D>(engine);
 
         auto characterNode = model.lock()->GetTree()->Clone();
-        characterNode->SetPosition({0.0f, -0.6f, 0.0f});
+        characterNode->SetPosition({ 0.0f, -0.6f, 0.0f });
 
         JPH::Ref<JPH::CapsuleShape> shape = new JPH::CapsuleShape(0.8f, 0.3f);
         auto physicsBody = std::make_unique<bl::PhysicsBody3D>(engine);
@@ -75,7 +70,18 @@ int main(int argc, const char** argv)
 
         auto floorMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
         auto floorTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/floor.jpg");
+        auto defaultTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Default.png");
         auto defaultSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Default.json");
+        auto nearestSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Nearest.json");
+
+        auto grassMaterial = floorMaterial.lock()->CreateInstance();
+        grassMaterial->SetSampledTexture2D("inAlbedo", nearestSampler, defaultTexture);
+
+        auto grassNode = grass.lock()->GetTree()->Clone();
+        grassNode->SetName("Grass_01");
+        grassNode->SetPosition({ 0.5f, 0.5f, 0.5f });
+        grassNode->GetChild("Plane")->As<bl::MeshInstance3D>()->SetMaterial(grassMaterial);
+        rootNode->AddChild(grassNode);
 
         floorMaterial.lock()->SetSampledTexture2D("inAlbedo", defaultSampler, floorTexture);
         floorMaterial.lock()->SetBool("material.useTriplanar", true);
@@ -86,13 +92,13 @@ int main(int argc, const char** argv)
 
         floorNode->GetChild("Cube")->As<bl::MeshInstance3D>()->SetMaterial(floorMaterial);
 
-        JPH::Ref<JPH::Shape> floorShape = new JPH::BoxShape({50.0f, 0.5f, 50.0f});
+        JPH::Ref<JPH::Shape> floorShape = new JPH::BoxShape({ 50.0f, 0.5f, 50.0f });
         auto floorStaticBody = std::make_unique<bl::PhysicsBody3D>(engine);
         floorStaticBody->SetName("FloorBody");
         floorStaticBody->SetMotionType(JPH::EMotionType::Static);
         floorStaticBody->SetObjectLayer(bl::ObjectLayers::STATIC);
         floorStaticBody->SetShape(floorShape);
-        floorStaticBody->SetPosition({0.0f, -5.0f, 0.0f});
+        floorStaticBody->SetPosition({ 0.0f, -5.0f, 0.0f });
         floorStaticBody->ResetBody();
         floorStaticBody->SetDOF(true, true, true, false, true, false); // Lock rotation around Z axis
 
@@ -100,21 +106,13 @@ int main(int argc, const char** argv)
 
         rootNode->AddChild(std::move(floorStaticBody));
 
+        auto flycam = std::make_unique<bl::FlyCamera3D>(engine);
+        flycam->SetName("FlyCam");
+        flycam->SetPosition({ 0.0f, 0.0f, 5.0f });
+        rootNode->AddChild(std::move(flycam));
+
         bl::FrameCounter& frameCounter = engine.GetFrameCounter();
-        float cameraAcceleration = 015.f;
-        float maxCameraSpeed = 8.f;
-        bool enableCameraSmoothing = true;
-        bool enableCameraMovementDamping = true;
-        float cameraSmoothnessDampLambda = 5.0f;
-        float cameraMovementDampLambda = 5.0f;
-        glm::vec3 cameraVelocity = { 0.0f, 0.0f, 0.0f };
-        glm::vec3 cameraPos = { 0.0f, 0.0f, 5.0f };
-        glm::vec3 cameraFront = { 0.0f, 0.0f, -1.0f };
-        glm::vec3 cameraUp = { 0.0f, 1.0f, 0.0f };
-        glm::mat4 view = glm::identity<glm::mat4>();
-        float yaw = -90.0f, pitch = 0.0f;
-        float yawVelocity = 0.0f, pitchVelocity = 0.0f;
-        glm::vec3 direction;
+        auto presentModes = renderer->GetPresentModes();
 
         while (!window->GetCloseRequested()) {
             frameCounter.BeginFrame();
@@ -125,114 +123,17 @@ int main(int argc, const char** argv)
                 imgui->Process(event);
             });
 
-            // Compute camera velocity
-            bool cameraMoved = false;
-            glm::vec3 acceleration = glm::zero<glm::vec3>();
-            if (keyboard.GetKeyDown(bl::Scancode::W)) {
-                acceleration += cameraFront;
-                cameraMoved = true;
-            }
-            if (keyboard.GetKeyDown(bl::Scancode::S)) {
-                acceleration -= cameraFront;
-                cameraMoved = true;
-            }
-            if (keyboard.GetKeyDown(bl::Scancode::A)) {
-                acceleration -= glm::normalize(glm::cross(cameraFront, cameraUp));
-                cameraMoved = true;
-            }
-            if (keyboard.GetKeyDown(bl::Scancode::D)) {
-                acceleration += glm::normalize(glm::cross(cameraFront, cameraUp));
-                cameraMoved = true;
-            }
-            if (keyboard.GetKeyDown(bl::Scancode::Space)) {
-                acceleration += cameraUp;
-                cameraMoved = true;
-            }
-            if (keyboard.GetKeyDown(bl::Scancode::LeftShift)) {
-                acceleration -= cameraUp;
-                cameraMoved = true;
-            }
-
             if (keyboard.GetKeyDown(bl::Scancode::Escape)) {
                 mouse.SetCaptured(window, false);
                 ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
             }
-
-            if (glm::length(acceleration) > 0.0f) {
-                acceleration = glm::normalize(acceleration) * cameraAcceleration;
-            }
-
-            cameraVelocity += acceleration * frameCounter.GetDeltaTime();
-
-            // Apply camera velocity
-            if (enableCameraMovementDamping) {
-                cameraPos += cameraVelocity * frameCounter.GetDeltaTime();
-
-                float cameraSpeed = glm::length(cameraVelocity);
-                if (cameraSpeed > maxCameraSpeed) {
-                    cameraVelocity = glm::normalize(cameraVelocity) * maxCameraSpeed;
-                }
-            } else {
-                // Treat acceleration as direct position change
-                cameraPos += acceleration * frameCounter.GetDeltaTime();
-            }
-
-            // Apply friction to camera velocity
-            if (enableCameraMovementDamping && !cameraMoved) {
-                cameraVelocity = bl::DampExponential(cameraVelocity, glm::zero<glm::vec3>(), cameraMovementDampLambda, frameCounter.GetDeltaTime());
-            } else if (!cameraMoved) {
-                cameraVelocity = glm::zero<glm::vec3>();
-            }
-
-            auto mousePos = mouse.GetMousePosition();
-            auto mouseDelta = mouse.GetMouseDelta();
 
             if (mouse.IsButtonDown(bl::MouseButton::Left) && window->GetFocused() && !ImGui::GetIO().WantCaptureMouse) {
                 mouse.SetCaptured(window, true);
                 ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
             }
 
-            // Update camera direction based on mouse movement, use acceleration for smoother movement
-            if (mouse.GetCaptured(window)) {
-                float sensitivity = 0.1f;
-                mouseDelta *= sensitivity;
-
-                if (enableCameraSmoothing) {
-                    yawVelocity = bl::DampExponential(yawVelocity, mouseDelta.x, cameraSmoothnessDampLambda, frameCounter.GetDeltaTime());
-                    pitchVelocity = bl::DampExponential(pitchVelocity, mouseDelta.y, cameraSmoothnessDampLambda, frameCounter.GetDeltaTime());
-                } else {
-                    yawVelocity = mouseDelta.x;
-                    pitchVelocity = mouseDelta.y;
-                }
-
-                yaw += yawVelocity;
-                pitch -= pitchVelocity;
-
-                if (pitch > 89.0f)
-                    pitch = 89.0f;
-                if (pitch < -89.0f)
-                    pitch = -89.0f;
-
-                if (yaw < 0.0f)
-                    yaw += 360.0f;
-                else if (yaw > 360.0f)
-                    yaw -= 360.0f;
-
-                direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-                direction.y = sin(glm::radians(pitch));
-                direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-                cameraFront = glm::normalize(direction);
-            }
-
-            view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
             bl::Extent2D extent = window->GetExtent();
-            glm::vec2 extentf = glm::vec2 { (float)extent.width, (float)extent.height };
-            glm::mat4 projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 1000.0f);
-            projection[1][1] *= -1; // Invert the projection for Vulkan y (0, 1)
-
-            renderer->SetView(view);
-            renderer->SetProjection(projection);
 
             audio->Update();
 
@@ -241,51 +142,25 @@ int main(int argc, const char** argv)
             renderer->Render([&](bl::VulkanRenderData& rd) {
                 auto extent = window->GetExtent();
 
-                VkViewport viewport;
-                viewport.x = 0.0f;
-                viewport.y = 0.0f;
-                viewport.width = (float)extent.width;
-                viewport.height = (float)extent.height;
-                viewport.minDepth = 0.0f;
-                viewport.maxDepth = 1.0f;
-                vkCmdSetViewport(rd.cmd, 0, 1, &viewport);
-
-                VkRect2D scissor;
-                scissor.offset = { 0, 0 };
-                scissor.extent = { extent.width, extent.height };
-                vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
-
-                rootNode->Draw(rd);
-
                 imgui->BeginFrame();
 
-                ImGui::ShowDemoWindow();
-
+                rootNode->Draw(rd);
                 editor.Draw(rd);
 
                 ImGui::Begin("Settings");
 
-                if (ImGui::TreeNode("Camera")) {
-                    ImGui::Checkbox("Enable Mouse Smoothing", &enableCameraSmoothing);
-                    ImGui::SetNextItemWidth(150.0f);
-                    ImGui::SliderFloat("Mouse Smoothness", &cameraSmoothnessDampLambda, 1.0f, 10.0f);
+                if (ImGui::TreeNode("Renderer")) {
+                    for (int i = 0; i < presentModes.size(); i++) {
+                        if (presentModes[i] == VK_PRESENT_MODE_FIFO_LATEST_READY_EXT)
+                            ImGui::BeginDisabled();
 
-                    ImGui::Dummy({0.0f, 10.0f});
+                        if (ImGui::RadioButton(bl::ToString(presentModes[i]).data(), presentModes[i] == renderer->GetPresentMode())) {
+                            renderer->SetPresentMode(presentModes[i]);
+                        }
 
-                    ImGui::Checkbox("Enable Movement Damping", &enableCameraMovementDamping);
-                    ImGui::SetNextItemWidth(150.0f);
-                    ImGui::SliderFloat("Acceleration", &cameraAcceleration, 0.1f, 20.0f);
-                    ImGui::SetNextItemWidth(150.0f);
-                    ImGui::SliderFloat("Max Speed", &maxCameraSpeed, 1.0f, 20.0f);
-                    ImGui::SetNextItemWidth(150.0f);
-                    ImGui::SliderFloat("Movement Damping", &cameraMovementDampLambda, 1.0f, 10.0f);
-
-                    ImGui::Separator();
-                    ImGui::Text("Position: %.2f, %.2f, %.2f m", cameraPos.x, cameraPos.y, cameraPos.z);
-                    ImGui::Text("Velocity: %.2f, %.2f, %.2f m/s", cameraVelocity.x, cameraVelocity.y, cameraVelocity.z);
-                    ImGui::Text("Rotation: %.2f, %.2f deg", yaw, pitch);
-                    ImGui::Text("Speed: %.2f m/s", glm::length(cameraVelocity));
-
+                        if (presentModes[i] == VK_PRESENT_MODE_FIFO_LATEST_READY_EXT)
+                            ImGui::EndDisabled();
+                    }
                     ImGui::TreePop();
                 }
 

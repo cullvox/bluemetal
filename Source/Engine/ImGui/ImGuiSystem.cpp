@@ -155,6 +155,7 @@ void ImGuiSystem::Init()
     initInfo.PipelineInfoMain.RenderPass = pass;
     initInfo.PipelineInfoMain.Subpass = subpass;
     initInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+    initInfo.UseDynamicRendering = false;
     initInfo.Allocator = nullptr;
     initInfo.CheckVkResultFn = nullptr;
 
