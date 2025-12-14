@@ -19,13 +19,14 @@ VulkanImage::VulkanImage()
 {
 }
 
-VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, uint32_t mipLevels, VkImageLayout initialLayout)
+VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, uint32_t mipLevels, VkSampleCountFlagBits samples, VkImageLayout initialLayout)
     : _device(device)
     , _extent(extent)
     , _type(type)
     , _format(format)
     , _usage(usage)
     , _mipLevels(mipLevels)
+    , _samples(samples)
     , _layout(initialLayout)
     , _defaultView(VK_NULL_HANDLE)
 {
@@ -57,7 +58,7 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     imageCreateInfo.extent = _extent;
     imageCreateInfo.mipLevels = _mipLevels;
     imageCreateInfo.arrayLayers = 1;
-    imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+    imageCreateInfo.samples = samples;
     imageCreateInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
     imageCreateInfo.usage = _usage;
     imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;

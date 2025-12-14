@@ -90,6 +90,24 @@ std::optional<VkImageFormatProperties2> VulkanPhysicalDevice::GetImageFormatProp
     return std::nullopt;
 }
 
+VkSampleCountFlags VulkanPhysicalDevice::GetSupportedFramebufferSampleCounts()
+{
+    return _properties.limits.framebufferColorSampleCounts & _properties.limits.framebufferDepthSampleCounts;
+}
+
+VkSampleCountFlagBits VulkanPhysicalDevice::GetMaxSampleCount()
+{
+    VkSampleCountFlags counts = _properties.limits.framebufferColorSampleCounts & _properties.limits.framebufferDepthSampleCounts;
+    if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+    if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+    if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+    if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+    if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+    if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+
+    return VK_SAMPLE_COUNT_1_BIT;
+}
+
 VkFormat VulkanPhysicalDevice::FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
     for (VkFormat format : candidates) {

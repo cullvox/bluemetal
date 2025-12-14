@@ -57,6 +57,12 @@ public:
 
     std::optional<VkImageFormatProperties2> GetImageFormatProperties(const VkPhysicalDeviceImageFormatInfo2& info);
 
+    /// @brief GetSupportedFramebufferSampleCounts
+    /// @returns The available sample counts to be used in a frame buffer.
+    VkSampleCountFlags GetSupportedFramebufferSampleCounts();
+
+    VkSampleCountFlagBits GetMaxSampleCount();
+
     /// @brief FindSupportedFormat
     /// @param candidates[in] List of possible formats to choose from.
     /// @param tiling[in] Selected required tiling option for the format.

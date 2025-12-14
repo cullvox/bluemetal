@@ -1,12 +1,13 @@
 #include "VulkanPipeline.h"
 #include "VulkanDevice.h"
 #include "VulkanShader.h"
+#include "Renderer.h"
 
 #include "Core/Print.h"
 
 namespace bl {
 
-VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateInfo& state, VkRenderPass pass, uint32_t subpass, const VulkanReflectedPipeline* reflection)
+VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const VulkanPipelineStateInfo& state, const VulkanReflectedPipeline* reflection)
     : _device(device)
 {
 
@@ -111,11 +112,13 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     rasterizationState.depthBiasSlopeFactor = state.rasterizerState.depthBiasSlopeFactor;
     rasterizationState.lineWidth = state.rasterizerState.lineWidth;
 
+    // Using viewport dynamic state should allow us to change multisample state in real time?
+
     VkPipelineMultisampleStateCreateInfo multisampleState = {};
     multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampleState.pNext = nullptr;
     multisampleState.flags = 0;
-    multisampleState.rasterizationSamples = state.multisampleState.rasterizationSamples;
+    multisampleState.rasterizationSamples = _device->GetPhysicalDevice()->GetMaxSampleCount();
     multisampleState.sampleShadingEnable = state.multisampleState.sampleShadingEnable;
     multisampleState.minSampleShading = state.multisampleState.minSampleShading;
     multisampleState.pSampleMask = nullptr;
@@ -162,6 +165,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     auto dynamicStates = state.dynamicStates;
     dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
     dynamicStates.push_back(VK_DYNAMIC_STATE_SCISSOR);
+    dynamicStates.push_back(VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES_EXT);
 
     VkPipelineDynamicStateCreateInfo dynamicState = {};
     dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
@@ -170,9 +174,19 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
 
+    auto colorAttachmentFormats = renderer->GetColorAttachmentFormats();
+    VkPipelineRenderingCreateInfo rendering = {};
+    rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+    rendering.pNext = nullptr;
+    rendering.viewMask = 0;
+    rendering.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentFormats.size());
+    rendering.pColorAttachmentFormats = colorAttachmentFormats.data();
+    rendering.depthAttachmentFormat = renderer->GetDepthAttachmentFormat();
+    rendering.stencilAttachmentFormat = renderer->GetStencilAttachmentFormat();
+
     VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
     pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-    pipelineCreateInfo.pNext = nullptr;
+    pipelineCreateInfo.pNext = &rendering;
     pipelineCreateInfo.flags = {};
     pipelineCreateInfo.stageCount = (uint32_t)stages.size();
     pipelineCreateInfo.pStages = stages.data();
@@ -186,8 +200,8 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, const VulkanPipelineStateIn
     pipelineCreateInfo.pColorBlendState = &colorBlendState;
     pipelineCreateInfo.pDynamicState = &dynamicState;
     pipelineCreateInfo.layout = _layout;
-    pipelineCreateInfo.renderPass = pass;
-    pipelineCreateInfo.subpass = subpass;
+    pipelineCreateInfo.renderPass = VK_NULL_HANDLE; // Dynamic rendering.
+    pipelineCreateInfo.subpass = 0;
     pipelineCreateInfo.basePipelineHandle = VK_NULL_HANDLE; // No vendor actually uses derivative pipelines. 😿
     pipelineCreateInfo.basePipelineIndex = 0;
 

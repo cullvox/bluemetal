@@ -6,8 +6,6 @@
 
 #include "UniformData.h"
 #include "VulkanBuffer.h"
-#include "VulkanDescriptorSetAllocatorCache.h"
-#include "VulkanImage.h"
 
 namespace bl {
 
@@ -16,6 +14,9 @@ class VulkanWindow;
 class VulkanDevice;
 class VulkanSwapchain;
 class VulkanMaterialInstance;
+class VulkanImageView;
+class VulkanImage;
+class VulkanDescriptorSetAllocatorCache;
 struct VulkanRenderData;
 
 using RenderFunction = std::function<void(VulkanRenderData& rd)>;
@@ -37,9 +38,20 @@ public:
 
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
+
     std::vector<VkPresentModeKHR> GetPresentModes();
     void SetPresentMode(VkPresentModeKHR mode);
     VkPresentModeKHR GetPresentMode() const;
+
+    std::vector<VkSampleCountFlagBits> GetMultisampleCounts();
+    void SetMultisampleCount(VkSampleCountFlagBits samples);
+    VkSampleCountFlagBits GetMultisampleCount();
+
+    std::vector<VkFormat> GetColorAttachmentFormats();
+    VkFormat GetDepthAttachmentFormat();
+    VkFormat GetStencilAttachmentFormat();
+
+    void SetImageRecreateCallback(std::function<void()> onRecreate);
 
 protected:
     friend class Material;
@@ -56,6 +68,8 @@ private:
     void CreateGlobalUniform();
     void DestroyGlobalUniform();
     void RecreateImages();
+    void AcquireSampleCounts();
+    void TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageSubresourceRange range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout);
 
     VulkanDevice* _device;
     VulkanWindow* _window;
@@ -71,15 +85,20 @@ private:
     std::vector<VkFence> _inFlightFences;
 
     // Render Pass Data
+    VkSampleCountFlagBits _sampleCount = VK_SAMPLE_COUNT_1_BIT;
     VkFormat _depthFormat, _positionFormat;
     VkRenderPass _pass;
-    std::vector<VulkanImage> _positionImages;
-    std::vector<VulkanImage> _depthImages;
+    std::unique_ptr<VulkanImage> _colorImage;
+    std::unique_ptr<VulkanImageView> _colorImageView;
+    std::unique_ptr<VulkanImage> _depthImage;
+    std::unique_ptr<VulkanImageView> _depthImageView;
+    std::vector<VkImage> _swapchainImages;
+    std::vector<VkImageView> _swapchainImageViews;
     std::vector<VkFramebuffer> _framebuffers;
     bool recreateRequested = false;
-    VkPresentModeKHR recreatePresentMode;
+    VkPresentModeKHR recreatePresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-    VulkanDescriptorSetAllocatorCache _descriptorSetCache;
+    std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache;
 
     // Uniform data
     GlobalUBO _uboData;
@@ -88,6 +107,8 @@ private:
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalSet;
     std::array<void*, VulkanConfig::maxFramesInFlight> _globalBufferMap;
     float _prevTime;
+
+    std::function<void()> _recreateCallback;
 
     std::unordered_set<VulkanMaterialInstance*> _materials;
 };

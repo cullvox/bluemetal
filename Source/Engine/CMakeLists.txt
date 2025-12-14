@@ -16,6 +16,7 @@ list(APPEND Sources
   "Graphics/VulkanDevice.cpp"
   "Graphics/VulkanBuffer.cpp"
   "Graphics/VulkanImage.cpp"
+  "Graphics/VulkanImageView.cpp"
   "Graphics/VulkanSampler.cpp"
   "Graphics/VulkanShader.cpp"
   "Graphics/VulkanReflectedBlock.cpp"

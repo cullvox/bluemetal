@@ -4,7 +4,7 @@
 
 namespace bl {
 
-VulkanMaterial::VulkanMaterial(VulkanDevice* device, VkRenderPass pass, uint32_t subpass, const VulkanPipelineStateInfo& state, uint32_t imageCount, uint32_t materialSet)
+VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const VulkanPipelineStateInfo& state, uint32_t imageCount, uint32_t materialSet)
     : VulkanMaterialInstance(device)
     , _swapchainImageCount(imageCount)
     , _descriptorSetCache(device, 1024, VulkanDescriptorRatio::Default())
@@ -48,7 +48,7 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, VkRenderPass pass, uint32_t
     }
 
     // Construct the pipeline.
-    _pipeline = std::make_unique<VulkanPipeline>(device, state, pass, subpass, &reflection);
+    _pipeline = std::make_unique<VulkanPipeline>(device, renderer, state, &reflection);
 
     const auto& pipelineDescriptorSetLayouts = _pipeline->GetDescriptorSetLayouts();
     _layout = pipelineDescriptorSetLayouts.at(materialSet);

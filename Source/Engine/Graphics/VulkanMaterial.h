@@ -10,6 +10,8 @@
 
 namespace bl {
 
+class Renderer;
+
 /**
  * @class VulkanMaterial
  *
@@ -51,8 +53,7 @@ public:
      */
     VulkanMaterial(
         VulkanDevice* device,
-        VkRenderPass pass,
-        uint32_t subpass,
+        Renderer* renderer,
         const VulkanPipelineStateInfo& state,
         uint32_t imageCount,
         uint32_t descriptorSetIndex = 1);

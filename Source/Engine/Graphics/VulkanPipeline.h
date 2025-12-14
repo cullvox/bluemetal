@@ -14,6 +14,7 @@ namespace bl {
 
 class VulkanDevice;
 class VulkanShader;
+class Renderer;
 
 /**
  * @class VulkanPipeline
@@ -43,9 +44,8 @@ public:
      */
     VulkanPipeline(
         VulkanDevice* device,
+        Renderer* renderer,
         const VulkanPipelineStateInfo& info,
-        VkRenderPass renderPass,
-        uint32_t subpass,
         const VulkanReflectedPipeline* reflection = nullptr);
 
     /**

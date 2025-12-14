@@ -114,6 +114,7 @@ int main(int argc, const char** argv)
 
         bl::FrameCounter& frameCounter = engine.GetFrameCounter();
         auto presentModes = renderer->GetPresentModes();
+        auto multisampleModes = renderer->GetMultisampleCounts();
 
         while (!window->GetCloseRequested()) {
             frameCounter.BeginFrame();
@@ -162,6 +163,15 @@ int main(int argc, const char** argv)
                         if (presentModes[i] == VK_PRESENT_MODE_FIFO_LATEST_READY_EXT)
                             ImGui::EndDisabled();
                     }
+
+                    ImGui::Separator();
+
+                    for (int i = 0; i < multisampleModes.size(); i++) {
+                        if (ImGui::RadioButton(bl::ToString(multisampleModes[i]).data(), multisampleModes[i] == renderer->GetMultisampleCount())) {
+                            renderer->SetMultisampleCount(multisampleModes[i]);
+                        }
+                    }
+
                     ImGui::TreePop();
                 }
 

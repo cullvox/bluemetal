@@ -47,6 +47,7 @@ std::string_view ToString(VkPresentModeKHR presentMode);
 std::string_view ToString(VkVertexInputRate rate);
 std::string_view ToString(VkPrimitiveTopology topology);
 std::string_view ToString(VkColorSpaceKHR colorSpace);
+std::string_view ToString(VkSampleCountFlagBits flag);
 
 }
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE(VkVertexInputBindingDescription, binding, stride, inputRate)

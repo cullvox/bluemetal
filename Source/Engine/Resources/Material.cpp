@@ -41,7 +41,7 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
 
     auto [pass, subpass] = _renderer->GetRenderPass(passType);
 
-    _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), pass, subpass, info, _renderer->GetSwapchainImageCount());
+    _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), _renderer, info, _renderer->GetSwapchainImageCount());
     _renderer->AddMaterial(_material.get());
 }
 

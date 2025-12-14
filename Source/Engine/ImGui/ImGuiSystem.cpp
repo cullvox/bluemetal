@@ -141,7 +141,19 @@ void ImGuiSystem::Init()
 
     ImGui_ImplSDL3_InitForVulkan(window->Get());
 
+    auto colorFormats = _renderer->GetColorAttachmentFormats();
+
     // Initialize ImGui for Vulkan, pass created objects.
+    auto colorAttachmentFormats = _renderer->GetColorAttachmentFormats();
+    VkPipelineRenderingCreateInfo rendering = {};
+    rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+    rendering.pNext = nullptr;
+    rendering.viewMask = 0;
+    rendering.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentFormats.size());
+    rendering.pColorAttachmentFormats = colorAttachmentFormats.data();
+    rendering.depthAttachmentFormat = _renderer->GetDepthAttachmentFormat();
+    rendering.stencilAttachmentFormat = _renderer->GetStencilAttachmentFormat();
+
     ImGui_ImplVulkan_InitInfo initInfo = {};
     initInfo.Instance = instance->Get();
     initInfo.PhysicalDevice = physicalDevice->Get();
@@ -152,16 +164,36 @@ void ImGuiSystem::Init()
     initInfo.DescriptorPool = _descriptorPool;
     initInfo.MinImageCount = 3;
     initInfo.ImageCount = 3;
-    initInfo.PipelineInfoMain.RenderPass = pass;
-    initInfo.PipelineInfoMain.Subpass = subpass;
-    initInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-    initInfo.UseDynamicRendering = false;
+    initInfo.PipelineInfoMain.PipelineRenderingCreateInfo = rendering;
+    initInfo.PipelineInfoMain.MSAASamples = _renderer->GetMultisampleCount();
+    initInfo.UseDynamicRendering = true;
     initInfo.Allocator = nullptr;
     initInfo.CheckVkResultFn = nullptr;
 
     if (!ImGui_ImplVulkan_Init(&initInfo)) {
         throw std::runtime_error("Could not initialize ImGui Vulkan!");
     }
+
+    _renderer->SetImageRecreateCallback([this](){
+
+        auto colorFormats = _renderer->GetColorAttachmentFormats();
+        ImGui_ImplVulkan_PipelineInfo info{};
+
+        auto colorAttachmentFormats = _renderer->GetColorAttachmentFormats();
+        VkPipelineRenderingCreateInfo rendering = {};
+        rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
+        rendering.pNext = nullptr;
+        rendering.viewMask = 0;
+        rendering.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentFormats.size());
+        rendering.pColorAttachmentFormats = colorAttachmentFormats.data();
+        rendering.depthAttachmentFormat = _renderer->GetDepthAttachmentFormat();
+        rendering.stencilAttachmentFormat = _renderer->GetStencilAttachmentFormat();
+
+        info.PipelineRenderingCreateInfo = rendering;
+        info.MSAASamples = _renderer->GetMultisampleCount();
+
+        ImGui_ImplVulkan_CreateMainPipeline(&info);
+    });
 
     // Upload the Vulkan ImGui font textures.
     ImFontConfig cfg;

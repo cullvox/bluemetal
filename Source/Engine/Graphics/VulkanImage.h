@@ -17,6 +17,7 @@ class VulkanImage {
     VkFormat _format;
     VkImageUsageFlags _usage;
     uint32_t _mipLevels;
+    VkSampleCountFlagBits _samples;
     VkImageLayout _layout;
     VkImage _image;
     VkImageView _defaultView;
@@ -42,6 +43,7 @@ public:
         VkFormat format,
         VkImageUsageFlags usage,
         uint32_t mipLevels = 1,
+        VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT,
         VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED);
 
     /// @brief Move Constructor

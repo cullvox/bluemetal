@@ -216,7 +216,7 @@ std::vector<const char*> VulkanDevice::GetExtensions()
     // The engines required device extensions.
     std::vector requiredExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        "VK_EXT_extended_dynamic_state",
+        "VK_EXT_extended_dynamic_state3",
 #ifdef BLUEMETAL_VULKAN_PORTABILITY
         "VK_KHR_portability_subset",
 #endif
@@ -295,16 +295,27 @@ void VulkanDevice::CreateDevice()
     // In the event that we use compute, this needs to be upgraded.
     queueCreateInfos.resize(AreQueuesSame() ? 1 : 2);
 
-    const VkPhysicalDeviceFeatures features = {};
+    VkPhysicalDeviceFeatures features = {};
+
+    VkPhysicalDeviceVulkan13Features features13 = {};
+    features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+    features13.dynamicRendering = VK_TRUE;
+
+    VkPhysicalDeviceExtendedDynamicState3FeaturesEXT dynamicStateFeatures3 = {};
+    dynamicStateFeatures3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT;
+    dynamicStateFeatures3.pNext = nullptr;
+    dynamicStateFeatures3.extendedDynamicState3RasterizationSamples = VK_TRUE;
+
+    features13.pNext = &dynamicStateFeatures3;
 
     VkPhysicalDeviceExtendedDynamicStateFeaturesEXT dynamicStateFeatures = {};
     dynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
-    dynamicStateFeatures.pNext = nullptr;
+    dynamicStateFeatures.pNext = &dynamicStateFeatures3;
     dynamicStateFeatures.extendedDynamicState = VK_TRUE;
 
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pNext = &dynamicStateFeatures;
+    createInfo.pNext = &features13;
     createInfo.flags = 0;
     createInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
