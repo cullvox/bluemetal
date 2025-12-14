@@ -107,8 +107,6 @@ void ImGuiSystem::Init()
     auto physicalDevice = graphics.GetPhysicalDevice();
     auto window = _window;
 
-    auto [pass, subpass] = _renderer->GetRenderPass(RenderPassType::eUI);
-
     device->WaitForDevice();
 
     std::array poolSizes = {

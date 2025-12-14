@@ -39,8 +39,6 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
         throw std::runtime_error("Could not parse material JSON file.");
     }
 
-    auto [pass, subpass] = _renderer->GetRenderPass(passType);
-
     _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), _renderer, info, _renderer->GetSwapchainImageCount());
     _renderer->AddMaterial(_material.get());
 }

@@ -34,7 +34,6 @@ public:
     uint32_t GetSwapchainImageCount() { return _imageCount; }
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::maxFramesInFlight - 1. */
     void Render(RenderFunction func);
-    std::tuple<VkRenderPass, uint32_t> GetRenderPass(RenderPassType pass) const;
 
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
@@ -62,8 +61,6 @@ protected:
 private:
     void CreateSyncObjects();
     void DestroySyncObjects();
-    void CreateRenderPasses();
-    void DestroyRenderPasses();
     void DestroyImagesAndFramebuffers();
     void CreateGlobalUniform();
     void DestroyGlobalUniform();
@@ -87,14 +84,12 @@ private:
     // Render Pass Data
     VkSampleCountFlagBits _sampleCount = VK_SAMPLE_COUNT_1_BIT;
     VkFormat _depthFormat, _positionFormat;
-    VkRenderPass _pass;
     std::unique_ptr<VulkanImage> _colorImage;
     std::unique_ptr<VulkanImageView> _colorImageView;
     std::unique_ptr<VulkanImage> _depthImage;
     std::unique_ptr<VulkanImageView> _depthImageView;
     std::vector<VkImage> _swapchainImages;
     std::vector<VkImageView> _swapchainImageViews;
-    std::vector<VkFramebuffer> _framebuffers;
     bool recreateRequested = false;
     VkPresentModeKHR recreatePresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
