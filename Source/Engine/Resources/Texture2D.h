@@ -15,6 +15,8 @@ class Texture2D : public Texture {
     VulkanDevice* _device;
 
 public:
+    Texture2D(ResourceSystem& rs, GraphicsSystem* gs);
+
     Texture2D(ResourceSystem& rs, GraphicsSystem* gs, const std::filesystem::path& path);
 
     /**

@@ -19,7 +19,7 @@ elseif (CMAKE_SYSTEM_NAME STREQUAL "Darwin") # Apple
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Windows")
   if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(FMOD_IMPORTED_IMPLIB "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/windows/x64/fmod_vc.lib")
-    set(FMOD_IMPORTED_LOCATION "{CMAKE_CURRENT_LIST_DIR}/api/core/lib/windows/x64/fmod.dll")
+    set(FMOD_IMPORTED_LOCATION "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/windows/x64/fmod.dll")
     set(FMOD_IMPORTED_IMPLIB_DEBUG "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/windows/x64/fmodL_vc.lib")
     set(FMOD_IMPORTED_LOCATION_DEBUG "${CMAKE_CURRENT_LIST_DIR}/api/core/lib/windows/x64/fmodL.dll")
   else()

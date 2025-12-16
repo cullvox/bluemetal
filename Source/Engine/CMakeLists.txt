@@ -64,6 +64,7 @@ list(APPEND Sources
   "Resources/Material.cpp"
   "Resources/Texture.cpp"
   "Resources/Texture2D.cpp"
+  "Resources/NoiseTexture2D.cpp"
   "Resources/MaterialInstance.cpp"
   "Resources/Mesh.cpp"
   "Resources/Model.cpp"
@@ -95,6 +96,7 @@ target_link_libraries(Bluemetal PUBLIC
   argparse
   SDL3::SDL3 
   fmt::fmt
+  FastNoise2
   FMOD
   volk
   GPUOpen::VulkanMemoryAllocator

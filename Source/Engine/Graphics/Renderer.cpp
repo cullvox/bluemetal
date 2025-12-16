@@ -7,6 +7,7 @@
 #include "VulkanMaterial.h"
 #include "VulkanWindow.h"
 #include "VulkanImage.h"
+#include "Resources/Mesh.h"
 #include "VulkanImageView.h"
 
 namespace bl {
@@ -226,6 +227,12 @@ void Renderer::Render(RenderFunction func)
     if (_window->GetMinimized())
         return;
 
+    // Clear previous frame index data.
+    for (auto [_, data] : _instanceDraws) {
+        auto& vec = std::get<1>(data);
+        vec.clear();
+    }
+
     if (recreateRequested) {
         _device->WaitForDevice(); // Wait for previous commands to complete.
 
@@ -387,6 +394,7 @@ void Renderer::Render(RenderFunction func)
 
     // Render all the frame data to the gbuffer.
     VulkanRenderData rd = {
+        this,
         cmd,
         _currentFrame,
         _imageIndex,
@@ -410,6 +418,12 @@ void Renderer::Render(RenderFunction func)
     vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
 
     func(rd);
+
+    // Render instances
+    for (auto [mesh, vec] : _instanceDraws) {
+        mesh->Bind(cmd);
+        
+    }
 
     vkCmdEndRendering(cmd);
 
@@ -509,6 +523,22 @@ void Renderer::TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImage
     barrier.subresourceRange = range;
 
     vkCmdPipelineBarrier(cmd, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+}
+
+void Renderer::AddInstance(Mesh* mesh, const InstanceData& data)
+{
+    int& index = std::get<int>(_instanceDraws[mesh]);
+    std::vector<InstanceData>& vec = std::get<std::vector<InstanceData>>(_instanceDraws[mesh]);
+
+    if (index >= 1000) {
+        Print::Warn("Cannot index more than 1000 objects!");
+    }
+
+    if (vec.size() != 1000) {
+        vec.resize(1000);
+    }
+
+    vec[index] = data;
 }
 
 void Renderer::AddMaterial(VulkanMaterialInstance* material)

@@ -98,7 +98,7 @@ public:
 // NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::Stages, shaders)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::VertexState, inputBindings, inputAttribs, topology, primitiveRestartEnable)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::RasterizerState, depthClampEnable, rasterizerDiscardEnable, polygonMode, cullMode, frontFace, depthBiasEnable, depthBiasConstantFactor, depthBiasClamp, depthBiasSlopeFactor, lineWidth)
-NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::MultisampleState, rasterizationSamples, sampleShadingEnable, minSampleShading, alphaToCoverageEnable, alphaToOneEnable)
+NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::MultisampleState, sampleShadingEnable, minSampleShading, alphaToCoverageEnable, alphaToOneEnable)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::DepthStencilState, depthTestEnable, depthWriteEnable, depthCompareOp, depthBoundsTestEnable, stencilTestEnable, front, back, minDepthBounds, maxDepthBounds)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::ColorBlendState, logicOpEnable, logicOp, attachments, blendConstants)
 NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo, vertexState, rasterizerState, multisampleState, depthStencilState, colorBlendState, dynamicStates)

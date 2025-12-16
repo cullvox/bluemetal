@@ -1,0 +1,10 @@
+{
+    "width": 512,
+    "height": 512,
+    "xOffset": 20,
+    "yOffset": 40,
+    "frequency": 0.04,
+    "seed": 453636,
+    "noiseType": "perlin",
+    "tileable": true
+}

@@ -1,0 +1,10 @@
+{
+    "renderPass": "geometry",
+    "shaders": {
+        "vertex": "Resources/Shaders/Grass.vert.spv",
+        "fragment": "Resources/Shaders/Grass.frag.spv"
+    },
+    "rasterizerState": {
+        "cullMode": "VK_CULL_MODE_NONE_BIT"
+    }
+}

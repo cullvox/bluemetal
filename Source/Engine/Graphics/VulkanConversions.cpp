@@ -615,7 +615,7 @@ VkVertexInputRate VulkanConversions::VkVertexInputRateFromString(const std::stri
         return def;
 }
 
-VkPolygonMode VkPolygonModeFromString(const std::string& str, VkPolygonMode def = VK_POLYGON_MODE_FILL)
+VkPolygonMode VulkanConversions::VkPolygonModeFromString(const std::string& str, VkPolygonMode def)
 {
     static std::unordered_map<std::string_view, VkPolygonMode> convertMap = {
         { "VK_POLYGON_MODE_FILL", VK_POLYGON_MODE_FILL },
@@ -630,6 +630,95 @@ VkPolygonMode VkPolygonModeFromString(const std::string& str, VkPolygonMode def 
         return it->second;
     else
         return def;
+}
+
+VkCullModeFlags VulkanConversions::VkCullModeFlagsFromString(const std::string& str, VkCullModeFlags def)
+{
+    static std::unordered_map<std::string_view, VkCullModeFlagBits> convertMap = {
+        { "VK_CULL_MODE_NONE", VK_CULL_MODE_NONE },
+        { "VK_CULL_MODE_FRONT_BIT", VK_CULL_MODE_FRONT_BIT },
+        { "VK_CULL_MODE_BACK_BIT", VK_CULL_MODE_BACK_BIT },
+        { "VK_CULL_MODE_FRONT_AND_BACK", VK_CULL_MODE_FRONT_AND_BACK },
+    };
+
+    std::string clean = str;
+    std::erase_if(clean, isspace);
+
+    VkCullModeFlags flags = 0;
+    std::istringstream stream(clean);
+    std::string item;
+    bool foundFlag = false;
+    while (std::getline(stream, item, '|')) {
+        auto it = convertMap.find(item);
+        if (it != convertMap.end()) {
+            flags |= it->second;
+            foundFlag = true;
+        }
+    }
+
+    if (!foundFlag) {
+        return flags;
+    }
+
+    return def;
+}
+
+VkFrontFace VulkanConversions::VkFrontFaceFromString(const std::string& str, VkFrontFace def)
+{
+    static std::unordered_map<std::string_view, VkFrontFace> convertMap = {
+        { "VK_FRONT_FACE_COUNTER_CLOCKWISE", VK_FRONT_FACE_COUNTER_CLOCKWISE },
+        { "VK_FRONT_FACE_CLOCKWISE", VK_FRONT_FACE_CLOCKWISE },
+    };
+
+    auto it = convertMap.find(str);
+
+    if (it != convertMap.end())
+        return it->second;
+    else
+        return def;
+
+}
+
+VkCompareOp VulkanConversions::VkCompareOpFromString(const std::string& str, VkCompareOp def)
+{
+    static std::unordered_map<std::string_view, VkCompareOp> convertMap = {
+        { "VK_COMPARE_OP_NEVER", VK_COMPARE_OP_NEVER},
+        { "VK_COMPARE_OP_LESS", VK_COMPARE_OP_LESS},
+        { "VK_COMPARE_OP_EQUAL", VK_COMPARE_OP_EQUAL},
+        { "VK_COMPARE_OP_LESS_OR_EQUAL", VK_COMPARE_OP_LESS_OR_EQUAL},
+        { "VK_COMPARE_OP_GREATER", VK_COMPARE_OP_GREATER},
+        { "VK_COMPARE_OP_NOT_EQUAL", VK_COMPARE_OP_NOT_EQUAL},
+        { "VK_COMPARE_OP_GREATER_OR_EQUAL", VK_COMPARE_OP_GREATER_OR_EQUAL},
+        { "VK_COMPARE_OP_ALWAYS", VK_COMPARE_OP_ALWAYS},
+    };
+
+    auto it = convertMap.find(str);
+    if (it != convertMap.end()) {
+        return it->second;
+    }
+
+    return def;
+}
+
+VkStencilOp VulkanConversions::VkStencilOpFromString(const std::string& str, VkStencilOp def)
+{
+    static std::unordered_map<std::string_view, VkStencilOp> convertMap = {
+        { "VK_STENCIL_OP_KEEP", VK_STENCIL_OP_KEEP },
+        { "VK_STENCIL_OP_ZERO", VK_STENCIL_OP_ZERO },
+        { "VK_STENCIL_OP_REPLACE", VK_STENCIL_OP_REPLACE },
+        { "VK_STENCIL_OP_INCREMENT_AND_CLAMP", VK_STENCIL_OP_INCREMENT_AND_CLAMP },
+        { "VK_STENCIL_OP_DECREMENT_AND_CLAMP", VK_STENCIL_OP_DECREMENT_AND_CLAMP },
+        { "VK_STENCIL_OP_INVERT", VK_STENCIL_OP_INVERT },
+        { "VK_STENCIL_OP_INCREMENT_AND_WRAP", VK_STENCIL_OP_INCREMENT_AND_WRAP },
+        { "VK_STENCIL_OP_DECREMENT_AND_WRAP", VK_STENCIL_OP_DECREMENT_AND_WRAP },
+    };
+
+    auto it = convertMap.find(str);
+    if (it != convertMap.end()) {
+        return it->second;
+    }
+
+    return def;
 }
 
 std::string_view ToString(VkFormat format)

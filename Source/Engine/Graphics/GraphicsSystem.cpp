@@ -12,6 +12,7 @@
 #include "Resources/Sampler.h"
 #include "Resources/Shader.h"
 #include "Resources/Texture2D.h"
+#include "Resources/NoiseTexture2D.h"
 
 #include "Engine/Engine.h"
 #include "GraphicsSystem.h"
@@ -26,6 +27,7 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     GetEngine().GetResourceSystem()->AddSystemType<Material>(this);
     GetEngine().GetResourceSystem()->AddSystemType<MaterialInstance>(this);
     GetEngine().GetResourceSystem()->AddSystemType<Texture2D>(this);
+    GetEngine().GetResourceSystem()->AddSystemType<NoiseTexture2D>(this);
     GetEngine().GetResourceSystem()->AddSystemType<Mesh>(this);
     GetEngine().GetResourceSystem()->AddSystemType<Model>(this);
 
@@ -56,6 +58,8 @@ std::shared_ptr<Resource> GraphicsSystem::ConstructResource(ResourceSystem& reso
         return std::make_shared<MaterialInstance>(resourceSystem, this, path);
     } else if (typeHash == typeid(Texture2D).hash_code()) {
         return std::make_shared<Texture2D>(resourceSystem, this, path);
+    } else if (typeHash == typeid(NoiseTexture2D).hash_code()) {
+        return std::make_shared<NoiseTexture2D>(resourceSystem, this, path);
     } else if (typeHash == typeid(Mesh).hash_code()) {
         return std::make_shared<Mesh>(resourceSystem, this, path);
     } else if (typeHash == typeid(Model).hash_code()) {

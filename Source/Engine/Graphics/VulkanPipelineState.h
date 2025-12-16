@@ -52,7 +52,6 @@ struct VulkanPipelineStateInfo {
      * @brief Multisample state for the pipeline.
      */
     struct MultisampleState {
-        VkSampleCountFlagBits rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
         VkBool32 sampleShadingEnable = VK_FALSE;
         float minSampleShading = 0.2f;
         VkBool32 alphaToCoverageEnable = VK_FALSE;

@@ -27,6 +27,7 @@ layout(set=1, binding=0) uniform MaterialUniform
 layout(push_constant) uniform Constants
 {
     mat4 model;
+    vec3 position;
 } object;
 
 void main()

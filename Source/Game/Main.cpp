@@ -13,6 +13,7 @@
 #include "Resources/ResourceSystem.h"
 #include "Resources/Shader.h"
 #include "Resources/Texture2D.h"
+#include "Resources/NoiseTexture2D.h"
 #include "Scene/AudioSource3D.h"
 #include "Scene/MeshInstance3D.h"
 #include "Scene/PhysicsBody3D.h"
@@ -74,17 +75,41 @@ int main(int argc, const char** argv)
         auto defaultTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Default.png");
         auto defaultSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Default.json");
         auto nearestSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Nearest.json");
+        auto noiseTexture = resourceMgr->Load<bl::NoiseTexture2D>("Resources/Textures/Noise.json");
+        auto grssMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Grass.mat");
 
-        auto grassMaterial = floorMaterial.lock()->CreateInstance();
-        grassMaterial->SetSampledTexture2D("inAlbedo", nearestSampler, defaultTexture);
+        auto grassMaterial = grssMaterial.lock()->CreateInstance();
+        grassMaterial->SetSampledTexture2D("noiseSampler", defaultSampler, noiseTexture);
+        grassMaterial->SetSampledTexture2D("windNoiseTexture", defaultSampler, noiseTexture);
+        grassMaterial->SetScaler("material.grassScale", 1.0f);
+        grassMaterial->SetScaler("material.patchScale", 1.0f);
+        grassMaterial->SetScaler("material.miniumGrassScale", 0.4f);
+        grassMaterial->SetScaler("material.maxGrassScale", 1.0f);
+        grassMaterial->SetScaler("material.windSpeed", 0.008f);
+        grassMaterial->SetScaler("material.windSway", 1.1f);
+        grassMaterial->SetScaler("material.windScale", 0.01f);
+        grassMaterial->SetVector2("material.windDirectionVector", {0.3f, 0.3f});
+        grassMaterial->SetScaler("material.bladeBendFactor", 3.f);
+        grassMaterial->SetVector3("material.colorSmall", {0.5, 0.7, 0.9});
+        grassMaterial->SetVector3("material.colorLarge", {0.5, 0.8, 0.3});
+        grassMaterial->SetScaler("material.playerRadius", 0.3f);
 
-        auto grassNode = grass.lock()->GetTree()->Clone();
-        grassNode->SetName("Grass_01");
-        grassNode->SetPosition({ 0.5f, 0.5f, 0.5f });
-        grassNode->GetChild("Plane")->As<bl::MeshInstance3D>()->SetMaterial(grassMaterial);
-        rootNode->AddChild(grassNode);
+        auto grasses = std::make_unique<bl::Node3D>(engine);
+        grasses->SetName("Grass");
 
-        floorMaterial.lock()->SetSampledTexture2D("inAlbedo", defaultSampler, floorTexture);
+        for (int i = 0; i < 100; i++) {
+            float x = static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(10.0f)));
+            float z = static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(10.0f)));
+
+            auto grassNode = grass.lock()->GetTree()->Clone();
+            grassNode->SetName("Grass_" + std::to_string(i));
+            grassNode->SetPosition({ x, -4.f, z });
+            grassNode->GetChild("Plane")->As<bl::MeshInstance3D>()->SetMaterial(grassMaterial);
+            grasses->AddChild(grassNode);
+        }
+        rootNode->AddChild(std::move(grasses));
+
+        floorMaterial.lock()->SetSampledTexture2D("inAlbedo", defaultSampler, noiseTexture);
         floorMaterial.lock()->SetBool("material.useTriplanar", true);
 
         auto floorNode = cube.lock()->GetTree()->Clone();

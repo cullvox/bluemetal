@@ -7,6 +7,7 @@
 namespace bl {
 
 enum class TextureFormat {
+    eR,
     eRGB,
     eRGBA,
     eNormals,

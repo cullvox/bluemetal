@@ -14,16 +14,16 @@ struct GlobalUBO // Slot 0, Binding 0
     alignas(4) float dt;
 };
 
-struct MaterialBuffer // Slot 1, Binding 0
+struct InstanceData
 {
-
-    // 5 Texture Binds available below
-    // Bindings in order, Albedo = 1, Normal = 2, Roughness = 3, AmbientOcclusion = 4, Displacement = 5
+    glm::mat4 model;
+    glm::vec3 position;
 };
 
 struct ObjectPC // Model positions use a push constant block
 {
-    alignas(16) glm::mat4 model;
+    InstanceData data;
+    bool useInstanceBuffer;
 };
 
 } // namespace bl

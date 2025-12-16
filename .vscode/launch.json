@@ -70,6 +70,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Windows Release Launch",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/build/Source/Game/Release/DarkRed.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal"
+        },
+        {
             "name": "AssetProcessor Windows Debug Launch",
             "type": "cppvsdbg",
             "request": "launch",

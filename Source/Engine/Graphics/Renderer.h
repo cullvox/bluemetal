@@ -10,6 +10,7 @@
 namespace bl {
 
 class Material;
+class Mesh;
 class VulkanWindow;
 class VulkanDevice;
 class VulkanSwapchain;
@@ -37,6 +38,7 @@ public:
 
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
+    void AddInstance(Mesh* mesh, const InstanceData& data);
 
     std::vector<VkPresentModeKHR> GetPresentModes();
     void SetPresentMode(VkPresentModeKHR mode);
@@ -102,6 +104,9 @@ private:
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalSet;
     std::array<void*, VulkanConfig::maxFramesInFlight> _globalBufferMap;
     float _prevTime;
+
+    // Instance rendering
+    std::unordered_map<Mesh*, std::tuple<int, std::vector<InstanceData>>> _instanceDraws;
 
     std::function<void()> _recreateCallback;
 

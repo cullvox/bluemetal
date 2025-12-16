@@ -40,6 +40,10 @@ public:
     static VkVertexInputRate VkVertexInputRateFromString(const std::string& str, VkVertexInputRate def = VK_VERTEX_INPUT_RATE_VERTEX);
     static VkPrimitiveTopology VkPrimitiveTopologyFromString(const std::string& str, VkPrimitiveTopology def = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
     static VkPolygonMode VkPolygonModeFromString(const std::string& str, VkPolygonMode def = VK_POLYGON_MODE_FILL);
+    static VkCullModeFlags VkCullModeFlagsFromString(const std::string& str, VkCullModeFlags def = VK_CULL_MODE_BACK_BIT);
+    static VkFrontFace VkFrontFaceFromString(const std::string& str, VkFrontFace def = VK_FRONT_FACE_COUNTER_CLOCKWISE);
+    static VkCompareOp VkCompareOpFromString(const std::string& str, VkCompareOp def = VK_COMPARE_OP_LESS_OR_EQUAL);
+    static VkStencilOp VkStencilOpFromString(const std::string& str, VkStencilOp def = VK_STENCIL_OP_KEEP);
 };
 
 std::string_view ToString(VkFormat format);

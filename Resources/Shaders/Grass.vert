@@ -1,72 +1,118 @@
-#version 450
+#version 460
 
-layout(set=1, binding=0) uniform MaterialUniform
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec3 inNormal;
+layout(location = 2) in vec3 inTangent;
+layout(location = 3) in vec2 inUV;
+
+layout(set = 0, binding = 0) uniform GlobalUniform
 {
-    uniform float grassScale;
-    varying float bottom_to_top;
-    uniform float bladeBendFactor;
+    mat4 view;
+    mat4 projection;
+    vec2 resolution;
+    vec2 mouse;
+    float time;
+    float dt;
+} global;
+
+layout(set = 1, binding = 0) uniform MaterialUniform
+{
+    // Factors
+    float grassScale;
+    float bladeBendFactor;
     //uniform vec3 color;
     vec3 backLightColor;
     float roughnessFactor;
     float specularFactor;
 
-    //clumping
+    // Clumping
     float patchScale;
     float miniumGrassScale;
     float maxGrassScale;
-    varying float patchFactor;
-    // grass color
+
+    // Grass Color
     vec3 colorSmall;
     vec3 colorLarge;
-    // wind
 
+    // Wind
     float windSpeed;
+    float windSway;
+    float windScale;
     vec2 windDirectionVector;
-    varying float currentWindBend;
     float windAOEffect;
 
-    //player position
+    // Player Position
     float playerRadius;
     vec3 playerPosition;
 } material;
 
-layout(set=1, binding=1) uniform sampler2D noiseSampler;
-layout(set=1, binding=2) uniform sampler2D windNoiseTexture;
+layout(set = 1, binding = 1) uniform sampler2D noiseSampler;
+layout(set = 1, binding = 2) uniform sampler2D windNoiseTexture;
 
-layout(push_constant) uniform Constants
-{
+struct InstanceData {
     mat4 model;
-} object;
+    vec3 position;
+};
 
-void vertex() {
+layout(std140, set = 2, binding = 0) readonly buffer InstanceBuffer {
+    InstanceData instances[];
+} instanceBuffer;
+
+layout(push_constant) uniform DrawConstants
+{
+    InstanceData objectInstance;
+    bool useInstanceBuffer;
+} drawConstants;
+
+layout(location = 0) out vec3 outNormal;
+layout(location = 1) out float outBottomToTop;
+layout(location = 2) out float outPatchFactor;
+layout(location = 3) out float outCurrentWindBend;
+layout(location = 4) out vec3 outColorSmall;
+layout(location = 5) out vec3 outColorLarge;
+layout(location = 6) out float outSpecularFactor;
+
+void main() {
     //UV map
-    bottom_to_top = 1.0 - UV.y;
+    vec3 vertex = inPosition;
+
+    outBottomToTop = 1.0 - inUV.y;
+    outSpecularFactor = material.specularFactor;
+
+    InstanceData instance;
+    if (drawConstants.useInstanceBuffer) {
+        instance = instanceBuffer.instances[gl_BaseInstance];
+    } else {
+        instance = drawConstants.objectInstance;
+    }
 
     //wind
-    vec2 windPosition = NODE_POSITION_WORLD.xz / 10.0;
-    windPosition -= TIME * windDirectionVector * windSpeed;
-    currentWindBend = texture(windNoiseTexture, windPosition).x;
-    currentWindBend = windSpeed;
-    currentWindBend = bottom_to_top * 2.0;
+    vec2 windPosition = instance.position.xz * material.windScale;
+    windPosition -= global.time * material.windDirectionVector * material.windSpeed;
+    outCurrentWindBend = texture(windNoiseTexture, windPosition).x;
+    outCurrentWindBend *= material.windSway;
+    outCurrentWindBend *= outBottomToTop * 2.0;
 
-    mat4 inv_model = inverse(MODEL_MATRIX);
-    vec2 local_direction = (inv_model * vec4(windDirectionVector.x, 0.0, windDirectionVector.y, 0.0)).xz;
+    //mat4 inverseModel = inverse(instance.model); // Inverse model matrix scaling.
 
-    VERTEX.xz += currentWindBend * local_direction;
+    //vec2 local_direction = (inverseModel * vec4(material.windDirectionVector.x, 0.0, material.windDirectionVector.y, 0.0)).xz;
+
+    vertex.xz += outCurrentWindBend; // * local_direction;
 
     //player position
-    float playerDistance = distance(playerPosition, NODE_POSITION_WORLD);
-    float bendFromPlayerFactor = max(playerRadius - playerDistance,0.0) / playerRadius;
-    vec2 bendDirection = normalize(playerPosition.xz - NODE_POSITION_WORLD.xz);
-    VERTEX.xz -= (inv_model * vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * bottom_to_top;
-    VERTEX.x -= bendFromPlayerFactor * bottom_to_top * .5;
+
+    float playerDistance = distance(material.playerPosition, instance.position);
+    float bendFromPlayerFactor = max(material.playerRadius - playerDistance, 0.0) / material.playerRadius;
+    vec2 bendDirection = normalize(material.playerPosition.xz - instance.position.xz);
+    //gl_Position.xz -= (inverseModel * vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * outBottomToTop;
+    //gl_Position.x -= bendFromPlayerFactor * outBottomToTop * .5;
 
     //bend grass blade
-    VERTEX.z += bladeBendFactor * pow(bottom_to_top, 2.0);
+    //vertex.z += material.bladeBendFactor * pow(outBottomToTop, 2.0);
     //VERTEX = grassScale;
-    patchFactor = texture(noiseSampler, NODE_POSITION_WORLD.xz/patchScale).r;
+    outPatchFactor = texture(noiseSampler, instance.position.xz / material.patchScale).r;
     //VERTEX= patchFactor;
-    VERTEX *= mix(miniumGrassScale, maxGrassScale, patchFactor);
+    vertex *= mix(material.miniumGrassScale, material.maxGrassScale, outPatchFactor);
 
-
+    gl_Position = global.projection * global.view * instance.model * vec4(vertex, 1.0);
 }

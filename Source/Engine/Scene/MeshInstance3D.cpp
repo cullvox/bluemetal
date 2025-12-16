@@ -1,6 +1,7 @@
 #include "MeshInstance3D.h"
 #include "Engine/Engine.h"
 #include "Resources/Material.h"
+#include "Renderer/Renderer.h"
 #include "Resources/ResourceSystem.h"
 
 namespace bl {
@@ -26,14 +27,11 @@ MeshInstance3D* MeshInstance3D::Clone()
 void MeshInstance3D::Draw(VulkanRenderData& rd)
 {
     // TODO: This isn't really instancing, the renderer will have to buffer instances.
-    bl::ObjectPC object {};
+    bl::InstanceData object {};
     object.model = GetWorldTransform();
+    object.position = GetWorldPosition();
 
-    _material.lock()->Bind(rd);
-    _mesh.lock()->Bind(rd.cmd);
-    _material.lock()->PushConstant(rd, 0, sizeof(ObjectPC), &object);
-
-    vkCmdDrawIndexed(rd.cmd, _mesh.lock()->GetIndicesCount(), 1, 0, 0, 0);
+    rd.renderer->AddInstance(_mesh.get(), object);
 
     Node3D::Draw(rd);
 }

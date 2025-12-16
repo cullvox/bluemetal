@@ -1,6 +1,7 @@
 #include "Material.h"
 #include "Engine/Engine.h"
 #include "Graphics/Renderer.h"
+#include "Graphics/VulkanConversions.h"
 #include "Graphics/VulkanShader.h"
 #include "Shader.h"
 
@@ -26,17 +27,110 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
     try {
         json = nlohmann::json::parse(materialFile);
 
-        passType = json["renderPass"];
-        vertexPath = json["shaders"]["vertex"].get<std::string>();
-        fragmentPath = json["shaders"]["fragment"].get<std::string>();
+        std::string renderPass = json.value("renderPass", "geometry");
 
-        info = json["state"];
+        if (!(json.contains("shaders") &&
+            json["shaders"].is_object() &&
+            json["shaders"].contains("vertex") &&
+            json["shaders"].contains("fragment") &&
+            json["shaders"]["vertex"].is_string() &&
+            json["shaders"]["fragment"].is_string()))
+        {
+            Print::Error("A material must contain a vertex and fragment shader!");
+            return;
+        }
+
+        vertexPath = json["shaders"]["vertex"];
+        fragmentPath = json["shaders"]["fragment"];
+
+        if (json.contains("rasterizerState") && json["rasterizerState"].is_object()) {
+            nlohmann::json& state = json["rasterizerState"];
+            info.rasterizerState.depthClampEnable = state.value("depthClampEnable", false);
+            info.rasterizerState.rasterizerDiscardEnable = state.value("rasterizerDiscardEnable", false);
+            std::string polygonMode = state.value("polygonMode", "VK_POLYGON_MODE_FILL");
+            std::string cullMode = state.value("cullMode", "VK_CULL_MODE_BACK_BIT");
+            std::string frontFace = state.value("frontFace", "VK_FRONT_FACE_COUNTER_CLOCKWISE");
+            info.rasterizerState.depthBiasEnable = state.value("depthBiasEnable", false);
+            info.rasterizerState.depthBiasConstantFactor = state.value("depthBiasConstantFactor", 0.0f);
+            info.rasterizerState.depthBiasClamp = state.value("depthBiasClamp", 0.0f);
+            info.rasterizerState.depthBiasSlopeFactor = state.value("depthBiasSlopeFactor", 0.0f);
+            info.rasterizerState.lineWidth = state.value("lineWidth", 1.0f);
+
+            info.rasterizerState.polygonMode = VulkanConversions::VkPolygonModeFromString(polygonMode, VK_POLYGON_MODE_FILL);
+            info.rasterizerState.cullMode = VulkanConversions::VkCullModeFlagsFromString(cullMode, VK_CULL_MODE_BACK_BIT);
+            info.rasterizerState.frontFace = VulkanConversions::VkFrontFaceFromString(frontFace, VK_FRONT_FACE_COUNTER_CLOCKWISE);
+        }
+
+        if (json.contains("multisampleState") && json["multisampleState"].is_object()) {
+            const nlohmann::json& state = json["multisampleState"];
+            info.multisampleState.sampleShadingEnable = state.value("sampleShadingEnable", false);
+            info.multisampleState.minSampleShading = state.value("minSampleShading", 0.2f);
+            info.multisampleState.alphaToCoverageEnable = state.value("alphaToCoverageEnable", false);
+            info.multisampleState.alphaToOneEnable = state.value("alphaToOneEnable", false);
+        }
+
+        if (json.contains("depthStencilState") && json["depthStencilState"].is_object()) {
+            const nlohmann::json& state = json["depthStencilState"];
+
+            info.depthStencilState.depthTestEnable = state.value("depthTestEnable", VK_TRUE);
+            info.depthStencilState.depthWriteEnable = state.value("depthWriteEnable", VK_TRUE);
+            std::string depthCompareOp = state.value("depthCompareOp", "VK_COMPARE_OP_LESS_OR_EQUAL");
+            info.depthStencilState.depthBoundsTestEnable = state.value("depthBoundsTestEnable", VK_FALSE);
+            info.depthStencilState.stencilTestEnable = state.value("stencilTestEnable", VK_FALSE);
+            info.depthStencilState.minDepthBounds = state.value("minDepthBounds", 0.0f);
+            info.depthStencilState.maxDepthBounds = state.value("maxDepthBounds", 1.0f);
+
+            info.depthStencilState.depthCompareOp = VulkanConversions::VkCompareOpFromString(depthCompareOp);
+
+            if (state.contains("front") && state["front"].is_object()) {
+                const nlohmann::json& front = state["front"];
+
+                std::string failOp = front.value("failOp", "VK_STENCIL_OP_KEEP");
+                std::string passOp = front.value("passOp", "VK_STENCIL_OP_KEEP");
+                std::string depthFailOp = front.value("depthFailOp", "VK_STENCIL_OP_KEEP");
+                std::string compareOp = front.value("compareOp", "VK_COMPARE_OP_LESS_OR_EQUAL");
+                info.depthStencilState.front.compareMask = front.value("compareMask", 0UL);
+                info.depthStencilState.front.writeMask = front.value("writeMask", 0UL);
+                info.depthStencilState.front.reference = front.value("reference", 0UL);
+
+                info.depthStencilState.front.failOp = VulkanConversions::VkStencilOpFromString(failOp);
+                info.depthStencilState.front.passOp = VulkanConversions::VkStencilOpFromString(passOp);
+                info.depthStencilState.front.depthFailOp = VulkanConversions::VkStencilOpFromString(depthFailOp);
+                info.depthStencilState.front.compareOp = VulkanConversions::VkCompareOpFromString(compareOp);
+            }
+
+            if (state.contains("back") && state["back"].is_object()) {
+                const nlohmann::json& back = state["back"];
+
+                std::string failOp = back.value("failOp", "VK_STENCIL_OP_KEEP");
+                std::string passOp = back.value("passOp", "VK_STENCIL_OP_KEEP");
+                std::string depthFailOp = back.value("depthFailOp", "VK_STENCIL_OP_KEEP");
+                std::string compareOp = back.value("compareOp", "VK_COMPARE_OP_LESS_OR_EQUAL");
+                info.depthStencilState.back.compareMask = back.value("compareMask", 0UL);
+                info.depthStencilState.back.writeMask = back.value("writeMask", 0UL);
+                info.depthStencilState.back.reference = back.value("reference", 0UL);
+
+                info.depthStencilState.back.failOp = VulkanConversions::VkStencilOpFromString(failOp);
+                info.depthStencilState.back.passOp = VulkanConversions::VkStencilOpFromString(passOp);
+                info.depthStencilState.back.depthFailOp = VulkanConversions::VkStencilOpFromString(depthFailOp);
+                info.depthStencilState.back.compareOp = VulkanConversions::VkCompareOpFromString(compareOp);
+            }
+        }
+
+        if (json.contains("colorBlendState")) {
+            Print::Warn("Material may contain color blend state information, but that feature is not supported yet.");
+        }
+
+        if (json.contains("dynamicStates")) {
+            Print::Warn("Material may contain dynamic states, but that feature is not supported yet.");
+        }
 
         auto vertexShader = resourceSystem.Load<Shader>(vertexPath);
         auto fragmentShader = resourceSystem.Load<Shader>(fragmentPath);
         info.stages.shaders = std::vector<VulkanShader*> { vertexShader.lock()->Get(), fragmentShader.lock()->Get() };
-    } catch (...) {
-        throw std::runtime_error("Could not parse material JSON file.");
+    } catch (const nlohmann::json::exception& e) {
+        Print::Error("Could not parse material JSON file. Error: {}", e.what());
+        return;
     }
 
     _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), _renderer, info, _renderer->GetSwapchainImageCount());

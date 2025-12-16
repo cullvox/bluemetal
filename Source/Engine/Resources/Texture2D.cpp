@@ -45,6 +45,12 @@ bool DecodeSTBI(std::span<std::byte> data, std::vector<std::byte>& out, Extent2D
     return true;
 }
 
+Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs)
+    : Texture(rs, gs, {})
+{
+    // Only used in child texture classes.
+}
+
 Texture2D::Texture2D(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
     : Texture(resourceSystem, system, path)
 {
