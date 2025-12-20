@@ -9,20 +9,17 @@
 #include "VulkanImage.h"
 #include "Resources/Mesh.h"
 #include "VulkanImageView.h"
+#include "Core/FrameCounter.h"
 
 namespace bl {
 
-Renderer::Renderer(VulkanWindow* window)
-    : _device(window->GetDevice())
+Renderer::Renderer(VulkanWindow* window, FrameCounter& frameCounter)
+    : _frameCounter(frameCounter)
+    , _device(window->GetDevice())
     , _window(window)
     , _swapchain(window->GetSwapchain())
-    , _imageIndex(0)
-    , _currentFrame(0)
+    , _renderData(this)
 {
-    _commandBuffers.resize(VulkanConfig::maxFramesInFlight);
-    _imageAvailableSemaphores.resize(VulkanConfig::maxFramesInFlight);
-    _renderFinishedSemaphores.resize(_swapchain->GetImageCount());
-    _inFlightFences.resize(VulkanConfig::maxFramesInFlight);
 
     for (VkSampleCountFlagBits flag : GetMultisampleCounts())
     {
@@ -40,14 +37,14 @@ Renderer::Renderer(VulkanWindow* window)
         _depthFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, 0);
         _positionFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_R32G32B32A32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, 0);
 
-        CreateSyncObjects();
+        CreateCommandBuffers();
         RecreateImages();
         CreateGlobalUniform();
     } catch (const std::exception& e) {
         Print::Error("Failed to initialize renderer: {}", e.what());
         DestroyGlobalUniform();
         DestroyImagesAndFramebuffers();
-        DestroySyncObjects();
+        DestroyCommandBuffers();
         throw e;
     }
 }
@@ -58,7 +55,7 @@ Renderer::~Renderer()
 
     DestroyGlobalUniform();
     DestroyImagesAndFramebuffers();
-    DestroySyncObjects();
+    DestroyCommandBuffers();
 }
 
 void Renderer::SetProjection(const glm::mat4& projection)
@@ -71,7 +68,7 @@ void Renderer::SetView(const glm::mat4& view)
     _uboData.view = view;
 }
 
-void Renderer::CreateSyncObjects()
+void Renderer::CreateCommandBuffers()
 {
     VkCommandBufferAllocateInfo allocateInfo = {};
     allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -81,39 +78,12 @@ void Renderer::CreateSyncObjects()
     allocateInfo.commandBufferCount = VulkanConfig::maxFramesInFlight;
 
     VK_CHECK(vkAllocateCommandBuffers(_device->Get(), &allocateInfo, _commandBuffers.data()))
-
-    VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreInfo.pNext = nullptr;
-    semaphoreInfo.flags = 0;
-
-    VkFenceCreateInfo fenceInfo = {};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.pNext = nullptr;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
-        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]))
-        VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_inFlightFences[i]))
-    }
-
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
-        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
-    }
 }
 
-void Renderer::DestroySyncObjects()
+void Renderer::DestroyCommandBuffers()
 {
-    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
-        vkDestroySemaphore(_device->Get(), _imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(_device->Get(), _inFlightFences[i], nullptr);
-    }
-
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
-        vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
-    }
-
-    vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), (uint32_t)_commandBuffers.size(), _commandBuffers.data());
+    vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), static_cast<uint32_t>(_commandBuffers.size()), _commandBuffers.data());
+    _commandBuffers.fill(VK_NULL_HANDLE);
 }
 
 void Renderer::DestroyImagesAndFramebuffers()
@@ -133,14 +103,17 @@ void Renderer::DestroyGlobalUniform()
     _globalSet.fill(VK_NULL_HANDLE);
 }
 
-void Renderer::RecreateImages()
+uint32_t Renderer::GetSwapchainImageCount()
 {
-    _imageCount = _swapchain->GetImageCount();
-    auto extent = _swapchain->GetExtent();
+    return _swapchain->GetImageCount();
+}
 
+void Renderer::RecreateImages()
+{;
     DestroyImagesAndFramebuffers();
 
     // Construct all the image buffers for the passes.
+    auto extent = _swapchain->GetExtent();
     auto imageExtent = VkExtent3D { extent.width, extent.height, 1 };
 
     VkComponentMapping mapping = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
@@ -152,8 +125,14 @@ void Renderer::RecreateImages()
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     _depthImageView = std::make_unique<VulkanImageView>(_device, _depthImage.get(), VK_IMAGE_VIEW_TYPE_2D, _depthFormat, mapping, range);
 
-    _swapchainImages = _swapchain->GetImages();
-    _swapchainImageViews = _swapchain->GetImageViews();
+    _colorImage->Transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+
+    auto swapchainImages = _swapchain->GetImages();
+    auto swapchainImageViews = _swapchain->GetImageViews();
+    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
+        _swapchainImages[i] = swapchainImages[i];
+        _swapchainImageViews[i] = swapchainImageViews[i];
+    }
 
     if (_recreateCallback) {
         _recreateCallback();
@@ -227,12 +206,6 @@ void Renderer::Render(RenderFunction func)
     if (_window->GetMinimized())
         return;
 
-    // Clear previous frame index data.
-    for (auto [_, data] : _instanceDraws) {
-        auto& vec = std::get<1>(data);
-        vec.clear();
-    }
-
     if (recreateRequested) {
         _device->WaitForDevice(); // Wait for previous commands to complete.
 
@@ -244,44 +217,37 @@ void Renderer::Render(RenderFunction func)
         _device->WaitForDevice();
     }
 
+    auto currentFrame = _renderData.GetCurrentFrame();
+
     // Compute the per frame UBO.
     const auto currentTime = Time::Current();
     const auto extent = _swapchain->GetExtent();
 
     _uboData.time = currentTime;
-    _uboData.dt = currentTime - _prevTime;
+    _uboData.dt = _frameCounter.GetDeltaTime();
     _uboData.resolution = glm::vec2 { (float)extent.width, (float)extent.height };
     _uboData.mouse = {}; // TODO: mouse position to be added later.
 
-    _prevTime = currentTime;
+    std::memcpy(_globalBufferMap[currentFrame], &_uboData, sizeof(_uboData));
 
-    std::memcpy(_globalBufferMap[_currentFrame], &_uboData, sizeof(_uboData));
-
-    _globalBuffer[_currentFrame].Flush(0, sizeof(_uboData));
+    _globalBuffer[currentFrame].Flush(0, sizeof(_uboData));
 
     // Swapchain must be valid.
     if (!_swapchain->Get()) {
         return;
     }
 
-    // Wait for the current image up coming in the chain to finish.
-    VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
-
     // Acquire the next image in the swapchain and update all render pass
     // images if the swapchain was recreated within the previous frame.
-    if (_swapchain->AcquireNext(_imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE)) {
+    if (_swapchain->AcquireNext()) {
         RecreateImages();
         return; // skip this frame!
     }
 
-    _imageIndex = _swapchain->GetImageIndex();
+    const auto imageIndex = _swapchain->GetImageIndex();
+    _renderData.SetImageIndex(imageIndex);
 
-
-
-    // Reset the fence for this image so it can signal when it's done.
-    VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
-
-    auto cmd = _commandBuffers[_currentFrame];
+    auto cmd = _commandBuffers[currentFrame];
     VK_CHECK(vkResetCommandBuffer(cmd, 0))
 
     VkCommandBufferBeginInfo beginInfo = {};
@@ -297,9 +263,10 @@ void Renderer::Render(RenderFunction func)
         instance->UpdateUniforms(cmd);
     }
 
+    // Setup the render pass for dynamic rendering.
     std::array clearColors = {
-        VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Swapchain Image Clear Color
-        VkClearValue { .depthStencil = { 1.0f, 0 } }
+        VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Clear Color
+        VkClearValue { .depthStencil = { 1.0f, 0 } } // Clear Depth
     };
 
     VkRect2D renderArea = {};
@@ -318,12 +285,13 @@ void Renderer::Render(RenderFunction func)
     colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     colorAttachments[0].clearValue = clearColors[0];
 
+    // When using a higher sample count, the image must be resolved from the sampled image.
     if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
         colorAttachments[0].resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
         colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachments[0].resolveImageView = _swapchainImageViews[_imageIndex];
+        colorAttachments[0].resolveImageView = _swapchainImageViews[imageIndex];
     } else {
-        colorAttachments[0].imageView = _swapchainImageViews[_imageIndex];
+        colorAttachments[0].imageView = _swapchainImageViews[imageIndex];
     }
 
     VkRenderingAttachmentInfo depthAttachment = {};
@@ -357,8 +325,9 @@ void Renderer::Render(RenderFunction func)
     range.baseArrayLayer = 0;
     range.layerCount = 1;
 
+    // Transition the swapchain image back into a color attachment.
     TransitionImageLayout(cmd,
-        _swapchainImages[_imageIndex],
+        _swapchainImages[imageIndex],
         range,
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -367,6 +336,7 @@ void Renderer::Render(RenderFunction func)
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
+    // If using a multisampled image transition to a color image.
     if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
         TransitionImageLayout(cmd,
             _colorImage->Get(),
@@ -393,13 +363,8 @@ void Renderer::Render(RenderFunction func)
     vkCmdBeginRendering(cmd, &renderingInfo);
 
     // Render all the frame data to the gbuffer.
-    VulkanRenderData rd = {
-        this,
-        cmd,
-        _currentFrame,
-        _imageIndex,
-        _globalSet[_currentFrame]
-    };
+    _renderData.SetGlobalDescriptorSet(_globalSet[currentFrame]);
+    _renderData.SetCommandBuffer(cmd);
 
     VkViewport viewport;
     viewport.x = 0.0f;
@@ -408,28 +373,22 @@ void Renderer::Render(RenderFunction func)
     viewport.height = (float)extent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(rd.cmd, 0, 1, &viewport);
+    vkCmdSetViewport(cmd, 0, 1, &viewport);
 
     VkRect2D scissor;
     scissor.offset = { 0, 0 };
     scissor.extent = { extent.width, extent.height };
-    vkCmdSetScissor(rd.cmd, 0, 1, &scissor);
+    vkCmdSetScissor(cmd, 0, 1, &scissor);
 
     vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
 
-    func(rd);
-
-    // Render instances
-    for (auto [mesh, vec] : _instanceDraws) {
-        mesh->Bind(cmd);
-        
-    }
+    func(_renderData);
 
     vkCmdEndRendering(cmd);
 
     range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     TransitionImageLayout(cmd,
-        _swapchainImages[_imageIndex],
+        _swapchainImages[imageIndex],
         range,
         getPipelineStageFlags(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL),
         getPipelineStageFlags(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
@@ -441,29 +400,26 @@ void Renderer::Render(RenderFunction func)
     VK_CHECK(vkEndCommandBuffer(cmd))
 
     // Submit the command buffer to the graphics queue.
-    std::array waitSemaphores = { _imageAvailableSemaphores[_currentFrame] };
-    std::array commandBuffers = { _commandBuffers[_currentFrame] };
-    std::array signalSemaphores = { _renderFinishedSemaphores[_imageIndex] };
+    std::array commandBuffers = { _commandBuffers[currentFrame] };
     std::array waitStages = { (VkPipelineStageFlags)VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.pNext = nullptr;
-    submitInfo.waitSemaphoreCount = (uint32_t)waitSemaphores.size();
+    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
     submitInfo.pWaitSemaphores = waitSemaphores.data();
     submitInfo.pWaitDstStageMask = waitStages.data();
-    submitInfo.commandBufferCount = (uint32_t)commandBuffers.size();
+    submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
     submitInfo.pCommandBuffers = commandBuffers.data();
-    submitInfo.signalSemaphoreCount = (uint32_t)signalSemaphores.size();
+    submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
     submitInfo.pSignalSemaphores = signalSemaphores.data();
 
-    VK_CHECK(vkQueueSubmit(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
+    VK_CHECK(vkQueueSubmit(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[currentFrame]))
 
-    if (_swapchain->QueuePresent(_renderFinishedSemaphores[_imageIndex])) {
+    if (_swapchain->QueuePresent()) {
         RecreateImages();
     }
 
-    _currentFrame = (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
 }
 
 void Renderer::SetImageRecreateCallback(std::function<void()> onRecreate)
@@ -527,18 +483,18 @@ void Renderer::TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImage
 
 void Renderer::AddInstance(Mesh* mesh, const InstanceData& data)
 {
-    int& index = std::get<int>(_instanceDraws[mesh]);
-    std::vector<InstanceData>& vec = std::get<std::vector<InstanceData>>(_instanceDraws[mesh]);
+    //int& index = std::get<int>(_instanceDraws[mesh]);
+    //std::vector<InstanceData>& vec = std::get<std::vector<InstanceData>>(_instanceDraws[mesh]);
 
-    if (index >= 1000) {
-        Print::Warn("Cannot index more than 1000 objects!");
-    }
-
-    if (vec.size() != 1000) {
-        vec.resize(1000);
-    }
-
-    vec[index] = data;
+    //if (index >= 1000) {
+    //    Print::Warn("Cannot index more than 1000 objects!");
+    //}
+//
+    //if (vec.size() != 1000) {
+    //    vec.resize(1000);
+    //}
+//
+    //vec[index] = data;
 }
 
 void Renderer::AddMaterial(VulkanMaterialInstance* material)

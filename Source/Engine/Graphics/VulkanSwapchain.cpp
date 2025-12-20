@@ -81,9 +81,12 @@ bool VulkanSwapchain::GetImmediateSupported() const
     return _isImmediateSupported;
 }
 
-bool VulkanSwapchain::AcquireNext(VkSemaphore semaphore, VkFence fence)
+bool VulkanSwapchain::AcquireNext()
 {
-    VkResult result = vkAcquireNextImageKHR(_device->Get(), _swapchain, UINT32_MAX, semaphore, fence, &_imageIndex);
+    // Wait for the current image up coming in the chain to finish.
+    VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
+
+    VkResult result = vkAcquireNextImageKHR(_device->Get(), _swapchain, UINT32_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &_imageIndex);
 
     switch (result) {
     case VK_SUBOPTIMAL_KHR:
@@ -97,15 +100,18 @@ bool VulkanSwapchain::AcquireNext(VkSemaphore semaphore, VkFence fence)
     default:
         throw std::runtime_error("Could not acquire the next swapchain image!");
     }
+
+    // Reset the fence for this image so it can signal when it's done.
+    VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
 }
 
-bool VulkanSwapchain::QueuePresent(VkSemaphore signalSemaphore)
+bool VulkanSwapchain::QueuePresent()
 {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.pNext = nullptr;
     presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &signalSemaphore;
+    presentInfo.pWaitSemaphores = &_renderFinishedSemaphores[_imageIndex];
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &_swapchain;
     presentInfo.pImageIndices = &_imageIndex;
@@ -119,6 +125,8 @@ bool VulkanSwapchain::QueuePresent(VkSemaphore signalSemaphore)
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Could not queue Vulkan present!");
     }
+
+    _currentFrame = (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
 
     return false;
 }
@@ -254,6 +262,41 @@ void VulkanSwapchain::DestroyImageViews()
     _swapImageViews.clear();
 }
 
+void VulkanSwapchain::CreateSyncObjects()
+{
+    VkSemaphoreCreateInfo semaphoreInfo = {};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    semaphoreInfo.pNext = nullptr;
+    semaphoreInfo.flags = 0;
+
+    VkFenceCreateInfo fenceInfo = {};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.pNext = nullptr;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
+        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]))
+        VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_inFlightFences[i]))
+    }
+
+    for (uint32_t i = 0; i < _imageCount; i++) {
+        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
+    }
+}
+
+void VulkanSwapchain::DestroySyncObjects()
+{
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
+        vkDestroySemaphore(_device->Get(), _imageAvailableSemaphores[i], nullptr);
+        vkDestroyFence(_device->Get(), _inFlightFences[i], nullptr);
+    }
+
+    for (uint32_t i = 0; i < _imageCount; i++) {
+        vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
+    }
+}
+
+
 void VulkanSwapchain::Destroy()
 {
 }
@@ -271,11 +314,13 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
         throw std::runtime_error("Cannot create a swapchain at an invalid extent!");
     }
 
-    if (!presentMode.has_value())
+    if (!presentMode.has_value()) {
         ChoosePresentMode();
+    }
 
-    if (!surfaceFormat.has_value())
+    if (!surfaceFormat.has_value()) {
         ChooseFormat();
+    }
 
     // The swapchain will use both graphics and present, provide it the proper queue families.
     std::vector queueFamilyIndices = { _device->GetGraphicsFamilyIndex(), _device->GetPresentFamilyIndex() };
@@ -312,13 +357,6 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
 
     _surfaceFormat = format;
     _presentMode = present;
-
-    // Update the hash for mutable reference checking.
-    _hash = 0x58AB464;
-    bl::hash_combine(
-        _hash, _imageCount,
-        _surfaceFormat.format, _surfaceFormat.colorSpace,
-        imageSharingMode, present, oldSwapchain, _swapchain);
 
     if (oldSwapchain) {
         vkDestroySwapchainKHR(_device->Get(), oldSwapchain, nullptr);

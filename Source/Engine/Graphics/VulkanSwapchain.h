@@ -35,6 +35,9 @@ private:
     /// @brief Destroys all the swapchain's image views.
     void DestroyImageViews();
 
+    void CreateSyncObjects();
+    void DestroySyncObjects();
+
     VulkanDevice* _device;
     VulkanPhysicalDevice* _physicalDevice;
     VulkanWindow* _window;
@@ -46,9 +49,12 @@ private:
     std::vector<VkImage> _swapImages;
     std::vector<VkImageView> _swapImageViews;
     uint32_t _imageIndex;
+    uint32_t _currentFrame;
     bool _isMailboxSupported;
     bool _isImmediateSupported;
-    std::size_t _hash;
+    std::vector<VkSemaphore> _imageAvailableSemaphores;
+    std::vector<VkSemaphore> _renderFinishedSemaphores;
+    std::vector<VkFence> _inFlightFences;
 
 public:
     /**
@@ -135,10 +141,9 @@ public:
 
     void SetSurfaceFormat(VkSurfaceFormatKHR format);
     void SetPresentMode(VkPresentModeKHR mode);
-    void Resize(VkExtent2D extent);
     void Recreate(std::optional<VkPresentModeKHR> presentMode = {}, std::optional<VkSurfaceFormatKHR> surfaceFormat = {});
-    bool AcquireNext(VkSemaphore semaphore, VkFence fence);
-    bool QueuePresent(VkSemaphore semaphore); /** Presents the image at GetImageIndex() to the screen. */
+    bool AcquireNext();
+    bool QueuePresent(); /** Presents the image at GetImageIndex() to the screen. */
     void Destroy();
 };
 

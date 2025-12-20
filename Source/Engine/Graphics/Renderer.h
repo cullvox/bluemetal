@@ -3,12 +3,15 @@
 #include <nlohmann/json.hpp>
 
 #include <unordered_set>
+#include <map>
 
 #include "UniformData.h"
 #include "VulkanBuffer.h"
+#include "RenderData.h"
 
 namespace bl {
 
+class FrameCounter;
 class Material;
 class Mesh;
 class VulkanWindow;
@@ -18,9 +21,8 @@ class VulkanMaterialInstance;
 class VulkanImageView;
 class VulkanImage;
 class VulkanDescriptorSetAllocatorCache;
-struct VulkanRenderData;
 
-using RenderFunction = std::function<void(VulkanRenderData& rd)>;
+using RenderFunction = std::function<void(RenderData& rd)>;
 
 enum class RenderPassType : uint32_t {
     eGeometry = 0,
@@ -29,10 +31,10 @@ enum class RenderPassType : uint32_t {
 
 class Renderer {
 public:
-    Renderer(VulkanWindow* window); /** @brief Constructor */
+    Renderer(VulkanWindow* window, FrameCounter& fc); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
-    uint32_t GetSwapchainImageCount() { return _imageCount; }
+    uint32_t GetSwapchainImageCount();
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::maxFramesInFlight - 1. */
     void Render(RenderFunction func);
 
@@ -61,8 +63,8 @@ protected:
     void RemoveMaterial(VulkanMaterialInstance* instance);
 
 private:
-    void CreateSyncObjects();
-    void DestroySyncObjects();
+    void CreateCommandBuffers();
+    void DestroyCommandBuffers();
     void DestroyImagesAndFramebuffers();
     void CreateGlobalUniform();
     void DestroyGlobalUniform();
@@ -73,15 +75,11 @@ private:
     VulkanDevice* _device;
     VulkanWindow* _window;
     VulkanSwapchain* _swapchain;
+    FrameCounter& _frameCounter;
 
     // Frame Synchronization
-    uint32_t _imageCount;
-    uint32_t _imageIndex;
-    uint32_t _currentFrame;
-    std::vector<VkCommandBuffer> _commandBuffers;
-    std::vector<VkSemaphore> _imageAvailableSemaphores;
-    std::vector<VkSemaphore> _renderFinishedSemaphores;
-    std::vector<VkFence> _inFlightFences;
+    RenderData _renderData;
+    std::array<VkCommandBuffer, VulkanConfig::maxFramesInFlight> _commandBuffers;
 
     // Render Pass Data
     VkSampleCountFlagBits _sampleCount = VK_SAMPLE_COUNT_1_BIT;
@@ -90,8 +88,8 @@ private:
     std::unique_ptr<VulkanImageView> _colorImageView;
     std::unique_ptr<VulkanImage> _depthImage;
     std::unique_ptr<VulkanImageView> _depthImageView;
-    std::vector<VkImage> _swapchainImages;
-    std::vector<VkImageView> _swapchainImageViews;
+    std::array<VkImage, VulkanConfig::maxFramesInFlight> _swapchainImages;
+    std::array<VkImageView, VulkanConfig::maxFramesInFlight> _swapchainImageViews;
     bool recreateRequested = false;
     VkPresentModeKHR recreatePresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
@@ -103,10 +101,15 @@ private:
     std::array<VulkanBuffer, VulkanConfig::maxFramesInFlight> _globalBuffer;
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalSet;
     std::array<void*, VulkanConfig::maxFramesInFlight> _globalBufferMap;
-    float _prevTime;
 
     // Instance rendering
-    std::unordered_map<Mesh*, std::tuple<int, std::vector<InstanceData>>> _instanceDraws;
+    struct DrawCall {
+        int count;
+        std::vector<InstanceData> instances;
+    };
+
+    using DrawKey = std::pair<MaterialInstance*, Mesh*>;
+    std::map<DrawKey, DrawCall> _calls;
 
     std::function<void()> _recreateCallback;
 

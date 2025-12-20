@@ -1,12 +1,19 @@
 #pragma once
 
 #include "Vulkan.h"
+#include "UniformData.h"
 
 namespace bl {
 
 class Renderer;
+class MaterialInstance;
 
-struct VulkanRenderData {
+class VulkanRenderData {
+
+
+
+public:
+
     Renderer* renderer;
     VkCommandBuffer cmd;
     uint32_t currentFrame;
