@@ -103,6 +103,11 @@ void Renderer::DestroyGlobalUniform()
     _globalSet.fill(VK_NULL_HANDLE);
 }
 
+VulkanDevice* Renderer::GetDevice() const
+{
+    return _device;
+}
+
 uint32_t Renderer::GetSwapchainImageCount()
 {
     return _swapchain->GetImageCount();
@@ -200,7 +205,7 @@ VkAccessFlags getAccessFlags(VkImageLayout layout)
 	}
 }
 
-void Renderer::Render(RenderFunction func)
+void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 {
     // If the window is minimized, we don't draw anything.
     if (_window->GetMinimized())
@@ -217,7 +222,8 @@ void Renderer::Render(RenderFunction func)
         _device->WaitForDevice();
     }
 
-    auto currentFrame = _renderData.GetCurrentFrame();
+    auto currentFrame = _swapchain->GetCurrentFrame();
+    _renderData.SetCurrentFrame(currentFrame);
 
     // Compute the per frame UBO.
     const auto currentTime = Time::Current();
@@ -258,10 +264,16 @@ void Renderer::Render(RenderFunction func)
 
     VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo))
 
+    _renderData.SetCommandBuffer(cmd);
+
     // Update all material buffers.
     for (auto instance : _materials) {
         instance->UpdateUniforms(cmd);
     }
+
+    // This function doesn't know about globals or uniforms yet.
+    objectFunc(_renderData);
+    _renderData.WriteInstanceBuffer();
 
     // Setup the render pass for dynamic rendering.
     std::array clearColors = {
@@ -337,18 +349,19 @@ void Renderer::Render(RenderFunction func)
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     // If using a multisampled image transition to a color image.
-    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
-        TransitionImageLayout(cmd,
-            _colorImage->Get(),
-            range,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            0,
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    }
+    // if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
+    //     TransitionImageLayout(cmd,
+    //         _colorImage->Get(),
+    //         range,
+    //         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    //         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    //         0,
+    //         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+    //         VK_IMAGE_LAYOUT_UNDEFINED,
+    //         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    // }
 
+    // Transition the depth image.
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     TransitionImageLayout(cmd,
         _depthImage->Get(),
@@ -364,7 +377,6 @@ void Renderer::Render(RenderFunction func)
 
     // Render all the frame data to the gbuffer.
     _renderData.SetGlobalDescriptorSet(_globalSet[currentFrame]);
-    _renderData.SetCommandBuffer(cmd);
 
     VkViewport viewport;
     viewport.x = 0.0f;
@@ -380,9 +392,11 @@ void Renderer::Render(RenderFunction func)
     scissor.extent = { extent.width, extent.height };
     vkCmdSetScissor(cmd, 0, 1, &scissor);
 
-    vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
-
+    
     func(_renderData);
+    
+    vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
+    _renderData.WriteDrawCommands();
 
     vkCmdEndRendering(cmd);
 
@@ -399,27 +413,11 @@ void Renderer::Render(RenderFunction func)
 
     VK_CHECK(vkEndCommandBuffer(cmd))
 
-    // Submit the command buffer to the graphics queue.
-    std::array commandBuffers = { _commandBuffers[currentFrame] };
-    std::array waitStages = { (VkPipelineStageFlags)VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
-
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.pNext = nullptr;
-    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
-    submitInfo.pWaitSemaphores = waitSemaphores.data();
-    submitInfo.pWaitDstStageMask = waitStages.data();
-    submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
-    submitInfo.pCommandBuffers = commandBuffers.data();
-    submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
-    submitInfo.pSignalSemaphores = signalSemaphores.data();
-
-    VK_CHECK(vkQueueSubmit(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[currentFrame]))
+    _swapchain->QueueSubmit(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
 
     if (_swapchain->QueuePresent()) {
         RecreateImages();
     }
-
 }
 
 void Renderer::SetImageRecreateCallback(std::function<void()> onRecreate)

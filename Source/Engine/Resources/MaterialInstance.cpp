@@ -100,12 +100,12 @@ void MaterialInstance::SetSampledTexture2D(const std::string& name, Ref<Sampler>
     GetInstance()->SetSampledImage2D(name, sampler.lock()->GetSampler(), image.lock()->GetImage());
 }
 
-void MaterialInstance::Bind(VulkanRenderData& rd)
+void MaterialInstance::Bind(RenderData& rd)
 {
     GetInstance()->Bind(rd);
 }
 
-void MaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value)
+void MaterialInstance::PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* value)
 {
     GetInstance()->PushConstant(rd, offset, size, value);
 }

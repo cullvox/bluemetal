@@ -10,6 +10,36 @@
 
 namespace bl {
 
+
+enum class VulkanMaterialSupportFlags : uint32_t
+{
+    eNone           = 0x00000000,
+    eGlobalBuffer   = 0x00000001,
+    eInstanceBuffer = 0x00000002,
+};
+
+inline constexpr VulkanMaterialSupportFlags operator|(VulkanMaterialSupportFlags lhs, VulkanMaterialSupportFlags rhs) noexcept {
+    return static_cast<VulkanMaterialSupportFlags>(
+        static_cast<unsigned>(lhs) | static_cast<unsigned>(rhs)
+    );
+}
+
+inline constexpr VulkanMaterialSupportFlags operator&(VulkanMaterialSupportFlags lhs, VulkanMaterialSupportFlags rhs) noexcept {
+    return static_cast<VulkanMaterialSupportFlags>(
+        static_cast<unsigned>(lhs) & static_cast<unsigned>(rhs)
+    );
+}
+
+inline VulkanMaterialSupportFlags& operator|=(VulkanMaterialSupportFlags& lhs, VulkanMaterialSupportFlags rhs) noexcept {
+    lhs = lhs | rhs;
+    return lhs;
+}
+
+inline VulkanMaterialSupportFlags& operator&=(VulkanMaterialSupportFlags& lhs, VulkanMaterialSupportFlags rhs) noexcept {
+    lhs = lhs & rhs;
+    return lhs;
+}
+
 class Renderer;
 
 /**
@@ -86,6 +116,8 @@ public:
      */
     const SamplerMap& GetSamplers() const { return _samplers; }
 
+    VulkanMaterialSupportFlags GetSupportFlags() const;
+
     /**
      * @brief Creates a material instance for this material.
      * @return A new VulkanMaterialInstance for this material.
@@ -101,6 +133,7 @@ private:
     uint32_t _swapchainImageCount;
     VkDescriptorSetLayout _layout;
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
+    VulkanMaterialSupportFlags _flags;
 };
 
 // Must be defined here because we use the material definition.

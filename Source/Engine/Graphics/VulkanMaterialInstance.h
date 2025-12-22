@@ -3,16 +3,18 @@
 #include <vector>
 #include <map>
 
+#include "Core/Flags.h"
 #include "Math/Math.h"
 #include "VulkanBuffer.h"
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
-#include "VulkanRenderData.h"
 #include "VulkanSampler.h"
 
 namespace bl {
 
+
 class VulkanMaterial;
+class RenderData;
 
 /**
  * @class VulkanMaterialInstance
@@ -120,7 +122,7 @@ public:
      * @brief Binds the material instance to the current render data.
      * @param rd Render data to bind the material instance to.
      */
-    void Bind(VulkanRenderData& rd);
+    void Bind(RenderData& rd);
 
     /**
      * @brief Pushes a constant value to the current command buffer.
@@ -129,7 +131,7 @@ public:
      * @param size Size in bytes of the constant.
      * @param value Pointer to the constant data.
      */
-    void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
+    void PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* value);
 
     /**
      * @brief Pushes a constant value to the current command buffer.
@@ -138,7 +140,7 @@ public:
      * @param data Constant data to push.
      */
     template <typename T>
-    void PushConstant(VulkanRenderData& rd, uint32_t offset, const T& data)
+    void PushConstant(RenderData& rd, uint32_t offset, const T& data)
     {
         PushConstant(rd, offset, sizeof(T), &data);
     }
@@ -200,6 +202,7 @@ private:
     uint32_t _currentFrame;
     std::map<uint32_t, BindingData> _bindings;
     std::vector<PerFrameData> _perFrameData;
+
 };
 
 }

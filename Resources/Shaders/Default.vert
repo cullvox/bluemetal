@@ -17,7 +17,7 @@ layout(set=0, binding=0) uniform GlobalUniform
     vec2 mouse;
     float time;
     float dt;
-} global;
+} globals;
 
 layout(set=1, binding=0) uniform MaterialUniform
 {
@@ -37,5 +37,5 @@ void main()
     outNormal = normalize(mat3(transpose(inverse(object.model))) * inNormal);
     outTextureCoordinates = inTextureCoordinates;
 
-    gl_Position = global.projection * global.view * object.model * vec4(inPosition, 1.0);
+    gl_Position = globals.projection * globals.view * object.model * vec4(inPosition, 1.0);
 }

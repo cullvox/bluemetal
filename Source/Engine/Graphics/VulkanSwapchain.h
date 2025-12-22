@@ -2,6 +2,7 @@
 
 #include <optional>
 #include <vector>
+#include <array>
 
 #include "VulkanDevice.h"
 #include "Window/Window.h"
@@ -52,9 +53,9 @@ private:
     uint32_t _currentFrame;
     bool _isMailboxSupported;
     bool _isImmediateSupported;
-    std::vector<VkSemaphore> _imageAvailableSemaphores;
-    std::vector<VkSemaphore> _renderFinishedSemaphores;
-    std::vector<VkFence> _inFlightFences;
+    std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> _imageAvailableSemaphores;
+    std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> _renderFinishedSemaphores;
+    std::array<VkFence, VulkanConfig::maxFramesInFlight> _inFlightFences;
 
 public:
     /**
@@ -136,6 +137,8 @@ public:
      */
     uint32_t GetImageIndex() const;
 
+    uint32_t GetCurrentFrame() const;
+
     bool GetMailboxSupported() const; /** @brief Returns true on VK_PRESENT_MODE_MAILBOX being supported on current physical device. */
     bool GetImmediateSupported() const; /** @brief Returns true on VK_PRESENT_MODE_IMMEDIATE being supported on current physical device. */
 
@@ -143,6 +146,7 @@ public:
     void SetPresentMode(VkPresentModeKHR mode);
     void Recreate(std::optional<VkPresentModeKHR> presentMode = {}, std::optional<VkSurfaceFormatKHR> surfaceFormat = {});
     bool AcquireNext();
+    void QueueSubmit(VkCommandBuffer cmd, VkPipelineStageFlags waitDstStageMask);
     bool QueuePresent(); /** Presents the image at GetImageIndex() to the screen. */
     void Destroy();
 };

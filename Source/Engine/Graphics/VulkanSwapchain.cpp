@@ -1,3 +1,5 @@
+#include <array>
+
 #include "VulkanSwapchain.h"
 #include "Core/Hash.h"
 #include "Core/Print.h"
@@ -15,13 +17,21 @@ VulkanSwapchain::VulkanSwapchain(
     , _window(window)
     , _imageCount(0)
     , _swapchain(VK_NULL_HANDLE)
+    , _imageIndex(0)
+    , _currentFrame(0)
 {
+    _imageAvailableSemaphores.fill(VK_NULL_HANDLE);
+    _renderFinishedSemaphores.fill(VK_NULL_HANDLE);
+    _inFlightFences.fill(VK_NULL_HANDLE);
+
     EnsureSurfaceSupported();
     Recreate();
+    CreateSyncObjects();
 }
 
 VulkanSwapchain::~VulkanSwapchain()
 {
+    DestroySyncObjects();
     DestroyImageViews();
     vkDestroySwapchainKHR(_device->Get(), _swapchain, nullptr);
 }
@@ -71,6 +81,11 @@ uint32_t VulkanSwapchain::GetImageIndex() const
     return _imageIndex;
 }
 
+uint32_t VulkanSwapchain::GetCurrentFrame() const
+{
+    return _currentFrame;
+}
+
 bool VulkanSwapchain::GetMailboxSupported() const
 {
     return _isMailboxSupported;
@@ -88,14 +103,14 @@ bool VulkanSwapchain::AcquireNext()
 
     VkResult result = vkAcquireNextImageKHR(_device->Get(), _swapchain, UINT32_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &_imageIndex);
 
+    bool recreate = false;
     switch (result) {
     case VK_SUBOPTIMAL_KHR:
     case VK_SUCCESS:
-        return false;
         break; // The swapchain does not need to be recreated.
     case VK_ERROR_OUT_OF_DATE_KHR:
         Recreate();
-        return true;
+        recreate = true;
         break;
     default:
         throw std::runtime_error("Could not acquire the next swapchain image!");
@@ -103,6 +118,29 @@ bool VulkanSwapchain::AcquireNext()
 
     // Reset the fence for this image so it can signal when it's done.
     VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
+    return recreate;
+}
+
+void VulkanSwapchain::QueueSubmit(VkCommandBuffer cmd, VkPipelineStageFlags waitDstStageMask)
+{
+    // Submit the command buffer to the graphics queue.
+    std::array<VkCommandBuffer, 1>      commandBuffers = { cmd };
+    std::array<VkPipelineStageFlags, 1> waitStages = { waitDstStageMask };
+    std::array<VkSemaphore, 1>          waitSemaphores = { _imageAvailableSemaphores[_currentFrame] };
+    std::array<VkSemaphore, 1>          signalSemaphores = { _renderFinishedSemaphores[_imageIndex] };
+
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pNext = nullptr;
+    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
+    submitInfo.pWaitSemaphores = waitSemaphores.data();
+    submitInfo.pWaitDstStageMask = waitStages.data();
+    submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
+    submitInfo.pCommandBuffers = commandBuffers.data();
+    submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
+    submitInfo.pSignalSemaphores = signalSemaphores.data();
+
+    VK_CHECK(vkQueueSubmit(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
 }
 
 bool VulkanSwapchain::QueuePresent()
@@ -119,16 +157,17 @@ bool VulkanSwapchain::QueuePresent()
 
     VkResult result = vkQueuePresentKHR(_device->GetPresentQueue(), &presentInfo);
 
+    bool recreated = false;
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
         Recreate(); // Next frame _wasRecreated will be reset.
-        return true;
+        recreated = true;
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Could not queue Vulkan present!");
     }
 
     _currentFrame = (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
 
-    return false;
+    return recreated;
 }
 
 void VulkanSwapchain::EnsureSurfaceSupported()

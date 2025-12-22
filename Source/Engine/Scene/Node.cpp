@@ -15,7 +15,7 @@ Node::Node(const Node& node)
     , _parent(nullptr) // Parent is not copied
 {
     // Deep copy children
-    for (const auto& [name, child] : node._children) {
+    for (const auto& child : node._children) {
         AddChild(child->Clone());
     }
 }
@@ -25,8 +25,8 @@ Node::~Node() = default;
 void Node::Update(float dt)
 {
     // Update children
-    for (auto& [name, child] : _children) {
-        child->Update(dt);
+    for (auto& node : _children) {
+        node->Update(dt);
     }
 }
 
@@ -38,10 +38,10 @@ void Node::Ready()
 {
 }
 
-void Node::Draw(VulkanRenderData& rd)
+void Node::Draw(RenderData& rd)
 {
-    for (auto& [name, child] : _children) {
-        child->Draw(rd);
+    for (auto& node : _children) {
+        node->Draw(rd);
     }
 }
 
@@ -50,8 +50,8 @@ Node* Node::Clone()
     Node* node = new Node(_engine);
     node->SetName(_name);
 
-    for (auto& [name, child] : _children) {
-        node->AddChild(child->Clone());
+    for (auto& childNode : _children) {
+        node->AddChild(childNode->Clone());
     }
 
     return node;
@@ -70,16 +70,16 @@ bool Node::SetName(const std::string& name)
     }
 
     // Rename in parent's children map.
-    if (_parent->_children.find(name) != _parent->_children.end()) {
+    if (_parent->_childrenMap.find(name) != _parent->_childrenMap.end()) {
         Print::Warn("A sibling node with the name '{}' already exists in parent node '{}'.", name, _parent->GetName());
         return false;
     }
 
-    auto it = _parent->_children.find(_name);
-    if (it != _parent->_children.end()) {
+    auto it = _parent->_childrenMap.find(_name);
+    if (it != _parent->_childrenMap.end()) {
         auto nodePtr = std::move(it->second);
-        _parent->_children.erase(it);
-        _parent->_children.insert({ name, std::move(nodePtr) });
+        _parent->_childrenMap.erase(it);
+        _parent->_childrenMap.insert({ name, std::move(nodePtr) });
     }
 
     _name = name;
@@ -111,22 +111,20 @@ Node* Node::GetParent() const
 
 Node* Node::GetChild(const std::string& name) const
 {
-    auto it = _children.find(name);
-    if (it != _children.end()) {
-        return it->second.get();
+    auto it = _childrenMap.find(name);
+    if (it != _childrenMap.end()) {
+        return it->second;
     }
     return nullptr;
 }
 
 std::vector<Node*> Node::GetChildren() const
 {
-    std::vector<Node*> childrenList;
-    for (auto& [name, child] : _children) {
-        if (child) {
-            childrenList.push_back(child.get());
-        }
-    }
-    return childrenList;
+    std::vector<Node*> out;
+    std::transform(_children.begin(), _children.end(), std::back_inserter(out), [](const auto& uniqueNode){
+        return uniqueNode.get();
+    });
+    return out;
 }
 
 void Node::AddChild(Node* child)
@@ -159,8 +157,9 @@ void Node::AddChild(Node* child)
     }
 
     // Avoid adding the same child multiple times.
-    if (_children.find(child->GetName()) == _children.end()) {
-        _children.insert({ child->GetName(), std::move(childPtr) });
+    if (_childrenMap.find(child->GetName()) == _childrenMap.end()) {
+        _childrenMap.insert({ child->GetName(), childPtr.get() });
+        _children.push_back(std::move(childPtr));
         child->_parent = this;
     } else {
         Print::Warn("A child with the name '{}' already exists in node '{}'.", child->GetName(), this->GetName());
@@ -189,9 +188,10 @@ void Node::AddChild(std::unique_ptr<Node> child)
     }
 
     // Avoid adding the same child multiple times.
-    if (_children.find(child->GetName()) == _children.end()) {
+    if (_childrenMap.find(child->GetName()) == _childrenMap.end()) {
         child->_parent = this;
-        _children.insert({ child->GetName(), std::move(child) });
+        _childrenMap.insert({ child->GetName(), child.get() });
+        _children.push_back(std::move(child));
     } else {
         Print::Warn("A child with the name '{}' already exists in node '{}'.", child->GetName(), this->GetName());
     }
@@ -199,28 +199,53 @@ void Node::AddChild(std::unique_ptr<Node> child)
 
 std::unique_ptr<Node> Node::UnlinkChild(const std::string& child)
 {
-    auto it = _children.find(child);
-    if (it == _children.end()) {
+    auto it = _childrenMap.find(child);
+    if (it == _childrenMap.end()) {
         Print::Warn("No child with the name '{}' exists in node '{}'.", child, this->GetName());
         return nullptr;
     }
 
-    auto childPtr = std::move(it->second);
+    auto childPtr = it->second;
     childPtr->_parent = nullptr;
-    _children.erase(it);
-    return childPtr;
+    _childrenMap.erase(it);
+
+    auto vecIt = std::find_if(_children.begin(), _children.end(), [childPtr](auto& uniqueNode){
+        return uniqueNode.get() == childPtr;
+    });
+
+    if (vecIt == _children.end()) {
+        throw std::runtime_error("vector and map out of sync!");
+    }
+
+    auto uniqueNode = std::move(*vecIt);
+    _children.erase(vecIt);
+
+    return std::move(uniqueNode);
 }
 
 void Node::DeleteChild(const std::string& child)
 {
-    auto it = _children.find(child);
-    if (it == _children.end()) {
+    auto it = _childrenMap.find(child);
+    if (it == _childrenMap.end()) {
         Print::Warn("No child with the name '{}' exists in node '{}'.", child, this->GetName());
         return;
     }
 
-    it->second->_parent = nullptr;
-    _children.erase(it);
+    auto childPtr = it->second;
+
+    auto vecIt = std::find_if(_children.begin(), _children.end(), [childPtr](auto& uniqueNode){
+        return uniqueNode.get() == childPtr;
+    });
+
+    childPtr->_parent = nullptr;
+
+    _childrenMap.erase(it);
+    _children.erase(vecIt);
+}
+
+const std::vector<std::unique_ptr<Node>>& Node::GetVecChildren()
+{
+    return _children;
 }
 
 } // namespace bl

@@ -13,7 +13,7 @@ layout(set = 0, binding = 0) uniform GlobalUniform
     vec2 mouse;
     float time;
     float dt;
-} global;
+} globals;
 
 layout(set = 1, binding = 0) uniform MaterialUniform
 {
@@ -49,19 +49,18 @@ layout(set = 1, binding = 0) uniform MaterialUniform
 layout(set = 1, binding = 1) uniform sampler2D noiseSampler;
 layout(set = 1, binding = 2) uniform sampler2D windNoiseTexture;
 
-struct InstanceData {
-    mat4 model;
-    vec3 position;
-};
 
 layout(std140, set = 2, binding = 0) readonly buffer InstanceBuffer {
-    InstanceData instances[];
+    mat4 instances[];
 } instanceBuffer;
+
+layout(std140, set = 2, binding = 1) readonly buffer InstancePositionBuffer {
+    vec4 position;
+} instancePositionBuffer;
 
 layout(push_constant) uniform DrawConstants
 {
     InstanceData objectInstance;
-    bool useInstanceBuffer;
 } drawConstants;
 
 layout(location = 0) out vec3 outNormal;
@@ -88,7 +87,7 @@ void main() {
 
     //wind
     vec2 windPosition = instance.position.xz * material.windScale;
-    windPosition -= global.time * material.windDirectionVector * material.windSpeed;
+    windPosition -= globals.time * material.windDirectionVector * material.windSpeed;
     outCurrentWindBend = texture(windNoiseTexture, windPosition).x;
     outCurrentWindBend *= material.windSway;
     outCurrentWindBend *= outBottomToTop * 2.0;
@@ -114,5 +113,5 @@ void main() {
     //VERTEX= patchFactor;
     vertex *= mix(material.miniumGrassScale, material.maxGrassScale, outPatchFactor);
 
-    gl_Position = global.projection * global.view * instance.model * vec4(vertex, 1.0);
+    gl_Position = globals.projection * globals.view * instance.model * vec4(vertex, 1.0);
 }

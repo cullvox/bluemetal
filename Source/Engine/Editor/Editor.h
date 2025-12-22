@@ -5,20 +5,20 @@
 
 namespace bl {
 
-struct VulkanRenderData;
+class RenderData;
 
 class Editor : public System {
     DebugEditor _debug;
 
-    void DrawDebug(VulkanRenderData& rd);
-    void DrawMainMenu(VulkanRenderData& rd);
-    void DrawHeirarchy(VulkanRenderData& rd);
+    void DrawDebug(RenderData& rd);
+    void DrawMainMenu(RenderData& rd);
+    void DrawHeirarchy(RenderData& rd);
 
 public:
     Editor(Engine& engine);
     ~Editor();
 
-    void Draw(VulkanRenderData& rd);
+    void Draw(RenderData& rd);
 
 };
 

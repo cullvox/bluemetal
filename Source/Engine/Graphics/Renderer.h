@@ -22,6 +22,7 @@ class VulkanImageView;
 class VulkanImage;
 class VulkanDescriptorSetAllocatorCache;
 
+using ObjectFunction = std::function<void(RenderData& rd)>;
 using RenderFunction = std::function<void(RenderData& rd)>;
 
 enum class RenderPassType : uint32_t {
@@ -34,9 +35,11 @@ public:
     Renderer(VulkanWindow* window, FrameCounter& fc); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
+    VulkanDevice* GetDevice() const;
+
     uint32_t GetSwapchainImageCount();
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::maxFramesInFlight - 1. */
-    void Render(RenderFunction func);
+    void Render(RenderFunction func, ObjectFunction objectFunc);
 
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);

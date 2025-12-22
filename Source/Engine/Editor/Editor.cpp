@@ -1,5 +1,5 @@
 #include "Editor.h"
-#include "Graphics/VulkanRenderData.h"
+#include "Graphics/RenderData.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
@@ -18,7 +18,7 @@ Editor::~Editor()
 {
 }
 
-void Editor::Draw(VulkanRenderData& rd)
+void Editor::Draw(RenderData& rd)
 {
     ImGui::BeginMainMenuBar();
 
@@ -44,7 +44,7 @@ void Editor::Draw(VulkanRenderData& rd)
     _debug.Draw(rd);
 }
 
-void Editor::DrawDebug(VulkanRenderData& rd)
+void Editor::DrawDebug(RenderData& rd)
 {
 
 }

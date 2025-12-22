@@ -5,7 +5,6 @@
 #include <string>
 
 #include "Graphics/VulkanMaterialInstance.h"
-#include "Graphics/VulkanRenderData.h"
 #include "Math/Math.h"
 #include "Resource.h"
 #include "Sampler.h"
@@ -16,6 +15,7 @@ namespace bl {
 class ResourceSystem;
 class GraphicsSystem;
 class Renderer;
+class RenderData;
 class Material;
 
 /// @class Material Instance
@@ -67,8 +67,8 @@ public:
     void SetMatrix(const std::string& name, glm::mat4 value);
     void SetSampledTexture2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image);
 
-    void Bind(VulkanRenderData& rd); /** @brief Bind this material for rending using it and it's data. */
-    void PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* value);
+    void Bind(RenderData& rd); /** @brief Bind this material for rending using it and it's data. */
+    void PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* value);
 };
 
 }

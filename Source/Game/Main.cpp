@@ -166,12 +166,14 @@ int main(int argc, const char** argv)
 
             rootNode->Update(frameCounter.GetDeltaTime());
 
-            renderer->Render([&](bl::VulkanRenderData& rd) {
+            auto objectFunc = [&](bl::RenderData& rd) {
+                rootNode->Draw(rd);
+            };
+
+            auto renderFunc = [&](bl::RenderData& rd){
                 auto extent = window->GetExtent();
 
                 imgui->BeginFrame();
-
-                rootNode->Draw(rd);
                 editor.Draw(rd);
 
                 ImGui::Begin("Settings");
@@ -202,8 +204,10 @@ int main(int argc, const char** argv)
 
                 ImGui::End();
 
-                imgui->EndFrame(rd.cmd);
-            });
+                imgui->EndFrame(rd.GetCommandBuffer());
+            };
+
+            renderer->Render(renderFunc, objectFunc);
 
             frameCounter.EndFrame();
         }

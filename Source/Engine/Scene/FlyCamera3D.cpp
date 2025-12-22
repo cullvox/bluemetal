@@ -130,33 +130,33 @@ void FlyCamera3D::Update(float dt)
     renderer->SetProjection(projection);
 }
 
-void FlyCamera3D::Draw(VulkanRenderData& rd)
+void FlyCamera3D::Draw(RenderData&)
 {
-    ImGui::Begin("Camera Settings");
-    if (ImGui::TreeNode("Camera")) {
-        ImGui::Checkbox("Enable Mouse Smoothing", &enableCameraSmoothing);
-        ImGui::SetNextItemWidth(150.0f);
-        ImGui::SliderFloat("Mouse Smoothness", &cameraSmoothnessDampLambda, 1.0f, 10.0f);
+    // ImGui::Begin("Camera Settings");
+    // if (ImGui::TreeNode("Camera")) {
+    //     ImGui::Checkbox("Enable Mouse Smoothing", &enableCameraSmoothing);
+    //     ImGui::SetNextItemWidth(150.0f);
+    //     ImGui::SliderFloat("Mouse Smoothness", &cameraSmoothnessDampLambda, 1.0f, 10.0f);
 
-        ImGui::Dummy({0.0f, 10.0f});
+    //     ImGui::Dummy({0.0f, 10.0f});
 
-        ImGui::Checkbox("Enable Movement Damping", &enableCameraMovementDamping);
-        ImGui::SetNextItemWidth(150.0f);
-        ImGui::SliderFloat("Acceleration", &cameraAcceleration, 0.1f, 20.0f);
-        ImGui::SetNextItemWidth(150.0f);
-        ImGui::SliderFloat("Max Speed", &maxCameraSpeed, 1.0f, 20.0f);
-        ImGui::SetNextItemWidth(150.0f);
-        ImGui::SliderFloat("Movement Damping", &cameraMovementDampLambda, 1.0f, 10.0f);
+    //     ImGui::Checkbox("Enable Movement Damping", &enableCameraMovementDamping);
+    //     ImGui::SetNextItemWidth(150.0f);
+    //     ImGui::SliderFloat("Acceleration", &cameraAcceleration, 0.1f, 20.0f);
+    //     ImGui::SetNextItemWidth(150.0f);
+    //     ImGui::SliderFloat("Max Speed", &maxCameraSpeed, 1.0f, 20.0f);
+    //     ImGui::SetNextItemWidth(150.0f);
+    //     ImGui::SliderFloat("Movement Damping", &cameraMovementDampLambda, 1.0f, 10.0f);
 
-        ImGui::Separator();
-        ImGui::Text("Position: %.2f, %.2f, %.2f m", position.x, position.y, position.z);
-        ImGui::Text("Velocity: %.2f, %.2f, %.2f m/s", cameraVelocity.x, cameraVelocity.y, cameraVelocity.z);
-        ImGui::Text("Rotation: %.2f, %.2f deg", yaw, pitch);
-        ImGui::Text("Speed: %.2f m/s", glm::length(cameraVelocity));
+    //     ImGui::Separator();
+    //     ImGui::Text("Position: %.2f, %.2f, %.2f m", position.x, position.y, position.z);
+    //     ImGui::Text("Velocity: %.2f, %.2f, %.2f m/s", cameraVelocity.x, cameraVelocity.y, cameraVelocity.z);
+    //     ImGui::Text("Rotation: %.2f, %.2f deg", yaw, pitch);
+    //     ImGui::Text("Speed: %.2f m/s", glm::length(cameraVelocity));
 
-        ImGui::TreePop();
-    }
-    ImGui::End();
+    //     ImGui::TreePop();
+    // }
+    // ImGui::End();
 }
 
 void FlyCamera3D::SetSpeed(float speed)

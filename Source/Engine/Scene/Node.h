@@ -5,17 +5,21 @@
 #include <string>
 #include <unordered_map>
 
-#include "Graphics/VulkanRenderData.h"
-
 namespace bl {
 
 class Engine;
+class RenderData;
 
 class Node {
     std::string _name;
     Node* _parent;
-    std::unordered_map<std::string, std::unique_ptr<Node>> _children;
+    std::vector<std::unique_ptr<Node>> _children;
+    std::unordered_map<std::string, Node*> _childrenMap;
     Engine& _engine;
+
+protected:
+    friend class NodeFilterIterator;
+    const std::vector<std::unique_ptr<Node>>& GetVecChildren();
 
 public:
     Node(Engine& engine);
@@ -25,7 +29,7 @@ public:
     virtual void Ready(); // Children are ready.
     virtual void Update(float deltaTime);
     virtual void PhysicsUpdate(float delta);
-    virtual void Draw(VulkanRenderData& rd);
+    virtual void Draw(RenderData& rd);
     virtual Node* Clone(); // Creates a non-owning deep copy of this node and its children.
 
     template <typename T>

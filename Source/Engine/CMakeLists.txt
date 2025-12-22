@@ -30,6 +30,7 @@ list(APPEND Sources
   "Graphics/VulkanSwapchain.cpp"
   "Graphics/VulkanMaterial.cpp"
   "Graphics/VulkanMaterialInstance.cpp"
+  "Graphics/RenderData.cpp"
   "Graphics/Renderer.cpp"
   "Graphics/GraphicsSystem.cpp"
 
@@ -76,6 +77,7 @@ list(APPEND Sources
   "Scene/Camera3D.cpp"
   "Scene/FlyCamera3D.cpp"
   "Scene/PhysicsBody3D.cpp"
+  "Scene/NodeFilterIterator.cpp"
 
   "Editor/DebugEditor.cpp"
   "Editor/Editor.cpp"

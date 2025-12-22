@@ -1,6 +1,7 @@
 #include "VulkanMaterial.h"
 #include "Core/Print.h"
 #include "VulkanBuffer.h"
+#include "UniformData.h"
 
 namespace bl {
 
@@ -8,6 +9,7 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
     : VulkanMaterialInstance(device)
     , _swapchainImageCount(imageCount)
     , _descriptorSetCache(device, 1024, VulkanDescriptorRatio::Default())
+    , _flags(VulkanMaterialSupportFlags::eNone)
 {
     _material = this;
     _materialSet = materialSet;
@@ -47,6 +49,29 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
         }
     }
 
+    // Determine if this pipeline layout uses the global uniform buffer.
+    if (sets.contains(0) && sets[0].Contains(0)) {
+        auto& globalSet = sets[0];
+        auto& binding = globalSet[0];
+        if (binding.IsBlock() &&
+            binding.GetName() == "globals" &&
+            binding.GetSize() == sizeof(GlobalUBO)) {
+            _flags |= VulkanMaterialSupportFlags::eGlobalBuffer;
+        }
+    }
+
+    if (sets.contains(2) && sets[2].Contains(0)) {
+        auto& instanceSet = sets[2];
+        auto& binding = instanceSet[0];
+        if (binding.GetType() == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
+            _flags |= VulkanMaterialSupportFlags::eInstanceBuffer;
+        }
+    }
+
+    if ((_flags & VulkanMaterialSupportFlags::eInstanceBuffer) != VulkanMaterialSupportFlags::eNone) {
+        sets[2][0].SetType(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
+    }
+
     // Construct the pipeline.
     _pipeline = std::make_unique<VulkanPipeline>(device, renderer, state, &reflection);
 
@@ -80,6 +105,11 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
 
 VulkanMaterial::~VulkanMaterial()
 {
+}
+
+VulkanMaterialSupportFlags VulkanMaterial::GetSupportFlags() const
+{
+    return _flags;
 }
 
 std::unique_ptr<VulkanMaterialInstance> VulkanMaterial::CreateInstance()

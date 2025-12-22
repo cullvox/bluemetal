@@ -17,7 +17,7 @@ public:
     virtual ~MeshInstance3D() = default;
 
     virtual MeshInstance3D* Clone() override;
-    virtual void Draw(VulkanRenderData& rd) override; // Just sets up the instance data, actual draw call is done in renderer
+    virtual void Draw(RenderData& rd) override; // Just sets up the instance data, actual draw call is done in renderer
 
     void SetMesh(Ref<Mesh> mesh);
     void SetMaterial(Ref<MaterialInstance> material);

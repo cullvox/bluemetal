@@ -39,7 +39,7 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
 
     _device->WaitForDevice();
     _window = std::make_unique<VulkanWindow>(_device.get(), "Maginvox", Rect2D { {}, displays[0].GetDesktopMode().extent }, false);
-    _renderer = std::make_unique<Renderer>(_window.get());
+    _renderer = std::make_unique<Renderer>(_window.get(), engine.GetFrameCounter());
 }
 
 GraphicsSystem::~GraphicsSystem()

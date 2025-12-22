@@ -50,7 +50,7 @@ void Node3D::PhysicsUpdate(float delta)
     Node::PhysicsUpdate(delta);
 }
 
-void Node3D::Draw(VulkanRenderData& rd)
+void Node3D::Draw(RenderData& rd)
 {
     Node::Draw(rd);
 }

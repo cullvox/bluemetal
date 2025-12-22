@@ -29,7 +29,7 @@ public:
     ~FlyCamera3D();
 
     virtual void Update(float dt) override;
-    virtual void Draw(VulkanRenderData& rd) override;
+    virtual void Draw(RenderData& rd) override;
 
     void SetSpeed(float speed);
     void SetSmoothness(float smoothness);

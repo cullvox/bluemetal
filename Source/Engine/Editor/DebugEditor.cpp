@@ -6,7 +6,7 @@
 #include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/VulkanConversions.h"
-#include "Graphics/VulkanRenderData.h"
+#include "Graphics/RenderData.h"
 #include "Graphics/VulkanWindow.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Audio/AudioSystem.h"
@@ -17,6 +17,7 @@ DebugEditor::DebugEditor(Editor& editor)
     : _editor(editor)
     , _frameCounter(editor.GetEngine().GetFrameCounter())
 {
+    _vulkanInstanceVersion = volkGetInstanceVersion();
 }
 
 DebugEditor::~DebugEditor()
@@ -28,7 +29,7 @@ void DebugEditor::Show(bool visible)
     _open = visible;
 }
 
-void DebugEditor::Draw(VulkanRenderData& rd)
+void DebugEditor::Draw(RenderData& rd)
 {
     Engine& engine = _editor.GetEngine();
     FrameCounter& counter = engine.GetFrameCounter();
@@ -59,8 +60,7 @@ void DebugEditor::Draw(VulkanRenderData& rd)
 
     ImGui::Text("Vulkan Version");
     ImGui::SameLine();
-    auto instanceVersion = volkGetInstanceVersion();
-    ImGui::TextColored(ImVec4 { 0.7f, 0.1f, 0.1f, 1.0f }, "%d.%d.%d", VK_VERSION_MAJOR(instanceVersion), VK_VERSION_MINOR(instanceVersion), VK_VERSION_PATCH(instanceVersion));
+    ImGui::TextColored(ImVec4 { 0.7f, 0.1f, 0.1f, 1.0f }, "%d.%d.%d", VK_VERSION_MAJOR(_vulkanInstanceVersion), VK_VERSION_MINOR(_vulkanInstanceVersion), VK_VERSION_PATCH(_vulkanInstanceVersion));
 
     ImGui::Text("ImGui");
     ImGui::SameLine();

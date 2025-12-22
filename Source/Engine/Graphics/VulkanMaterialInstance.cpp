@@ -1,6 +1,7 @@
 #include "VulkanMaterialInstance.h"
 #include "VulkanMaterial.h"
 #include "UniformData.h"
+#include "RenderData.h"
 
 namespace bl {
 
@@ -58,9 +59,13 @@ void VulkanMaterialInstance::SetMatrix(const std::string& name, glm::mat4 value)
     SetGenericUniform(name, value);
 }
 
-void VulkanMaterialInstance::Bind(VulkanRenderData& rd)
+void VulkanMaterialInstance::Bind(RenderData& rd)
 {
-    PerFrameData& currentFrameData = _perFrameData[rd.currentFrame];
+    auto cmd = rd.GetCommandBuffer();
+    auto currentFrame = rd.GetCurrentFrame();
+    auto globalSet = rd.GetGlobalDescriptorSet();
+    auto instanceSet = rd.GetInstanceDescriptorSet();
+    PerFrameData& currentFrameData = _perFrameData[currentFrame];
 
     std::vector<uint32_t> offsets;
 
@@ -70,21 +75,36 @@ void VulkanMaterialInstance::Bind(VulkanRenderData& rd)
             auto& variant = _bindings[binding.first];
             VulkanBuffer& buffer = std::get<VulkanBuffer>(variant);
             uint32_t blockSize = static_cast<uint32_t>(buffer.GetSize()) / _material->_swapchainImageCount;
-            offsets.push_back(blockSize * rd.currentFrame);
+            offsets.push_back(blockSize * currentFrame);
         }
     }
 
-    vkCmdBindPipeline(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipeline());
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipeline());
 
-    std::array<VkDescriptorSet, 2> descriptorSets { rd.globalSet, currentFrameData.set };
-    auto firstSet = rd.globalSet ? 0 : 1;
-    auto descriptorSetCount = rd.globalSet ? 2 : 1;
-    auto sets = rd.globalSet ? descriptorSets.data() : &descriptorSets[1];
-    vkCmdBindDescriptorSets(rd.cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), firstSet, descriptorSetCount, sets, static_cast<uint32_t>(offsets.size()), offsets.data());
+    std::array<VkDescriptorSet, 3> descriptorSets { globalSet, currentFrameData.set, instanceSet };
+
+    uint32_t firstSet = 0;
+    std::span<VkDescriptorSet> sets;
+    auto support = _material->GetSupportFlags();
+
+    if ((support & VulkanMaterialSupportFlags::eGlobalBuffer) != VulkanMaterialSupportFlags::eNone) {
+        firstSet = 0;
+        sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 2};
+
+        if ((support & VulkanMaterialSupportFlags::eInstanceBuffer)  != VulkanMaterialSupportFlags::eNone) {
+            sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 3};
+            offsets.push_back(rd.GetInstanceBufferDynamicOffset());
+        }
+    } else {
+        firstSet = 1;
+        sets = std::span<VkDescriptorSet>{descriptorSets.begin() + 1, 1};
+    }
+
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), firstSet, sets.size(), sets.data(), static_cast<uint32_t>(offsets.size()), offsets.data());
 
     // Save the next frame number for when updating what bindings are dirty/not updated.
-    if (_currentFrame == rd.currentFrame)
-        _currentFrame = (rd.currentFrame + 1) % _material->_swapchainImageCount;
+    if (_currentFrame == currentFrame)
+        _currentFrame = (currentFrame + 1) % _material->_swapchainImageCount;
 }
 
 void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image)
@@ -118,7 +138,7 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
     SetBindingDirty(binding);
 }
 
-void VulkanMaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset, uint32_t size, const void* data)
+void VulkanMaterialInstance::PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* data)
 {
 
     // Find the shader stage that uses the offset and size.
@@ -136,7 +156,7 @@ void VulkanMaterialInstance::PushConstant(VulkanRenderData& rd, uint32_t offset,
 
     auto pcr = (*it);
 
-    vkCmdPushConstants(rd.cmd, _material->_pipeline->GetPipelineLayout(), pcr.GetStages(), offset, size, data);
+    vkCmdPushConstants(rd.GetCommandBuffer(), _material->_pipeline->GetPipelineLayout(), pcr.GetStages(), offset, size, data);
 }
 
 void VulkanMaterialInstance::UpdateUniforms(VkCommandBuffer cmd)

@@ -1,7 +1,7 @@
 #include "MeshInstance3D.h"
 #include "Engine/Engine.h"
 #include "Resources/Material.h"
-#include "Renderer/Renderer.h"
+#include "Graphics/Renderer.h"
 #include "Resources/ResourceSystem.h"
 
 namespace bl {
@@ -24,14 +24,16 @@ MeshInstance3D* MeshInstance3D::Clone()
     return new MeshInstance3D(*this);
 }
 
-void MeshInstance3D::Draw(VulkanRenderData& rd)
+void MeshInstance3D::Draw(RenderData& rd)
 {
     // TODO: This isn't really instancing, the renderer will have to buffer instances.
     bl::InstanceData object {};
     object.model = GetWorldTransform();
     object.position = GetWorldPosition();
 
-    rd.renderer->AddInstance(_mesh.get(), object);
+    rd.DrawInstance(_material.lock().get(), _mesh.lock().get(), object);
+
+    //rd.renderer->AddInstance(_mesh.get(), object);
 
     Node3D::Draw(rd);
 }
