@@ -55,7 +55,7 @@ layout(std140, set = 2, binding = 0) readonly buffer InstanceBuffer {
 } instanceBuffer;
 
 layout(std140, set = 2, binding = 1) readonly buffer InstancePositionBuffer {
-    vec4 position;
+    vec4 position[];
 } instancePositionBuffer;
 
 layout(push_constant) uniform DrawConstants
