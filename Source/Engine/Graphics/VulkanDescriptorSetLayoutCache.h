@@ -4,7 +4,7 @@
 #include <unordered_map>
 
 #include "Core/Hash.h"
-#include "Vulkan.h"
+#include "VulkanForward.h"
 
 namespace bl {
 

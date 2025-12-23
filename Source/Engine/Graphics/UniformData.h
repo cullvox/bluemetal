@@ -17,7 +17,7 @@ struct GlobalUBO // Slot 0, Binding 0
 struct InstanceData
 {
     glm::mat4 model;
-    glm::vec3 position;
+    glm::vec4 position;
 };
 
 struct ObjectPC // Model positions use a push constant block

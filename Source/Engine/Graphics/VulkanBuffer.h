@@ -17,7 +17,7 @@ public:
     VulkanBuffer();
     VulkanBuffer(VulkanBuffer&) = delete;
     VulkanBuffer(VulkanBuffer&& rhs) noexcept;
-    VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkDeviceSize size, VmaAllocationInfo* allocationInfo = nullptr, bool mapped = false);
+    VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkDeviceSize size, VmaAllocationInfo* allocationInfo = nullptr, bool mapped = false, VmaAllocationCreateFlags flags = 0);
     ~VulkanBuffer();
 
     VulkanBuffer& operator=(const VulkanBuffer& rhs) = delete;

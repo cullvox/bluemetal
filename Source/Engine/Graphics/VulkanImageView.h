@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Vulkan.h"
+#include "VulkanForward.h"
 
 namespace bl {
 

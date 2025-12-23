@@ -4,7 +4,7 @@
 #include <array>
 
 #include "Vertex.h"
-#include "Vulkan.h"
+#include "VulkanForward.h"
 
 namespace bl {
 

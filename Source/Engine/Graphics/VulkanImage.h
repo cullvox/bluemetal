@@ -3,7 +3,7 @@
 #include <span>
 #include <vector>
 
-#include "Vulkan.h"
+#include "VulkanForward.h"
 
 namespace bl {
 

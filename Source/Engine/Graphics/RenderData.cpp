@@ -18,11 +18,7 @@ RenderData::RenderData(Renderer* renderer)
     _instanceToCallMap.reserve(MAX_INSTANCE_BUFFER_SIZE);
     _instances.reserve(MAX_INSTANCE_BUFFER_SIZE);
 
-    VmaAllocationInfo allocInfo = {};
-    _stagingBuffer = VulkanBuffer{renderer->GetDevice(), VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_ONLY, MAX_INSTANCE_BUFFER_SIZE * sizeof(glm::mat4) * renderer->GetSwapchainImageCount(), &allocInfo, true};
-    _stagingBufferMap = allocInfo.pMappedData;
-
-    _instanceBuffer = VulkanBuffer{renderer->GetDevice(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY, MAX_INSTANCE_BUFFER_SIZE * sizeof(glm::mat4) * renderer->GetSwapchainImageCount()};
+    _instanceBuffer = VulkanBufferFrameRing{renderer->GetDevice(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, renderer->GetSwapchainImageCount(), MAX_INSTANCE_BUFFER_SIZE * sizeof(glm::mat4), false};
 
     std::array<VkDescriptorSetLayoutBinding, 1> instanceBindings = {
         {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}
@@ -32,7 +28,7 @@ RenderData::RenderData(Renderer* renderer)
     _instanceSet = _descriptorCache.Allocate(_instanceSetLayout);
 
     VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = _instanceBuffer.Get();
+    bufferInfo.buffer = _instanceBuffer.GetBuffer();
     bufferInfo.offset = 0;
     bufferInfo.range = MAX_INSTANCE_BUFFER_SIZE * sizeof(glm::mat4);
 
@@ -102,7 +98,7 @@ void RenderData::DrawInstance(MaterialInstance* material, Mesh* mesh, const Inst
     for (int i = 0; i < _calls.size(); i++) {
         auto& call = _calls[i];
         if (call.material == call.material && call.mesh == mesh) {
-            _tempInstances.push_back(instance.model);
+            _tempInstances.push_back(instance);
             _instanceToCallMap.push_back(i);
             return;
         }
@@ -110,13 +106,12 @@ void RenderData::DrawInstance(MaterialInstance* material, Mesh* mesh, const Inst
 
     _calls.emplace_back(material, mesh);
     uint32_t lastCall = _calls.size() - 1;
-    _tempInstances.push_back(instance.model);
+    _tempInstances.push_back(instance);
     _instanceToCallMap.push_back(lastCall);
 }
 
 void RenderData::DrawCustom(std::function<void (RenderData& rd)> renderData)
 {
-
 }
 
 void RenderData::WriteInstanceBuffer()
@@ -128,7 +123,7 @@ void RenderData::WriteInstanceBuffer()
         return;
 
     for (int i = 0; i < _tempInstances.size(); i++) {
-        glm::mat4& instance = _tempInstances[i];
+        InstanceData& instance = _tempInstances[i];
         uint32_t callIndex = _instanceToCallMap[i];
         _instances.push_back(instance);
 
@@ -143,23 +138,12 @@ void RenderData::WriteInstanceBuffer()
     _tempInstances.clear();
 
     // Upload instances to the staging buffer.
-    uint32_t offset = sizeof(glm::mat4) * MAX_INSTANCE_BUFFER_SIZE * _currentFrame;
-    uint32_t size = sizeof(glm::mat4) * _instances.size();
-    std::memcpy(static_cast<char*>(_stagingBufferMap) + offset, _instances.data(), size);
-
-
-
-    VkBufferCopy region = {};
-    region.srcOffset = offset;
-    region.dstOffset = offset;
-    region.size = size;
-
-    vkCmdCopyBuffer(_cmd, _stagingBuffer.Get(), _instanceBuffer.Get(), 1, &region);
+    _instanceBuffer.Upload(_cmd, std::as_bytes(std::span(_instances)), _currentFrame);
 }
 
 uint32_t RenderData::GetInstanceBufferDynamicOffset()
 {
-    return sizeof(glm::mat4) * MAX_INSTANCE_BUFFER_SIZE * _currentFrame;
+    return _instanceBuffer.GetDynamicOffset(_currentFrame);
 }
 
 void RenderData::WriteDrawCommands()

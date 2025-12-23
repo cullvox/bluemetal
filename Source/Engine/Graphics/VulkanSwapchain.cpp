@@ -9,6 +9,11 @@
 
 namespace bl {
 
+static inline constexpr VkFormat defaultPresentFormat = VK_FORMAT_R8G8B8A8_SRGB; /** @brief Default format to look for. */
+static inline constexpr VkColorSpaceKHR defaultPresentColorspace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; /** @brief Default color space to look for. */
+static inline constexpr VkSurfaceFormatKHR defaultSurfaceFormat = VkSurfaceFormatKHR { defaultPresentFormat, defaultPresentColorspace };
+static inline constexpr VkPresentModeKHR defaultPresentMode = VK_PRESENT_MODE_MAILBOX_KHR; /** @brief Desired present mode to use in swapchain. Will use present mode FIFO if this is unavailable.*/
+
 VulkanSwapchain::VulkanSwapchain(
     VulkanDevice* device,
     VulkanWindow* window)
@@ -206,10 +211,10 @@ void VulkanSwapchain::ChooseFormat()
 
     // Look for the desired surface format.
     if (std::any_of(formats.begin(), formats.end(), [](auto sf) {
-            auto dsf = VulkanConfig::defaultSurfaceFormat;
+            auto dsf = defaultSurfaceFormat;
             return sf.format == dsf.format && sf.colorSpace == dsf.colorSpace;
         })) {
-        _surfaceFormat = VulkanConfig::defaultSurfaceFormat;
+        _surfaceFormat = defaultSurfaceFormat;
     } else // As fallback use the first format available.
     {
         Print::Warn("Surface format not found, using default.");
@@ -227,8 +232,8 @@ void VulkanSwapchain::ChoosePresentMode()
     _isImmediateSupported = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_IMMEDIATE_KHR) != modes.end();
 
     // Try to find the caller's present mode or use the default instead.
-    if (std::find(modes.begin(), modes.end(), VulkanConfig::defaultPresentMode) != modes.end()) {
-        _presentMode = VulkanConfig::defaultPresentMode;
+    if (std::find(modes.begin(), modes.end(), defaultPresentMode) != modes.end()) {
+        _presentMode = defaultPresentMode;
         return;
     }
 

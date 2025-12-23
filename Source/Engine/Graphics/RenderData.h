@@ -6,10 +6,10 @@
 #include <functional>
 #include <deque>
 
-#include "Vulkan.h"
-#include "VulkanBuffer.h"
-#include "UniformData.h"
+#include "VulkanForward.h"
+#include "VulkanBufferFrameRing.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
+#include "UniformData.h"
 
 namespace bl
 {
@@ -25,12 +25,10 @@ class RenderData
     uint32_t _imageIndex;
     VkDescriptorSet _globalSet;
 
-    std::vector<glm::mat4> _tempInstances;
+    std::vector<InstanceData> _tempInstances;
     std::vector<uint32_t> _instanceToCallMap;
-    std::vector<glm::mat4> _instances;
-    VulkanBuffer _stagingBuffer; // Dynamic buffer with per frame offsets.
-    void* _stagingBufferMap;
-    VulkanBuffer _instanceBuffer; // Dynamic buffer with per frame offsets.
+    std::vector<InstanceData> _instances;
+    VulkanBufferFrameRing _instanceBuffer;
     VulkanDescriptorSetAllocatorCache _descriptorCache;
     VkDescriptorSetLayout _instanceSetLayout;
     VkDescriptorSet _instanceSet;

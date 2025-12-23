@@ -4,7 +4,7 @@
 
 #include <nlohmann/json.hpp>
 
-#include "Vulkan.h"
+#include "VulkanForward.h"
 #include "VulkanConversions.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineState.h"

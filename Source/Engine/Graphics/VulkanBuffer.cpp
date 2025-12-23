@@ -40,7 +40,7 @@ static std::string VkBufferUsageFlags_ToString(VkBufferUsageFlags usage)
     return out;
 }
 
-VulkanBuffer::VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkDeviceSize size, VmaAllocationInfo* allocationInfo, bool mapped)
+VulkanBuffer::VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VkDeviceSize size, VmaAllocationInfo* allocationInfo, bool mapped, VmaAllocationCreateFlags flags)
     : _device(device)
     , _usage(usage)
     , _memoryUsage(memoryUsage)
@@ -58,7 +58,7 @@ VulkanBuffer::VulkanBuffer(VulkanDevice* device, VkBufferUsageFlags usage, VmaMe
     bufferCreateInfo.queueFamilyIndexCount = 1;
     bufferCreateInfo.pQueueFamilyIndices = &graphicsFamilyIndex;
 
-    VmaAllocatorCreateFlags flags = mapped ? VMA_ALLOCATION_CREATE_MAPPED_BIT : 0;
+    flags |= mapped ? VMA_ALLOCATION_CREATE_MAPPED_BIT : 0;
     VmaAllocationCreateInfo allocationCreateInfo = {};
     allocationCreateInfo.flags = flags;
     allocationCreateInfo.usage = memoryUsage;

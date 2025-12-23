@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Math/Math.h"
-#include "Vulkan.h"
+#include "VulkanForward.h"
 
 namespace bl {
 

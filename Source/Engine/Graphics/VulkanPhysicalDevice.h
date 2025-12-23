@@ -4,7 +4,7 @@
 #include <vector>
 #include <optional>
 
-#include "Vulkan.h"
+#include "VulkanForward.h"
 
 namespace bl {
 

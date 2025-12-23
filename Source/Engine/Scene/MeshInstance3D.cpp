@@ -29,7 +29,7 @@ void MeshInstance3D::Draw(RenderData& rd)
     // TODO: This isn't really instancing, the renderer will have to buffer instances.
     bl::InstanceData object {};
     object.model = GetWorldTransform();
-    object.position = GetWorldPosition();
+    object.position = glm::vec4{GetWorldPosition(), 1.0f};
 
     rd.DrawInstance(_material.lock().get(), _mesh.lock().get(), object);
 

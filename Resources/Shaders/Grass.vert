@@ -49,18 +49,19 @@ layout(set = 1, binding = 0) uniform MaterialUniform
 layout(set = 1, binding = 1) uniform sampler2D noiseSampler;
 layout(set = 1, binding = 2) uniform sampler2D windNoiseTexture;
 
+struct InstanceData {
+    mat4 instance;
+    vec4 position;
+};
 
 layout(std140, set = 2, binding = 0) readonly buffer InstanceBuffer {
-    mat4 instances[];
+    InstanceData instances[];
 } instanceBuffer;
-
-layout(std140, set = 2, binding = 1) readonly buffer InstancePositionBuffer {
-    vec4 position[];
-} instancePositionBuffer;
 
 layout(push_constant) uniform DrawConstants
 {
     InstanceData objectInstance;
+    bool useInstanceBuffer;
 } drawConstants;
 
 layout(location = 0) out vec3 outNormal;
@@ -100,7 +101,7 @@ void main() {
 
     //player position
 
-    float playerDistance = distance(material.playerPosition, instance.position);
+    float playerDistance = distance(material.playerPosition, instance.position.xyz);
     float bendFromPlayerFactor = max(material.playerRadius - playerDistance, 0.0) / material.playerRadius;
     vec2 bendDirection = normalize(material.playerPosition.xz - instance.position.xz);
     //gl_Position.xz -= (inverseModel * vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * outBottomToTop;
@@ -113,5 +114,5 @@ void main() {
     //VERTEX= patchFactor;
     vertex *= mix(material.miniumGrassScale, material.maxGrassScale, outPatchFactor);
 
-    gl_Position = globals.projection * globals.view * instance.model * vec4(vertex, 1.0);
+    gl_Position = globals.projection * globals.view * instance.instance * vec4(vertex, 1.0);
 }

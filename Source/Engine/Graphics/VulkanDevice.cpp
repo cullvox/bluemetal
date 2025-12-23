@@ -297,16 +297,20 @@ void VulkanDevice::CreateDevice()
 
     VkPhysicalDeviceFeatures features = {};
 
+
+    VkPhysicalDeviceVulkan11Features features11 = {};
+    features11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+    features11.shaderDrawParameters = true;
+
     VkPhysicalDeviceVulkan13Features features13 = {};
     features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+    features13.pNext = &features11;
     features13.dynamicRendering = VK_TRUE;
 
     VkPhysicalDeviceExtendedDynamicState3FeaturesEXT dynamicStateFeatures3 = {};
     dynamicStateFeatures3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT;
-    dynamicStateFeatures3.pNext = nullptr;
+    dynamicStateFeatures3.pNext = &features13;
     dynamicStateFeatures3.extendedDynamicState3RasterizationSamples = VK_TRUE;
-
-    features13.pNext = &dynamicStateFeatures3;
 
     VkPhysicalDeviceExtendedDynamicStateFeaturesEXT dynamicStateFeatures = {};
     dynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
@@ -315,7 +319,7 @@ void VulkanDevice::CreateDevice()
 
     VkDeviceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    createInfo.pNext = &features13;
+    createInfo.pNext = &dynamicStateFeatures;
     createInfo.flags = 0;
     createInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
@@ -377,9 +381,9 @@ void VulkanDevice::CreateCaches()
     _pipelineLayoutCache = std::make_unique<VulkanPipelineLayoutCache>(this);
 }
 
-std::size_t VulkanDevice::GetDynamicAlignment(size_t uboSize)
+VkDeviceSize VulkanDevice::GetDynamicAlignment(VkDeviceSize uboSize)
 {
-    std::size_t minAlignment = _physicalDevice->GetProperties().limits.minUniformBufferOffsetAlignment;
+    VkDeviceSize minAlignment = _physicalDevice->GetProperties().limits.minUniformBufferOffsetAlignment;
     if (minAlignment > 0) {
         return (uboSize + minAlignment - 1) & ~(minAlignment - 1);
     }

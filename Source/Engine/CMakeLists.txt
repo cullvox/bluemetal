@@ -15,6 +15,7 @@ list(APPEND Sources
   "Graphics/VulkanPhysicalDevice.cpp"
   "Graphics/VulkanDevice.cpp"
   "Graphics/VulkanBuffer.cpp"
+  "Graphics/VulkanBufferFrameRing.cpp"
   "Graphics/VulkanImage.cpp"
   "Graphics/VulkanImageView.cpp"
   "Graphics/VulkanSampler.cpp"
@@ -106,3 +107,5 @@ target_link_libraries(Bluemetal PUBLIC
   qoixx::qoixx
   tinygltf
   Jolt::Jolt)
+
+target_precompile_headers(Bluemetal PRIVATE "Graphics/Vulkan.h")

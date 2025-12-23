@@ -100,7 +100,7 @@ void VulkanMaterialInstance::Bind(RenderData& rd)
         sets = std::span<VkDescriptorSet>{descriptorSets.begin() + 1, 1};
     }
 
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), firstSet, sets.size(), sets.data(), static_cast<uint32_t>(offsets.size()), offsets.data());
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), firstSet, static_cast<uint32_t>(sets.size()), sets.data(), static_cast<uint32_t>(offsets.size()), offsets.data());
 
     // Save the next frame number for when updating what bindings are dirty/not updated.
     if (_currentFrame == currentFrame)
