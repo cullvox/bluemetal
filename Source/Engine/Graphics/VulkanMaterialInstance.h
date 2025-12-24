@@ -145,6 +145,11 @@ public:
         PushConstant(rd, offset, sizeof(T), &data);
     }
 
+    /**
+     * @brief Returns the base material.
+     */
+    VulkanMaterial* GetBaseMaterial();
+
 protected:
     /**
      * @brief Creates the per frame descriptor sets for the material instance.

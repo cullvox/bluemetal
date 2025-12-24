@@ -24,18 +24,23 @@ layout(set=1, binding=0) uniform MaterialUniform
     bool useTriplanar;
 } material;
 
+struct InstanceData {
+    mat4 instance;
+    vec4 position;
+};
+
 layout(push_constant) uniform Constants
 {
-    mat4 model;
-    vec3 position;
+    InstanceData objectInstance;
+    bool useInstanceBuffer;
 } object;
 
 void main()
 {
-    vec4 worldPos = object.model * vec4(inPosition, 1.0);
+    vec4 worldPos = object.objectInstance.instance * vec4(inPosition, 1.0);
     outPosition = worldPos.xyz;
-    outNormal = normalize(mat3(transpose(inverse(object.model))) * inNormal);
+    outNormal = normalize(mat3(transpose(inverse(object.objectInstance.instance))) * inNormal);
     outTextureCoordinates = inTextureCoordinates;
 
-    gl_Position = globals.projection * globals.view * object.model * vec4(inPosition, 1.0);
+    gl_Position = globals.projection * globals.view * object.objectInstance.instance * vec4(inPosition, 1.0);
 }

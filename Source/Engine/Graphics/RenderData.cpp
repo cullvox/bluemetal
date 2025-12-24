@@ -1,6 +1,8 @@
 #include "RenderData.h"
 #include "Renderer.h"
 #include "Resources/MaterialInstance.h"
+#include "Graphics/VulkanMaterialInstance.h"
+#include "Graphics/VulkanMaterial.h"
 #include "Resources/Mesh.h"
 
 namespace bl {
@@ -160,9 +162,22 @@ void RenderData::WriteDrawCommands()
         if (prevMesh != call.mesh)
             call.mesh->Bind(_cmd);
 
+        bool shouldInstance = call.instanceCount > 1;
+        bool materialSupportsInstancing = (call.material->GetInstance()->GetBaseMaterial()->GetSupportFlags() & VulkanMaterialSupportFlags::eInstanceBuffer) != VulkanMaterialSupportFlags::eNone;
+
+        ObjectPC objectPC;
+        if (shouldInstance && materialSupportsInstancing) {
+            objectPC.useInstanceBuffer = true;
+        } else {
+            objectPC.data = _instances[call.instanceOffset];
+            objectPC.useInstanceBuffer = false;
+        }
+
+        call.material->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
         vkCmdDrawIndexed(_cmd, call.mesh->GetIndicesCount(), call.instanceCount, 0, 0, call.instanceOffset);
     }
 
+    _calls.clear();
 }
 
 } // namespace bl

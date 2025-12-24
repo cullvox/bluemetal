@@ -219,6 +219,11 @@ void VulkanMaterialInstance::UpdateUniforms(VkCommandBuffer cmd)
     }
 }
 
+VulkanMaterial* VulkanMaterialInstance::GetBaseMaterial()
+{
+    return _material;
+}
+
 void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
 {
     // Allocate the per frame descriptor sets.

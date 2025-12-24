@@ -28,9 +28,10 @@ class MaterialInstance : public Resource {
     std::unique_ptr<VulkanMaterialInstance> _materialInstance; // Set by either Material or is created.
 
 protected:
-    virtual VulkanMaterialInstance* GetInstance() const;
 
 public:
+    virtual VulkanMaterialInstance* GetInstance() const;
+
     /// @brief Creates an empty material instance, used for constructing materials.
     /// This constructor is designated for the Material Resource.
     ///
