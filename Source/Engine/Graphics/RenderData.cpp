@@ -167,10 +167,10 @@ void RenderData::WriteDrawCommands()
 
         ObjectPC objectPC;
         if (shouldInstance && materialSupportsInstancing) {
-            objectPC.useInstanceBuffer = true;
+            objectPC.useInstanceBuffer.x = 1;
         } else {
             objectPC.data = _instances[call.instanceOffset];
-            objectPC.useInstanceBuffer = false;
+            objectPC.useInstanceBuffer.x = 0;
         }
 
         call.material->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);

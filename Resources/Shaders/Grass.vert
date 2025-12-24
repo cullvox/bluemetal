@@ -61,7 +61,7 @@ layout(std140, set = 2, binding = 0) readonly buffer InstanceBuffer {
 layout(push_constant) uniform DrawConstants
 {
     InstanceData objectInstance;
-    bool useInstanceBuffer;
+    ivec4 useInstanceBuffer;
 } drawConstants;
 
 layout(location = 0) out vec3 outNormal;
@@ -80,8 +80,8 @@ void main() {
     outSpecularFactor = material.specularFactor;
 
     InstanceData instance;
-    if (drawConstants.useInstanceBuffer) {
-        instance = instanceBuffer.instances[gl_BaseInstance];
+    if (drawConstants.useInstanceBuffer.x > 0) {
+        instance = instanceBuffer.instances[gl_InstanceIndex];
     } else {
         instance = drawConstants.objectInstance;
     }

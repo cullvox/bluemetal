@@ -97,7 +97,7 @@ int main(int argc, const char** argv)
         auto grasses = std::make_unique<bl::Node3D>(engine);
         grasses->SetName("Grass");
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 512; i++) {
             float x = static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(10.0f)));
             float z = static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(10.0f)));
 

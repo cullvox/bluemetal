@@ -32,7 +32,7 @@ struct InstanceData {
 layout(push_constant) uniform Constants
 {
     InstanceData objectInstance;
-    bool useInstanceBuffer;
+    ivec4 useInstanceBuffer;
 } object;
 
 void main()

@@ -23,7 +23,7 @@ struct InstanceData
 struct ObjectPC // Model positions use a push constant block
 {
     InstanceData data;
-    bool useInstanceBuffer;
+    glm::ivec4 useInstanceBuffer;
 };
 
 } // namespace bl
