@@ -11,9 +11,11 @@ layout(location=6) in float inSpecularFactor;
 layout(location=0) out vec4 outColor;
 
 void main() {
-    // AO = bottom_to_top - currentWindBend * windAOEffect;
+    float AO = (inBottomToTop - inCurrentWindBend * 0.3); // * windAOEffect;
     // AO_LIGHT_AFFECT = 1.0;
     outColor = vec4(0.6, 0.7, 0.3, 1.0);
+    outColor *= AO;
+    outColor.a = 1.0;
     // BACKLIGHT = vec3(backLightColor);
     // ROUGHNESS = roughnessFactor;
     // NORMAL = mix(NORMAL, vec3(0.0,1.0,0.0), inBottomToTop);

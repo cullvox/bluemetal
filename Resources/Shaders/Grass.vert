@@ -93,7 +93,7 @@ void main() {
     outCurrentWindBend *= material.windSway;
     outCurrentWindBend *= outBottomToTop * 2.0;
 
-    //mat4 inverseModel = inverse(instance.model); // Inverse model matrix scaling.
+    mat4 inverseModel = inverse(instance.instance); // Inverse model matrix scaling.
 
     //vec2 local_direction = (inverseModel * vec4(material.windDirectionVector.x, 0.0, material.windDirectionVector.y, 0.0)).xz;
 
@@ -104,8 +104,8 @@ void main() {
     float playerDistance = distance(material.playerPosition, instance.position.xyz);
     float bendFromPlayerFactor = max(material.playerRadius - playerDistance, 0.0) / material.playerRadius;
     vec2 bendDirection = normalize(material.playerPosition.xz - instance.position.xz);
-    //gl_Position.xz -= (inverseModel * vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * outBottomToTop;
-    //gl_Position.x -= bendFromPlayerFactor * outBottomToTop * .5;
+    vertex.xz -= (inverseModel * vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * outBottomToTop;
+    vertex.x -= bendFromPlayerFactor * outBottomToTop * .5;
 
     //bend grass blade
     //vertex.z += material.bladeBendFactor * pow(outBottomToTop, 2.0);

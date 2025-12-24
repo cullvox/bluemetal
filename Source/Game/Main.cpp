@@ -92,7 +92,7 @@ int main(int argc, const char** argv)
         grassMaterial->SetScaler("material.bladeBendFactor", 3.f);
         grassMaterial->SetVector3("material.colorSmall", {0.5, 0.7, 0.9});
         grassMaterial->SetVector3("material.colorLarge", {0.5, 0.8, 0.3});
-        grassMaterial->SetScaler("material.playerRadius", 0.3f);
+        grassMaterial->SetScaler("material.playerRadius", 0.6f);
 
         auto grasses = std::make_unique<bl::Node3D>(engine);
         grasses->SetName("Grass");
@@ -137,6 +137,8 @@ int main(int argc, const char** argv)
         flycam->SetPosition({ 0.0f, 0.0f, 5.0f });
         rootNode->AddChild(std::move(flycam));
 
+        auto flyCamNode = rootNode->GetChild("FlyCam")->As<bl::FlyCamera3D>();
+
         bl::FrameCounter& frameCounter = engine.GetFrameCounter();
         auto presentModes = renderer->GetPresentModes();
         auto multisampleModes = renderer->GetMultisampleCounts();
@@ -163,6 +165,8 @@ int main(int argc, const char** argv)
             bl::Extent2D extent = window->GetExtent();
 
             audio->Update();
+
+            grassMaterial->SetVector3("material.playerPosition", flyCamNode->GetWorldPosition());
 
             rootNode->Update(frameCounter.GetDeltaTime());
 

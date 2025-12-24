@@ -392,11 +392,10 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     scissor.extent = { extent.width, extent.height };
     vkCmdSetScissor(cmd, 0, 1, &scissor);
 
-    
-    func(_renderData);
-    
     vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
     _renderData.WriteDrawCommands();
+
+    func(_renderData);
 
     vkCmdEndRendering(cmd);
 
