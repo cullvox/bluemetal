@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <map>
+#include <bitset>
 
 #include "Core/Flags.h"
 #include "Math/Math.h"
@@ -116,7 +117,7 @@ public:
      * It will update the descriptor sets for the current frame and ensure that all bindings are up
      * to date.
      */
-    void UpdateUniforms(VkCommandBuffer cmd);
+    void UpdateUniforms(uint32_t currentImage);
 
     /**
      * @brief Binds the material instance to the current render data.
@@ -188,18 +189,23 @@ private:
      */
     struct PerFrameData {
         VkDescriptorSet set;
-        std::map<uint32_t, bool> dirty; /// @brief If a binding is dirty it must be updated somehow.
+        std::bitset<32> dirty; /// @brief If a binding is dirty it must be updated somehow.
     };
 
     /**
      * @struct SampledImage
      */
-    struct SampledImage {
+    struct SampledImageData {
         VulkanSampler* sampler;
         VulkanImage* image;
     };
 
-    using BindingData = std::variant<VulkanBuffer, SampledImage>;
+    struct UniformData {
+        VulkanBuffer buffer;
+        std::vector<std::byte> data;
+    };
+
+    using BindingData = std::variant<UniformData, SampledImageData>;
 
     VulkanDevice* _device;
     VulkanMaterial* _material;

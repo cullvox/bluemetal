@@ -81,29 +81,40 @@ int main(int argc, const char** argv)
         auto grassMaterial = grssMaterial.lock()->CreateInstance();
         grassMaterial->SetSampledTexture2D("noiseSampler", defaultSampler, noiseTexture);
         grassMaterial->SetSampledTexture2D("windNoiseTexture", defaultSampler, noiseTexture);
-        grassMaterial->SetScaler("material.grassScale", 1.0f);
-        grassMaterial->SetScaler("material.patchScale", 1.0f);
-        grassMaterial->SetScaler("material.miniumGrassScale", 0.4f);
-        grassMaterial->SetScaler("material.maxGrassScale", 1.0f);
-        grassMaterial->SetScaler("material.windSpeed", 0.008f);
-        grassMaterial->SetScaler("material.windSway", 1.1f);
-        grassMaterial->SetScaler("material.windScale", 0.01f);
-        grassMaterial->SetVector2("material.windDirectionVector", {0.3f, 0.3f});
-        grassMaterial->SetScaler("material.bladeBendFactor", 3.f);
-        grassMaterial->SetVector3("material.colorSmall", {0.5, 0.7, 0.9});
-        grassMaterial->SetVector3("material.colorLarge", {0.5, 0.8, 0.3});
-        grassMaterial->SetScaler("material.playerRadius", 0.6f);
+        grassMaterial->SetVector4("material.factors", { 1.0f, 0.4f, 0.0f, 0.0f });
+        grassMaterial->SetVector4("material.backLightColor", { 1.0f, 1.0f, 1.0f, 1.0f});
+        grassMaterial->SetVector4("material.clumping", { 1.0f, 0.4f, 1.0f, 0.0f });
+        grassMaterial->SetVector4("material.colorSmall", {0.5f, 0.7f, 0.9f, 1.0f});
+        grassMaterial->SetVector4("material.colorLarge", {0.5f, 0.8f, 0.3f, 1.0f});
+        grassMaterial->SetVector4("material.windParams", {0.008f, 1.1f, 0.01f, 1.0f});
+        grassMaterial->SetVector4("material.windDirection", {0.3f, 0.3f, 0.0f, 0.0f});
+        grassMaterial->SetVector4("material.playerParams", {10.0f, -4.0f, 10.0f, 0.6f});
+
+        // grassMaterial->SetScaler("material.grassScale", 1.0f);
+        // grassMaterial->SetScaler("material.patchScale", 1.0f);
+        // grassMaterial->SetScaler("material.miniumGrassScale", 0.4f);
+        // grassMaterial->SetScaler("material.maxGrassScale", 1.0f);
+        // grassMaterial->SetScaler("material.windSpeed", 0.008f);
+        // grassMaterial->SetScaler("material.windSway", 1.1f);
+        // grassMaterial->SetScaler("material.windScale", 0.01f);
+        // grassMaterial->SetVector2("material.windDirectionVector", {0.3f, 0.3f});
+        // grassMaterial->SetScaler("material.bladeBendFactor", 3.f);
+        // grassMaterial->SetVector3("material.colorSmall", );
+        // grassMaterial->SetVector3("material.colorLarge", {0.5, 0.8, 0.3});
+        // grassMaterial->SetScaler("material.playerRadius", 0.6f);
 
         auto grasses = std::make_unique<bl::Node3D>(engine);
         grasses->SetName("Grass");
 
         for (int i = 0; i < 512; i++) {
-            float x = static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(10.0f)));
-            float z = static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(10.0f)));
+            float x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(20.0f)));
+            float z = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(20.0f)));
+            float rot_x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(360.0f)));
 
             auto grassNode = grass.lock()->GetTree()->Clone();
             grassNode->SetName("Grass_" + std::to_string(i));
-            grassNode->SetPosition({ x, -4.f, z });
+            grassNode->SetPosition({ x, -3.5f, z });
+            //grassNode->SetRotation({0.0f, rot_x, 0.0f});
             grassNode->GetChild("Plane")->As<bl::MeshInstance3D>()->SetMaterial(grassMaterial);
             grasses->AddChild(grassNode);
         }
@@ -166,7 +177,8 @@ int main(int argc, const char** argv)
 
             audio->Update();
 
-            grassMaterial->SetVector3("material.playerPosition", flyCamNode->GetWorldPosition());
+            grassMaterial->SetVector4("material.playerParams", glm::vec4{flyCamNode->GetWorldPosition(), 5.0f});
+            grassMaterial->SetVector4("material.colorSmall", {sinf(bl::Time::Current()), sinf(bl::Time::Current() + bl::Math::Pi), 0.9f, 1.0f});
 
             rootNode->Update(frameCounter.GetDeltaTime());
 

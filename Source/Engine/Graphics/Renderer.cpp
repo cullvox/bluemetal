@@ -222,8 +222,16 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         _device->WaitForDevice();
     }
 
+
+
+
     auto currentFrame = _swapchain->GetCurrentFrame();
     _renderData.SetCurrentFrame(currentFrame);
+
+    // Prepare uniform buffers for the next frame.
+    for (auto instance : _materials) {
+        instance->UpdateUniforms(currentFrame);
+    }
 
     // Compute the per frame UBO.
     const auto currentTime = Time::Current();
@@ -265,11 +273,6 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo))
 
     _renderData.SetCommandBuffer(cmd);
-
-    // Update all material buffers.
-    for (auto instance : _materials) {
-        instance->UpdateUniforms(cmd);
-    }
 
     // This function doesn't know about globals or uniforms yet.
     objectFunc(_renderData);
@@ -410,6 +413,7 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
+
     VK_CHECK(vkEndCommandBuffer(cmd))
 
     _swapchain->QueueSubmit(cmd, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
@@ -417,6 +421,8 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     if (_swapchain->QueuePresent()) {
         RecreateImages();
     }
+
+    
 }
 
 void Renderer::SetImageRecreateCallback(std::function<void()> onRecreate)

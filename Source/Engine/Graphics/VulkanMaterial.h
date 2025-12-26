@@ -149,21 +149,12 @@ void VulkanMaterialInstance::SetGenericUniform(const std::string& name, T value)
     const VulkanVariableBlock& variable = uniforms.at(name);
     assert(sizeof(T) == variable.GetSize() && "Type must be the same as the uniform size!");
 
-    VulkanBuffer& buffer = std::get<VulkanBuffer>(_bindings[variable.GetBinding()]);
-    VkDeviceSize blockSize = buffer.GetSize() / VulkanConfig::maxFramesInFlight;
+    UniformData& uniform = std::get<UniformData>(_bindings[variable.GetBinding()]);
 
-    auto offset = (blockSize * _currentFrame) + variable.GetOffset();
-
-    char* uniform = nullptr;
-    buffer.Map((void**)&uniform);
+    auto offset = variable.GetOffset();
 
     // Offset the uniform to where the variable is located and copy to.
-    uniform += offset;
-    std::memcpy(uniform, &value, sizeof(T));
-
-    // The uniform data has been changed, unmap and flush.
-    buffer.Unmap();
-    buffer.Flush(offset, sizeof(T));
+    std::memcpy(uniform.data.data() + offset, &value, sizeof(T));
 
     // The buffer data is marked dirty so when available the changed data
     // will be copied to other parts of the buffer.

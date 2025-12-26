@@ -57,10 +57,11 @@ void Node3D::Draw(RenderData& rd)
 
 void Node3D::UpdateTransform()
 {
-    _transform = glm::mat4(1.0f);
-    _transform = glm::translate(_transform, position);
-    _transform *= glm::mat4_cast(rotation);
-    _transform = glm::scale(_transform, scale);
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), position);
+    glm::mat4 R = glm::mat4_cast(rotation);
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
+
+    _transform = T * R * S;
 }
 
 void Node3D::SetPosition(const glm::vec3& pos)

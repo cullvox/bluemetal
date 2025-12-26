@@ -67,14 +67,16 @@ void VulkanMaterialInstance::Bind(RenderData& rd)
     auto instanceSet = rd.GetInstanceDescriptorSet();
     PerFrameData& currentFrameData = _perFrameData[currentFrame];
 
+    // assert(currentFrameData.dirty.none());
+
     std::vector<uint32_t> offsets;
 
     // Compute the dynamic offsets for each uniform buffer.
     for (const auto& binding : _bindings) {
         if (binding.second.index() == 0) {
             auto& variant = _bindings[binding.first];
-            VulkanBuffer& buffer = std::get<VulkanBuffer>(variant);
-            uint32_t blockSize = static_cast<uint32_t>(buffer.GetSize()) / _material->_swapchainImageCount;
+            UniformData& uniform = std::get<UniformData>(variant);
+            uint32_t blockSize = static_cast<uint32_t>(uniform.buffer.GetSize()) / _material->_swapchainImageCount;
             offsets.push_back(blockSize * currentFrame);
         }
     }
@@ -101,10 +103,6 @@ void VulkanMaterialInstance::Bind(RenderData& rd)
     }
 
     vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), firstSet, static_cast<uint32_t>(sets.size()), sets.data(), static_cast<uint32_t>(offsets.size()), offsets.data());
-
-    // Save the next frame number for when updating what bindings are dirty/not updated.
-    if (_currentFrame == currentFrame)
-        _currentFrame = (currentFrame + 1) % _material->_swapchainImageCount;
 }
 
 void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image)
@@ -116,6 +114,10 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
     }
 
     uint32_t binding = samplers.at(name);
+
+    auto& uniform = std::get<SampledImageData>(_bindings[binding]);
+    uniform.image = image;
+    uniform.sampler = sampler;
 
     VkDescriptorImageInfo imageInfo = {};
     imageInfo.sampler = sampler->Get();
@@ -159,64 +161,74 @@ void VulkanMaterialInstance::PushConstant(RenderData& rd, uint32_t offset, uint3
     vkCmdPushConstants(rd.GetCommandBuffer(), _material->_pipeline->GetPipelineLayout(), pcr.GetStages(), offset, size, data);
 }
 
-void VulkanMaterialInstance::UpdateUniforms(VkCommandBuffer cmd)
+void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
 {
-    uint32_t previousFrame = (_currentFrame - 1) % _material->_swapchainImageCount;
+    uint32_t previousFrame = (static_cast<int>(currentFrame - 1) % static_cast<int>(_material->_swapchainImageCount) + static_cast<int>(_material->_swapchainImageCount)) % static_cast<int>(_material->_swapchainImageCount);
 
-    PerFrameData& currentFrameData = _perFrameData[_currentFrame];
+    PerFrameData& currentFrameData = _perFrameData[currentFrame];
     PerFrameData& previousFrameData = _perFrameData[previousFrame];
 
     // If any previous frames changed their data this frame is dirty and must
     // preform a descriptor copy to this frame.
 
-    std::vector<VkCopyDescriptorSet> descriptorCopies;
-    descriptorCopies.reserve(currentFrameData.dirty.size());
-
-    for (auto& binding : currentFrameData.dirty) {
+    for (int i = 0; i < currentFrameData.dirty.size(); i++) {
         // If second is marked as true, the binding is dirty and needs to be updated.
-        if (binding.second) {
-            assert(_bindings.contains(binding.first) && "Binding not found, something in the constructor went wrong!");
-            auto& variant = _bindings[binding.first];
-
-            switch (variant.index()) {
-            case 0: // buffer type
-            {
-                VulkanBuffer& buffer = std::get<VulkanBuffer>(variant);
-                VkDeviceSize blockSize = buffer.GetSize() / _material->_swapchainImageCount;
-
-                VkBufferCopy copyRegion = {};
-                copyRegion.srcOffset = blockSize * previousFrame;
-                copyRegion.dstOffset = blockSize * _currentFrame;
-                copyRegion.size = blockSize;
-
-                vkCmdCopyBuffer(cmd, buffer.Get(), buffer.Get(), 1, &copyRegion);
-
-                break;
-            }
-            case 1: // sampler type
-            {
-                VkCopyDescriptorSet descriptorCopy = {};
-                descriptorCopy.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
-                descriptorCopy.pNext = nullptr;
-                descriptorCopy.srcSet = previousFrameData.set;
-                descriptorCopy.srcBinding = binding.first;
-                descriptorCopy.srcArrayElement = 0;
-                descriptorCopy.dstSet = currentFrameData.set;
-                descriptorCopy.dstBinding = binding.first;
-                descriptorCopy.dstArrayElement = 0;
-                descriptorCopy.descriptorCount = 1;
-                descriptorCopies.push_back(descriptorCopy);
-                break;
-            }
-            }
-
-            binding.second = false; // No longer dirty.
+        if (!currentFrameData.dirty[i]) {
+            continue;
         }
+
+        auto& variant = _bindings[i];
+
+        switch (variant.index()) {
+        case 0: { // buffer type
+
+            Print::Info("current frame: {}", currentFrame);
+
+            UniformData& uniform = std::get<UniformData>(variant);
+            VkDeviceSize blockSize = uniform.buffer.GetSize() / _material->_swapchainImageCount;
+
+            uint32_t dstOffset = blockSize * currentFrame;
+
+            // Update the uniform buffer
+            char* mapped = nullptr;
+            uniform.buffer.Map(reinterpret_cast<void**>(&mapped));
+
+            std::memcpy(mapped + dstOffset, uniform.data.data(), blockSize);
+
+            uniform.buffer.Unmap();
+            uniform.buffer.Flush(dstOffset, blockSize);
+
+            break;
+        }
+        case 1: { // sampler type
+            auto& uniform = std::get<SampledImageData>(variant);
+
+            VkDescriptorImageInfo imageInfo = {};
+            imageInfo.sampler = uniform.sampler->Get();
+            imageInfo.imageView = uniform.image->GetDefaultView();
+            imageInfo.imageLayout = uniform.image->GetLayout();
+
+            VkWriteDescriptorSet write = {};
+            write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            write.pNext = nullptr;
+            write.dstSet = _perFrameData[currentFrame].set; /* Since this is getting added to the queue, every descriptor set will be updated later. */
+            write.dstBinding = i;
+            write.dstArrayElement = 0;
+            write.descriptorCount = 1;
+            write.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            write.pImageInfo = &imageInfo;
+            write.pBufferInfo = nullptr;
+            write.pTexelBufferView = nullptr;
+
+            vkUpdateDescriptorSets(_device->Get(), 1, &write, 0, nullptr);
+            break;
+        }
+        }
+
+        currentFrameData.dirty[i] = false; // No longer dirty.
     }
 
-    if (!descriptorCopies.empty()) {
-        vkUpdateDescriptorSets(_device->Get(), 0, nullptr, (uint32_t)descriptorCopies.size(), descriptorCopies.data());
-    }
+    _currentFrame = currentFrame;
 }
 
 VulkanMaterial* VulkanMaterialInstance::GetBaseMaterial()
@@ -253,9 +265,14 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
             auto dynamicAlignment = _device->GetDynamicAlignment(binding.GetSize());
             auto bufferSize = dynamicAlignment * _material->_swapchainImageCount;
-            auto& variant = (_bindings[binding.GetLocation()] = VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, bufferSize, nullptr });
 
-            bufferInfo.buffer = std::get<VulkanBuffer>(variant).Get();
+            UniformData data;
+            data.buffer = VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, bufferSize, nullptr };
+            data.data.resize(binding.GetSize());
+
+            auto& variant = (_bindings[binding.GetLocation()] = std::move(data) );
+
+            bufferInfo.buffer = std::get<UniformData>(variant).buffer.Get();
             bufferInfo.offset = 0;
             bufferInfo.range = dynamicAlignment;
             bufferInfos.push_back(bufferInfo);
@@ -269,7 +286,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
             break;
         }
         case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-            _bindings[binding.GetLocation()] = VulkanMaterialInstance::SampledImage {};
+            _bindings[binding.GetLocation()] = VulkanMaterialInstance::SampledImageData{};
             break; // An image/sampler must be written to before being rendering.
         default:
             break;
@@ -290,8 +307,7 @@ void VulkanMaterialInstance::SetBindingDirty(uint32_t binding)
 
     _perFrameData[_currentFrame].dirty[binding] = false; /* This current frame is now the current data and is no longer dirty. */
     for (uint32_t i = 0; i < _material->_swapchainImageCount; i++) {
-        if (i != _currentFrame)
-            _perFrameData[i].dirty[binding] = true;
+        _perFrameData[i].dirty[binding] = true;
     }
 }
 

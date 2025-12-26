@@ -15,35 +15,27 @@ layout(set = 0, binding = 0) uniform GlobalUniform
     float dt;
 } globals;
 
-layout(set = 1, binding = 0) uniform MaterialUniform
+layout(std140, set = 1, binding = 0) uniform MaterialUniform
 {
     // Factors
-    float grassScale;
-    float bladeBendFactor;
-    //uniform vec3 color;
-    vec3 backLightColor;
-    float roughnessFactor;
-    float specularFactor;
+    vec4 factors;           // x=grassScale, y=bladeBendFactor, z=roughnessFactor, w=specularFactor
+
+    // Back light color
+    vec4 backLightColor;    // xyz=backLightColor, w=padding
 
     // Clumping
-    float patchScale;
-    float miniumGrassScale;
-    float maxGrassScale;
+    vec4 clumping;          // x=patchScale, y=minGrassScale, z=maxGrassScale, w=padding
 
     // Grass Color
-    vec3 colorSmall;
-    vec3 colorLarge;
+    vec4 colorSmall;        // rgb=colorSmall, a=padding
+    vec4 colorLarge;        // rgb=colorLarge, a=padding
 
     // Wind
-    float windSpeed;
-    float windSway;
-    float windScale;
-    vec2 windDirectionVector;
-    float windAOEffect;
+    vec4 windParams;        // x=windSpeed, y=windSway, z=windScale, w=windAOEffect
+    vec4 windDirection;     // xy=windDirectionVector, z=padding, w=padding
 
     // Player Position
-    float playerRadius;
-    vec3 playerPosition;
+    vec4 playerParams;      // xyz=playerPosition, w=playerRadius
 } material;
 
 layout(set = 1, binding = 1) uniform sampler2D noiseSampler;
@@ -77,7 +69,7 @@ void main() {
     vec3 vertex = inPosition;
 
     outBottomToTop = 1.0 - inUV.y;
-    outSpecularFactor = material.specularFactor;
+    outSpecularFactor = material.factors.w; // material.factors.w = specularFactor
 
     InstanceData instance;
     if (drawConstants.useInstanceBuffer.x > 0) {
@@ -87,32 +79,38 @@ void main() {
     }
 
     //wind
-    vec2 windPosition = instance.position.xz * material.windScale;
-    windPosition -= globals.time * material.windDirectionVector * material.windSpeed;
+    vec2 windPosition = instance.position.xz * material.windParams.z; // materialWindParams.z = windScale
+    windPosition -= globals.time * material.windDirection.xy * material.windParams.x; // material.windParams.x = windSpeed
     outCurrentWindBend = texture(windNoiseTexture, windPosition).x;
-    outCurrentWindBend *= material.windSway;
+    outCurrentWindBend *= material.windParams.y; // windParams.y = windSway
     outCurrentWindBend *= outBottomToTop * 2.0;
 
     mat4 inverseModel = inverse(instance.instance); // Inverse model matrix scaling.
 
-    //vec2 local_direction = (inverseModel * vec4(material.windDirectionVector.x, 0.0, material.windDirectionVector.y, 0.0)).xz;
+    mat3 rot = mat3(instance.instance);
+    vec2 local_direction = (transpose(rot) * vec3(material.windDirection.x, 0.0, material.windDirection.y)).xz;
 
-    vertex.xz += outCurrentWindBend; // * local_direction;
+    vertex.xz += outCurrentWindBend * local_direction;
 
     //player position
 
-    float playerDistance = distance(material.playerPosition, instance.position.xyz);
-    float bendFromPlayerFactor = max(material.playerRadius - playerDistance, 0.0) / material.playerRadius;
-    vec2 bendDirection = normalize(material.playerPosition.xz - instance.position.xz);
-    vertex.xz -= (inverseModel * vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * outBottomToTop;
+    float playerDistance = distance(material.playerParams.xyz, instance.position.xyz);
+    float bendFromPlayerFactor = max(material.playerParams.w - playerDistance, 0.0) / material.playerParams.w;
+    vec2 bendDirection = normalize(material.playerParams.xz - instance.position.xz);
+    vertex.xz -= (vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * outBottomToTop;
     vertex.x -= bendFromPlayerFactor * outBottomToTop * .5;
 
     //bend grass blade
-    //vertex.z += material.bladeBendFactor * pow(outBottomToTop, 2.0);
+    vertex.z += material.factors.y * pow(outBottomToTop, 2.0);
     //VERTEX = grassScale;
-    outPatchFactor = texture(noiseSampler, instance.position.xz / material.patchScale).r;
+
+    // material.clumping.x = patchScale
+    outPatchFactor = texture(noiseSampler, instance.position.xz / material.clumping.x).r;
     //VERTEX= patchFactor;
-    vertex *= mix(material.miniumGrassScale, material.maxGrassScale, outPatchFactor);
+
+    // material.clumping.y = minGrassScale, material.clumping.z = maxGrassScale
+    vertex *= mix(material.clumping.y, material.clumping.z, outPatchFactor);
 
     gl_Position = globals.projection * globals.view * instance.instance * vec4(vertex, 1.0);
+    outColorSmall = material.colorSmall.xyz;
 }

@@ -41,4 +41,8 @@ inline glm::vec3 DampExponential(const glm::vec3& current, const glm::vec3& targ
     };
 }
 
+namespace Math {
+    static const inline float Pi = 3.14159265f;
+}
+
 } // namespace bl
