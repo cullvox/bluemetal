@@ -8,7 +8,7 @@
 
 namespace bl {
 
-#define MAX_INSTANCE_BUFFER_SIZE 1024
+#define MAX_INSTANCE_BUFFER_SIZE 4096
 
 RenderData::RenderData(Renderer* renderer)
     : _cmd(VK_NULL_HANDLE)

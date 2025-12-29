@@ -109,7 +109,7 @@ int main(int argc, const char** argv)
         auto grasses = std::make_unique<bl::Node3D>(engine);
         grasses->SetName("Grass");
 
-        for (int i = 0; i < 512; i++) {
+        for (int i = 0; i < 2048; i++) {
             float x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(20.0f)));
             float z = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(20.0f)));
             float rot_x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(360.0f)));
@@ -210,6 +210,12 @@ int main(int argc, const char** argv)
                 imgui->BeginFrame();
                 editor.Draw(rd);
 
+                ImGui::Begin("Heirarchy");
+
+                //ImGui::Text("Objects in Scene: %d", rootNode->GetChildCount());
+                ImGui::End();
+                
+
                 ImGui::Begin("Settings");
 
                 if (ImGui::TreeNode("Renderer")) {
@@ -292,4 +298,5 @@ int main(int argc, const char** argv)
     }
 
     return 0;
+    
 }

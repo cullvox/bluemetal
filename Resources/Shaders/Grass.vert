@@ -95,7 +95,7 @@ void main() {
     float playerDistance = distance(material.playerParams.xyz, instance.position.xyz);
     float bendFromPlayerFactor = max(material.playerParams.w - playerDistance, 0.0) / material.playerParams.w;
     vec2 bendDirection = normalize(material.playerParams.xz - instance.position.xz);
-    vertex.xz -= (vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * outBottomToTop;
+    vertex.xz -= (inverseModel * vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * outBottomToTop;
     vertex.x -= bendFromPlayerFactor * outBottomToTop * .5;
 
     //bend grass blade
