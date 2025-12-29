@@ -26,6 +26,8 @@ void FlyCamera3D::Update(float dt)
     auto window = GetEngine().GetGraphics().GetWindow();
     auto renderer = GetEngine().GetGraphics().GetRenderer();
 
+    glm::vec3 position = GetPosition();
+
     // Compute camera velocity
     bool cameraMoved = false;
     glm::vec3 acceleration = glm::zero<glm::vec3>();
@@ -68,12 +70,12 @@ void FlyCamera3D::Update(float dt)
         if (cameraSpeed > maxCameraSpeed) {
             cameraVelocity = glm::normalize(cameraVelocity) * maxCameraSpeed;
         }
-        UpdateTransform();
     } else {
         // Treat acceleration as direct position change
         position += acceleration * dt;
-        UpdateTransform();
     }
+
+    SetPosition(position);
 
     // Apply friction to camera velocity
     if (enableCameraMovementDamping && !cameraMoved) {
@@ -161,10 +163,12 @@ void FlyCamera3D::Draw(RenderData&)
 
 void FlyCamera3D::SetSpeed(float speed)
 {
+    (void) speed;
 }
 
 void FlyCamera3D::SetSmoothness(float smoothness)
 {
+    (void) smoothness;
 }
 
 }

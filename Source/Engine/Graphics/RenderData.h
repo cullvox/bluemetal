@@ -43,6 +43,7 @@ class RenderData
 
         MaterialInstance* material;
         Mesh* mesh;
+        uint32_t hash;
 
         uint32_t instanceOffset = 0;
         uint32_t instanceCount = 0;

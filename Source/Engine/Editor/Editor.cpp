@@ -46,7 +46,7 @@ void Editor::Draw(RenderData& rd)
 
 void Editor::DrawDebug(RenderData& rd)
 {
-
+    (void) rd;
 }
 
 }

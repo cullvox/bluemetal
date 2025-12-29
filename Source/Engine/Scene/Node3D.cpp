@@ -4,20 +4,24 @@ namespace bl {
 
 Node3D::Node3D(Engine& engine)
     : Node(engine)
-    , _transform(1.0f)
-    , position(0.0f, 0.0f, 0.0f)
-    , rotation(1.0f, 0.0f, 0.0f, 0.0f) // Identity quaternion
-    , scale(1.0f, 1.0f, 1.0f)
+    , _matrix(1.0f)
+    , _worldMatrix(1.0f)
+    , _position(0.0f, 0.0f, 0.0f)
+    , _rotation(1.0f, 0.0f, 0.0f, 0.0f) // Identity quaternion
+    , _scale(1.0f, 1.0f, 1.0f)
+    , _isDirty(true)
 {
-    UpdateTransform();
+    UpdateMatrix();
 }
 
 Node3D::Node3D(const Node3D& node)
     : Node(node)
-    , _transform(node._transform)
-    , position(node.position)
-    , rotation(node.rotation)
-    , scale(node.scale)
+    , _matrix(node._matrix)
+    , _worldMatrix(node._worldMatrix)
+    , _position(node._position)
+    , _rotation(node._rotation)
+    , _scale(node._scale)
+    , _isDirty(node._isDirty)
 {
 }
 
@@ -32,10 +36,10 @@ Node3D* Node3D::Clone()
         node->AddChild(child->Clone());
     }
 
-    node->position = position;
-    node->rotation = rotation;
-    node->scale = scale;
-    node->UpdateTransform();
+    node->SetPosition(_position);
+    node->SetRotation(_rotation);
+    node->SetScale(_scale);
+    node->UpdateMatrix();
 
     return node;
 }
@@ -55,49 +59,58 @@ void Node3D::Draw(RenderData& rd)
     Node::Draw(rd);
 }
 
-void Node3D::UpdateTransform()
-{
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), position);
-    glm::mat4 R = glm::mat4_cast(rotation);
-    glm::mat4 S = glm::scale(glm::mat4(1.0f), scale);
 
-    _transform = T * R * S;
+void Node3D::UpdateMatrix()
+{
+    if (!_isDirty) {
+        return;
+    }
+
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), _position);
+    glm::mat4 R = glm::mat4_cast(_rotation);
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), _scale);
+
+    _matrix = T * R * S;
+    _isDirty = false;
+
+    // Update world matrix if there's a parent
+    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
+        _worldMatrix = parent->GetWorldMatrix() * _matrix;
+    } else {
+        _worldMatrix = _matrix;
+    }
+
+    // Update world position
+    _worldPosition = glm::vec3(_worldMatrix[3]);
 }
 
 void Node3D::SetPosition(const glm::vec3& pos)
 {
-    position = pos;
-    UpdateTransform();
+    _position = pos;
+    _isDirty = true;
 }
 
 void Node3D::SetWorldPosition(const glm::vec3& pos)
 {
     if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
-        glm::mat4 parentWorldTransform = parent->GetWorldTransform();
+        const glm::mat4& parentWorldTransform = parent->GetWorldMatrix();
         glm::mat4 parentInverse = glm::inverse(parentWorldTransform);
         glm::vec4 localPos = parentInverse * glm::vec4(pos, 1.0f);
-        position = glm::vec3(localPos);
+        _position = glm::vec3(localPos);
     } else {
-        position = position;
+        _position = _position;
     }
 }
 
 void Node3D::SetRotation(const glm::vec3& eulerAngles)
 {
     SetRotation(glm::quat(glm::radians(eulerAngles)));
-    UpdateTransform();
 }
 
 void Node3D::SetRotation(const glm::quat& newRotation)
 {
-    rotation = newRotation;
-    UpdateTransform();
-}
-
-void Node3D::SetTransform(const glm::mat4& transform)
-{
-    _transform = transform;
-    UpdateTransform();
+    _rotation = newRotation;
+    _isDirty = true;
 }
 
 void Node3D::SetWorldRotation(const glm::vec3& eulerAngles)
@@ -108,85 +121,94 @@ void Node3D::SetWorldRotation(const glm::vec3& eulerAngles)
 void Node3D::SetWorldRotation(const glm::quat& newRotation)
 {
     if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
+        UpdateMatrix();
         glm::quat parentWorldRotation = parent->GetWorldRotationQuat();
         glm::quat localRotation = glm::inverse(parentWorldRotation) * newRotation;
-        rotation = localRotation;
+        _rotation = localRotation;
     } else {
-        rotation = rotation;
+        _rotation = newRotation;
     }
 }
 
 void Node3D::SetScale(const glm::vec3& newScale)
 {
-    scale = newScale;
-    UpdateTransform();
+    _scale = newScale;
+    _isDirty = true;
 }
 
-glm::vec3 Node3D::GetPosition() const
+const glm::vec3& Node3D::GetPosition() const
 {
-    return position;
+    return _position;
 }
 
 glm::vec3 Node3D::GetRotation() const
 {
-    return glm::degrees(glm::eulerAngles(rotation));
+    return glm::degrees(glm::eulerAngles(_rotation));
 }
 
-glm::quat Node3D::GetRotationQuat() const
+const glm::quat& Node3D::GetRotationQuat() const
 {
-    return rotation;
+    return _rotation;
 }
 
-glm::vec3 Node3D::GetScale() const
+const glm::vec3& Node3D::GetScale() const
 {
-    return scale;
+    return _scale;
 }
 
-glm::vec3 Node3D::GetWorldPosition() const
+glm::vec3 Node3D::GetWorldPosition()
 {
-    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
-        return glm::vec3(parent->GetWorldTransform() * glm::vec4(position, 1.0f));
+    UpdateMatrix();
+    if (GetParent()) {
+        return _worldPosition;
     } else {
-        return position;
+        return _position;
     }
 }
 
-glm::vec3 Node3D::GetWorldRotation() const
+glm::vec3 Node3D::GetWorldRotation()
 {
     return glm::degrees(glm::eulerAngles(GetWorldRotationQuat()));
 }
 
 
-glm::quat Node3D::GetWorldRotationQuat() const
+glm::quat Node3D::GetWorldRotationQuat()
 {
+    UpdateMatrix();
     if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
-        return parent->GetWorldRotationQuat() * rotation;
+        return parent->GetWorldRotationQuat() * _rotation;
     } else {
-        return rotation;
+        return _rotation;
     }
 }
 
-glm::vec3 Node3D::GetWorldScale() const
+glm::vec3 Node3D::GetWorldScale()
 {
     if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
-        return parent->GetWorldScale() * scale;
+        return parent->GetWorldScale() * _scale;
     } else {
-        return scale;
+        return _scale;
     }
 }
 
-glm::mat4 Node3D::GetTransform()
+const glm::mat4& Node3D::GetMatrix()
 {
-    return _transform;
+    return _matrix;
 }
 
-glm::mat4 Node3D::GetWorldTransform() const
+const glm::mat4& Node3D::GetWorldMatrix()
 {
-    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
-        return parent->GetWorldTransform() * _transform;
+    if (GetParent()) {
+        if (_isDirty) {
+            UpdateMatrix();
+        }
+
+        return _worldMatrix;
     } else {
-        return _transform;
+        return _matrix;
     }
 }
+
+
 
 } // namespace bl

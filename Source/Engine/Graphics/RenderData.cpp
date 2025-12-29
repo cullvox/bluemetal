@@ -4,6 +4,7 @@
 #include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanMaterial.h"
 #include "Resources/Mesh.h"
+#include "Core/Profiler.h"
 
 namespace bl {
 
@@ -95,35 +96,55 @@ VkDescriptorSet RenderData::GetInstanceDescriptorSet()
     return _instanceSet;
 }
 
+static Profiler profiler;
+
+uint32_t HashDrawCall(MaterialInstance* material, Mesh* mesh)
+{
+    size_t h1 = std::hash<MaterialInstance*>{}(material);
+    size_t h2 = std::hash<Mesh*>{}(mesh);
+
+    return static_cast<uint32_t>(h1 ^ (h2 << 1));
+}
+
 void RenderData::DrawInstance(MaterialInstance* material, Mesh* mesh, const InstanceData& instance)
 {
+    uint32_t hash = HashDrawCall(material, mesh);
+
     for (int i = 0; i < _calls.size(); i++) {
-        auto& call = _calls[i];
-        if (call.material == call.material && call.mesh == mesh) {
-            _tempInstances.push_back(instance);
-            _instanceToCallMap.push_back(i);
-            return;
+        if (_calls[i].hash == hash) {
+            hash = i;
+            break;
         }
     }
 
-    _calls.emplace_back(material, mesh);
-    uint32_t lastCall = _calls.size() - 1;
+    if (hash >= _calls.size()) {
+        DrawCall newCall(material, mesh);
+        newCall.hash = hash;
+        _calls.push_back(newCall);
+        hash = static_cast<uint32_t>(_calls.size() - 1);
+    }
+
     _tempInstances.push_back(instance);
-    _instanceToCallMap.push_back(lastCall);
+    _instanceToCallMap.push_back(hash);
 }
 
 void RenderData::DrawCustom(std::function<void (RenderData& rd)> renderData)
 {
+    (void)renderData;
 }
 
 void RenderData::WriteInstanceBuffer()
 {
     // Sort instances into the proper buffer areas.
+
+    profiler.StartProfile("Clear Instance Data");
     _instances.clear();
+    profiler.EndProfile("Clear Instance Data");
 
     if (_tempInstances.empty())
         return;
 
+    profiler.StartProfile("Sort Instance Data");
     for (int i = 0; i < _tempInstances.size(); i++) {
         InstanceData& instance = _tempInstances[i];
         uint32_t callIndex = _instanceToCallMap[i];
@@ -137,10 +158,14 @@ void RenderData::WriteInstanceBuffer()
         call.instanceCount++;
     }
 
+    profiler.EndProfile("Sort Instance Data");
+
     _tempInstances.clear();
 
+    profiler.StartProfile("Upload Instance Data");
     // Upload instances to the staging buffer.
     _instanceBuffer.Upload(_cmd, std::as_bytes(std::span(_instances)), _currentFrame);
+    profiler.EndProfile("Upload Instance Data");
 }
 
 uint32_t RenderData::GetInstanceBufferDynamicOffset()

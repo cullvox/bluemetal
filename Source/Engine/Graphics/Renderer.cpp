@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "Core/Time.h"
+#include "Core/Profiler.h"
 #include "Engine/Engine.h"
 #include "GraphicsSystem.h"
 #include "UniformData.h"
@@ -205,6 +206,8 @@ VkAccessFlags getAccessFlags(VkImageLayout layout)
 	}
 }
 
+Profiler profiler;
+
 void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 {
     // If the window is minimized, we don't draw anything.
@@ -212,6 +215,7 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         return;
 
     if (recreateRequested) {
+        profiler.StartProfile("Swapchain Recreation");
         _device->WaitForDevice(); // Wait for previous commands to complete.
 
         //DestroyRenderPasses();
@@ -220,6 +224,7 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         RecreateImages();
         recreateRequested = false;
         _device->WaitForDevice();
+        profiler.EndProfile("Swapchain Recreation");
     }
 
 
@@ -229,11 +234,14 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     _renderData.SetCurrentFrame(currentFrame);
 
     // Prepare uniform buffers for the next frame.
+    profiler.StartProfile("Update Uniforms");
     for (auto instance : _materials) {
         instance->UpdateUniforms(currentFrame);
     }
+    profiler.EndProfile("Update Uniforms");
 
     // Compute the per frame UBO.
+    profiler.StartProfile("Update Global UBO");
     const auto currentTime = Time::Current();
     const auto extent = _swapchain->GetExtent();
 
@@ -245,6 +253,8 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     std::memcpy(_globalBufferMap[currentFrame], &_uboData, sizeof(_uboData));
 
     _globalBuffer[currentFrame].Flush(0, sizeof(_uboData));
+
+    profiler.EndProfile("Update Global UBO");
 
     // Swapchain must be valid.
     if (!_swapchain->Get()) {
@@ -275,9 +285,17 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     _renderData.SetCommandBuffer(cmd);
 
     // This function doesn't know about globals or uniforms yet.
-    objectFunc(_renderData);
-    _renderData.WriteInstanceBuffer();
 
+    profiler.StartProfile("Object Render Function");
+    objectFunc(_renderData);
+    profiler.EndProfile("Object Render Function");
+
+
+    profiler.StartProfile("Update Object Instances");
+    _renderData.WriteInstanceBuffer();
+    profiler.EndProfile("Update Object Instances");
+
+    profiler.StartProfile("Render Pass");
     // Setup the render pass for dynamic rendering.
     std::array clearColors = {
         VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Clear Color
@@ -396,11 +414,16 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     vkCmdSetScissor(cmd, 0, 1, &scissor);
 
     vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
+
+    profiler.StartProfile("Render Pass Draw Calls");
     _renderData.WriteDrawCommands();
 
     func(_renderData);
+    profiler.EndProfile("Render Pass Draw Calls");
 
     vkCmdEndRendering(cmd);
+
+    profiler.EndProfile("Render Pass");
 
     range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     TransitionImageLayout(cmd,
@@ -421,8 +444,6 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     if (_swapchain->QueuePresent()) {
         RecreateImages();
     }
-
-    
 }
 
 void Renderer::SetImageRecreateCallback(std::function<void()> onRecreate)
@@ -486,6 +507,8 @@ void Renderer::TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImage
 
 void Renderer::AddInstance(Mesh* mesh, const InstanceData& data)
 {
+    (void) mesh;
+    (void) data;
     //int& index = std::get<int>(_instanceDraws[mesh]);
     //std::vector<InstanceData>& vec = std::get<std::vector<InstanceData>>(_instanceDraws[mesh]);
 

@@ -166,7 +166,6 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
     uint32_t previousFrame = (static_cast<int>(currentFrame - 1) % static_cast<int>(_material->_swapchainImageCount) + static_cast<int>(_material->_swapchainImageCount)) % static_cast<int>(_material->_swapchainImageCount);
 
     PerFrameData& currentFrameData = _perFrameData[currentFrame];
-    PerFrameData& previousFrameData = _perFrameData[previousFrame];
 
     // If any previous frames changed their data this frame is dirty and must
     // preform a descriptor copy to this frame.
@@ -181,13 +180,10 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
 
         switch (variant.index()) {
         case 0: { // buffer type
-
-            Print::Info("current frame: {}", currentFrame);
-
             UniformData& uniform = std::get<UniformData>(variant);
             VkDeviceSize blockSize = uniform.buffer.GetSize() / _material->_swapchainImageCount;
 
-            uint32_t dstOffset = blockSize * currentFrame;
+            uintptr_t dstOffset = static_cast<uintptr_t>(blockSize) * currentFrame;
 
             // Update the uniform buffer
             char* mapped = nullptr;

@@ -22,7 +22,6 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
     std::string vertexPath, fragmentPath;
     nlohmann::json json;
     VulkanPipelineStateInfo info;
-    RenderPassType passType;
 
     try {
         json = nlohmann::json::parse(materialFile);

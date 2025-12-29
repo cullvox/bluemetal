@@ -86,9 +86,7 @@ void main() {
     outCurrentWindBend *= outBottomToTop * 2.0;
 
     mat4 inverseModel = inverse(instance.instance); // Inverse model matrix scaling.
-
-    mat3 rot = mat3(instance.instance);
-    vec2 local_direction = (transpose(rot) * vec3(material.windDirection.x, 0.0, material.windDirection.y)).xz;
+    vec2 local_direction = (inverseModel * vec4(material.windDirection.x, 0.0, material.windDirection.y, 0.0)).xz;
 
     vertex.xz += outCurrentWindBend * local_direction;
 

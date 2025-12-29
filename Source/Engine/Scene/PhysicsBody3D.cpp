@@ -60,6 +60,9 @@ void PhysicsBody3D::ResetBody()
 {
     auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
 
+    glm::vec3 position = GetPosition();
+    glm::quat rotation = GetRotationQuat();
+
     JPH::BodyCreationSettings settings;
     settings.SetShape(_shape);
     settings.mPosition = JPH::Vec3(position.x, position.y, position.z);

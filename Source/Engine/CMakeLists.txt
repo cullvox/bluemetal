@@ -4,6 +4,7 @@ list(APPEND Sources
 
   # Core
   "Core/FrameCounter.cpp"
+  "Core/Profiler.cpp"
   "Core/Print.cpp"
   
   # Audio
@@ -49,6 +50,9 @@ list(APPEND Sources
   "ImGui/imgui_widgets.cpp"
   "ImGui/imgui_impl_sdl3.cpp"
   "ImGui/imgui_impl_vulkan.cpp"
+  "ImGui/implot.cpp"
+  "ImGui/implot_items.cpp"
+  "ImGui/implot_demo.cpp"
   "ImGui/ImGuiSystem.cpp"
 
   "Physics/PhysicsSystem.cpp"

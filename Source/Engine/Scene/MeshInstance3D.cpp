@@ -3,6 +3,7 @@
 #include "Resources/Material.h"
 #include "Graphics/Renderer.h"
 #include "Resources/ResourceSystem.h"
+#include "Core/Profiler.h"
 
 namespace bl {
 
@@ -24,11 +25,13 @@ MeshInstance3D* MeshInstance3D::Clone()
     return new MeshInstance3D(*this);
 }
 
+static Profiler profiler;
+
 void MeshInstance3D::Draw(RenderData& rd)
 {
     // TODO: This isn't really instancing, the renderer will have to buffer instances.
     bl::InstanceData object {};
-    object.model = GetWorldTransform();
+    object.model = GetWorldMatrix();
     object.position = glm::vec4{GetWorldPosition(), 1.0f};
 
     rd.DrawInstance(_material.lock().get(), _mesh.lock().get(), object);

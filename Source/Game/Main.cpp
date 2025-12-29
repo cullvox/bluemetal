@@ -1,6 +1,7 @@
 #include "Core/FrameCounter.h"
 #include "Core/Print.h"
 #include "Core/Time.h"
+#include "Core/Profiler.h"
 #include "Editor/Editor.h"
 #include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
@@ -21,6 +22,8 @@
 #include "Window/Keyboard.h"
 #include "Window/Mouse.h"
 #include <Scene/FlyCamera3D.h>
+
+#include "ImGui/implot.h"
 
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
@@ -114,7 +117,7 @@ int main(int argc, const char** argv)
             auto grassNode = grass.lock()->GetTree()->Clone();
             grassNode->SetName("Grass_" + std::to_string(i));
             grassNode->SetPosition({ x, -3.5f, z });
-            //grassNode->SetRotation({0.0f, rot_x, 0.0f});
+            grassNode->SetRotation({0.0f, rot_x, 0.0f});
             grassNode->GetChild("Plane")->As<bl::MeshInstance3D>()->SetMaterial(grassMaterial);
             grasses->AddChild(grassNode);
         }
@@ -154,11 +157,19 @@ int main(int argc, const char** argv)
         auto presentModes = renderer->GetPresentModes();
         auto multisampleModes = renderer->GetMultisampleCounts();
 
+        ImPlot::CreateContext();
+
+        auto& profiler = bl::GetGlobalProfiler();
+
         while (!window->GetCloseRequested()) {
+            profiler.StartFrame();
             frameCounter.BeginFrame();
 
+            profiler.StartProfile("Physics");
             physics.Update(frameCounter.GetDeltaTime());
+            profiler.EndProfile("Physics");
 
+            profiler.StartProfile("Input");
             input->Poll([imgui](SDL_Event& event) {
                 imgui->Process(event);
             });
@@ -173,14 +184,21 @@ int main(int argc, const char** argv)
                 ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
             }
 
+            profiler.EndProfile("Input");
+
+
             bl::Extent2D extent = window->GetExtent();
 
+            profiler.StartProfile("Audio");
             audio->Update();
+            profiler.EndProfile("Audio");
 
+            profiler.StartProfile("Update");
             grassMaterial->SetVector4("material.playerParams", glm::vec4{flyCamNode->GetWorldPosition(), 5.0f});
             grassMaterial->SetVector4("material.colorSmall", {sinf(bl::Time::Current()), sinf(bl::Time::Current() + bl::Math::Pi), 0.9f, 1.0f});
 
             rootNode->Update(frameCounter.GetDeltaTime());
+            profiler.EndProfile("Update");
 
             auto objectFunc = [&](bl::RenderData& rd) {
                 rootNode->Draw(rd);
@@ -218,14 +236,50 @@ int main(int argc, const char** argv)
                     ImGui::TreePop();
                 }
 
+                if (ImGui::TreeNode("Profiler")) {
+
+
+                    bool enableProfiling = profiler.IsProfilingEnabled();
+                    ImGui::Checkbox("Enable Profiling", &enableProfiling);
+                    profiler.EnableProfiling(enableProfiling);
+
+                    ImGui::Text("Frame Time: %.2f ms", frameCounter.GetDeltaTime() * 1000.0f);
+
+                    // Plot a frame pie chart of the profiler data
+                    static std::vector<float> values;
+                    static std::vector<const char*> labels;
+
+                    if (enableProfiling) {
+                        profiler.GetProfileTimes(values);
+                        profiler.GetProfileNames(labels);
+                    } else {
+                        values.clear();
+                        labels.clear();
+                    }
+
+                    if (ImPlot::BeginPlot("##Pie1", ImVec2(ImGui::GetTextLineHeight()*16,ImGui::GetTextLineHeight()*16), ImPlotFlags_Equal | ImPlotFlags_NoMouseText)) {
+                        ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
+                        ImPlot::SetupAxesLimits(0, 1, 0, 1, ImPlotCond_None);
+
+                        ImPlot::PlotPieChart(labels.data(), values.data(), values.size(), 0.5, 0.5, 0.4, "%.2f", 90, ImPlotPieChartFlags_Normalize);
+                        ImPlot::EndPlot();
+                    }
+
+                    ImGui::TreePop();
+                }
+
+                ImPlot::ShowDemoWindow();
+
                 ImGui::End();
 
                 imgui->EndFrame(rd.GetCommandBuffer());
             };
 
+            profiler.StartProfile("Render");
             renderer->Render(renderFunc, objectFunc);
-
+            profiler.EndProfile("Render");
             frameCounter.EndFrame();
+            profiler.EndFrame();
         }
 
         graphics.GetDevice()->WaitForDevice();

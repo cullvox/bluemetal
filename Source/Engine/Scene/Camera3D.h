@@ -14,6 +14,8 @@ class Camera3D : public Node3D {
     float _fov;
     float _nearClip;
     float _farClip;
+    glm::mat4 _projectionMatrix;
+    bool _isDirty;
 
 public:
     Camera3D(Engine& engine);
@@ -24,8 +26,8 @@ public:
     void SetFarClip(float far);
     void SetFOV(float fov);
 
-    glm::mat4 GetProjectionMatrix();
-    glm::mat4 GetViewMatrix();
+    const glm::mat4& GetProjectionMatrix();
+    const glm::mat4& GetViewMatrix();
 };
 
 } // namespace bl
