@@ -269,4 +269,9 @@ Node3D* Model::GetTree()
     return _root.get();
 }
 
+const std::vector<Ref<Mesh>>& Model::GetMeshes() const
+{
+    return _meshes;
+}
+
 }

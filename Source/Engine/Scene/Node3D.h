@@ -2,9 +2,7 @@
 
 #include "Node.h"
 
-#include "glm/gtc/quaternion.hpp"
-#include "glm/mat4x4.hpp"
-#include "glm/vec3.hpp"
+#include "Math/Math.h"
 
 namespace bl {
 
@@ -21,6 +19,7 @@ class Node3D : public Node {
     glm::vec3 _worldPosition;
     bool _isDirty;
 
+    void SetDirty();
     void UpdateMatrix();
 public:
 

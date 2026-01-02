@@ -31,6 +31,7 @@ public:
     ~Model();
 
     Node3D* GetTree();
+    const std::vector<Ref<Mesh>>& GetMeshes() const;
 };
 
 }

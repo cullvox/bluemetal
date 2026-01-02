@@ -1,27 +1,29 @@
-#include "Core/FrameCounter.h"
-#include "Core/Print.h"
-#include "Core/Time.h"
-#include "Core/Profiler.h"
-#include "Editor/Editor.h"
-#include "Engine/Engine.h"
-#include "Graphics/GraphicsSystem.h"
-#include "Graphics/UniformData.h"
-#include "Graphics/Vertex.h"
-#include "Physics/ObjectLayers.h"
-#include "Physics/PhysicsSystem.h"
-#include "Resources/Material.h"
-#include "Resources/Model.h"
-#include "Resources/ResourceSystem.h"
-#include "Resources/Shader.h"
-#include "Resources/Texture2D.h"
-#include "Resources/NoiseTexture2D.h"
-#include "Scene/AudioSource3D.h"
-#include "Scene/MeshInstance3D.h"
-#include "Scene/PhysicsBody3D.h"
-#include "Window/Input.h"
-#include "Window/Keyboard.h"
-#include "Window/Mouse.h"
+#include <Core/FrameCounter.h>
+#include <Core/Print.h>
+#include <Core/Time.h>
+#include <Core/Profiler.h>
+#include <Editor/Editor.h>
+#include <Engine/Engine.h>
+#include <Graphics/GraphicsSystem.h>
+#include <Graphics/UniformData.h>
+#include <Graphics/Vertex.h>
+#include <Physics/ObjectLayers.h>
+#include <Physics/PhysicsSystem.h>
+#include <Resources/Material.h>
+#include <Resources/Model.h>
+#include <Resources/ResourceSystem.h>
+#include <Resources/Shader.h>
+#include <Resources/Texture2D.h>
+#include <Resources/NoiseTexture2D.h>
+#include <Scene/AudioSource3D.h>
+#include <Scene/MeshInstance3D.h>
+#include <Scene/PhysicsBody3D.h>
+#include <Window/Input.h>
+#include <Window/Keyboard.h>
+#include <Window/Mouse.h>
+#include <Scene/CharacterBody3D.h>
 #include <Scene/FlyCamera3D.h>
+#include <Scene/MultiMeshInstance3D.h>
 
 #include "ImGui/implot.h"
 
@@ -65,11 +67,15 @@ int main(int argc, const char** argv)
         characterNode->SetPosition({ 0.0f, -0.6f, 0.0f });
 
         JPH::Ref<JPH::CapsuleShape> shape = new JPH::CapsuleShape(0.8f, 0.3f);
-        auto physicsBody = std::make_unique<bl::PhysicsBody3D>(engine);
+        auto physicsBody = std::make_unique<bl::CharacterBody3D>(engine);
         physicsBody->SetName("CharacterBody");
         physicsBody->SetPosition({ 0.0f, 0.0f, -5.0f });
         physicsBody->SetShape(shape.GetPtr());
+        physicsBody->SetFriction(0.2f);
+        physicsBody->SetMassProperties(80.0f);
+        physicsBody->SetRestitution(0.0f);
         physicsBody->ResetBody();
+        physicsBody->SetDOF(true, true, true, false, false, false); // Lock rotation around X and Z axis
         physicsBody->AddChild(characterNode);
         rootNode->AddChild(std::move(physicsBody));
 
@@ -93,37 +99,26 @@ int main(int argc, const char** argv)
         grassMaterial->SetVector4("material.windDirection", {0.3f, 0.3f, 0.0f, 0.0f});
         grassMaterial->SetVector4("material.playerParams", {10.0f, -4.0f, 10.0f, 0.6f});
 
-        // grassMaterial->SetScaler("material.grassScale", 1.0f);
-        // grassMaterial->SetScaler("material.patchScale", 1.0f);
-        // grassMaterial->SetScaler("material.miniumGrassScale", 0.4f);
-        // grassMaterial->SetScaler("material.maxGrassScale", 1.0f);
-        // grassMaterial->SetScaler("material.windSpeed", 0.008f);
-        // grassMaterial->SetScaler("material.windSway", 1.1f);
-        // grassMaterial->SetScaler("material.windScale", 0.01f);
-        // grassMaterial->SetVector2("material.windDirectionVector", {0.3f, 0.3f});
-        // grassMaterial->SetScaler("material.bladeBendFactor", 3.f);
-        // grassMaterial->SetVector3("material.colorSmall", );
-        // grassMaterial->SetVector3("material.colorLarge", {0.5, 0.8, 0.3});
-        // grassMaterial->SetScaler("material.playerRadius", 0.6f);
+        auto multimesh = std::make_unique<bl::MultiMeshInstance3D>(engine);
+        multimesh->SetName("GrassMultiMesh");
+        multimesh->SetMesh(grass.lock()->GetMeshes()[0]);
+        multimesh->SetMaterial(grassMaterial);
+        multimesh->SetInstanceCount(4096);
 
-        auto grasses = std::make_unique<bl::Node3D>(engine);
-        grasses->SetName("Grass");
-
-        for (int i = 0; i < 2048; i++) {
-            float x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(20.0f)));
-            float z = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(20.0f)));
+        for (int i = 0; i < 4096; i++) {
+            float x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(40.0f)));
+            float z = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(40.0f)));
             float rot_x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(360.0f)));
 
-            auto grassNode = grass.lock()->GetTree()->Clone();
-            grassNode->SetName("Grass_" + std::to_string(i));
-            grassNode->SetPosition({ x, -3.5f, z });
-            grassNode->SetRotation({0.0f, rot_x, 0.0f});
-            grassNode->GetChild("Plane")->As<bl::MeshInstance3D>()->SetMaterial(grassMaterial);
-            grasses->AddChild(grassNode);
+            glm::mat4 transform = glm::mat4(1.0f);
+            transform = glm::translate(transform, glm::vec3(x - 20.0f, -4.f, z - 20.0f));
+            transform = glm::rotate(transform, glm::radians(rot_x), glm::vec3(0.0f, 1.0f, 0.0f));
+            transform = glm::scale(transform, glm::vec3(1.0f, 1.0f, 1.0f));
+            multimesh->SetInstanceTransform(i, transform);
         }
-        rootNode->AddChild(std::move(grasses));
+        rootNode->AddChild(std::move(multimesh));
 
-        floorMaterial.lock()->SetSampledTexture2D("inAlbedo", defaultSampler, noiseTexture);
+        floorMaterial.lock()->SetSampledTexture2D("inAlbedo", defaultSampler, floorTexture);
         floorMaterial.lock()->SetBool("material.useTriplanar", true);
 
         auto floorNode = cube.lock()->GetTree()->Clone();
@@ -132,13 +127,14 @@ int main(int argc, const char** argv)
 
         floorNode->GetChild("Cube")->As<bl::MeshInstance3D>()->SetMaterial(floorMaterial);
 
-        JPH::Ref<JPH::Shape> floorShape = new JPH::BoxShape({ 50.0f, 0.5f, 50.0f });
+        JPH::Ref<JPH::Shape> floorShape = new JPH::BoxShape({ 100.0f, 1.0f, 100.0f });
         auto floorStaticBody = std::make_unique<bl::PhysicsBody3D>(engine);
         floorStaticBody->SetName("FloorBody");
         floorStaticBody->SetMotionType(JPH::EMotionType::Static);
         floorStaticBody->SetObjectLayer(bl::ObjectLayers::STATIC);
         floorStaticBody->SetShape(floorShape);
         floorStaticBody->SetPosition({ 0.0f, -5.0f, 0.0f });
+        floorStaticBody->SetFriction(0.8f);
         floorStaticBody->ResetBody();
         floorStaticBody->SetDOF(true, true, true, false, true, false); // Lock rotation around Z axis
 
@@ -146,12 +142,29 @@ int main(int argc, const char** argv)
 
         rootNode->AddChild(std::move(floorStaticBody));
 
-        auto flycam = std::make_unique<bl::FlyCamera3D>(engine);
-        flycam->SetName("FlyCam");
-        flycam->SetPosition({ 0.0f, 0.0f, 5.0f });
-        rootNode->AddChild(std::move(flycam));
+        
+        //auto flycam = std::make_unique<bl::FlyCamera3D>(engine);
+        //flycam->SetName("FlyCam");
+        //flycam->SetPosition({ 0.0f, 0.0f, 5.0f });
+        //rootNode->AddChild(std::move(flycam));
 
-        auto flyCamNode = rootNode->GetChild("FlyCam")->As<bl::FlyCamera3D>();
+        //auto flyCamNode = rootNode->GetChild("FlyCam")->As<bl::FlyCamera3D>();
+        auto playerNode = rootNode->GetChild("CharacterBody")->As<bl::Node3D>();
+
+        auto followCamera = std::make_unique<bl::Camera3D>(engine);
+        followCamera->SetName("FollowCam");
+        followCamera->SetPosition({ 0.0f, 10.0f, -10.0f });
+        followCamera->SetRotation({ -45.0f, 180.0f, 0.0f});
+        followCamera->SetProjection(bl::CameraProjection::ePerspective);
+        followCamera->SetFOV(75.0f);
+        followCamera->SetNearClip(0.1f);
+        followCamera->SetFarClip(1000.0f);
+
+
+        playerNode->AddChild(std::move(followCamera));
+
+        auto cameraNode = rootNode->GetChild("CharacterBody")->GetChild("FollowCam")->As<bl::Camera3D>();
+
 
         bl::FrameCounter& frameCounter = engine.GetFrameCounter();
         auto presentModes = renderer->GetPresentModes();
@@ -165,9 +178,7 @@ int main(int argc, const char** argv)
             profiler.StartFrame();
             frameCounter.BeginFrame();
 
-            profiler.StartProfile("Physics");
-            physics.Update(frameCounter.GetDeltaTime());
-            profiler.EndProfile("Physics");
+
 
             profiler.StartProfile("Input");
             input->Poll([imgui](SDL_Event& event) {
@@ -194,11 +205,18 @@ int main(int argc, const char** argv)
             profiler.EndProfile("Audio");
 
             profiler.StartProfile("Update");
-            grassMaterial->SetVector4("material.playerParams", glm::vec4{flyCamNode->GetWorldPosition(), 5.0f});
+            grassMaterial->SetVector4("material.playerParams", glm::vec4{playerNode->GetWorldPosition(), 2.0f});
             grassMaterial->SetVector4("material.colorSmall", {sinf(bl::Time::Current()), sinf(bl::Time::Current() + bl::Math::Pi), 0.9f, 1.0f});
 
             rootNode->Update(frameCounter.GetDeltaTime());
             profiler.EndProfile("Update");
+
+            profiler.StartProfile("Physics");
+            physics.Update(frameCounter.GetDeltaTime());
+            profiler.EndProfile("Physics");
+
+            renderer->SetView(cameraNode->GetViewMatrix());
+            renderer->SetProjection(cameraNode->GetProjectionMatrix());
 
             auto objectFunc = [&](bl::RenderData& rd) {
                 rootNode->Draw(rd);
@@ -214,7 +232,6 @@ int main(int argc, const char** argv)
 
                 //ImGui::Text("Objects in Scene: %d", rootNode->GetChildCount());
                 ImGui::End();
-                
 
                 ImGui::Begin("Settings");
 

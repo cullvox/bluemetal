@@ -56,6 +56,55 @@ void PhysicsBody3D::Update(float deltaTime)
 
 }
 
+glm::vec3 PhysicsBody3D::GetVelocity()
+{
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    JPH::Vec3 velocity = bodyInterface.GetLinearVelocity(_bodyId);
+    return glm::vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
+}
+
+void PhysicsBody3D::SetVelocity(const glm::vec3& velocity)
+{
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    bodyInterface.SetLinearVelocity(_bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
+}
+
+void PhysicsBody3D::ApplyImpulse(const glm::vec3& impulse)
+{
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    bodyInterface.AddImpulse(_bodyId, JPH::Vec3(impulse.x, impulse.y, impulse.z));
+}
+
+void PhysicsBody3D::ApplyForce(const glm::vec3& force)
+{
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    bodyInterface.AddForce(_bodyId, JPH::Vec3(force.x, force.y, force.z));
+}
+
+void PhysicsBody3D::SetFriction(float friction)
+{
+    _friction = friction;
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    bodyInterface.SetFriction(_bodyId, friction);
+}
+
+void PhysicsBody3D::SetMassProperties(float mass)
+{
+    _mass = mass;
+    JPH::BodyLockWrite lock(GetEngine().GetPhysics().GetJolt().GetBodyLockInterface(), _bodyId);  
+    if (lock.Succeeded()) {  
+        JPH::Body& body = lock.GetBody();
+        body.GetMotionProperties()->ScaleToMass(mass);
+    }
+}
+
+void PhysicsBody3D::SetRestitution(float restitution)
+{
+    _restitution = restitution;
+    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    bodyInterface.SetRestitution(_bodyId, restitution);
+}
+
 void PhysicsBody3D::ResetBody()
 {
     auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
@@ -69,6 +118,9 @@ void PhysicsBody3D::ResetBody()
     settings.mRotation = JPH::Quat(rotation.x, rotation.y, rotation.z, rotation.w);
     settings.mObjectLayer = _objectLayer;
     settings.mMotionType = _motionType;
+    settings.mFriction = _friction;
+    settings.mRestitution = _restitution;
+    settings.mMassPropertiesOverride.mMass = _mass;
 
     if (!_bodyId.IsInvalid())
         bodyInterface.RemoveBody(_bodyId);

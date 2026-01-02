@@ -59,7 +59,6 @@ void Node3D::Draw(RenderData& rd)
     Node::Draw(rd);
 }
 
-
 void Node3D::UpdateMatrix()
 {
     if (!_isDirty) {
@@ -80,14 +79,31 @@ void Node3D::UpdateMatrix()
         _worldMatrix = _matrix;
     }
 
+    // Set all children as dirty
+    for (auto child : GetChildren()) {
+        if (auto child3D = dynamic_cast<Node3D*>(child)) {
+            child3D->_isDirty = true;
+        }
+    }
+
     // Update world position
     _worldPosition = glm::vec3(_worldMatrix[3]);
+}
+
+void Node3D::SetDirty()
+{
+    _isDirty = true;
+    for (auto child : GetChildren()) {
+        if (auto child3D = dynamic_cast<Node3D*>(child)) {
+            child3D->SetDirty();
+        }
+    }
 }
 
 void Node3D::SetPosition(const glm::vec3& pos)
 {
     _position = pos;
-    _isDirty = true;
+    SetDirty();
 }
 
 void Node3D::SetWorldPosition(const glm::vec3& pos)
@@ -110,7 +126,7 @@ void Node3D::SetRotation(const glm::vec3& eulerAngles)
 void Node3D::SetRotation(const glm::quat& newRotation)
 {
     _rotation = newRotation;
-    _isDirty = true;
+    SetDirty();
 }
 
 void Node3D::SetWorldRotation(const glm::vec3& eulerAngles)
@@ -133,7 +149,7 @@ void Node3D::SetWorldRotation(const glm::quat& newRotation)
 void Node3D::SetScale(const glm::vec3& newScale)
 {
     _scale = newScale;
-    _isDirty = true;
+    SetDirty();
 }
 
 const glm::vec3& Node3D::GetPosition() const

@@ -79,9 +79,11 @@ list(APPEND Sources
   "Scene/Node3D.cpp"
   "Scene/AudioSource3D.cpp"
   "Scene/MeshInstance3D.cpp"
+  "Scene/MultiMeshInstance3D.cpp"
   "Scene/Camera3D.cpp"
   "Scene/FlyCamera3D.cpp"
   "Scene/PhysicsBody3D.cpp"
+  "Scene/CharacterBody3D.cpp"
   "Scene/NodeFilterIterator.cpp"
 
   "Editor/DebugEditor.cpp"

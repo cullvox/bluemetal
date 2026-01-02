@@ -10,7 +10,7 @@ Camera3D::Camera3D(Engine& engine)
     , _nearClip(0.01f)
     , _farClip(1000.0f)
     , _fov(85.0f)
-    , _projectionMatrix(1.0f)
+    , _projectionMatrix(glm::perspective(glm::radians(_fov), 1.77778f, _nearClip, _farClip))
 {
 }
 
@@ -51,12 +51,14 @@ const glm::mat4& Camera3D::GetProjectionMatrix()
     Extent2D extent = GetEngine().GetWindow()->GetExtent();
     switch (_projection) {
     case CameraProjection::ePerspective:
-        _projectionMatrix = glm::perspectiveFov(_fov, (float)extent.width, (float)extent.height, _nearClip, _farClip);
+        _projectionMatrix = glm::perspective(glm::radians(_fov), (float)extent.width / (float)extent.height, _nearClip, _farClip);
         break;
     case CameraProjection::eOrthographic:
         _projectionMatrix = glm::ortho((float)extent.height, (float)extent.height, (float)extent.width, (float)extent.width, _nearClip, _farClip);
         break;
     }
+
+    _projectionMatrix[1][1] *= -1; // Invert the projection for Vulkan y (0, 1)
 
     _isDirty = false;
     return _projectionMatrix;
@@ -64,7 +66,8 @@ const glm::mat4& Camera3D::GetProjectionMatrix()
 
 const glm::mat4& Camera3D::GetViewMatrix()
 {
-    return GetWorldMatrix();
+    _viewMatrix = glm::inverse(GetWorldMatrix());
+    return _viewMatrix;
 }
 
 } // namespace bl

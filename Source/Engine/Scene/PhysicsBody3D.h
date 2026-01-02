@@ -13,6 +13,9 @@ namespace bl {
 class PhysicsBody3D : public Node3D {
     JPH::BodyID _bodyId;
     JPH::Shape* _shape = nullptr;
+    float _friction = 0.5f;
+    float _mass = 1.0f;
+    float _restitution = 0.0f;
     JPH::ObjectLayer _objectLayer = ObjectLayers::MOVABLE;
     JPH::EMotionType _motionType = JPH::EMotionType::Dynamic;
 
@@ -22,6 +25,14 @@ public:
     ~PhysicsBody3D();
 
     virtual void Update(float deltaTime) override;
+
+    glm::vec3 GetVelocity();
+    void SetVelocity(const glm::vec3& velocity);
+    void ApplyImpulse(const glm::vec3& impulse);
+    void ApplyForce(const glm::vec3& force);
+    void SetFriction(float friction);
+    void SetMassProperties(float mass);
+    void SetRestitution(float restitution);
 
     void ResetBody();
     virtual PhysicsBody3D* Clone() override;

@@ -15,6 +15,7 @@ class Camera3D : public Node3D {
     float _nearClip;
     float _farClip;
     glm::mat4 _projectionMatrix;
+    glm::mat4 _viewMatrix;
     bool _isDirty;
 
 public:
