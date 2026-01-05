@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "Core/Version.h"
-#include "VulkanForward.h"
+#include "Vulkan.h"
 #include "VulkanConfig.h"
 #include "VulkanPhysicalDevice.h"
 

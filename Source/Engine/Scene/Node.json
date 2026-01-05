@@ -1,0 +1,23 @@
+{
+    "type": "SkinnedMeshInstance3D",
+    "name": "MeshNodeName",
+    "parent": 4,
+    "properties": {
+        "position": {
+            "type": "Vector3",
+            "value": [0.0, 0.0, 0.0]
+        },
+        "rotation": {
+            "type": "Vector4",
+            "value": [0.0, 0.0, 0.0, 1.0]
+        },
+        "scale": {
+            "type": "Vector3",
+            "value": [1.0, 1.0, 1.0]
+        },
+        "mesh": {
+            "type": "SkinnedMesh",
+            "value": "Resources/Models/Jacob.glb"
+        }
+    }
+}

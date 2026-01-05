@@ -3,7 +3,7 @@
 #include "Engine/System.h"
 #include "Engine/SDL.h"
 #include "Graphics/Renderer.h"
-#include "Graphics/VulkanForward.h"
+#include "Graphics/Vulkan.h"
 #include "Window/Window.h"
 
 #define IMGUI_IMPL_VULKAN_NO_PROTOTYPES

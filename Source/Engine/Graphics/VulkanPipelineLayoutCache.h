@@ -4,7 +4,7 @@
 #include <span>
 
 #include "Core/Hash.h"
-#include "VulkanForward.h"
+#include "Vulkan.h"
 
 namespace bl {
 

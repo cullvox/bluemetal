@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <vector>
 
-#include "VulkanForward.h"
+#include "Vulkan.h"
 
 namespace bl {
 

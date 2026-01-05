@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <unordered_map>
 
-#include "VulkanForward.h"
+#include "Vulkan.h"
 #include "VulkanReflectedBlock.h"
 
 namespace bl {

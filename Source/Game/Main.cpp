@@ -51,7 +51,7 @@ int main(int argc, const char** argv)
         auto window = engine.GetWindow();
         auto& editor = engine.GetEditor();
 
-        auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Taswell.flac");
+        auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Aria Math.ogg");
         auto source = std::make_unique<bl::AudioSource3D>(engine);
 
         source->Play(sound, true);
@@ -142,7 +142,6 @@ int main(int argc, const char** argv)
 
         rootNode->AddChild(std::move(floorStaticBody));
 
-        
         //auto flycam = std::make_unique<bl::FlyCamera3D>(engine);
         //flycam->SetName("FlyCam");
         //flycam->SetPosition({ 0.0f, 0.0f, 5.0f });

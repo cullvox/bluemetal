@@ -31,7 +31,7 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     GetEngine().GetResourceSystem()->AddSystemType<Mesh>(this);
     GetEngine().GetResourceSystem()->AddSystemType<Model>(this);
 
-    _vulkanInstance = std::make_unique<VulkanInstance>(bl::Version { bl::VersionRelease::eAlpha, 0, 1, 7 }, "bluemetal", true);
+    _vulkanInstance = std::make_unique<VulkanInstance>(bl::Version { bl::VersionRelease::eAlpha, 0, 1, 7 }, "bluemetal", false);
     _physicalDevice = _vulkanInstance->ChoosePhysicalDevice();
     _device = std::make_unique<VulkanDevice>(_vulkanInstance.get(), _physicalDevice);
 

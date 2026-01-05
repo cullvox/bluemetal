@@ -6,7 +6,7 @@
 #include <functional>
 #include <deque>
 
-#include "VulkanForward.h"
+#include "Vulkan.h"
 #include "VulkanBufferFrameRing.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "UniformData.h"

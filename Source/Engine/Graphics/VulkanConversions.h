@@ -3,7 +3,7 @@
 #include <nlohmann/json.hpp>
 
 #include "Math/Extent.h"
-#include "VulkanForward.h"
+#include "Vulkan.h"
 
 #define NLOHMANN_JSON_SERIALIZE_ENUM_FLAGS(ENUM_TYPE, FLAG_TYPE, ...)                         \
     template <typename BasicJsonType>                                                         \
