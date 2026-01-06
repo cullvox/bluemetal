@@ -114,4 +114,4 @@ target_link_libraries(Bluemetal PUBLIC
   tinygltf
   Jolt::Jolt)
 
-target_precompile_headers(Bluemetal PRIVATE "Graphics/Vulkan.h")
+target_precompile_headers(Bluemetal PRIVATE "Graphics/Vulkan.h" "Core/Precompiled.h")

@@ -1,10 +1,7 @@
 #pragma once
 
 #include <vector>
-#include <map>
-#include <set>
 #include <functional>
-#include <deque>
 
 #include "Vulkan.h"
 #include "VulkanBufferFrameRing.h"
