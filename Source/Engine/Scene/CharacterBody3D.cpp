@@ -59,6 +59,9 @@ void CharacterBody3D::Update(float dt)
     velocity.z = horizontalVelocity.z;
 
     SetVelocity(velocity);
+
+    // Rotate the player to input.
+    
 }
 
 }
