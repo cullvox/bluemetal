@@ -3,6 +3,7 @@
 #include <vector>
 #include <functional>
 
+#include "Core/Color.h"
 #include "Vulkan.h"
 #include "VulkanBufferFrameRing.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
@@ -30,20 +31,28 @@ class RenderData
     VkDescriptorSetLayout _instanceSetLayout;
     VkDescriptorSet _instanceSet;
 
+    enum class DrawType {
+        eInstance,
+        eSkinnedInstance,
+        eDebugTriangle,
+        eDebugLines,
+        eDebugLineStrips,
+        eDebugPoints,
+    };
 
     struct DrawCall {
         DrawCall(MaterialInstance* material, Mesh* mesh)
             : material(material)
             , mesh(mesh)
+            , 
         {
         }
 
         MaterialInstance* material;
         Mesh* mesh;
         uint32_t hash;
-
-        uint32_t instanceOffset = 0;
-        uint32_t instanceCount = 0;
+        uint32_t offset = 0;
+        uint32_t count = 0;
     };
 
     std::vector<DrawCall> _calls;
@@ -64,7 +73,8 @@ public:
     uint32_t GetInstanceBufferDynamicOffset();
 
     void DrawInstance(MaterialInstance* material, Mesh* mesh, const InstanceData& instance);
-    void DrawCustom(std::function<void (RenderData& rd)> renderData);
+    void DrawDebugLine(const glm::vec3& start, const glm::vec3& end, Color color);
+    void DrawDebugTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, Color color);
 
     void WriteInstanceBuffer();
 
