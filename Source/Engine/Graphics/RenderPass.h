@@ -5,7 +5,7 @@ namespace bl {
 
 class RenderPass {
 public:
-    RenderPass() = default;
+    RenderPass(VulkanSwapchain&);
     virtual ~RenderPass() = default;
 
     virtual void Record(RenderData& renderData) = 0;
