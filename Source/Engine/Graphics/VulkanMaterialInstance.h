@@ -209,7 +209,7 @@ private:
 
     VulkanDevice* _device;
     VulkanMaterial* _material;
-    uint32_t _materialSet;
+    int32_t _materialSet;
     uint32_t _currentFrame;
     std::map<uint32_t, BindingData> _bindings;
     std::vector<PerFrameData> _perFrameData;

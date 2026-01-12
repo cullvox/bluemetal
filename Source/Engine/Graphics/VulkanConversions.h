@@ -44,6 +44,8 @@ public:
     static VkFrontFace VkFrontFaceFromString(const std::string& str, VkFrontFace def = VK_FRONT_FACE_COUNTER_CLOCKWISE);
     static VkCompareOp VkCompareOpFromString(const std::string& str, VkCompareOp def = VK_COMPARE_OP_LESS_OR_EQUAL);
     static VkStencilOp VkStencilOpFromString(const std::string& str, VkStencilOp def = VK_STENCIL_OP_KEEP);
+
+    static bool VkDynamicStateFromString(const std::string& str, VkDynamicState& out);
 };
 
 std::string_view ToString(VkFormat format);

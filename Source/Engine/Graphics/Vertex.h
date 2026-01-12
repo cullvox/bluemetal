@@ -67,4 +67,32 @@ struct VertexSkinned {
     }
 };
 
+struct VertexDebug {
+    glm::vec3 position;
+    glm::vec3 color;
+    float pointSize;
+
+    VertexDebug() = default;
+    VertexDebug(const glm::vec3& position, const glm::vec3& color, float pointSize)
+        : position(position), color(color), pointSize(pointSize) {}
+
+    constexpr static std::vector<VkVertexInputBindingDescription> GetBindingDescriptions()
+    {
+        std::vector<VkVertexInputBindingDescription> descriptions = {
+            {0, sizeof(VertexDebug), VK_VERTEX_INPUT_RATE_VERTEX}
+        };
+        return descriptions;
+    }
+
+    constexpr static std::vector<VkVertexInputAttributeDescription> GetBindingAttributeDescriptions() 
+    {
+        std::vector<VkVertexInputAttributeDescription> attributes = {
+            {0, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexDebug, position)},
+            {1, 0, VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexDebug, color)},
+            {2, 0, VK_FORMAT_R32_SFLOAT, offsetof(VertexDebug, pointSize)}
+        };
+        return attributes;
+    }
+};
+
 } // namespace bl

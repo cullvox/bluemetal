@@ -3,6 +3,7 @@
 #include "Core/FileByte.h"
 #include "Core/Print.h"
 
+#include "Graphics/GraphicsSystem.h"
 #include "Graphics/UniformData.h"
 #include "Graphics/VulkanImage.h"
 #include "Graphics/VulkanMaterialInstance.h"

@@ -41,6 +41,7 @@ Renderer::Renderer(VulkanWindow* window, FrameCounter& frameCounter)
         CreateCommandBuffers();
         RecreateImages();
         CreateGlobalUniform();
+        CreateDebugBuffer();
     } catch (const std::exception& e) {
         Print::Error("Failed to initialize renderer: {}", e.what());
         DestroyGlobalUniform();
@@ -215,7 +216,6 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         return;
 
     if (recreateRequested) {
-        profiler.StartProfile("Swapchain Recreation");
         _device->WaitForDevice(); // Wait for previous commands to complete.
 
         //DestroyRenderPasses();
@@ -224,37 +224,18 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         RecreateImages();
         recreateRequested = false;
         _device->WaitForDevice();
-        profiler.EndProfile("Swapchain Recreation");
     }
-
-
-
 
     auto currentFrame = _swapchain->GetCurrentFrame();
     _renderData.SetCurrentFrame(currentFrame);
 
     // Prepare uniform buffers for the next frame.
-    profiler.StartProfile("Update Uniforms");
-    for (auto instance : _materials) {
-        instance->UpdateUniforms(currentFrame);
-    }
-    profiler.EndProfile("Update Uniforms");
+    UpdateMaterialUniforms(currentFrame);
 
     // Compute the per frame UBO.
-    profiler.StartProfile("Update Global UBO");
-    const auto currentTime = Time::Current();
-    const auto extent = _swapchain->GetExtent();
+    UpdateGlobalUniform(currentFrame);
 
-    _uboData.time = currentTime;
-    _uboData.dt = _frameCounter.GetDeltaTime();
-    _uboData.resolution = glm::vec2 { (float)extent.width, (float)extent.height };
-    _uboData.mouse = {}; // TODO: mouse position to be added later.
-
-    std::memcpy(_globalBufferMap[currentFrame], &_uboData, sizeof(_uboData));
-
-    _globalBuffer[currentFrame].Flush(0, sizeof(_uboData));
-
-    profiler.EndProfile("Update Global UBO");
+    
 
     // Swapchain must be valid.
     if (!_swapchain->Get()) {
@@ -286,16 +267,10 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 
     // This function doesn't know about globals or uniforms yet.
 
-    profiler.StartProfile("Object Render Function");
     objectFunc(_renderData);
-    profiler.EndProfile("Object Render Function");
 
-
-    profiler.StartProfile("Update Object Instances");
     _renderData.WriteInstanceBuffer();
-    profiler.EndProfile("Update Object Instances");
 
-    profiler.StartProfile("Render Pass");
     // Setup the render pass for dynamic rendering.
     std::array clearColors = {
         VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Clear Color
@@ -399,6 +374,8 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     // Render all the frame data to the gbuffer.
     _renderData.SetGlobalDescriptorSet(_globalSet[currentFrame]);
 
+    VkExtent2D extent = _swapchain->GetExtent();
+
     VkViewport viewport;
     viewport.x = 0.0f;
     viewport.y = 0.0f;
@@ -415,15 +392,14 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 
     vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
 
-    profiler.StartProfile("Render Pass Draw Calls");
     _renderData.WriteDrawCommands();
 
     func(_renderData);
-    profiler.EndProfile("Render Pass Draw Calls");
+
+    UpdateDebugBuffers(currentFrame);
+    DrawDebugBuffers(_renderData);
 
     vkCmdEndRendering(cmd);
-
-    profiler.EndProfile("Render Pass");
 
     range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     TransitionImageLayout(cmd,
@@ -444,6 +420,10 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     if (_swapchain->QueuePresent()) {
         RecreateImages();
     }
+
+    _points.clear();
+    _lines.clear();
+    _triangles.clear();
 }
 
 void Renderer::SetImageRecreateCallback(std::function<void()> onRecreate)
@@ -523,6 +503,28 @@ void Renderer::AddInstance(Mesh* mesh, const InstanceData& data)
     //vec[index] = data;
 }
 
+void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* material)
+{
+    _debugMaterial = material;
+}
+
+void Renderer::DrawPoint(const glm::vec3& point, float size, Color color)
+{
+
+}
+
+void Renderer::DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness, Color color)
+{
+    _lines.emplace_back(a, color.ToVector3(), 0.0f);
+    _lines.emplace_back(b, color.ToVector3(), 0.0f);
+}
+
+void Renderer::DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness, Color color)
+{
+
+}
+
+
 void Renderer::AddMaterial(VulkanMaterialInstance* material)
 {
     _materials.emplace(material);
@@ -596,6 +598,83 @@ VkFormat Renderer::GetDepthAttachmentFormat()
 VkFormat Renderer::GetStencilAttachmentFormat()
 {
     return VK_FORMAT_UNDEFINED;
+}
+
+void Renderer::UpdateMaterialUniforms(uint32_t currentFrame)
+{
+    for (auto instance : _materials) {
+        instance->UpdateUniforms(currentFrame);
+    }
+}
+
+void Renderer::UpdateGlobalUniform(uint32_t currentFrame)
+{
+    const auto currentTime = Time::Current();
+    const auto extent = _swapchain->GetExtent();
+
+    _uboData.time = currentTime;
+    _uboData.dt = _frameCounter.GetDeltaTime();
+    _uboData.resolution = glm::vec2 { (float)extent.width, (float)extent.height };
+    _uboData.mouse = {}; // TODO: mouse position to be added later.
+
+    std::memcpy(_globalBufferMap[currentFrame], &_uboData, sizeof(_uboData));
+
+    _globalBuffer[currentFrame].Flush(0, sizeof(_uboData));
+}
+
+#define MAX_DEBUG_VERTICES 8196
+
+void Renderer::CreateDebugBuffer()
+{
+    _lines.reserve(MAX_DEBUG_VERTICES/3);
+    _points.reserve(MAX_DEBUG_VERTICES/3);
+    _triangles.reserve(MAX_DEBUG_VERTICES/3);
+    _debugVertices.reserve(MAX_DEBUG_VERTICES);
+    _debugBuffer = VulkanBufferFrameRing(_device, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, _swapchain->GetImageCount(), MAX_DEBUG_VERTICES * sizeof(VertexDebug), true, false);
+}
+
+void Renderer::UpdateDebugBuffers(uint32_t currentFrame)
+{
+    _debugVertices.clear();
+
+    std::copy_n(_points.begin(), std::min(_debugVertices.capacity(), _points.size()), std::back_inserter(_debugVertices));
+    std::copy_n(_lines.begin(), std::min(_debugVertices.capacity(), _lines.size()), std::back_inserter(_debugVertices));
+    std::copy_n(_triangles.begin(), std::min(_debugVertices.capacity(), _triangles.size()), std::back_inserter(_debugVertices));
+
+    // Update this current frames buffer.
+    _debugBuffer.UploadHostVisible(std::as_bytes(std::span{_debugVertices}), currentFrame);
+}
+
+void Renderer::DrawDebugBuffers(RenderData& rd)
+{
+    // Draw the points list
+    if (!_debugMaterial)
+        return;
+
+    auto cmd = rd.GetCommandBuffer();
+    VkDeviceSize vertexOffset = _debugBuffer.GetDynamicOffset(rd.GetCurrentFrame());
+    VkBuffer buffer = _debugBuffer.GetBuffer();
+    vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
+    _debugMaterial->Bind(rd);
+
+    if (_points.size() > 0) {
+        vkCmdSetPrimitiveTopology(cmd, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+        vkCmdDraw(cmd, static_cast<uint32_t>(_points.size()), 1, 0, 0);
+    }
+
+    // Draw the lines list
+    uint32_t firstVertex = static_cast<uint32_t>(_points.size());
+    if (_lines.size() > 0) {
+        vkCmdSetPrimitiveTopology(cmd, VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+        vkCmdDraw(cmd, static_cast<uint32_t>(_lines.size()), 1, firstVertex, 0);
+    }
+
+    // Draw the trangles list
+    firstVertex += static_cast<uint32_t>(_lines.size());
+    if (_triangles.size() > 0) {
+        vkCmdSetPrimitiveTopology(cmd, VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+        vkCmdDraw(cmd, static_cast<uint32_t>(_triangles.size()), 1, firstVertex, 0);
+    }
 }
 
 

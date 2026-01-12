@@ -5,7 +5,7 @@
 namespace bl 
 {
 
-VulkanShader::VulkanShader(VulkanDevice* device, std::span<uint32_t> bytes)
+VulkanShader::VulkanShader(VulkanDevice* device, std::span<const uint32_t> bytes)
     : _device(device)
     , _stage(VK_SHADER_STAGE_ALL)
     , _reflect()

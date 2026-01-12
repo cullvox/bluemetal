@@ -14,7 +14,7 @@ class VulkanShader {
     VkShaderModule _module;
 
 public:
-    VulkanShader(VulkanDevice* device, std::span<uint32_t> data); /** @brief Constructor */
+    VulkanShader(VulkanDevice* device, std::span<const uint32_t> data); /** @brief Constructor */
     ~VulkanShader(); /** @brief Destructor */
 
     VkShaderStageFlagBits GetStage() const; /** @brief Returns the shader stage created with. */

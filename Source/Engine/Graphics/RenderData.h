@@ -22,6 +22,8 @@ class RenderData
     uint32_t _currentFrame;
     uint32_t _imageIndex;
     VkDescriptorSet _globalSet;
+    VkSampleCountFlagBits _sampleCount;
+    VkImageView _swapchainImageView;
 
     std::vector<InstanceData> _tempInstances;
     std::vector<uint32_t> _instanceToCallMap;
@@ -31,20 +33,10 @@ class RenderData
     VkDescriptorSetLayout _instanceSetLayout;
     VkDescriptorSet _instanceSet;
 
-    enum class DrawType {
-        eInstance,
-        eSkinnedInstance,
-        eDebugTriangle,
-        eDebugLines,
-        eDebugLineStrips,
-        eDebugPoints,
-    };
-
     struct DrawCall {
         DrawCall(MaterialInstance* material, Mesh* mesh)
             : material(material)
             , mesh(mesh)
-            , 
         {
         }
 
@@ -64,10 +56,14 @@ public:
     void SetCurrentFrame(uint32_t currentFrame);
     void SetImageIndex(uint32_t index);
     void SetGlobalDescriptorSet(VkDescriptorSet set);
+    void SetSampleCount(VkSampleCountFlagBits sampleCount);
+    void SetSwapchainImageView(VkImageView swapchainImageView);
 
     VkCommandBuffer GetCommandBuffer();
     uint32_t GetCurrentFrame();
     uint32_t GetImageIndex();
+    VkSampleCountFlagBits GetSampleCount();
+    VkImageView GetSwapchainImageView();
     VkDescriptorSet GetGlobalDescriptorSet();
     VkDescriptorSet GetInstanceDescriptorSet();
     uint32_t GetInstanceBufferDynamicOffset();

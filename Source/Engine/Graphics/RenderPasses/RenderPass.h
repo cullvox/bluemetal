@@ -1,16 +1,18 @@
 #pragma once
 
+#include "Math/Extent.h"
 
 namespace bl {
 
+class RenderData;
+
 class RenderPass {
 public:
-    RenderPass(VulkanSwapchain&);
+    RenderPass();
     virtual ~RenderPass() = default;
 
     virtual void Record(RenderData& renderData) = 0;
-    virtual void Resize(uint32_t width, uint32_t height) = 0;
-
+    virtual void Resize(Extent2D extent) = 0;
 };
 
 }

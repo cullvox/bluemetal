@@ -33,6 +33,7 @@ list(APPEND Sources
   "Graphics/VulkanMaterial.cpp"
   "Graphics/VulkanMaterialInstance.cpp"
   "Graphics/RenderData.cpp"
+  #"Graphics/Debug/RenderPassDebug.cpp"
   "Graphics/Renderer.cpp"
   "Graphics/GraphicsSystem.cpp"
 
@@ -59,8 +60,6 @@ list(APPEND Sources
   "Physics/BroadPhaseLayerImpl.cpp"
   "Physics/ObjectLayerPairFilterImpl.cpp"
   "Physics/ObjectVsBroadPhaseLayerFilterImpl.cpp"
-
-
 
   "Resources/ResourceSystem.cpp"
   "Resources/Resource.cpp"
@@ -114,4 +113,4 @@ target_link_libraries(Bluemetal PUBLIC
   tinygltf
   Jolt::Jolt)
 
-target_precompile_headers(Bluemetal PRIVATE "Graphics/Vulkan.h" "Core/Precompiled.h")
+target_precompile_headers(Bluemetal PRIVATE "Graphics/Vulkan.h" "Math/Math.h" "Core/Precompiled.h")

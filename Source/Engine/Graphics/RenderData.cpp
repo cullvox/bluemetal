@@ -128,11 +128,6 @@ void RenderData::DrawInstance(MaterialInstance* material, Mesh* mesh, const Inst
     _instanceToCallMap.push_back(hash);
 }
 
-void RenderData::DrawCustom(std::function<void (RenderData& rd)> renderData)
-{
-    (void)renderData;
-}
-
 void RenderData::WriteInstanceBuffer()
 {
     // Sort instances into the proper buffer areas.
@@ -151,11 +146,11 @@ void RenderData::WriteInstanceBuffer()
         _instances.push_back(instance);
 
         DrawCall& call = _calls[callIndex];
-        if (call.instanceCount == 0) {
-            call.instanceOffset = i;
+        if (call.count == 0) {
+            call.offset = i;
         }
 
-        call.instanceCount++;
+        call.count++;
     }
 
     profiler.EndProfile("Sort Instance Data");
@@ -187,19 +182,19 @@ void RenderData::WriteDrawCommands()
         if (prevMesh != call.mesh)
             call.mesh->Bind(_cmd);
 
-        bool shouldInstance = call.instanceCount > 1;
+        bool shouldInstance = call.count > 1;
         bool materialSupportsInstancing = (call.material->GetInstance()->GetBaseMaterial()->GetSupportFlags() & VulkanMaterialSupportFlags::eInstanceBuffer) != VulkanMaterialSupportFlags::eNone;
 
         ObjectPC objectPC;
         if (shouldInstance && materialSupportsInstancing) {
             objectPC.useInstanceBuffer.x = 1;
         } else {
-            objectPC.data = _instances[call.instanceOffset];
+            objectPC.data = _instances[call.offset];
             objectPC.useInstanceBuffer.x = 0;
         }
 
         call.material->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
-        vkCmdDrawIndexed(_cmd, call.mesh->GetIndicesCount(), call.instanceCount, 0, 0, call.instanceOffset);
+        vkCmdDrawIndexed(_cmd, call.mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
     }
 
     _calls.clear();

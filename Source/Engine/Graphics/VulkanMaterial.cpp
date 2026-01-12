@@ -2,12 +2,13 @@
 #include "Core/Print.h"
 #include "VulkanBuffer.h"
 #include "UniformData.h"
+#include "Renderer.h"
 
 namespace bl {
 
-VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const VulkanPipelineStateInfo& state, uint32_t imageCount, uint32_t materialSet)
+VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const VulkanPipelineStateInfo& state, int32_t materialSet)
     : VulkanMaterialInstance(device)
-    , _swapchainImageCount(imageCount)
+    , _swapchainImageCount(renderer->GetSwapchainImageCount())
     , _descriptorSetCache(device, 1024, VulkanDescriptorRatio::Default())
     , _flags(VulkanMaterialSupportFlags::eNone)
 {
@@ -32,20 +33,22 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
     // }
 
     auto& sets = reflection.descriptorSetMetadata;
-    if (!sets.contains(materialSet))
+    if (!sets.contains(materialSet) && materialSet != -1)
         throw std::runtime_error("VulkanMaterial does not contain the used set!");
 
-    auto& meta = sets.at(materialSet);
+    if (materialSet != -1) {
+        auto& meta = sets.at(materialSet);
 
-    // Ensure that all uniform buffers are actually dynamic uniform buffers.
-    // This allows for us to use one buffer and swap between areas of it.
-    auto& bindings = meta.GetBindings();
+        // Ensure that all uniform buffers are actually dynamic uniform buffers.
+        // This allows for us to use one buffer and swap between areas of it.
+        auto& bindings = meta.GetBindings();
 
-    for (auto& pair : bindings) {
-        auto binding = pair.second.GetBinding();
+        for (auto& pair : bindings) {
+            auto binding = pair.second.GetBinding();
 
-        if (binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
-            pair.second.SetType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+            if (binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+                pair.second.SetType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
+            }
         }
     }
 
@@ -75,12 +78,16 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
     // Construct the pipeline.
     _pipeline = std::make_unique<VulkanPipeline>(device, renderer, state, &reflection);
 
+    if (materialSet == -1) return;
+
     const auto& pipelineDescriptorSetLayouts = _pipeline->GetDescriptorSetLayouts();
     _layout = pipelineDescriptorSetLayouts.at(materialSet);
 
     BuildPerFrameBindings(_layout);
 
     // Create buffers/sampler uniform data.
+
+    auto& meta = sets.at(materialSet);
     auto metaBindings = meta.GetMetaBindings();
     for (const auto& binding : metaBindings) {
         switch (binding.GetType()) {

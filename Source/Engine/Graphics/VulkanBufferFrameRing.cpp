@@ -40,13 +40,18 @@ VulkanBufferFrameRing::VulkanBufferFrameRing(
     VmaMemoryUsage      memoryUsage,
     uint32_t            frameCount,
     VkDeviceSize        frameSize,
-    bool                mapped)
+    bool                mapped,
+    bool                dynamicAlignment)
     : _frameSize(frameSize)
     , _frameCount(frameCount)
 {
 
     // Compute the buffer sizings.
-    _alignedFrameSize = device->GetDynamicAlignment(frameSize);
+    if (dynamicAlignment)
+        _alignedFrameSize = device->GetDynamicAlignment(frameSize);
+    else
+        _alignedFrameSize = frameSize;
+
     _bufferWholeSize = _alignedFrameSize * _frameCount;
 
     // Not being mapped implies the buffer is GPU only and requires a staging buffer.
@@ -66,6 +71,7 @@ VulkanBufferFrameRing::VulkanBufferFrameRing(
     // Set the mapped value if it's host visible.
     if (mapped) {
         _mapped = info.pMappedData;
+        _usesStagingBuffer = false;
     } else {
 
         // Use a staging buffer for CPU -> GPU transfer operations.
@@ -121,6 +127,18 @@ VkDeviceSize VulkanBufferFrameRing::GetWholeSize() const
 VkBuffer VulkanBufferFrameRing::GetBuffer() const
 {
     return _buffer.Get();
+}
+
+void VulkanBufferFrameRing::UploadHostVisible(std::span<const std::byte> data, uint32_t currentFrame)
+{
+    if (_usesStagingBuffer)
+        throw std::runtime_error("Cannot perform a host visible upload if using a staging buffer!");
+
+    VkDeviceSize offset = GetDynamicOffset(currentFrame);
+    VkDeviceSize size = static_cast<VkDeviceSize>(std::clamp<VkDeviceSize>(data.size(), 0UL, _frameSize));
+    std::memcpy(static_cast<char*>(_mapped) + offset, data.data(), size);
+
+    _buffer.Flush(offset, size);
 }
 
 void VulkanBufferFrameRing::Upload(VkCommandBuffer cmd, std::span<const std::byte> data, uint32_t currentFrame)

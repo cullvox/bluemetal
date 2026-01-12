@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Graphics/Renderer.h"
 #include "Graphics/VulkanMaterial.h"
 #include "MaterialInstance.h"
 
 namespace bl {
+
+class Renderer;
+class GraphicsSystem;
 
 /// @class Material
 /// @brief A material resource defining how to render objects.

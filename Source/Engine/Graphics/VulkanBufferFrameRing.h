@@ -26,7 +26,7 @@ class VulkanBufferFrameRing
 
 public:
     VulkanBufferFrameRing();
-    VulkanBufferFrameRing(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, uint32_t frameCount, VkDeviceSize frameSize, bool mapped);
+    VulkanBufferFrameRing(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, uint32_t frameCount, VkDeviceSize frameSize, bool mapped, bool dynamicAlignment = true);
     VulkanBufferFrameRing(VulkanBufferFrameRing& rhs) = delete;
     VulkanBufferFrameRing(VulkanBufferFrameRing&& rhs) noexcept;
     ~VulkanBufferFrameRing();
@@ -39,6 +39,7 @@ public:
     VkDeviceSize GetWholeSize() const;
     VkBuffer GetBuffer() const;
 
+    void UploadHostVisible(std::span<const std::byte> data, uint32_t currentFrame);
     void Upload(VkCommandBuffer cmd, std::span<const std::byte> data, uint32_t currentFrame);
 };
 

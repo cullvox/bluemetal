@@ -1,0 +1,10 @@
+{
+    "descriptorSetLocation": -1,
+    "shaders": {
+        "vertex": "Resources/Shaders/Debug.vert.spv",
+        "fragment": "Resources/Shaders/Debug.frag.spv"
+    },
+    "dynamicState": [
+        "VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY"
+    ]
+}

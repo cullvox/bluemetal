@@ -8,6 +8,7 @@
 #include "UniformData.h"
 #include "VulkanBuffer.h"
 #include "RenderData.h"
+#include "Vertex.h"
 
 namespace bl {
 
@@ -43,7 +44,12 @@ public:
 
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
+    void SetImageRecreateCallback(std::function<void()> onRecreate);
     void AddInstance(Mesh* mesh, const InstanceData& data);
+    void SetDebugMaterialInstance(VulkanMaterialInstance* material);
+    void DrawPoint(const glm::vec3& point, float size = 1.0f, Color color = Color::Violet());
+    void DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness = 1.0f, Color color = Color::Violet());
+    void DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness = 1.0f, Color color = Color::Violet());
 
     std::vector<VkPresentModeKHR> GetPresentModes();
     void SetPresentMode(VkPresentModeKHR mode);
@@ -57,7 +63,6 @@ public:
     VkFormat GetDepthAttachmentFormat();
     VkFormat GetStencilAttachmentFormat();
 
-    void SetImageRecreateCallback(std::function<void()> onRecreate);
 
 protected:
     friend class Material;
@@ -99,6 +104,8 @@ private:
     std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache;
 
     // Uniform data
+    void UpdateGlobalUniform(uint32_t currentFrame);
+
     GlobalUBO _uboData;
     VkDescriptorSetLayout _globalLayout;
     std::array<VulkanBuffer, VulkanConfig::maxFramesInFlight> _globalBuffer;
@@ -116,7 +123,22 @@ private:
 
     std::function<void()> _recreateCallback;
 
+    // Material Uniform Updates
+    void UpdateMaterialUniforms(uint32_t currentFrame);
+
     std::unordered_set<VulkanMaterialInstance*> _materials;
+
+    // Debug Rendering
+    void CreateDebugBuffer();
+    void UpdateDebugBuffers(uint32_t currentFrame);
+    void DrawDebugBuffers(RenderData& rd);
+
+    VulkanMaterialInstance* _debugMaterial = nullptr;
+    std::vector<VertexDebug> _points;
+    std::vector<VertexDebug> _lines;
+    std::vector<VertexDebug> _triangles;
+    std::vector<VertexDebug> _debugVertices;
+    VulkanBufferFrameRing _debugBuffer;
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RenderPassType, {

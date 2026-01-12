@@ -17,6 +17,7 @@ class GraphicsSystem;
 class Renderer;
 class RenderData;
 class Material;
+class VulkanMaterialSystem;
 
 /// @class Material Instance
 /// @brief An instance of a material containing it's own buffers.

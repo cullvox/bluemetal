@@ -1,11 +1,13 @@
 #pragma once
 
-#include "Graphics/GraphicsSystem.h"
-#include "Graphics/VulkanDevice.h"
 #include "Graphics/VulkanSampler.h"
 #include "Resource.h"
 
 namespace bl {
+
+class VulkanDevice;
+class GraphicsSystem;
+class ResourceSystem;
 
 /**
  * @class Sampler

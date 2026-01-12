@@ -3,6 +3,7 @@
 #include "Engine/System.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Renderer.h"
+#include "Resources/Material.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanDevice.h"
 #include "VulkanInstance.h"
@@ -21,6 +22,7 @@ class GraphicsSystem : public System {
     std::unique_ptr<VulkanWindow> _window;
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ImGuiSystem> _imgui;
+    Ref<Material> _debugMaterial;
 
 public:
     GraphicsSystem(Engine& engine);

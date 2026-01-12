@@ -20,7 +20,13 @@ public:
     constexpr Color(float r, float g, float b)
         : _r(r), _g(g), _b(b), _a(1.0f) {}
 
-    ~Color() {}
+    constexpr glm::vec3 ToVector3() {
+        return glm::vec3{_r, _g, _b};
+    }
+
+    constexpr glm::vec4 ToVector4() {
+        return glm::vec4{_r, _g, _b, _a};
+    }
 
     static inline constexpr Color Black();
     static inline constexpr Color White();

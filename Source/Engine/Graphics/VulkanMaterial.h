@@ -85,8 +85,7 @@ public:
         VulkanDevice* device,
         Renderer* renderer,
         const VulkanPipelineStateInfo& state,
-        uint32_t imageCount,
-        uint32_t descriptorSetIndex = 1);
+        int32_t descriptorSetIndex = 1);
 
     /**
      * @brief Destroys the Vulkan material.

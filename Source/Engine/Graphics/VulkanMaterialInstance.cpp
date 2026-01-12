@@ -61,29 +61,35 @@ void VulkanMaterialInstance::SetMatrix(const std::string& name, glm::mat4 value)
 
 void VulkanMaterialInstance::Bind(RenderData& rd)
 {
+    
+
     auto cmd = rd.GetCommandBuffer();
     auto currentFrame = rd.GetCurrentFrame();
     auto globalSet = rd.GetGlobalDescriptorSet();
     auto instanceSet = rd.GetInstanceDescriptorSet();
-    PerFrameData& currentFrameData = _perFrameData[currentFrame];
-
-    // assert(currentFrameData.dirty.none());
 
     std::vector<uint32_t> offsets;
+    VkDescriptorSet currentSet = VK_NULL_HANDLE;
+    if (_materialSet != -1) {
+        PerFrameData& currentFrameData = _perFrameData[currentFrame];
+        currentSet = currentFrameData.set;
 
-    // Compute the dynamic offsets for each uniform buffer.
-    for (const auto& binding : _bindings) {
-        if (binding.second.index() == 0) {
-            auto& variant = _bindings[binding.first];
-            UniformData& uniform = std::get<UniformData>(variant);
-            uint32_t blockSize = static_cast<uint32_t>(uniform.buffer.GetSize()) / _material->_swapchainImageCount;
-            offsets.push_back(blockSize * currentFrame);
+        // assert(currentFrameData.dirty.none());
+
+        // Compute the dynamic offsets for each uniform buffer.
+        for (const auto& binding : _bindings) {
+            if (binding.second.index() == 0) {
+                auto& variant = _bindings[binding.first];
+                UniformData& uniform = std::get<UniformData>(variant);
+                uint32_t blockSize = static_cast<uint32_t>(uniform.buffer.GetSize()) / _material->_swapchainImageCount;
+                offsets.push_back(blockSize * currentFrame);
+            }
         }
     }
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipeline());
 
-    std::array<VkDescriptorSet, 3> descriptorSets { globalSet, currentFrameData.set, instanceSet };
+    std::array<VkDescriptorSet, 3> descriptorSets { globalSet, currentSet, instanceSet };
 
     uint32_t firstSet = 0;
     std::span<VkDescriptorSet> sets;
@@ -91,11 +97,15 @@ void VulkanMaterialInstance::Bind(RenderData& rd)
 
     if ((support & VulkanMaterialSupportFlags::eGlobalBuffer) != VulkanMaterialSupportFlags::eNone) {
         firstSet = 0;
-        sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 2};
 
-        if ((support & VulkanMaterialSupportFlags::eInstanceBuffer)  != VulkanMaterialSupportFlags::eNone) {
-            sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 3};
-            offsets.push_back(rd.GetInstanceBufferDynamicOffset());
+        if (_materialSet == -1) {
+            sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 1};
+        } else {
+            sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 2};
+            if ((support & VulkanMaterialSupportFlags::eInstanceBuffer)  != VulkanMaterialSupportFlags::eNone) {
+                sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 3};
+                offsets.push_back(rd.GetInstanceBufferDynamicOffset());
+            }
         }
     } else {
         firstSet = 1;
@@ -163,6 +173,10 @@ void VulkanMaterialInstance::PushConstant(RenderData& rd, uint32_t offset, uint3
 
 void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
 {
+    if (_materialSet == -1) {
+        return;
+    }
+
     uint32_t previousFrame = (static_cast<int>(currentFrame - 1) % static_cast<int>(_material->_swapchainImageCount) + static_cast<int>(_material->_swapchainImageCount)) % static_cast<int>(_material->_swapchainImageCount);
 
     PerFrameData& currentFrameData = _perFrameData[currentFrame];
@@ -234,6 +248,10 @@ VulkanMaterial* VulkanMaterialInstance::GetBaseMaterial()
 
 void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
 {
+    if (_materialSet == -1) {
+        return;
+    }
+
     // Allocate the per frame descriptor sets.
     _perFrameData.resize(_material->_swapchainImageCount);
     for (uint32_t i = 0; i < _material->_swapchainImageCount; i++) {

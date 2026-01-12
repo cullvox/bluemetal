@@ -22,6 +22,7 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
     std::string vertexPath, fragmentPath;
     nlohmann::json json;
     VulkanPipelineStateInfo info;
+    int32_t descriptorSetLocation = 1;
 
     try {
         json = nlohmann::json::parse(materialFile);
@@ -41,6 +42,10 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
 
         vertexPath = json["shaders"]["vertex"];
         fragmentPath = json["shaders"]["fragment"];
+
+        if (json.contains("descriptorSetLocation") && json["descriptorSetLocation"].is_number_integer()) {
+            descriptorSetLocation = json.value("descriptorSetLocation", 1);
+        }
 
         if (json.contains("rasterizerState") && json["rasterizerState"].is_object()) {
             nlohmann::json& state = json["rasterizerState"];
@@ -120,8 +125,22 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
             Print::Warn("Material may contain color blend state information, but that feature is not supported yet.");
         }
 
-        if (json.contains("dynamicStates")) {
-            Print::Warn("Material may contain dynamic states, but that feature is not supported yet.");
+        if (json.contains("dynamicStates") && json["dynamicStates"].is_array()) {
+            const nlohmann::json& dynamicStates = json["dynamicStates"];
+            for (const nlohmann::json& state : dynamicStates) {
+                if (!state.is_string()) {
+                    Print::Warn("Dynamic state must be a string!");
+                    continue;
+                }
+
+                VkDynamicState dynamicState;
+                if (!VulkanConversions::VkDynamicStateFromString(state.get<std::string>(), dynamicState)) {
+                    Print::Warn("Invalid dynamic state input!");
+                    continue;
+                }
+
+                info.dynamicStates.push_back(dynamicState);
+            }
         }
 
         auto vertexShader = resourceSystem.Load<Shader>(vertexPath);
@@ -132,7 +151,7 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
         return;
     }
 
-    _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), _renderer, info, _renderer->GetSwapchainImageCount());
+    _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), _renderer, info, descriptorSetLocation);
     _renderer->AddMaterial(_material.get());
 }
 
