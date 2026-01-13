@@ -8,6 +8,12 @@ namespace bl {
 class Renderer;
 class GraphicsSystem;
 
+enum class VertexType {
+    eDefault,
+    eSkinned,
+    eDebug
+};
+
 /// @class Material
 /// @brief A material resource defining how to render objects.
 class Material : public MaterialInstance {
