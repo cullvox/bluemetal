@@ -24,7 +24,7 @@ public:
     Mesh(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
     ~Mesh();
 
-    template <VertexType T>
+    template <typename T>
     void UploadVertices(std::span<T> vertices)
     {
         UploadVertices(std::as_bytes<T>(vertices));

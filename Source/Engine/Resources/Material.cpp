@@ -43,6 +43,23 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
         vertexPath = json["shaders"]["vertex"];
         fragmentPath = json["shaders"]["fragment"];
 
+        if (json.contains("vertex") && json["vertex"].is_string())
+        {
+            auto vertex = json.value("vertex", "Default");
+            if (vertex == "Default") {
+                info.vertexState.inputBindings = Vertex::GetBindingDescriptions();
+                info.vertexState.inputAttribs = Vertex::GetBindingAttributeDescriptions();
+            } else if (vertex == "Skinned") {
+                info.vertexState.inputBindings = VertexSkinned::GetBindingDescriptions();
+                info.vertexState.inputAttribs = VertexSkinned::GetBindingAttributeDescriptions();
+            } else if (vertex == "Debug") {
+                info.vertexState.inputBindings = VertexDebug::GetBindingDescriptions();
+                info.vertexState.inputAttribs = VertexDebug::GetBindingAttributeDescriptions();
+            } else {
+                Print::Warn("Invalid vertex type: \"{}\". Using default and hoping for the best.", vertex);
+            }
+        }
+
         if (json.contains("descriptorSetLocation") && json["descriptorSetLocation"].is_number_integer()) {
             descriptorSetLocation = json.value("descriptorSetLocation", 1);
         }

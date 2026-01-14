@@ -510,7 +510,7 @@ void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* material)
 
 void Renderer::DrawPoint(const glm::vec3& point, float size, Color color)
 {
-
+    _points.emplace_back(point, color.ToVector3(), 0.0f);
 }
 
 void Renderer::DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness, Color color)
@@ -521,9 +521,10 @@ void Renderer::DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness,
 
 void Renderer::DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness, Color color)
 {
-
+    _triangles.emplace_back(a, color.ToVector3(), 0.0f);
+    _triangles.emplace_back(b, color.ToVector3(), 0.0f);
+    _triangles.emplace_back(c, color.ToVector3(), 0.0f);
 }
-
 
 void Renderer::AddMaterial(VulkanMaterialInstance* material)
 {
@@ -657,6 +658,8 @@ void Renderer::DrawDebugBuffers(RenderData& rd)
     vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
     _debugMaterial->Bind(rd);
 
+    vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
+
     if (_points.size() > 0) {
         vkCmdSetPrimitiveTopology(cmd, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
         vkCmdDraw(cmd, static_cast<uint32_t>(_points.size()), 1, 0, 0);
@@ -666,6 +669,7 @@ void Renderer::DrawDebugBuffers(RenderData& rd)
     uint32_t firstVertex = static_cast<uint32_t>(_points.size());
     if (_lines.size() > 0) {
         vkCmdSetPrimitiveTopology(cmd, VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+        vkCmdSetLineWidth(cmd, 3.0f);
         vkCmdDraw(cmd, static_cast<uint32_t>(_lines.size()), 1, firstVertex, 0);
     }
 

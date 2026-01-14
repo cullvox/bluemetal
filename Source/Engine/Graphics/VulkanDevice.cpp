@@ -296,7 +296,7 @@ void VulkanDevice::CreateDevice()
     queueCreateInfos.resize(AreQueuesSame() ? 1 : 2);
 
     VkPhysicalDeviceFeatures features = {};
-
+    features.wideLines = true;
 
     VkPhysicalDeviceVulkan11Features features11 = {};
     features11.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
