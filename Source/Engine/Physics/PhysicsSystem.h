@@ -12,6 +12,8 @@
 
 namespace bl {
 
+class PhysicsRenderer;
+
 class PhysicsSystem : public System {
     static constexpr uint32_t maxBodies = 1024;
     static constexpr uint32_t maxBodyMutexes = 0;
@@ -24,6 +26,7 @@ class PhysicsSystem : public System {
     std::unique_ptr<JPH::TempAllocatorImpl> _tempAllocator;
     std::unique_ptr<JPH::JobSystemThreadPool> _jobSystem;
     JPH::PhysicsSystem _physicsSystem;
+    std::unique_ptr<PhysicsRenderer> _physicsRenderer;
 
 public:
     PhysicsSystem(Engine& engine);
@@ -31,6 +34,7 @@ public:
 
     JPH::PhysicsSystem& GetJolt();
     void Update(float deltaTime);
+    PhysicsRenderer* GetPhysicsRenderer();
 };
 
 }

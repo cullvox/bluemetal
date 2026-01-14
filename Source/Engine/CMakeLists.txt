@@ -60,6 +60,7 @@ list(APPEND Sources
   "Physics/BroadPhaseLayerImpl.cpp"
   "Physics/ObjectLayerPairFilterImpl.cpp"
   "Physics/ObjectVsBroadPhaseLayerFilterImpl.cpp"
+  "Physics/PhysicsRenderer.cpp"
 
   "Resources/ResourceSystem.cpp"
   "Resources/Resource.cpp"

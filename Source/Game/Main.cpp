@@ -24,6 +24,7 @@
 #include <Scene/CharacterBody3D.h>
 #include <Scene/FlyCamera3D.h>
 #include <Scene/MultiMeshInstance3D.h>
+#include <Physics/PhysicsRenderer.h>
 
 #include "ImGui/implot.h"
 
@@ -50,6 +51,7 @@ int main(int argc, const char** argv)
         auto renderer = engine.GetRenderer();
         auto window = engine.GetWindow();
         auto& editor = engine.GetEditor();
+        auto physicsRenderer = physics.GetPhysicsRenderer();
 
         auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Aria Math.ogg");
         auto source = std::make_unique<bl::AudioSource3D>(engine);
@@ -66,7 +68,7 @@ int main(int argc, const char** argv)
         characterNode->SetName("Character");
         characterNode->SetPosition({ 0.0f, -0.6f, 0.0f });
 
-        JPH::Ref<JPH::CapsuleShape> shape = new JPH::CapsuleShape(0.8f, 0.3f);
+        JPH::Ref<JPH::CapsuleShape> shape = new JPH::CapsuleShape(0.5f, 0.3f);
         auto physicsBody = std::make_unique<bl::CharacterBody3D>(engine);
         physicsBody->SetName("CharacterBody");
         physicsBody->SetPosition({ 0.0f, 0.0f, -5.0f });
@@ -219,6 +221,10 @@ int main(int argc, const char** argv)
 
             renderer->SetView(cameraNode->GetViewMatrix());
             renderer->SetProjection(cameraNode->GetProjectionMatrix());
+
+            glm::vec3 cameraPos = cameraNode->GetWorldPosition();
+            JPH::Vec3 cameraPosJPH{cameraPos.x, cameraPos.y, cameraPos.z};
+            physicsRenderer->SetCameraPos(cameraPosJPH);
 
             auto objectFunc = [&](bl::RenderData& rd) {
                 rootNode->Draw(rd);
