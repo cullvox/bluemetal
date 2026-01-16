@@ -90,6 +90,7 @@ int main(int argc, const char** argv)
         auto grssMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Grass.mat");
         auto debugMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Debug.mat");
 
+        
         renderer->SetDebugMaterialInstance(debugMaterial.lock()->GetVulkanMaterial());
 
         auto grassMaterial = grssMaterial.lock()->CreateInstance();
