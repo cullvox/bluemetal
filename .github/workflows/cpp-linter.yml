@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: ./cmake.yml
 
       # ... optionally setup build env to create a compilation database
 
