@@ -25,37 +25,40 @@ class VulkanImage {
     std::vector<VkImageView> _views;
     VmaAllocation _allocation;
 
+    void GenerateMipmaps();
+
 public:
     /// @brief Default Constructor
     VulkanImage();
 
     /// @brief Image Constructor
-    /// @param[in] device Device to contruct the image from.
-    /// @param[in] type Type of image to create.
-    /// @param[in] extent The extent in pixels of the image.
-    /// @param[in] format The format for pixel storage and data representation.
-    /// @param[in] usage What the image is used for in api.
-    /// @param[in] viewAspectMask The default image view aspect mask.
-    /// @param[in] mipLevels How many mipmap levels will this image have.
+    /// @param device Device to contruct the image from.
+    /// @param type Type of image to create.
+    /// @param extent The extent in pixels of the image.
+    /// @param format The format for pixel storage and data representation.
+    /// @param usage What the image is used for in api.
+    /// @param viewAspectMask The default image view aspect mask.
+    /// @param generateMipmaps Enable mipmap generation.
+    /// @param initialLayout The layout the image is initially.
     VulkanImage(
         VulkanDevice* device,
         VkImageType type,
         VkExtent3D extent,
         VkFormat format,
         VkImageUsageFlags usage,
-        uint32_t mipLevels = 1,
+        uint32_t generateMipmaps = false,
         VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT,
         VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED);
 
     /// @brief Move Constructor
-    /// @param[inout] image The other image to move it's data into this new object.
+    /// @param image The other image to move it's data into this new object.
     VulkanImage(VulkanImage&& image);
 
     /// @brief Default Destructor
     ~VulkanImage();
 
     /// @brief Move Assign Operator
-    /// @param[inout] rhs The other image to move it's data into this new object.
+    /// @param rhs The other image to move it's data into this new object.
     VulkanImage& operator=(VulkanImage&& rhs);
 
     /// @brief GetType
@@ -95,12 +98,12 @@ public:
 
     /// @brief Transitions the image from the previous layout to another new one.
     /// @param cmd Command buffer to write the image transition command to.
-    /// @param layout[in] New layout to transition the image into.
+    /// @param layout New layout to transition the image into.
     void Transition(VkCommandBuffer cmd, VkImageLayout layout);
 
     /// @brief Transitions the image from the previous layout to another new one.
     /// Immediately submits a command buffer to the graphics card.
-    /// @param layout[in] New layout to transition the image into.
+    /// @param layout New layout to transition the image into.
     void Transition(VkImageLayout layout);
 };
 

@@ -561,9 +561,9 @@ std::vector<VkSampleCountFlagBits> Renderer::GetMultisampleCounts()
     if (flags & VK_SAMPLE_COUNT_64_BIT) { counts.push_back(VK_SAMPLE_COUNT_64_BIT); }
     if (flags & VK_SAMPLE_COUNT_32_BIT) { counts.push_back(VK_SAMPLE_COUNT_32_BIT); }
     if (flags & VK_SAMPLE_COUNT_16_BIT) { counts.push_back(VK_SAMPLE_COUNT_16_BIT); }
-    if (flags & VK_SAMPLE_COUNT_8_BIT) { counts.push_back(VK_SAMPLE_COUNT_8_BIT); }
-    if (flags & VK_SAMPLE_COUNT_4_BIT) { counts.push_back(VK_SAMPLE_COUNT_4_BIT); }
-    if (flags & VK_SAMPLE_COUNT_2_BIT) { counts.push_back(VK_SAMPLE_COUNT_2_BIT); }
+    if (flags & VK_SAMPLE_COUNT_8_BIT)  { counts.push_back(VK_SAMPLE_COUNT_8_BIT);  }
+    if (flags & VK_SAMPLE_COUNT_4_BIT)  { counts.push_back(VK_SAMPLE_COUNT_4_BIT);  }
+    if (flags & VK_SAMPLE_COUNT_2_BIT)  { counts.push_back(VK_SAMPLE_COUNT_2_BIT);  }
 
     return counts;
 }
