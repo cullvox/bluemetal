@@ -90,6 +90,13 @@ std::optional<VkImageFormatProperties2> VulkanPhysicalDevice::GetImageFormatProp
     return std::nullopt;
 }
 
+VkFormatProperties VulkanPhysicalDevice::GetFormatProperties(VkFormat format)
+{
+    VkFormatProperties properties = {};
+    vkGetPhysicalDeviceFormatProperties(_physicalDevice, format, &properties);
+    return properties;
+}
+
 VkSampleCountFlags VulkanPhysicalDevice::GetSupportedFramebufferSampleCounts()
 {
     return _properties.limits.framebufferColorSampleCounts & _properties.limits.framebufferDepthSampleCounts;

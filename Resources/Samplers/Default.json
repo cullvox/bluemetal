@@ -1,4 +1,7 @@
 {
     "magFilter": "VK_FILTER_LINEAR",
-    "minFilter": "VK_FILTER_LINEAR"
+    "minFilter": "VK_FILTER_LINEAR",
+    "minLod": 0.0,
+    "maxLod": 1000.0,
+    "mipLodBias": -1.0
 }

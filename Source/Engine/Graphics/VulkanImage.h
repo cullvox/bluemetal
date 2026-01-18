@@ -46,7 +46,7 @@ public:
         VkExtent3D extent,
         VkFormat format,
         VkImageUsageFlags usage,
-        uint32_t generateMipmaps = false,
+        bool generateMipmaps = false,
         VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT,
         VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED);
 

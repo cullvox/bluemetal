@@ -70,6 +70,8 @@ public:
     /// @returns Finds a supported format given candidates.
     VkFormat FindSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
+    VkFormatProperties GetFormatProperties(VkFormat format);
+
     /// @brief GetProperties
     /// @returns The Vulkan physical device properties.
     const VkPhysicalDeviceProperties& GetProperties() const;

@@ -19,13 +19,13 @@ VulkanImage::VulkanImage()
 {
 }
 
-VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, uint32_t mipLevels, VkSampleCountFlagBits samples, VkImageLayout initialLayout)
+VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, bool generateMipmaps, VkSampleCountFlagBits samples, VkImageLayout initialLayout)
     : _device(device)
     , _extent(extent)
     , _type(type)
     , _format(format)
     , _usage(usage)
-    , _mipLevels(mipLevels)
+    , _mipLevels(1)
     , _samples(samples)
     , _layout(initialLayout)
     , _defaultView(VK_NULL_HANDLE)
@@ -48,6 +48,10 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
         throw std::runtime_error("Image format is not supported!");
 
     auto graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
+
+    if (generateMipmaps) {
+        _mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(_extent.width, _extent.height)))) + 1;
+    }
 
     VkImageCreateInfo imageCreateInfo = {};
     imageCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -78,7 +82,11 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
 
     VK_CHECK(vmaCreateImage(_device->GetAllocator(), &imageCreateInfo, &allocationCreateInfo, &_image, &_allocation, nullptr))
 
-    _defaultView = CreateView(_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT);
+    if (generateMipmaps) {
+        GenerateMipmaps();
+    }
+
+    _defaultView = CreateView(_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT, _mipLevels);
 }
 
 VulkanImage::VulkanImage(VulkanImage&& rhs)
@@ -221,6 +229,9 @@ void VulkanImage::UploadData(const std::span<const std::byte> data, VkImageLayou
 
         Transition(cmd, finalLayout);
     });
+
+    if (_mipLevels > 1)
+        GenerateMipmaps();
 }
 
 void VulkanImage::Transition(VkCommandBuffer cmd, VkImageLayout layout)
@@ -261,7 +272,7 @@ void VulkanImage::Transition(VkCommandBuffer cmd, VkImageLayout layout)
     barrier.image = _image;
     barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.levelCount = _mipLevels;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
 
@@ -280,6 +291,83 @@ void VulkanImage::Transition(VkImageLayout layout)
 {
     _device->ImmediateSubmit([&](VkCommandBuffer cmd) {
         Transition(cmd, layout);
+    });
+}
+
+void VulkanImage::GenerateMipmaps()
+{
+    VkFormatProperties properties = _device->GetPhysicalDevice()->GetFormatProperties(_format);
+
+    if (!(properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT)) {
+        throw std::runtime_error("Texture image format does not support linear blitting!");
+    }
+
+    _device->ImmediateSubmit([this](VkCommandBuffer cmd){
+        VkImageMemoryBarrier barrier = {};
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barrier.image = _image;
+        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        barrier.subresourceRange.baseArrayLayer = 0;
+        barrier.subresourceRange.layerCount = 1;
+        barrier.subresourceRange.levelCount = 1;
+
+        int32_t mipWidth = _extent.width;
+        int32_t mipHeight = _extent.height;
+
+        for (uint32_t i = 1; i < _mipLevels; i++)
+        {
+            barrier.subresourceRange.baseMipLevel = i - 1;
+            barrier.oldLayout                     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout                     = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.srcAccessMask                 = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask                 = VK_ACCESS_TRANSFER_READ_BIT;
+
+            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, {}, 0, nullptr, 0, nullptr, 1, &barrier);
+
+            VkImageBlit region = {};
+            region.srcSubresource = {};
+            region.srcOffsets[0] = { 0, 0, 0 };
+            region.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+            region.dstOffsets[0] = { 0, 0, 0 };
+            region.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 }; // Divide by 2 if possible.
+
+            region.srcSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.srcSubresource.mipLevel       = i - 1;
+            region.srcSubresource.baseArrayLayer = 0;
+            region.srcSubresource.layerCount     = 1;
+
+            region.dstSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.dstSubresource.mipLevel       = i;
+            region.dstSubresource.baseArrayLayer = 0;
+            region.dstSubresource.layerCount     = 1;
+
+            vkCmdBlitImage(cmd, _image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region, VK_FILTER_LINEAR);
+
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+            vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, {}, 0, nullptr, 0, nullptr, 1, &barrier);
+
+            if (mipWidth > 1)
+                mipWidth /= 2;
+            if (mipHeight > 1)
+                mipHeight /= 2;
+        }
+
+        barrier.subresourceRange.baseMipLevel = _mipLevels - 1;
+        barrier.oldLayout                     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barrier.newLayout                     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        barrier.srcAccessMask                 = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask                 = VK_ACCESS_SHADER_READ_BIT;
+
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, {}, 0, nullptr, 0, nullptr, 1, &barrier);
     });
 }
 
