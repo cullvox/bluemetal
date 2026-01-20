@@ -22,6 +22,7 @@ public:
 
     void SetPause(bool paused = false);
     void Play(Ref<Sound> sound, bool repeat = false);
+    void SetVolume(float volume);
 
     bool IsPlaying();
     bool IsStopped();

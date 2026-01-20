@@ -14,6 +14,7 @@ class Renderer;
 class PhysicsSystem;
 class FrameCounter;
 class Editor;
+class SceneSystem;
 
 class Engine {
     std::unique_ptr<FrameCounter> _counter;
@@ -25,6 +26,7 @@ class Engine {
     std::unique_ptr<Window> _window;
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<PhysicsSystem> _physics;
+    std::unique_ptr<SceneSystem> _scenes;
     std::unique_ptr<Editor> _editor;
 
 public:
@@ -40,6 +42,7 @@ public:
     Window* GetWindow();
     Renderer* GetRenderer();
     PhysicsSystem& GetPhysics();
+    SceneSystem* GetSceneSystem();
     Editor& GetEditor();
 };
 

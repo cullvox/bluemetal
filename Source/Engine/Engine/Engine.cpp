@@ -51,6 +51,7 @@ Engine::Engine(int argc, const char** argv)
     _input = std::make_unique<InputSystem>(*this);
     _imgui = std::make_unique<ImGuiSystem>(*this, _graphics->GetWindow(), _graphics->GetRenderer());
     _physics = std::make_unique<PhysicsSystem>(*this);
+    _scenes = std::make_unique<SceneSystem>(*this);
     _editor = std::make_unique<Editor>(*this);
 }
 
@@ -103,6 +104,11 @@ Renderer* Engine::GetRenderer()
 PhysicsSystem& Engine::GetPhysics()
 {
     return *_physics.get();
+}
+
+SceneSystem* Engine::GetSceneSystem()
+{
+    return _scenes.get();
 }
 
 Editor& Engine::GetEditor()

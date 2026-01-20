@@ -90,7 +90,6 @@ int main(int argc, const char** argv)
         auto grssMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Grass.mat");
         auto debugMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Debug.mat");
 
-        
         renderer->SetDebugMaterialInstance(debugMaterial.lock()->GetVulkanMaterial());
 
         auto grassMaterial = grssMaterial.lock()->CreateInstance();
@@ -165,11 +164,9 @@ int main(int argc, const char** argv)
         followCamera->SetNearClip(0.1f);
         followCamera->SetFarClip(1000.0f);
 
-
         playerNode->AddChild(std::move(followCamera));
 
         auto cameraNode = rootNode->GetChild("CharacterBody")->GetChild("FollowCam")->As<bl::Camera3D>();
-
 
         bl::FrameCounter& frameCounter = engine.GetFrameCounter();
         auto presentModes = renderer->GetPresentModes();
@@ -178,12 +175,11 @@ int main(int argc, const char** argv)
         ImPlot::CreateContext();
 
         auto& profiler = bl::GetGlobalProfiler();
+        bool enableEditor = false;
 
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
             frameCounter.BeginFrame();
-
-
 
             profiler.StartProfile("Input");
             input->Poll([imgui](SDL_Event& event) {
@@ -201,7 +197,6 @@ int main(int argc, const char** argv)
             }
 
             profiler.EndProfile("Input");
-
 
             bl::Extent2D extent = window->GetExtent();
 
@@ -239,12 +234,20 @@ int main(int argc, const char** argv)
                 imgui->BeginFrame();
                 editor.Draw(rd);
 
-                ImGui::Begin("Heirarchy");
+                if (enableEditor) {
+                    ImGui::Begin("Heirarchy");
 
-                //ImGui::Text("Objects in Scene: %d", rootNode->GetChildCount());
-                ImGui::End();
+                    //ImGui::Text("Objects in Scene: %d", rootNode->GetChildCount());
+                    ImGui::End();
+                }
 
                 ImGui::Begin("Settings");
+
+                if (ImGui::TreeNode("Editor")) {
+                    ImGui::Checkbox("Editor", &enableEditor);
+
+                    ImGui::TreePop();
+                }
 
                 if (ImGui::TreeNode("Renderer")) {
                     for (int i = 0; i < presentModes.size(); i++) {
@@ -265,6 +268,16 @@ int main(int argc, const char** argv)
                         if (ImGui::RadioButton(bl::ToString(multisampleModes[i]).data(), multisampleModes[i] == renderer->GetMultisampleCount())) {
                             renderer->SetMultisampleCount(multisampleModes[i]);
                         }
+                    }
+
+                    ImGui::TreePop();
+                }
+                
+                if (ImGui::TreeNode("Audio")) {
+                    static float volume = 1.0f;
+                    if (ImGui::SliderFloat("MASTER", &volume, 0.0f, 1.0f))
+                    {
+                        source->SetVolume(volume);
                     }
 
                     ImGui::TreePop();
@@ -291,7 +304,7 @@ int main(int argc, const char** argv)
                         labels.clear();
                     }
 
-                    if (ImPlot::BeginPlot("##Pie1", ImVec2(ImGui::GetTextLineHeight()*16,ImGui::GetTextLineHeight()*16), ImPlotFlags_Equal | ImPlotFlags_NoMouseText)) {
+                    if (ImPlot::BeginPlot("##Pie1", ImVec2(ImGui::GetTextLineHeight()*16,ImGui::GetTextLineHeight()*16), ImPlotFlags_Equal | ImPlotFlags_NoMouseText | ImPlotFlags_NoInputs)) {
                         ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
                         ImPlot::SetupAxesLimits(0, 1, 0, 1, ImPlotCond_None);
 
@@ -326,5 +339,4 @@ int main(int argc, const char** argv)
     }
 
     return 0;
-    
 }

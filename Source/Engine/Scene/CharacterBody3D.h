@@ -14,6 +14,8 @@ public:
 
     virtual void Update(float dt) override;
 
+    bool IsGrounded();
+
 };
 
 } // namespace bl

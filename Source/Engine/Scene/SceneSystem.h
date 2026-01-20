@@ -2,6 +2,8 @@
 
 #include "Engine/System.h"
 
+#include "Resources/Scene.h"
+
 namespace bl {
 
 class Engine;
@@ -12,9 +14,7 @@ public:
     ~SceneSystem();
 
     virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
-
-    void LoadScene(Ref<Scene> scene);
-
+    void SetSceneActive(Ref<Scene> scene);
 };
 
 }

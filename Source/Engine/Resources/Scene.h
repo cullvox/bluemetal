@@ -1,5 +1,14 @@
 #pragma once
 
-class Scene {
-    
+#include "Resource.h"
+
+namespace bl {
+
+class Scene : public Resource {
+
+public:
+    Scene();
+    ~Scene();
+};
+
 }

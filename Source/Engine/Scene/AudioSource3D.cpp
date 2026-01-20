@@ -49,4 +49,9 @@ void AudioSource3D::Play(Ref<Sound> sound, bool repeat)
     FMOD_CHECK(_channel->setLoopCount(repeat ? -1 : 0))
 }
 
+void AudioSource3D::SetVolume(float volume)
+{
+    FMOD_CHECK(_channel->setVolume(volume))
+}
+
 } // namespace bl

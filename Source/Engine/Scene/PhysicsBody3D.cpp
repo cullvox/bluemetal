@@ -121,6 +121,7 @@ void PhysicsBody3D::ResetBody()
     settings.mFriction = _friction;
     settings.mRestitution = _restitution;
     settings.mMassPropertiesOverride.mMass = _mass;
+    settings.mUserData = reinterpret_cast<uintptr_t>(this);
 
     if (!_bodyId.IsInvalid())
         bodyInterface.RemoveBody(_bodyId);
