@@ -11,6 +11,7 @@
 #include "Graphics/VulkanWindow.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Physics/PhysicsSystem.h"
+#include "Scene/SceneSystem.h"
 #include "Resources/ResourceSystem.h"
 #include "Window/Input.h"
 
