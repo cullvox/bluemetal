@@ -85,6 +85,7 @@ list(APPEND Sources
   "Scene/PhysicsBody3D.cpp"
   "Scene/CharacterBody3D.cpp"
   "Scene/NodeFilterIterator.cpp"
+  "Scene/SceneSystem.cpp"
 
   "Editor/DebugEditor.cpp"
   "Editor/Editor.cpp"

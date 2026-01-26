@@ -11,7 +11,7 @@ class Engine;
 class SceneSystem : public System {
 public:
     SceneSystem(Engine& engine);
-    ~SceneSystem();
+    virtual ~SceneSystem();
 
     virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
     void SetSceneActive(Ref<Scene> scene);

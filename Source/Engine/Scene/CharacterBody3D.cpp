@@ -47,8 +47,8 @@ void CharacterBody3D::Update(float dt)
     if (keyboard.GetKeyDown(Scancode::Space)) {
         // Jump
         glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-        velocity += glm::vec3(0, 80, 0);
-        ApplyImpulse(up);
+        velocity += glm::vec3(0, 4, 0);
+        //ApplyImpulse(up * 4.0f);
     }
 
     // Normalize horizontal movement to prevent faster diagonal movement
