@@ -113,6 +113,7 @@ target_link_libraries(Bluemetal PUBLIC
   nlohmann_json
   qoixx::qoixx
   tinygltf
-  Jolt::Jolt)
+  Jolt::Jolt
+  discord_game_sdk)
 
 target_precompile_headers(Bluemetal PRIVATE "Graphics/Vulkan.h" "Math/Math.h" "Core/Precompiled.h")

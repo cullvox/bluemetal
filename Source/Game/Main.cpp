@@ -32,6 +32,8 @@
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 
+#include <discord.h>
+
 int main(int argc, const char** argv)
 {
     (void)argc;
@@ -177,9 +179,46 @@ int main(int argc, const char** argv)
         auto& profiler = bl::GetGlobalProfiler();
         bool enableEditor = false;
 
+        discord::Core* core{};
+        auto result = discord::Core::Create(763767974469042178, DiscordCreateFlags_Default, &core);
+
+        if (!core) {
+            bl::Print::Error("Failed to instantiate discord core! (err {})", static_cast<int>(result));
+        }
+
+        core->SetLogHook(discord::LogLevel::Info, [](discord::LogLevel, const char* message){
+            bl::Print::Info("Discord {}", message);
+        });
+
+        if (core)
+        {
+            discord::Activity activity;
+            activity.SetApplicationId(763767974469042178);
+            activity.SetDetails("Testing discord rich presence");
+            activity.SetState("Programming infinitely...");
+            activity.GetTimestamps().SetStart(std::time(nullptr));
+            activity.GetTimestamps().SetEnd(0);
+            activity.GetAssets().SetSmallImage("retrofox");
+            activity.GetAssets().SetSmallText("Small Text");
+            activity.GetAssets().SetLargeImage("corruptedcanyons");
+            activity.GetAssets().SetLargeText("Large Text");
+            activity.GetSecrets().SetMatch("Match");
+            activity.GetSecrets().SetJoin("join secret");
+            activity.GetSecrets().SetSpectate("");
+            activity.GetParty().GetSize().SetCurrentSize(1);
+            activity.GetParty().GetSize().SetMaxSize(5);
+            activity.GetParty().SetId("party id");
+            activity.GetParty().SetPrivacy(discord::ActivityPartyPrivacy::Public);
+            activity.SetType(discord::ActivityType::Playing);
+
+            core->ActivityManager().UpdateActivity(activity, {});
+        }
+
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
             frameCounter.BeginFrame();
+
+            core->RunCallbacks();
 
             profiler.StartProfile("Input");
             input->Poll([imgui](SDL_Event& event) {

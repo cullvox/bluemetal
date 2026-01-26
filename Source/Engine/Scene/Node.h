@@ -12,6 +12,7 @@ namespace bl {
 
 class Engine;
 class RenderData;
+class Node;
 
 class PropertyBase {
 public:
@@ -25,7 +26,7 @@ class Property : public PropertyBase {
     std::string_view _name;
 
 public:
-    Property(std::string_view name, N*::T value)
+    Property(std::string_view name, N::T* value)
         : _name(name)
         , _ptr(value)
     {
@@ -40,7 +41,7 @@ public:
     virtual Variant Get(Node* node)
     {
         if (auto n = dynamic_cast<N>(node))
-            n->*_ptr = value;
+            return n->_ptr;
     }
 };
 
