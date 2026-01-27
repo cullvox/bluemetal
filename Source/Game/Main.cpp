@@ -199,15 +199,15 @@ int main(int argc, const char** argv)
             activity.GetTimestamps().SetStart(std::time(nullptr));
             activity.GetTimestamps().SetEnd(0);
             activity.GetAssets().SetSmallImage("retrofox");
-            activity.GetAssets().SetSmallText("Small Text");
+            activity.GetAssets().SetSmallText("Look it's mini me!");
             activity.GetAssets().SetLargeImage("corruptedcanyons");
-            activity.GetAssets().SetLargeText("Large Text");
-            activity.GetSecrets().SetMatch("Match");
-            activity.GetSecrets().SetJoin("join secret");
+            activity.GetAssets().SetLargeText("I call these, corrupted canyons.");
+            activity.GetSecrets().SetMatch("");
+            activity.GetSecrets().SetJoin("");
             activity.GetSecrets().SetSpectate("");
-            activity.GetParty().GetSize().SetCurrentSize(1);
-            activity.GetParty().GetSize().SetMaxSize(5);
-            activity.GetParty().SetId("party id");
+            activity.GetParty().GetSize().SetCurrentSize(0);
+            activity.GetParty().GetSize().SetMaxSize(0);
+            activity.GetParty().SetId("");
             activity.GetParty().SetPrivacy(discord::ActivityPartyPrivacy::Public);
             activity.SetType(discord::ActivityType::Playing);
 
@@ -311,7 +311,7 @@ int main(int argc, const char** argv)
 
                     ImGui::TreePop();
                 }
-                
+
                 if (ImGui::TreeNode("Audio")) {
                     static float volume = 1.0f;
                     if (ImGui::SliderFloat("MASTER", &volume, 0.0f, 1.0f))
