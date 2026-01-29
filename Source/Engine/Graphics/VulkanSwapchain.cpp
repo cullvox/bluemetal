@@ -104,9 +104,13 @@ bool VulkanSwapchain::GetImmediateSupported() const
 bool VulkanSwapchain::AcquireNext()
 {
     // Wait for the current image up coming in the chain to finish.
-    VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
+    VkResult result = vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
 
-    VkResult result = vkAcquireNextImageKHR(_device->Get(), _swapchain, UINT32_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &_imageIndex);
+    if (result != VK_SUCCESS) {
+        throw std::runtime_error("Error");
+    }
+
+    result = vkAcquireNextImageKHR(_device->Get(), _swapchain, UINT32_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &_imageIndex);
 
     bool recreate = false;
     switch (result) {
@@ -351,6 +355,7 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     _device->WaitForDevice();
 
     DestroyImageViews(); // Image views will be recreated later.
+    DestroySyncObjects();
     ChooseImageCount();
     ChooseExtent();
 
@@ -407,6 +412,7 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     }
 
     ObtainImages();
+    CreateSyncObjects();
     CreateImageViews();
 }
 

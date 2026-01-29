@@ -132,7 +132,7 @@ void Renderer::RecreateImages()
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     _depthImageView = std::make_unique<VulkanImageView>(_device, _depthImage.get(), VK_IMAGE_VIEW_TYPE_2D, _depthFormat, mapping, range);
 
-    _colorImage->Transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    // _colorImage->Transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     auto swapchainImages = _swapchain->GetImages();
     auto swapchainImageViews = _swapchain->GetImageViews();
@@ -220,6 +220,7 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 
         //DestroyRenderPasses();
         //CreateRenderPasses();
+        _sampleCount = _newSampleCount;
         _swapchain->Recreate(recreatePresentMode);
         RecreateImages();
         recreateRequested = false;
@@ -577,7 +578,7 @@ void Renderer::SetMultisampleCount(VkSampleCountFlagBits count)
         return;
     }
 
-    _sampleCount = count;
+    _newSampleCount = count;
     recreateRequested = true;
 }
 

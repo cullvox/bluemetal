@@ -91,6 +91,7 @@ private:
 
     // Render Pass Data
     VkSampleCountFlagBits _sampleCount = VK_SAMPLE_COUNT_1_BIT;
+    VkSampleCountFlagBits _newSampleCount = VK_SAMPLE_COUNT_1_BIT;
     VkFormat _depthFormat, _positionFormat;
     std::unique_ptr<VulkanImage> _colorImage;
     std::unique_ptr<VulkanImageView> _colorImageView;
