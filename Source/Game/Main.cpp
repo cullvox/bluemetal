@@ -180,7 +180,7 @@ int main(int argc, const char** argv)
         bool enableEditor = false;
 
         discord::Core* core{};
-        auto result = discord::Core::Create(763767974469042178, DiscordCreateFlags_Default, &core);
+        auto result = discord::Core::Create(763767974469042178, DiscordCreateFlags_NoRequireDiscord, &core);
 
         if (!core) {
             bl::Print::Error("Failed to instantiate discord core! (err {})", static_cast<int>(result));
