@@ -6,6 +6,7 @@ list(APPEND Sources
   "Core/FrameCounter.cpp"
   "Core/Profiler.cpp"
   "Core/Print.cpp"
+  "Core/Logger.cpp"
   
   # Audio
   "Audio/AudioSystem.cpp"
@@ -102,6 +103,7 @@ target_include_directories(Bluemetal PUBLIC ${Vulkan_INCLUDE_DIR} "${CMAKE_CURRE
 
 target_link_libraries(Bluemetal PUBLIC 
   glm::glm-header-only
+  spdlog::spdlog
   spirv-reflect-static
   argparse
   SDL3::SDL3 

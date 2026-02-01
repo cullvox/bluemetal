@@ -196,7 +196,7 @@ Model::Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::
         auto& indexView = model.bufferViews[indexAccessor.bufferView];
         auto& indexBuffer = model.buffers[indexView.buffer];
         if (indicesWidth == 4) {
-            memcpy(indices.data(), indexBuffer.data.data() + indexView.byteOffset, 4 * indexAccessor.count);
+            std::memcpy(indices.data(), indexBuffer.data.data() + indexView.byteOffset, 4 * indexAccessor.count);
         } else {
             for (int j = 0; j < indexAccessor.count; j++) {
                 std::memcpy(&indices[j], indexBuffer.data.data() + indexView.byteOffset + (j * indicesWidth), indicesWidth);
