@@ -4,6 +4,7 @@
 
 namespace bl {
 
+class EngineVars;
 class ResourceSystem;
 class GraphicsSystem;
 class ImGuiSystem;
@@ -15,6 +16,7 @@ class PhysicsSystem;
 class FrameCounter;
 class Editor;
 class SceneSystem;
+class DiscordSystem;
 
 class Engine {
     std::unique_ptr<FrameCounter> _counter;
@@ -28,11 +30,14 @@ class Engine {
     std::unique_ptr<PhysicsSystem> _physics;
     std::unique_ptr<SceneSystem> _scenes;
     std::unique_ptr<Editor> _editor;
+    std::unique_ptr<DiscordSystem> _discord;
+    std::unique_ptr<EngineVars> _vars;
 
 public:
     Engine(int argc, const char** argv);
     ~Engine();
 
+    EngineVars& GetVars();
     FrameCounter& GetFrameCounter();
     ResourceSystem* GetResourceSystem();
     GraphicsSystem& GetGraphics();
@@ -44,6 +49,14 @@ public:
     PhysicsSystem& GetPhysics();
     SceneSystem* GetSceneSystem();
     Editor& GetEditor();
+    DiscordSystem& GetDiscord();
+
+    void Log()
+    {
+        
+    }
+    void LogError();
+    void LogDebug();
 };
 
 } // namespace bl

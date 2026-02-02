@@ -88,6 +88,8 @@ list(APPEND Sources
   "Scene/NodeFilterIterator.cpp"
   "Scene/SceneSystem.cpp"
 
+  "Social/Discord.cpp"
+
   "Editor/DebugEditor.cpp"
   "Editor/Editor.cpp"
 

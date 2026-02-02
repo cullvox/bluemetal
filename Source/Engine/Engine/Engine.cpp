@@ -1,6 +1,8 @@
 #include "argparse/argparse.hpp"
 
+#include "EngineVars.h"
 #include "Audio/AudioSystem.h"
+#include "Social/Discord.h"
 #include "Core/FrameCounter.h"
 #include "Core/Print.h"
 #include "Editor/Editor.h"
@@ -45,6 +47,7 @@ Engine::Engine(int argc, const char** argv)
         throw std::runtime_error("Could not initialize SDL!");
     }
 
+    _vars = std::make_unique<EngineVars>();
     _resourceManager = std::make_unique<ResourceSystem>(*this);
     _audio = std::make_unique<AudioSystem>(*this);
     _counter = std::make_unique<FrameCounter>();
@@ -54,12 +57,18 @@ Engine::Engine(int argc, const char** argv)
     _physics = std::make_unique<PhysicsSystem>(*this);
     _scenes = std::make_unique<SceneSystem>(*this);
     _editor = std::make_unique<Editor>(*this);
+    _discord = std::make_unique<DiscordSystem>(*this);
 }
 
 Engine::~Engine()
 {
     SDL_Quit();
     Print::Info("Shutting down BlueMetal...");
+}
+
+EngineVars& Engine::GetVars()
+{
+    return *_vars.get();
 }
 
 FrameCounter& Engine::GetFrameCounter()
@@ -115,6 +124,11 @@ SceneSystem* Engine::GetSceneSystem()
 Editor& Engine::GetEditor()
 {
     return *_editor.get();
+}
+
+DiscordSystem& Engine::GetDiscord()
+{
+    return *_discord.get();
 }
 
 } // namespace bl

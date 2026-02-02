@@ -25,6 +25,7 @@
 #include <Scene/FlyCamera3D.h>
 #include <Scene/MultiMeshInstance3D.h>
 #include <Physics/PhysicsRenderer.h>
+#include <Social/Discord.h>
 
 #include "ImGui/implot.h"
 
@@ -179,46 +180,27 @@ int main(int argc, const char** argv)
         auto& profiler = bl::GetGlobalProfiler();
         bool enableEditor = false;
 
-        discord::Core* core{};
-        auto result = discord::Core::Create(763767974469042178, DiscordCreateFlags_NoRequireDiscord, &core);
+        auto& discord = engine.GetDiscord();
 
-        if (!core) {
-            bl::Print::Error("Failed to instantiate discord core! (err {})", static_cast<int>(result));
-        }
+        bl::DiscordActivity activity;
+        activity.applicationID = 763767974469042178;
+        activity.details = "Testing discord rich presence";
+        activity.type = bl::DiscordActivityType::ePlaying;
+        activity.state = "Programming infinitely...";
+        activity.startTime = std::time(nullptr);
+        activity.endTime = 0;
+        activity.art.smallImage = "retrofox";
+        activity.art.smallImageTooltip = "Look it's mini me!";
+        activity.art.largeImage = "corruptedcanyons";
+        activity.art.largeImageTooltip = "I call these, corrupted canyons.";
 
-        core->SetLogHook(discord::LogLevel::Info, [](discord::LogLevel, const char* message){
-            bl::Print::Info("Discord {}", message);
-        });
-
-        if (core)
-        {
-            discord::Activity activity;
-            activity.SetApplicationId(763767974469042178);
-            activity.SetDetails("Testing discord rich presence");
-            activity.SetState("Programming infinitely...");
-            activity.GetTimestamps().SetStart(std::time(nullptr));
-            activity.GetTimestamps().SetEnd(0);
-            activity.GetAssets().SetSmallImage("retrofox");
-            activity.GetAssets().SetSmallText("Look it's mini me!");
-            activity.GetAssets().SetLargeImage("corruptedcanyons");
-            activity.GetAssets().SetLargeText("I call these, corrupted canyons.");
-            activity.GetSecrets().SetMatch("");
-            activity.GetSecrets().SetJoin("");
-            activity.GetSecrets().SetSpectate("");
-            activity.GetParty().GetSize().SetCurrentSize(0);
-            activity.GetParty().GetSize().SetMaxSize(0);
-            activity.GetParty().SetId("");
-            activity.GetParty().SetPrivacy(discord::ActivityPartyPrivacy::Public);
-            activity.SetType(discord::ActivityType::Playing);
-
-            core->ActivityManager().UpdateActivity(activity, {});
-        }
+        discord.UpdateActivity(activity);
 
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
             frameCounter.BeginFrame();
 
-            core->RunCallbacks();
+            discord.RunCallbacks();
 
             profiler.StartProfile("Input");
             input->Poll([imgui](SDL_Event& event) {
