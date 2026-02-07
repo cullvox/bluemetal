@@ -33,8 +33,6 @@
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 
-#include <discord.h>
-
 int main(int argc, const char** argv)
 {
     (void)argc;

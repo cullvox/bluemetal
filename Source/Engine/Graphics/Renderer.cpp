@@ -346,17 +346,17 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
     // If using a multisampled image transition to a color image.
-    // if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
-    //     TransitionImageLayout(cmd,
-    //         _colorImage->Get(),
-    //         range,
-    //         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-    //         VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-    //         0,
-    //         VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-    //         VK_IMAGE_LAYOUT_UNDEFINED,
-    //         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    // }
+    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
+        TransitionImageLayout(cmd,
+            _colorImage->Get(),
+            range,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            0,
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    }
 
     // Transition the depth image.
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -651,6 +651,9 @@ void Renderer::DrawDebugBuffers(RenderData& rd)
 {
     // Draw the points list
     if (!_debugMaterial)
+        return;
+
+    if (_points.empty() && _lines.empty() && _triangles.empty())
         return;
 
     auto cmd = rd.GetCommandBuffer();

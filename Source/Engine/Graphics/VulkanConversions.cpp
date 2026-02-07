@@ -817,7 +817,7 @@ bool VulkanConversions::VkDynamicStateFromString(const std::string& str, VkDynam
     };
 
     auto it = convertMap.find(str);
-    if (it != convertMap.end()) {
+    if (it == convertMap.end()) {
         return false;
     }
 

@@ -51,6 +51,7 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
 
     if (generateMipmaps) {
         _mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(_extent.width, _extent.height)))) + 1;
+        _usage |= (VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT);
     }
 
     VkImageCreateInfo imageCreateInfo = {};
@@ -81,10 +82,6 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     allocationCreateInfo.priority = 1.0f;
 
     VK_CHECK(vmaCreateImage(_device->GetAllocator(), &imageCreateInfo, &allocationCreateInfo, &_image, &_allocation, nullptr))
-
-    if (generateMipmaps) {
-        GenerateMipmaps();
-    }
 
     _defaultView = CreateView(_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT, _mipLevels);
 }
@@ -226,16 +223,20 @@ void VulkanImage::UploadData(const std::span<const std::byte> data, VkImageLayou
         region.imageExtent = _extent;
 
         vkCmdCopyBufferToImage(cmd, stagingBuffer.Get(), _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region);
-
-        Transition(cmd, finalLayout);
     });
 
     if (_mipLevels > 1)
         GenerateMipmaps();
+
+    Transition(finalLayout);
 }
 
 void VulkanImage::Transition(VkCommandBuffer cmd, VkImageLayout layout)
 {
+    if (_layout == layout) {
+        return; // How wonderful, we already are in the layout!
+    }
+
     VkPipelineStageFlags sourceStage = VK_PIPELINE_STAGE_NONE;
     VkPipelineStageFlags destinationStage = VK_PIPELINE_STAGE_NONE;
 
@@ -304,6 +305,7 @@ void VulkanImage::GenerateMipmaps()
 
     _device->ImmediateSubmit([this](VkCommandBuffer cmd){
         VkImageMemoryBarrier barrier = {};
+        barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
         barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
@@ -349,7 +351,7 @@ void VulkanImage::GenerateMipmaps()
             vkCmdBlitImage(cmd, _image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, _image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &region, VK_FILTER_LINEAR);
 
             barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 
@@ -369,6 +371,9 @@ void VulkanImage::GenerateMipmaps()
 
         vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, {}, 0, nullptr, 0, nullptr, 1, &barrier);
     });
+
+    // After uploading all mipmaps the image's layout is considered shader read only.
+    _layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 }
 
 } // namespace bl

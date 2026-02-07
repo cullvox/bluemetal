@@ -130,7 +130,7 @@ Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs, std::span<std::byte
         throw std::runtime_error("Invalid texture format!");
     }
 
-    _image = std::make_unique<VulkanImage>(gs->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, true);
+    _image = std::make_unique<VulkanImage>(gs->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT, true);
     _image->UploadData(imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
@@ -154,8 +154,10 @@ Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs, const std::span<con
 
     VkExtent3D vulkanExtent = { _extent.width, _extent.height, _extent.depth };
 
-    _image = std::make_unique<VulkanImage>(gs->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    _image = std::make_unique<VulkanImage>(gs->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT, true);
     _image->UploadData(pixels, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    assert(_image->GetLayout() == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 } // namespace bl

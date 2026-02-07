@@ -21,29 +21,12 @@ elseif(NOT OS STREQUAL "Windows" AND NOT OS STREQUAL "Macos" AND NOT OS STREQUAL
     message(FATAL_ERROR "OS has wrong value. Was: ${OS}, must be: Windows|Macos|Linux")
 endif ()
 
-### Final Target
-set(CMAKE_DISCORD_GAME_SDK_TARGET_NAME ${PROJECT_NAME})
-set(CMAKE_DISCORD_GAME_SDK_SOURCES
-    "cpp/achievement_manager.cpp"
-    "cpp/activity_manager.cpp"
-    "cpp/application_manager.cpp"
-    "cpp/core.cpp"
-    "cpp/image_manager.cpp"
-    "cpp/lobby_manager.cpp"
-    "cpp/network_manager.cpp"
-    "cpp/overlay_manager.cpp"
-    "cpp/relationship_manager.cpp"
-    "cpp/storage_manager.cpp"
-    "cpp/store_manager.cpp"
-    "cpp/types.cpp"
-    "cpp/user_manager.cpp"
-    "cpp/voice_manager.cpp")
 
-add_library(discord_game_sdk STATIC ${CMAKE_DISCORD_GAME_SDK_SOURCES})
+add_library(discord_game_sdk INTERFACE)
 
 ### Installs Discord Game SDK binaries
 if (OS STREQUAL "Windows")
-    target_link_libraries(discord_game_sdk "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.dll.lib")
+    target_link_libraries(discord_game_sdk INTERFACE "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.dll.lib")
 elseif (OS STREQUAL "Linux")
     target_link_libraries(discord_game_sdk "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.so")
 elseif (OS STREQUAL "Macos")
@@ -51,4 +34,4 @@ elseif (OS STREQUAL "Macos")
 endif ()
 
 
-target_include_directories(discord_game_sdk PUBLIC "cpp")
+target_include_directories(discord_game_sdk INTERFACE "${CMAKE_CURRENT_LIST_DIR}/c")
