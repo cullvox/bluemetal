@@ -89,9 +89,6 @@ int main(int argc, const char** argv)
         auto nearestSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Nearest.json");
         auto noiseTexture = resourceMgr->Load<bl::NoiseTexture2D>("Resources/Textures/Noise.json");
         auto grssMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Grass.mat");
-        auto debugMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Debug.mat");
-
-        renderer->SetDebugMaterialInstance(debugMaterial.lock()->GetVulkanMaterial());
 
         auto grassMaterial = grssMaterial.lock()->CreateInstance();
         grassMaterial->SetSampledTexture2D("noiseSampler", defaultSampler, noiseTexture);

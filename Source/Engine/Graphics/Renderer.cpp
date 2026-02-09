@@ -504,9 +504,11 @@ void Renderer::AddInstance(Mesh* mesh, const InstanceData& data)
     //vec[index] = data;
 }
 
-void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* material)
+void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial)
 {
-    _debugMaterial = material;
+    _pointMaterial = pointMaterial;
+    _lineMaterial = lineMaterial;
+    _triangleMaterial = triangleMaterial;
 }
 
 void Renderer::DrawPoint(const glm::vec3& point, float size, Color color)
@@ -650,37 +652,35 @@ void Renderer::UpdateDebugBuffers(uint32_t currentFrame)
 void Renderer::DrawDebugBuffers(RenderData& rd)
 {
     // Draw the points list
-    if (!_debugMaterial)
-        return;
-
     if (_points.empty() && _lines.empty() && _triangles.empty())
         return;
 
     auto cmd = rd.GetCommandBuffer();
     VkDeviceSize vertexOffset = _debugBuffer.GetDynamicOffset(rd.GetCurrentFrame());
     VkBuffer buffer = _debugBuffer.GetBuffer();
-    vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
-    _debugMaterial->Bind(rd);
 
     vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
 
-    if (_points.size() > 0) {
-        vkCmdSetPrimitiveTopology(cmd, VK_PRIMITIVE_TOPOLOGY_POINT_LIST);
+    if (_pointMaterial != nullptr && _points.size() > 0) {
+        _pointMaterial->Bind(rd);
+        vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
         vkCmdDraw(cmd, static_cast<uint32_t>(_points.size()), 1, 0, 0);
     }
 
     // Draw the lines list
     uint32_t firstVertex = static_cast<uint32_t>(_points.size());
-    if (_lines.size() > 0) {
-        vkCmdSetPrimitiveTopology(cmd, VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+    if (_lineMaterial != nullptr && _lines.size() > 0) {
+        _lineMaterial->Bind(rd);
+        vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
         vkCmdSetLineWidth(cmd, 3.0f);
         vkCmdDraw(cmd, static_cast<uint32_t>(_lines.size()), 1, firstVertex, 0);
     }
 
     // Draw the trangles list
     firstVertex += static_cast<uint32_t>(_lines.size());
-    if (_triangles.size() > 0) {
-        vkCmdSetPrimitiveTopology(cmd, VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+    if (_triangleMaterial != nullptr && _triangles.size() > 0) {
+        _triangleMaterial->Bind(rd);
+        vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
         vkCmdDraw(cmd, static_cast<uint32_t>(_triangles.size()), 1, firstVertex, 0);
     }
 }

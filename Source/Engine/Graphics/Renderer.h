@@ -134,7 +134,9 @@ private:
     void UpdateDebugBuffers(uint32_t currentFrame);
     void DrawDebugBuffers(RenderData& rd);
 
-    VulkanMaterialInstance* _debugMaterial = nullptr;
+    VulkanMaterialInstance* _pointMaterial = nullptr;
+    VulkanMaterialInstance* _lineMaterial = nullptr;
+    VulkanMaterialInstance* _triangleMaterial = nullptr;
     std::vector<VertexDebug> _points;
     std::vector<VertexDebug> _lines;
     std::vector<VertexDebug> _triangles;

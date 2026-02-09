@@ -22,7 +22,9 @@ class GraphicsSystem : public System {
     std::unique_ptr<VulkanWindow> _window;
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ImGuiSystem> _imgui;
-    Ref<Material> _debugMaterial;
+    Ref<Material> _pointMaterial;
+    Ref<Material> _lineMaterial;
+    Ref<Material> _triangleMaterial;
 
 public:
     GraphicsSystem(Engine& engine);

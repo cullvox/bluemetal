@@ -130,7 +130,8 @@
         "print": "cpp",
         "mouse.h": "c",
         "window.h": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "*.mat": "json"
     },
     "vcpkg.general.enable": false,
     "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
