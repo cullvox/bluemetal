@@ -1,12 +1,14 @@
 {
-    "descriptorSetLocation": -1,
-    "vertex": "Debug",
     "shaders": {
         "vertex": "Resources/Shaders/Debug.vert.spv",
         "fragment": "Resources/Shaders/Debug.frag.spv"
     },
+    "descriptorSetLocation": -1,
+    "vertexState": {
+        "vertex": "Debug",
+        "topology": "VK_PRIMITIVE_TOPOLOGY_LINE_LIST"
+    },
     "dynamicStates": [
-        "VK_DYNAMIC_STATE_PRIMITIVE_TOPOLOGY",
         "VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES",
         "VK_DYNAMIC_STATE_LINE_WIDTH"
     ]

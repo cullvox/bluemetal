@@ -46,7 +46,7 @@ public:
     void SetView(const glm::mat4& view);
     void SetImageRecreateCallback(std::function<void()> onRecreate);
     void AddInstance(Mesh* mesh, const InstanceData& data);
-    void SetDebugMaterialInstance(VulkanMaterialInstance* material);
+    void SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial);
     void DrawPoint(const glm::vec3& point, float size = 1.0f, Color color = Color::Violet());
     void DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness = 1.0f, Color color = Color::Violet());
     void DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness = 1.0f, Color color = Color::Violet());

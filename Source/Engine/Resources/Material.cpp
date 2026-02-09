@@ -43,9 +43,11 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
         vertexPath = json["shaders"]["vertex"];
         fragmentPath = json["shaders"]["fragment"];
 
-        if (json.contains("vertex") && json["vertex"].is_string())
+        if (json.contains("vertexState") && json["vertexState"].is_object())
         {
-            auto vertex = json.value("vertex", "Default");
+            nlohmann::json& state = json["vertexState"];
+
+            auto vertex = state.value("vertex", "Default");
             if (vertex == "Default") {
                 info.vertexState.inputBindings = Vertex::GetBindingDescriptions();
                 info.vertexState.inputAttribs = Vertex::GetBindingAttributeDescriptions();
@@ -58,6 +60,11 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
             } else {
                 Print::Warn("Invalid vertex type: \"{}\". Using default and hoping for the best.", vertex);
             }
+
+            std::string topology = state.value("topology", "VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST");
+            info.vertexState.primitiveRestartEnable = state.value("primitiveRestartEnable", false);
+
+            info.vertexState.topology = VulkanConversions::VkPrimitiveTopologyFromString(topology, VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
         }
 
         if (json.contains("descriptorSetLocation") && json["descriptorSetLocation"].is_number_integer()) {
