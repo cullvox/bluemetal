@@ -7,8 +7,5 @@
     "vertexState": {
         "vertex": "Debug",
         "topology": "VK_PRIMITIVE_TOPOLOGY_POINT_LIST"
-    },
-    "dynamicStates": [
-        "VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES"
-    ]
+    }
 }

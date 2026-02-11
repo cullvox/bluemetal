@@ -31,7 +31,6 @@ VulkanSwapchain::VulkanSwapchain(
 
     EnsureSurfaceSupported();
     Recreate();
-    CreateSyncObjects();
 }
 
 VulkanSwapchain::~VulkanSwapchain()

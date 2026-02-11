@@ -9,7 +9,6 @@
         "topology": "VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST"
     },
     "dynamicStates": [
-        "VK_DYNAMIC_STATE_RASTERIZATION_SAMPLES",
         "VK_DYNAMIC_STATE_LINE_WIDTH"
     ]
 }
