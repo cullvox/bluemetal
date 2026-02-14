@@ -131,6 +131,7 @@ void Renderer::RecreateImages()
     _depthImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, _depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, false, _sampleCount);
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     _depthImageView = std::make_unique<VulkanImageView>(_device, _depthImage.get(), VK_IMAGE_VIEW_TYPE_2D, _depthFormat, mapping, range);
+    _selectionImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 
     // _colorImage->Transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
@@ -275,14 +276,15 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     // Setup the render pass for dynamic rendering.
     std::array clearColors = {
         VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Clear Color
-        VkClearValue { .depthStencil = { 1.0f, 0 } } // Clear Depth
+        VkClearValue { .depthStencil = { 1.0f, 0 } }, // Clear Depth
+        VkClearValue { .color = { -1, -1, -1, -1 } }
     };
 
     VkRect2D renderArea = {};
     renderArea.offset = { 0, 0 };
     renderArea.extent = _swapchain->GetExtent();
 
-    std::array<VkRenderingAttachmentInfo, 1> colorAttachments = {};
+    std::array<VkRenderingAttachmentInfo, 2> colorAttachments = {};
     colorAttachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     colorAttachments[0].pNext = nullptr;
     colorAttachments[0].imageView = _colorImageView->Get();
@@ -293,6 +295,18 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     colorAttachments[0].clearValue = clearColors[0];
+
+    // Selection buffer attachment
+    colorAttachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    colorAttachments[1].pNext = nullptr;
+    colorAttachments[1].imageView = _selectionImageView->Get();
+    colorAttachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachments[1].resolveMode = VK_RESOLVE_MODE_NONE;
+    colorAttachments[1].resolveImageView = VK_NULL_HANDLE;
+    colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachments[1].clearValue = clearColors[2];
 
     // When using a higher sample count, the image must be resolved from the sampled image.
     if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
@@ -358,6 +372,19 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     }
 
+    // Transition selection buffer to color.
+    if (_enableSelectionBuffer) {
+        TransitionImageLayout(cmd,
+            _selectionImage->Get(),
+            range,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            0,
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_IMAGE_LAYOUT_UNDEFINED,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+    }
+
     // Transition the depth image.
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     TransitionImageLayout(cmd,
@@ -413,6 +440,31 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
+    // Read the selection buffer into a local buffer.
+    if (_enableSelectionBuffer) {
+        TransitionImageLayout(
+            cmd,
+            _selectionImage->Get(),
+            range,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_ACCESS_TRANSFER_READ_BIT,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
+
+        VkBufferImageCopy copy = {};
+        copy.bufferOffset = 0;
+        copy.bufferRowLength = extent.width;
+        copy.bufferImageHeight = extent.height;
+        copy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        copy.imageSubresource.layerCount = 1;
+        copy.imageOffset = {0, 0};
+        copy.imageExtent = VkExtent3D{extent.width, extent.height, 1};
+
+        vkCmdCopyImageToBuffer(cmd, _selectionImage->Get(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, _selectionBuffer->Get(), 1, &copy);
+    }
+
 
     VK_CHECK(vkEndCommandBuffer(cmd))
 
@@ -430,6 +482,13 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 void Renderer::SetImageRecreateCallback(std::function<void()> onRecreate)
 {
     _recreateCallback = onRecreate;
+}
+
+uint32_t Renderer::GetSelectionBufferValue(const glm::ivec2& position)
+{
+
+    // Transition the image to a readable buffer.
+
 }
 
 void Renderer::CreateGlobalUniform()

@@ -94,14 +94,14 @@ DiscordSystem::DiscordSystem(Engine& engine)
         //engine.LogError("Failed to instantiate discord core! (err {} ({}))", ToString(result), static_cast<int>(result));
     }
 
-    
-
-    core->set_log_hook(core, DiscordLogLevel_Debug, nullptr, LogCallback);
+    if (core)
+        core->set_log_hook(core, DiscordLogLevel_Debug, nullptr, LogCallback);
 }
 
 DiscordSystem::~DiscordSystem()
 {
-    core->destroy(core);
+    if (core)
+        core->destroy(core);
 }
 
 static EDiscordActivityType ToDiscord(DiscordActivityType type)
@@ -152,7 +152,8 @@ void DiscordSystem::UpdateActivity(DiscordActivity& activity)
 
 void DiscordSystem::RunCallbacks()
 {
-    core->run_callbacks(core);
+    if (core)
+        core->run_callbacks(core);
 }
 
 }

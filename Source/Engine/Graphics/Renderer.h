@@ -51,6 +51,18 @@ public:
     void DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness = 1.0f, Color color = Color::Violet());
     void DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness = 1.0f, Color color = Color::Violet());
 
+    /// @brief Enables the selection buffer.
+    ///
+    /// Enable or disable the selection buffer.
+    /// The selection buffer allows the user to easily resolve object the user is trying to click on.
+    /// Very useful and very quick, has some flaws but overall really useful.
+    ///
+    void EnableSelectionBuffer(bool enabled = true);
+
+    /// @brief Gets the value stored in the selection buffer at a given pixel position.
+    /// @return The stored index value at the pixel.
+    uint32_t GetSelectionBufferValue(const glm::ivec2& position);
+
     std::vector<VkPresentModeKHR> GetPresentModes();
     void SetPresentMode(VkPresentModeKHR mode);
     VkPresentModeKHR GetPresentMode() const;
@@ -97,10 +109,15 @@ private:
     std::unique_ptr<VulkanImageView> _colorImageView;
     std::unique_ptr<VulkanImage> _depthImage;
     std::unique_ptr<VulkanImageView> _depthImageView;
+    std::unique_ptr<VulkanImage> _selectionImage;
+    std::unique_ptr<VulkanImageView> _selectionImageView;
+    std::unique_ptr<VulkanBuffer> _selectionBuffer;
     std::array<VkImage, VulkanConfig::maxFramesInFlight> _swapchainImages;
     std::array<VkImageView, VulkanConfig::maxFramesInFlight> _swapchainImageViews;
     bool recreateRequested = false;
     VkPresentModeKHR recreatePresentMode = VK_PRESENT_MODE_FIFO_KHR;
+
+    bool _enableSelectionBuffer;
 
     std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache;
 
