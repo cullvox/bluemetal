@@ -5,6 +5,7 @@
 
 #include "Vertex.h"
 #include "Vulkan.h"
+#include "Passes/PassType.h"
 
 namespace bl {
 
@@ -14,6 +15,8 @@ class VulkanShader;
  * @brief Creation info for Vulkan pipeline objects.
  */
 struct VulkanPipelineStateInfo {
+
+    RenderPassType pass;
 
     /**
      * @brief Stages of the pipeline.
@@ -79,7 +82,8 @@ struct VulkanPipelineStateInfo {
     struct ColorBlendState {
         VkBool32 logicOpEnable = VK_FALSE;
         VkLogicOp logicOp = VK_LOGIC_OP_COPY;
-        std::vector<VkPipelineColorBlendAttachmentState> attachments = { { .blendEnable = VK_TRUE,
+        std::vector<VkPipelineColorBlendAttachmentState> attachments = { { 
+            .blendEnable = VK_TRUE,
             .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
             .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
             .colorBlendOp = VK_BLEND_OP_ADD,

@@ -9,6 +9,7 @@
 #include "VulkanBuffer.h"
 #include "RenderData.h"
 #include "Vertex.h"
+#include "Passes/PassType.h"
 
 namespace bl {
 
@@ -22,14 +23,12 @@ class VulkanMaterialInstance;
 class VulkanImageView;
 class VulkanImage;
 class VulkanDescriptorSetAllocatorCache;
+class Node;
+
+class SelectionPass;
 
 using ObjectFunction = std::function<void(RenderData& rd)>;
 using RenderFunction = std::function<void(RenderData& rd)>;
-
-enum class RenderPassType : uint32_t {
-    eGeometry = 0,
-    eUI = 2,
-};
 
 class Renderer {
 public:
@@ -41,6 +40,7 @@ public:
     uint32_t GetSwapchainImageCount();
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::maxFramesInFlight - 1. */
     void Render(RenderFunction func, ObjectFunction objectFunc);
+    void Render(Node* root);
 
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
@@ -50,6 +50,7 @@ public:
     void DrawPoint(const glm::vec3& point, float size = 1.0f, Color color = Color::Violet());
     void DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness = 1.0f, Color color = Color::Violet());
     void DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness = 1.0f, Color color = Color::Violet());
+    void SetSelectionMaterialInstance(VulkanMaterialInstance* instance);
 
     /// @brief Enables the selection buffer.
     ///
@@ -71,9 +72,9 @@ public:
     void SetMultisampleCount(VkSampleCountFlagBits samples);
     VkSampleCountFlagBits GetMultisampleCount();
 
-    std::vector<VkFormat> GetColorAttachmentFormats();
-    VkFormat GetDepthAttachmentFormat();
-    VkFormat GetStencilAttachmentFormat();
+    std::vector<VkFormat> GetColorAttachmentFormats(RenderPassType pass);
+    VkFormat GetDepthAttachmentFormat(RenderPassType pass);
+    VkFormat GetStencilAttachmentFormat(RenderPassType pass);
 
 
 protected:
@@ -109,9 +110,9 @@ private:
     std::unique_ptr<VulkanImageView> _colorImageView;
     std::unique_ptr<VulkanImage> _depthImage;
     std::unique_ptr<VulkanImageView> _depthImageView;
-    std::unique_ptr<VulkanImage> _selectionImage;
-    std::unique_ptr<VulkanImageView> _selectionImageView;
-    std::unique_ptr<VulkanBuffer> _selectionBuffer;
+
+    std::unique_ptr<SelectionPass> _selectionPass;
+
     std::array<VkImage, VulkanConfig::maxFramesInFlight> _swapchainImages;
     std::array<VkImageView, VulkanConfig::maxFramesInFlight> _swapchainImageViews;
     bool recreateRequested = false;
@@ -150,6 +151,8 @@ private:
     void CreateDebugBuffer();
     void UpdateDebugBuffers(uint32_t currentFrame);
     void DrawDebugBuffers(RenderData& rd);
+
+
 
     VulkanMaterialInstance* _pointMaterial = nullptr;
     VulkanMaterialInstance* _lineMaterial = nullptr;

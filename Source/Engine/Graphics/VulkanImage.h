@@ -105,6 +105,15 @@ public:
     /// Immediately submits a command buffer to the graphics card.
     /// @param layout New layout to transition the image into.
     void Transition(VkImageLayout layout);
+
+    void Transition(
+        VkCommandBuffer                 cmd,
+        VkPipelineStageFlags            srcStageFlags,
+        VkPipelineStageFlags            dstStageFlags,
+        VkImageLayout                   newLayout,
+        VkAccessFlags                   srcAccessMask,
+        VkAccessFlags                   dstAccessMask,
+        const VkImageSubresourceRange&  subresourceRange);
 };
 
 } // namespace bl

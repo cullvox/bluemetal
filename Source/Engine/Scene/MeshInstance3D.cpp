@@ -34,7 +34,7 @@ void MeshInstance3D::Draw(RenderData& rd)
     object.model = GetWorldMatrix();
     object.position = glm::vec4{GetWorldPosition(), 1.0f};
 
-    rd.DrawInstance(_material.lock().get(), _mesh.lock().get(), object);
+    rd.DrawInstance(this, _material.lock().get(), _mesh.lock().get(), object);
 
     //rd.renderer->AddInstance(_mesh.get(), object);
 

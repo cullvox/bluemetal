@@ -22,14 +22,16 @@ namespace bl {
 GraphicsSystem::GraphicsSystem(Engine& engine)
     : System(engine)
 {
-    GetEngine().GetResourceSystem()->AddSystemType<Shader>(this);
-    GetEngine().GetResourceSystem()->AddSystemType<Sampler>(this);
-    GetEngine().GetResourceSystem()->AddSystemType<Material>(this);
-    GetEngine().GetResourceSystem()->AddSystemType<MaterialInstance>(this);
-    GetEngine().GetResourceSystem()->AddSystemType<Texture2D>(this);
-    GetEngine().GetResourceSystem()->AddSystemType<NoiseTexture2D>(this);
-    GetEngine().GetResourceSystem()->AddSystemType<Mesh>(this);
-    GetEngine().GetResourceSystem()->AddSystemType<Model>(this);
+    auto rs = GetEngine().GetResourceSystem();
+
+    rs->AddSystemType<Shader>(this);
+    rs->AddSystemType<Sampler>(this);
+    rs->AddSystemType<Material>(this);
+    rs->AddSystemType<MaterialInstance>(this);
+    rs->AddSystemType<Texture2D>(this);
+    rs->AddSystemType<NoiseTexture2D>(this);
+    rs->AddSystemType<Mesh>(this);
+    rs->AddSystemType<Model>(this);
 
     _vulkanInstance = std::make_unique<VulkanInstance>(bl::Version { bl::VersionRelease::eAlpha, 0, 1, 7 }, "bluemetal", true);
     _physicalDevice = _vulkanInstance->ChoosePhysicalDevice();
@@ -41,10 +43,12 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     _window = std::make_unique<VulkanWindow>(_device.get(), "Maginvox", Rect2D { {}, displays[0].GetDesktopMode().extent }, false);
     _renderer = std::make_unique<Renderer>(_window.get(), engine.GetFrameCounter());
 
-    _pointMaterial = GetEngine().GetResourceSystem()->Load<Material>("Resources/Materials/DebugPoint.mat");
-    _lineMaterial = GetEngine().GetResourceSystem()->Load<Material>("Resources/Materials/DebugLine.mat");
-    _triangleMaterial = GetEngine().GetResourceSystem()->Load<Material>("Resources/Materials/DebugTriangle.mat");
+    _pointMaterial = rs->Load<Material>("Resources/Materials/DebugPoint.mat");
+    _lineMaterial = rs->Load<Material>("Resources/Materials/DebugLine.mat");
+    _triangleMaterial = rs->Load<Material>("Resources/Materials/DebugTriangle.mat");
+    _selectionMaterial = rs->Load<Material>("Resources/Materials/Selection.mat");
     _renderer->SetDebugMaterialInstance(_pointMaterial.lock()->GetVulkanMaterial(), _lineMaterial.lock()->GetVulkanMaterial(), _triangleMaterial.lock()->GetVulkanMaterial());
+    _renderer->SetSelectionMaterialInstance(_selectionMaterial.lock()->GetVulkanMaterial());
 }
 
 GraphicsSystem::~GraphicsSystem()

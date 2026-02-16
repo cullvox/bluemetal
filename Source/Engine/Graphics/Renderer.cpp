@@ -1,16 +1,18 @@
 #include "Renderer.h"
-#include "Core/Time.h"
+#include "Core/FrameCounter.h"
 #include "Core/Profiler.h"
+#include "Core/Time.h"
 #include "Engine/Engine.h"
 #include "GraphicsSystem.h"
+#include "Passes/SelectionPass.h"
+#include "Resources/Mesh.h"
+#include "Scene/Node.h"
 #include "UniformData.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
+#include "VulkanImage.h"
+#include "VulkanImageView.h"
 #include "VulkanMaterial.h"
 #include "VulkanWindow.h"
-#include "VulkanImage.h"
-#include "Resources/Mesh.h"
-#include "VulkanImageView.h"
-#include "Core/FrameCounter.h"
 
 namespace bl {
 
@@ -22,11 +24,13 @@ Renderer::Renderer(VulkanWindow* window, FrameCounter& frameCounter)
     , _renderData(this)
 {
 
-    for (VkSampleCountFlagBits flag : GetMultisampleCounts())
-    {
-        if (flag & VK_SAMPLE_COUNT_8_BIT) _sampleCount = VK_SAMPLE_COUNT_8_BIT;
-        if (flag & VK_SAMPLE_COUNT_4_BIT) _sampleCount = VK_SAMPLE_COUNT_4_BIT;
-        if (flag & VK_SAMPLE_COUNT_2_BIT) _sampleCount = VK_SAMPLE_COUNT_2_BIT;
+    for (VkSampleCountFlagBits flag : GetMultisampleCounts()) {
+        if (flag & VK_SAMPLE_COUNT_8_BIT)
+            _sampleCount = VK_SAMPLE_COUNT_8_BIT;
+        if (flag & VK_SAMPLE_COUNT_4_BIT)
+            _sampleCount = VK_SAMPLE_COUNT_4_BIT;
+        if (flag & VK_SAMPLE_COUNT_2_BIT)
+            _sampleCount = VK_SAMPLE_COUNT_2_BIT;
     }
 
     assert(_sampleCount > VK_SAMPLE_COUNT_1_BIT);
@@ -38,10 +42,13 @@ Renderer::Renderer(VulkanWindow* window, FrameCounter& frameCounter)
         _depthFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, 0);
         _positionFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_R32G32B32A32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, 0);
 
+        _selectionPass = std::make_unique<SelectionPass>(_device, _swapchain->GetExtent());
+
         CreateCommandBuffers();
         RecreateImages();
         CreateGlobalUniform();
         CreateDebugBuffer();
+
     } catch (const std::exception& e) {
         Print::Error("Failed to initialize renderer: {}", e.what());
         DestroyGlobalUniform();
@@ -96,8 +103,7 @@ void Renderer::DestroyImagesAndFramebuffers()
 
 void Renderer::DestroyGlobalUniform()
 {
-    for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++)
-    {
+    for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
         _globalBuffer[i].Unmap();
         _descriptorSetCache->Free(_globalLayout, _globalSet[i]);
     }
@@ -116,25 +122,26 @@ uint32_t Renderer::GetSwapchainImageCount()
 }
 
 void Renderer::RecreateImages()
-{;
+{
     DestroyImagesAndFramebuffers();
 
     // Construct all the image buffers for the passes.
     auto extent = _swapchain->GetExtent();
     auto imageExtent = VkExtent3D { extent.width, extent.height, 1 };
 
-    VkComponentMapping mapping = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
+    // Create color image
+    VkComponentMapping mapping = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY };
     VkImageSubresourceRange range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
     _colorImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, _swapchain->GetFormat(), VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, false, _sampleCount);
     _colorImageView = std::make_unique<VulkanImageView>(_device, _colorImage.get(), VK_IMAGE_VIEW_TYPE_2D, _swapchain->GetFormat(), mapping, range);
+
+    // Create depth image
     _depthImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, _depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, false, _sampleCount);
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     _depthImageView = std::make_unique<VulkanImageView>(_device, _depthImage.get(), VK_IMAGE_VIEW_TYPE_2D, _depthFormat, mapping, range);
-    _selectionImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
 
-    // _colorImage->Transition(VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-
+    // Create image views for swapchain images
     auto swapchainImages = _swapchain->GetImages();
     auto swapchainImageViews = _swapchain->GetImageViews();
     for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) {
@@ -142,73 +149,76 @@ void Renderer::RecreateImages()
         _swapchainImageViews[i] = swapchainImageViews[i];
     }
 
+    _selectionPass->Resize(extent);
+
     if (_recreateCallback) {
         _recreateCallback();
     }
 }
 
-
 VkPipelineStageFlags getPipelineStageFlags(VkImageLayout layout)
 {
-	switch (layout)
-	{
-		case VK_IMAGE_LAYOUT_UNDEFINED:
-			return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		case VK_IMAGE_LAYOUT_PREINITIALIZED:
-			return VK_PIPELINE_STAGE_HOST_BIT;
-		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-			return VK_PIPELINE_STAGE_TRANSFER_BIT;
-		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-			return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
-			return VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-		case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
-			return VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
-		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-			return VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-			return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		case VK_IMAGE_LAYOUT_GENERAL:
-			assert(false && "Don't know how to get a meaningful VkPipelineStageFlags for VK_IMAGE_LAYOUT_GENERAL! Don't use it!");
-			return 0;
-		default:
-			assert(false);
-			return 0;
-	}
+    switch (layout) {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+        return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    case VK_IMAGE_LAYOUT_PREINITIALIZED:
+        return VK_PIPELINE_STAGE_HOST_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        return VK_PIPELINE_STAGE_TRANSFER_BIT;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+        return VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+    case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+        return VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        return VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+        return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        assert(false && "Don't know how to get a meaningful VkPipelineStageFlags for VK_IMAGE_LAYOUT_GENERAL! Don't use it!");
+        return 0;
+    default:
+        assert(false);
+        return 0;
+    }
 }
 
 VkAccessFlags getAccessFlags(VkImageLayout layout)
 {
-	switch (layout)
-	{
-		case VK_IMAGE_LAYOUT_UNDEFINED:
-		case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-			return 0;
-		case VK_IMAGE_LAYOUT_PREINITIALIZED:
-			return VK_ACCESS_HOST_WRITE_BIT;
-		case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-			return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
-			return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
-			return VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
-		case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-			return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-		case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-			return VK_ACCESS_TRANSFER_READ_BIT;
-		case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-			return VK_ACCESS_TRANSFER_WRITE_BIT;
-		case VK_IMAGE_LAYOUT_GENERAL:
-			assert(false && "Don't know how to get a meaningful VkAccessFlags for VK_IMAGE_LAYOUT_GENERAL! Don't use it!");
-			return 0;
-		default:
-			assert(false);
-			return 0;
-	}
+    switch (layout) {
+    case VK_IMAGE_LAYOUT_UNDEFINED:
+    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
+        return 0;
+    case VK_IMAGE_LAYOUT_PREINITIALIZED:
+        return VK_ACCESS_HOST_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
+        return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
+        return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
+        return VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
+    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
+        return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        return VK_ACCESS_TRANSFER_READ_BIT;
+    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
+        return VK_ACCESS_TRANSFER_WRITE_BIT;
+    case VK_IMAGE_LAYOUT_GENERAL:
+        assert(false && "Don't know how to get a meaningful VkAccessFlags for VK_IMAGE_LAYOUT_GENERAL! Don't use it!");
+        return 0;
+    default:
+        assert(false);
+        return 0;
+    }
 }
 
 Profiler profiler;
+
+void Renderer::Render(Node* root)
+{
+}
 
 void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 {
@@ -219,8 +229,8 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     if (recreateRequested) {
         _device->WaitForDevice(); // Wait for previous commands to complete.
 
-        //DestroyRenderPasses();
-        //CreateRenderPasses();
+        // DestroyRenderPasses();
+        // CreateRenderPasses();
         _sampleCount = _newSampleCount;
         _swapchain->Recreate(recreatePresentMode);
         RecreateImages();
@@ -236,8 +246,6 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 
     // Compute the per frame UBO.
     UpdateGlobalUniform(currentFrame);
-
-    
 
     // Swapchain must be valid.
     if (!_swapchain->Get()) {
@@ -284,7 +292,7 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     renderArea.offset = { 0, 0 };
     renderArea.extent = _swapchain->GetExtent();
 
-    std::array<VkRenderingAttachmentInfo, 2> colorAttachments = {};
+    std::array<VkRenderingAttachmentInfo, 1> colorAttachments = {};
     colorAttachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     colorAttachments[0].pNext = nullptr;
     colorAttachments[0].imageView = _colorImageView->Get();
@@ -295,18 +303,6 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     colorAttachments[0].clearValue = clearColors[0];
-
-    // Selection buffer attachment
-    colorAttachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    colorAttachments[1].pNext = nullptr;
-    colorAttachments[1].imageView = _selectionImageView->Get();
-    colorAttachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    colorAttachments[1].resolveMode = VK_RESOLVE_MODE_NONE;
-    colorAttachments[1].resolveImageView = VK_NULL_HANDLE;
-    colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachments[1].clearValue = clearColors[2];
 
     // When using a higher sample count, the image must be resolved from the sampled image.
     if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
@@ -372,19 +368,6 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
     }
 
-    // Transition selection buffer to color.
-    if (_enableSelectionBuffer) {
-        TransitionImageLayout(cmd,
-            _selectionImage->Get(),
-            range,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            0,
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            VK_IMAGE_LAYOUT_UNDEFINED,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-    }
-
     // Transition the depth image.
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     TransitionImageLayout(cmd,
@@ -440,31 +423,7 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
 
-    // Read the selection buffer into a local buffer.
-    if (_enableSelectionBuffer) {
-        TransitionImageLayout(
-            cmd,
-            _selectionImage->Get(),
-            range,
-            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_PIPELINE_STAGE_TRANSFER_BIT,
-            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            VK_ACCESS_TRANSFER_READ_BIT,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL);
-
-        VkBufferImageCopy copy = {};
-        copy.bufferOffset = 0;
-        copy.bufferRowLength = extent.width;
-        copy.bufferImageHeight = extent.height;
-        copy.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        copy.imageSubresource.layerCount = 1;
-        copy.imageOffset = {0, 0};
-        copy.imageExtent = VkExtent3D{extent.width, extent.height, 1};
-
-        vkCmdCopyImageToBuffer(cmd, _selectionImage->Get(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, _selectionBuffer->Get(), 1, &copy);
-    }
-
+    _selectionPass->Render(_renderData);
 
     VK_CHECK(vkEndCommandBuffer(cmd))
 
@@ -473,6 +432,8 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     if (_swapchain->QueuePresent()) {
         RecreateImages();
     }
+
+    _renderData.Reset();
 
     _points.clear();
     _lines.clear();
@@ -488,7 +449,7 @@ uint32_t Renderer::GetSelectionBufferValue(const glm::ivec2& position)
 {
 
     // Transition the image to a readable buffer.
-
+    return 0;
 }
 
 void Renderer::CreateGlobalUniform()
@@ -525,7 +486,6 @@ void Renderer::CreateGlobalUniform()
 
         vkUpdateDescriptorSets(_device->Get(), 1, &write, 0, nullptr);
     }
-
 }
 
 void Renderer::TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageSubresourceRange range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout)
@@ -543,24 +503,6 @@ void Renderer::TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImage
     barrier.subresourceRange = range;
 
     vkCmdPipelineBarrier(cmd, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-}
-
-void Renderer::AddInstance(Mesh* mesh, const InstanceData& data)
-{
-    (void) mesh;
-    (void) data;
-    //int& index = std::get<int>(_instanceDraws[mesh]);
-    //std::vector<InstanceData>& vec = std::get<std::vector<InstanceData>>(_instanceDraws[mesh]);
-
-    //if (index >= 1000) {
-    //    Print::Warn("Cannot index more than 1000 objects!");
-    //}
-//
-    //if (vec.size() != 1000) {
-    //    vec.resize(1000);
-    //}
-//
-    //vec[index] = data;
 }
 
 void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial)
@@ -616,16 +558,28 @@ VkPresentModeKHR Renderer::GetPresentMode() const
 
 std::vector<VkSampleCountFlagBits> Renderer::GetMultisampleCounts()
 {
-    std::vector<VkSampleCountFlagBits> counts{};
+    std::vector<VkSampleCountFlagBits> counts {};
     VkSampleCountFlags flags = _device->GetPhysicalDevice()->GetSupportedFramebufferSampleCounts();
 
     counts.push_back(VK_SAMPLE_COUNT_1_BIT);
-    if (flags & VK_SAMPLE_COUNT_64_BIT) { counts.push_back(VK_SAMPLE_COUNT_64_BIT); }
-    if (flags & VK_SAMPLE_COUNT_32_BIT) { counts.push_back(VK_SAMPLE_COUNT_32_BIT); }
-    if (flags & VK_SAMPLE_COUNT_16_BIT) { counts.push_back(VK_SAMPLE_COUNT_16_BIT); }
-    if (flags & VK_SAMPLE_COUNT_8_BIT)  { counts.push_back(VK_SAMPLE_COUNT_8_BIT);  }
-    if (flags & VK_SAMPLE_COUNT_4_BIT)  { counts.push_back(VK_SAMPLE_COUNT_4_BIT);  }
-    if (flags & VK_SAMPLE_COUNT_2_BIT)  { counts.push_back(VK_SAMPLE_COUNT_2_BIT);  }
+    if (flags & VK_SAMPLE_COUNT_64_BIT) {
+        counts.push_back(VK_SAMPLE_COUNT_64_BIT);
+    }
+    if (flags & VK_SAMPLE_COUNT_32_BIT) {
+        counts.push_back(VK_SAMPLE_COUNT_32_BIT);
+    }
+    if (flags & VK_SAMPLE_COUNT_16_BIT) {
+        counts.push_back(VK_SAMPLE_COUNT_16_BIT);
+    }
+    if (flags & VK_SAMPLE_COUNT_8_BIT) {
+        counts.push_back(VK_SAMPLE_COUNT_8_BIT);
+    }
+    if (flags & VK_SAMPLE_COUNT_4_BIT) {
+        counts.push_back(VK_SAMPLE_COUNT_4_BIT);
+    }
+    if (flags & VK_SAMPLE_COUNT_2_BIT) {
+        counts.push_back(VK_SAMPLE_COUNT_2_BIT);
+    }
 
     return counts;
 }
@@ -648,19 +602,30 @@ VkSampleCountFlagBits Renderer::GetMultisampleCount()
     return _sampleCount;
 }
 
-std::vector<VkFormat> Renderer::GetColorAttachmentFormats()
+std::vector<VkFormat> Renderer::GetColorAttachmentFormats(RenderPassType pass)
 {
-    return { _swapchain->GetFormat() };
+    std::vector<VkFormat> out;
+    switch (pass) {
+        case RenderPassType::eGeometry: return { _swapchain->GetFormat() };
+        case RenderPassType::eSelection: _selectionPass->GetColorFormats(out); break;
+    }
+
+    return out;
 }
 
-VkFormat Renderer::GetDepthAttachmentFormat()
+VkFormat Renderer::GetDepthAttachmentFormat(RenderPassType pass)
 {
-    return _depthFormat;
+    switch (pass) {
+        case RenderPassType::eGeometry: return _depthFormat;
+        case RenderPassType::eSelection: return _selectionPass->GetDepthFormat();
+    }
 }
 
-VkFormat Renderer::GetStencilAttachmentFormat()
-{
-    return VK_FORMAT_UNDEFINED;
+VkFormat Renderer::GetStencilAttachmentFormat(RenderPassType pass)
+{    switch (pass) {
+        case RenderPassType::eGeometry: return VK_FORMAT_UNDEFINED;
+        case RenderPassType::eSelection: return _selectionPass->GetStencilFormat();
+    }
 }
 
 void Renderer::UpdateMaterialUniforms(uint32_t currentFrame)
@@ -689,9 +654,9 @@ void Renderer::UpdateGlobalUniform(uint32_t currentFrame)
 
 void Renderer::CreateDebugBuffer()
 {
-    _lines.reserve(MAX_DEBUG_VERTICES/3);
-    _points.reserve(MAX_DEBUG_VERTICES/3);
-    _triangles.reserve(MAX_DEBUG_VERTICES/3);
+    _lines.reserve(MAX_DEBUG_VERTICES / 3);
+    _points.reserve(MAX_DEBUG_VERTICES / 3);
+    _triangles.reserve(MAX_DEBUG_VERTICES / 3);
     _debugVertices.reserve(MAX_DEBUG_VERTICES);
     _debugBuffer = VulkanBufferFrameRing(_device, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, _swapchain->GetImageCount(), MAX_DEBUG_VERTICES * sizeof(VertexDebug), true, false);
 }
@@ -705,7 +670,7 @@ void Renderer::UpdateDebugBuffers(uint32_t currentFrame)
     std::copy_n(_triangles.begin(), std::min(_debugVertices.capacity(), _triangles.size()), std::back_inserter(_debugVertices));
 
     // Update this current frames buffer.
-    _debugBuffer.UploadHostVisible(std::as_bytes(std::span{_debugVertices}), currentFrame);
+    _debugBuffer.UploadHostVisible(std::as_bytes(std::span { _debugVertices }), currentFrame);
 }
 
 void Renderer::DrawDebugBuffers(RenderData& rd)
@@ -744,5 +709,9 @@ void Renderer::DrawDebugBuffers(RenderData& rd)
     }
 }
 
+void Renderer::SetSelectionMaterialInstance(VulkanMaterialInstance* instance)
+{
+    _selectionPass->SetMaterial(instance);
+}
 
 } // namespace bl

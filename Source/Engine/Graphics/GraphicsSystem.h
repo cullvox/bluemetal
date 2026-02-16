@@ -25,6 +25,7 @@ class GraphicsSystem : public System {
     Ref<Material> _pointMaterial;
     Ref<Material> _lineMaterial;
     Ref<Material> _triangleMaterial;
+    Ref<Material> _selectionMaterial;
 
 public:
     GraphicsSystem(Engine& engine);

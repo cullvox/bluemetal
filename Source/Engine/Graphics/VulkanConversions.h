@@ -44,6 +44,10 @@ public:
     static VkFrontFace VkFrontFaceFromString(const std::string& str, VkFrontFace def = VK_FRONT_FACE_COUNTER_CLOCKWISE);
     static VkCompareOp VkCompareOpFromString(const std::string& str, VkCompareOp def = VK_COMPARE_OP_LESS_OR_EQUAL);
     static VkStencilOp VkStencilOpFromString(const std::string& str, VkStencilOp def = VK_STENCIL_OP_KEEP);
+    static VkLogicOp VkLogicOpFromString(const std::string& str, VkLogicOp def = VK_LOGIC_OP_COPY);
+    static VkBlendFactor VkBlendFactorFromString(const std::string& str, VkBlendFactor def = VK_BLEND_FACTOR_ZERO);
+    static VkBlendOp VkBlendOpFromString(const std::string& str, VkBlendOp def = VK_BLEND_OP_ADD);
+    static VkColorComponentFlags VkColorComponentFlagsFromString(const std::string& str, VkColorComponentFlags def = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT);
 
     static bool VkDynamicStateFromString(const std::string& str, VkDynamicState& out);
 };

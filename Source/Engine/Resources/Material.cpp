@@ -29,13 +29,16 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
 
         std::string renderPass = json.value("renderPass", "geometry");
 
-        if (!(json.contains("shaders") &&
-            json["shaders"].is_object() &&
-            json["shaders"].contains("vertex") &&
-            json["shaders"].contains("fragment") &&
-            json["shaders"]["vertex"].is_string() &&
-            json["shaders"]["fragment"].is_string()))
-        {
+        if (renderPass == "geometry") {
+            info.pass = RenderPassType::eGeometry;
+        } else if (renderPass == "selection") {
+            info.pass = RenderPassType::eSelection;
+        } else {
+            Print::Warn("Invalid render pass type! Using geometry.");
+            info.pass = RenderPassType::eGeometry;
+        }
+
+        if (!(json.contains("shaders") && json["shaders"].is_object() && json["shaders"].contains("vertex") && json["shaders"].contains("fragment") && json["shaders"]["vertex"].is_string() && json["shaders"]["fragment"].is_string())) {
             Print::Error("A material must contain a vertex and fragment shader!");
             return;
         }
@@ -43,8 +46,7 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
         vertexPath = json["shaders"]["vertex"];
         fragmentPath = json["shaders"]["fragment"];
 
-        if (json.contains("vertexState") && json["vertexState"].is_object())
-        {
+        if (json.contains("vertexState") && json["vertexState"].is_object()) {
             nlohmann::json& state = json["vertexState"];
 
             auto vertex = state.value("vertex", "Default");
@@ -145,8 +147,62 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
             }
         }
 
-        if (json.contains("colorBlendState")) {
-            Print::Warn("Material may contain color blend state information, but that feature is not supported yet.");
+        if (json.contains("colorBlendState") && json["colorBlendState"].is_object()) {
+            const nlohmann::json& state = json["colorBlendState"];
+
+            info.colorBlendState.logicOpEnable = state.value("logicOpEnable", false);
+            std::string logicOp = state.value("logicOp", "VK_LOGIC_OP_COPY");
+
+            info.colorBlendState.logicOp = VulkanConversions::VkLogicOpFromString(logicOp);
+
+            if (state.contains("attachments") && state["attachments"].is_array()) {
+
+                info.colorBlendState.attachments.clear();
+                for (const nlohmann::json& attachment : state["attachments"]) {
+                    if (!attachment.is_object()) {
+                        Print::Warn("Attachment must be an object.");
+                        continue;
+                    }
+
+                    VkPipelineColorBlendAttachmentState colorBlendAttachmentState = {};
+                    colorBlendAttachmentState.blendEnable = attachment.value("blendEnable", true);
+                    std::string srcColorBlendFactor = attachment.value("srcColorBlendFactor", "VK_BLEND_FACTOR_SRC_ALPHA");
+                    std::string dstColorBlendFactor = attachment.value("dstColorBlendFactor", "VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA");
+                    std::string colorBlendOp = attachment.value("colorBlendOp", "VK_BLEND_OP_ADD");
+                    std::string srcAlphaBlendFactor = attachment.value("srcAlphaBlendFactor", "VK_BLEND_FACTOR_ONE");
+                    std::string dstAlphaBlendFactor = attachment.value("dstAlphaBlendFactor", "VK_BLEND_FACTOR_ZERO");
+                    std::string alphaBlendOp = attachment.value("alphaBlendOp", "VK_BLEND_OP_ADD");
+                    std::string colorWriteMask = attachment.value("colorWriteMask", "VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT");
+
+                    colorBlendAttachmentState.srcColorBlendFactor = VulkanConversions::VkBlendFactorFromString(srcColorBlendFactor);
+                    colorBlendAttachmentState.dstColorBlendFactor = VulkanConversions::VkBlendFactorFromString(dstColorBlendFactor);
+                    colorBlendAttachmentState.colorBlendOp = VulkanConversions::VkBlendOpFromString(colorBlendOp);
+                    colorBlendAttachmentState.srcAlphaBlendFactor = VulkanConversions::VkBlendFactorFromString(srcAlphaBlendFactor);
+                    colorBlendAttachmentState.dstAlphaBlendFactor = VulkanConversions::VkBlendFactorFromString(dstAlphaBlendFactor);
+                    colorBlendAttachmentState.alphaBlendOp = VulkanConversions::VkBlendOpFromString(alphaBlendOp);
+                    colorBlendAttachmentState.colorWriteMask = VulkanConversions::VkColorComponentFlagsFromString(colorWriteMask);
+                    info.colorBlendState.attachments.push_back(colorBlendAttachmentState);
+                }
+            }
+
+            if (state.contains("blendConstants")) {
+                if (!(state["blendConstants"].is_array() && state["blendConstants"].size() == 4)) {
+                    Print::Warn("Blend constants must be an array of four numbers.");
+                } else {
+                    int i = 0;
+                    for (const nlohmann::json& blendConstant : state["blendConstants"]) {
+
+                        if (!blendConstant.is_number()) {
+                            Print::Warn("Blend constant value must be a number.");
+                            i++;
+                            continue;
+                        }
+
+                        info.colorBlendState.blendConstants[i] = blendConstant.get<float>();
+                        i++;
+                    }
+                }
+            }
         }
 
         if (json.contains("dynamicStates") && json["dynamicStates"].is_array()) {

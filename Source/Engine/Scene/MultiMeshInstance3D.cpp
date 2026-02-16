@@ -38,7 +38,7 @@ void MultiMeshInstance3D::Draw(RenderData& rd)
             InstanceData instanceData;
             instanceData.model = _instanceTransforms[i];
             instanceData.position = glm::vec4(_instanceTransforms[i][3]);
-            rd.DrawInstance(materialPtr.get(), meshPtr.get(), instanceData);
+            rd.DrawInstance(this, materialPtr.get(), meshPtr.get(), instanceData);
         }
     }
 }

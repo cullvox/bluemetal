@@ -35,6 +35,7 @@ list(APPEND Sources
   "Graphics/VulkanMaterialInstance.cpp"
   "Graphics/RenderData.cpp"
   #"Graphics/Debug/RenderPassDebug.cpp"
+  "Graphics/Passes/SelectionPass.cpp"
   "Graphics/Renderer.cpp"
   "Graphics/GraphicsSystem.cpp"
 

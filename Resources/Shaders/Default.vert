@@ -33,6 +33,7 @@ layout(push_constant) uniform Constants
 {
     InstanceData objectInstance;
     ivec4 useInstanceBuffer;
+    uint objectID;
 } object;
 
 void main()

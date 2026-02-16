@@ -54,6 +54,7 @@ layout(push_constant) uniform DrawConstants
 {
     InstanceData objectInstance;
     ivec4 useInstanceBuffer;
+    uint objectID;
 } drawConstants;
 
 layout(location = 0) out vec3 outNormal;

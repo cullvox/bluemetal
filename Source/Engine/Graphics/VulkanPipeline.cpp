@@ -153,14 +153,14 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
     colorBlendState.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     colorBlendState.pNext = nullptr;
     colorBlendState.flags = 0;
-    colorBlendState.logicOpEnable = VK_FALSE;
-    colorBlendState.logicOp = VK_LOGIC_OP_COPY;
-    colorBlendState.attachmentCount = (uint32_t)attachments.size();
-    colorBlendState.pAttachments = attachments.data();
-    colorBlendState.blendConstants[0] = 0.0f;
-    colorBlendState.blendConstants[1] = 0.0f;
-    colorBlendState.blendConstants[2] = 0.0f;
-    colorBlendState.blendConstants[3] = 0.0f;
+    colorBlendState.logicOpEnable = state.colorBlendState.logicOpEnable;
+    colorBlendState.logicOp = state.colorBlendState.logicOp;
+    colorBlendState.attachmentCount = (uint32_t)state.colorBlendState.attachments.size();
+    colorBlendState.pAttachments = state.colorBlendState.attachments.data();
+    colorBlendState.blendConstants[0] = state.colorBlendState.blendConstants[0];
+    colorBlendState.blendConstants[1] = state.colorBlendState.blendConstants[1];
+    colorBlendState.blendConstants[2] = state.colorBlendState.blendConstants[2];
+    colorBlendState.blendConstants[3] = state.colorBlendState.blendConstants[3];
 
     auto dynamicStates = state.dynamicStates;
     dynamicStates.push_back(VK_DYNAMIC_STATE_VIEWPORT);
@@ -174,15 +174,15 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
     dynamicState.dynamicStateCount = static_cast<uint32_t>(dynamicStates.size());
     dynamicState.pDynamicStates = dynamicStates.data();
 
-    auto colorAttachmentFormats = renderer->GetColorAttachmentFormats();
+    auto colorAttachmentFormats = renderer->GetColorAttachmentFormats(state.pass);
     VkPipelineRenderingCreateInfo rendering = {};
     rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
     rendering.pNext = nullptr;
     rendering.viewMask = 0;
     rendering.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentFormats.size());
     rendering.pColorAttachmentFormats = colorAttachmentFormats.data();
-    rendering.depthAttachmentFormat = renderer->GetDepthAttachmentFormat();
-    rendering.stencilAttachmentFormat = renderer->GetStencilAttachmentFormat();
+    rendering.depthAttachmentFormat = renderer->GetDepthAttachmentFormat(state.pass);
+    rendering.stencilAttachmentFormat = renderer->GetStencilAttachmentFormat(state.pass);
 
     VkGraphicsPipelineCreateInfo pipelineCreateInfo = {};
     pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;

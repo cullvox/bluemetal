@@ -825,6 +825,119 @@ bool VulkanConversions::VkDynamicStateFromString(const std::string& str, VkDynam
     return true;
 }
 
+VkLogicOp VulkanConversions::VkLogicOpFromString(const std::string& str, VkLogicOp def)
+{
+
+    static std::unordered_map<std::string_view, VkLogicOp> convertMap = {
+        {"VK_LOGIC_OP_CLEAR", VK_LOGIC_OP_CLEAR },
+        {"VK_LOGIC_OP_AND", VK_LOGIC_OP_AND },
+        {"VK_LOGIC_OP_AND_REVERSE", VK_LOGIC_OP_AND_REVERSE },
+        {"VK_LOGIC_OP_COPY", VK_LOGIC_OP_COPY },
+        {"VK_LOGIC_OP_AND_INVERTED", VK_LOGIC_OP_AND_INVERTED },
+        {"VK_LOGIC_OP_NO_OP", VK_LOGIC_OP_NO_OP },
+        {"VK_LOGIC_OP_XOR", VK_LOGIC_OP_XOR },
+        {"VK_LOGIC_OP_OR", VK_LOGIC_OP_OR },
+        {"VK_LOGIC_OP_NOR", VK_LOGIC_OP_NOR },
+        {"VK_LOGIC_OP_EQUIVALENT", VK_LOGIC_OP_EQUIVALENT },
+        {"VK_LOGIC_OP_INVERT", VK_LOGIC_OP_INVERT },
+        {"VK_LOGIC_OP_OR_REVERSE", VK_LOGIC_OP_OR_REVERSE },
+        {"VK_LOGIC_OP_COPY_INVERTED", VK_LOGIC_OP_COPY_INVERTED },
+        {"VK_LOGIC_OP_OR_INVERTED", VK_LOGIC_OP_OR_INVERTED },
+        {"VK_LOGIC_OP_NAND", VK_LOGIC_OP_NAND },
+        {"VK_LOGIC_OP_SET", VK_LOGIC_OP_SET },
+    };
+
+    auto it = convertMap.find(str);
+    if (it != convertMap.end()) {
+        return it->second;
+    }
+
+    return def;
+}
+
+VkBlendFactor VulkanConversions::VkBlendFactorFromString(const std::string& str, VkBlendFactor def)
+{
+
+    static std::unordered_map<std::string_view, VkBlendFactor> convertMap = {
+        { "VK_BLEND_FACTOR_ZERO", VK_BLEND_FACTOR_ZERO },
+        { "VK_BLEND_FACTOR_ONE", VK_BLEND_FACTOR_ONE },
+        { "VK_BLEND_FACTOR_SRC_COLOR", VK_BLEND_FACTOR_SRC_COLOR },
+        { "VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR", VK_BLEND_FACTOR_ONE_MINUS_SRC_COLOR },
+        { "VK_BLEND_FACTOR_DST_COLOR", VK_BLEND_FACTOR_DST_COLOR },
+        { "VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR", VK_BLEND_FACTOR_ONE_MINUS_DST_COLOR },
+        { "VK_BLEND_FACTOR_SRC_ALPHA", VK_BLEND_FACTOR_SRC_ALPHA },
+        { "VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA", VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA },
+        { "VK_BLEND_FACTOR_DST_ALPHA", VK_BLEND_FACTOR_DST_ALPHA },
+        { "VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA", VK_BLEND_FACTOR_ONE_MINUS_DST_ALPHA },
+        { "VK_BLEND_FACTOR_CONSTANT_COLOR", VK_BLEND_FACTOR_CONSTANT_COLOR },
+        { "VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR", VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR },
+        { "VK_BLEND_FACTOR_CONSTANT_ALPHA", VK_BLEND_FACTOR_CONSTANT_ALPHA },
+        { "VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA", VK_BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA },
+        { "VK_BLEND_FACTOR_SRC_ALPHA_SATURATE", VK_BLEND_FACTOR_SRC_ALPHA_SATURATE },
+        { "VK_BLEND_FACTOR_SRC1_COLOR", VK_BLEND_FACTOR_SRC1_COLOR },
+        { "VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR", VK_BLEND_FACTOR_ONE_MINUS_SRC1_COLOR },
+        { "VK_BLEND_FACTOR_SRC1_ALPHA", VK_BLEND_FACTOR_SRC1_ALPHA },
+        { "VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA", VK_BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA },
+    };
+
+    auto it = convertMap.find(str);
+    if (it != convertMap.end()) {
+        return it->second;
+    }
+
+    return def;
+}
+
+VkBlendOp VulkanConversions::VkBlendOpFromString(const std::string& str, VkBlendOp def)
+{
+    static std::unordered_map<std::string_view, VkBlendOp> convertMap = {
+        { "VK_BLEND_OP_ADD", VK_BLEND_OP_ADD },
+        { "VK_BLEND_OP_SUBTRACT", VK_BLEND_OP_SUBTRACT },
+        { "VK_BLEND_OP_REVERSE_SUBTRACT", VK_BLEND_OP_REVERSE_SUBTRACT },
+        { "VK_BLEND_OP_MIN", VK_BLEND_OP_MIN },
+        { "VK_BLEND_OP_MAX", VK_BLEND_OP_MAX },
+    };
+
+    auto it = convertMap.find(str);
+    if (it != convertMap.end()) {
+        return it->second;
+    }
+
+    return def;
+}
+
+VkColorComponentFlags VulkanConversions::VkColorComponentFlagsFromString(const std::string& str, VkColorComponentFlags def)
+{
+    static std::unordered_map<std::string_view, VkColorComponentFlagBits> convertMap = {
+        { "VK_COLOR_COMPONENT_R_BIT", VK_COLOR_COMPONENT_R_BIT },
+        { "VK_COLOR_COMPONENT_G_BIT", VK_COLOR_COMPONENT_G_BIT },
+        { "VK_COLOR_COMPONENT_B_BIT", VK_COLOR_COMPONENT_B_BIT },
+        { "VK_COLOR_COMPONENT_A_BIT", VK_COLOR_COMPONENT_A_BIT },
+    };
+
+    std::string clean = str;
+    std::erase_if(clean, isspace);
+
+    VkCullModeFlags flags = 0;
+    std::istringstream stream(clean);
+    std::string item;
+    bool foundFlag = false;
+    while (std::getline(stream, item, '|')) {
+        auto it = convertMap.find(item);
+        if (it != convertMap.end()) {
+            flags |= it->second;
+            foundFlag = true;
+        }
+    }
+
+    if (!foundFlag) {
+        return flags;
+    }
+
+    return def;
+}
+
+
 std::string_view ToString(VkFormat format)
 {
     switch (format) {
@@ -1208,5 +1321,7 @@ std::string_view ToString(VkSampleCountFlagBits flag)
         return "VK_SAMPLE_COUNT_UNKNOWN";
     }
 }
+
+
 
 } // namespace bl

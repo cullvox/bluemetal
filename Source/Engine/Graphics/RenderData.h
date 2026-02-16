@@ -13,8 +13,10 @@ namespace bl
 {
 
 class MaterialInstance;
+class VulkanMaterialInstance;
 class Mesh;
 class Renderer;
+class Node;
 
 class RenderData
 {
@@ -24,6 +26,7 @@ class RenderData
     VkDescriptorSet _globalSet;
     VkSampleCountFlagBits _sampleCount;
     VkImageView _swapchainImageView;
+    uint32_t _nodeID;
 
     std::vector<InstanceData> _tempInstances;
     std::vector<uint32_t> _instanceToCallMap;
@@ -43,6 +46,7 @@ class RenderData
         MaterialInstance* material;
         Mesh* mesh;
         uint32_t hash;
+        uint32_t nodeID;
         uint32_t offset = 0;
         uint32_t count = 0;
     };
@@ -68,16 +72,17 @@ public:
     VkDescriptorSet GetInstanceDescriptorSet();
     uint32_t GetInstanceBufferDynamicOffset();
 
-    void DrawInstance(MaterialInstance* material, Mesh* mesh, const InstanceData& instance);
-    void DrawDebugLine(const glm::vec3& start, const glm::vec3& end, Color color);
-    void DrawDebugTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, Color color);
+    virtual void DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh, const InstanceData& instance);
 
     void WriteInstanceBuffer();
 
     /**
      * @brief Sorts calls and executes them to the command buffer.
      */
-    void WriteDrawCommands();
+    virtual void WriteDrawCommands();
+
+    void WriteDrawCommands(VulkanMaterialInstance* material);
+    void Reset();
 };
 
 }

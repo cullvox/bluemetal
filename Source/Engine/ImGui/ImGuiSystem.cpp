@@ -139,18 +139,18 @@ void ImGuiSystem::Init()
 
     ImGui_ImplSDL3_InitForVulkan(window->Get());
 
-    auto colorFormats = _renderer->GetColorAttachmentFormats();
+    auto colorFormats = _renderer->GetColorAttachmentFormats(RenderPassType::eGeometry);
 
     // Initialize ImGui for Vulkan, pass created objects.
-    auto colorAttachmentFormats = _renderer->GetColorAttachmentFormats();
+    auto colorAttachmentFormats = _renderer->GetColorAttachmentFormats(RenderPassType::eGeometry);
     VkPipelineRenderingCreateInfo rendering = {};
     rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
     rendering.pNext = nullptr;
     rendering.viewMask = 0;
     rendering.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentFormats.size());
     rendering.pColorAttachmentFormats = colorAttachmentFormats.data();
-    rendering.depthAttachmentFormat = _renderer->GetDepthAttachmentFormat();
-    rendering.stencilAttachmentFormat = _renderer->GetStencilAttachmentFormat();
+    rendering.depthAttachmentFormat = _renderer->GetDepthAttachmentFormat(RenderPassType::eGeometry);
+    rendering.stencilAttachmentFormat = _renderer->GetStencilAttachmentFormat(RenderPassType::eGeometry);
 
     ImGui_ImplVulkan_InitInfo initInfo = {};
     initInfo.Instance = instance->Get();
@@ -174,18 +174,18 @@ void ImGuiSystem::Init()
 
     _renderer->SetImageRecreateCallback([this](){
 
-        auto colorFormats = _renderer->GetColorAttachmentFormats();
+        auto colorFormats = _renderer->GetColorAttachmentFormats(RenderPassType::eGeometry);
         ImGui_ImplVulkan_PipelineInfo info{};
 
-        auto colorAttachmentFormats = _renderer->GetColorAttachmentFormats();
+        auto colorAttachmentFormats = _renderer->GetColorAttachmentFormats(RenderPassType::eGeometry);
         VkPipelineRenderingCreateInfo rendering = {};
         rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
         rendering.pNext = nullptr;
         rendering.viewMask = 0;
         rendering.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentFormats.size());
         rendering.pColorAttachmentFormats = colorAttachmentFormats.data();
-        rendering.depthAttachmentFormat = _renderer->GetDepthAttachmentFormat();
-        rendering.stencilAttachmentFormat = _renderer->GetStencilAttachmentFormat();
+        rendering.depthAttachmentFormat = _renderer->GetDepthAttachmentFormat(RenderPassType::eGeometry);
+        rendering.stencilAttachmentFormat = _renderer->GetStencilAttachmentFormat(RenderPassType::eGeometry);
 
         info.PipelineRenderingCreateInfo = rendering;
         info.MSAASamples = _renderer->GetMultisampleCount();

@@ -106,7 +106,7 @@ uint32_t HashDrawCall(MaterialInstance* material, Mesh* mesh)
     return static_cast<uint32_t>(h1 ^ (h2 << 1));
 }
 
-void RenderData::DrawInstance(MaterialInstance* material, Mesh* mesh, const InstanceData& instance)
+void RenderData::DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh, const InstanceData& instance)
 {
     uint32_t hash = HashDrawCall(material, mesh);
 
@@ -196,7 +196,32 @@ void RenderData::WriteDrawCommands()
         call.material->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
         vkCmdDrawIndexed(_cmd, call.mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
     }
+}
 
+
+void RenderData::WriteDrawCommands(VulkanMaterialInstance* instance)
+{
+    // Perform draw commands.
+    instance->Bind(*this);
+
+    Mesh* prevMesh = nullptr;
+    for (int i = 0; i < _calls.size(); i++) {
+        DrawCall& call = _calls[i];
+
+        if (prevMesh != call.mesh)
+            call.mesh->Bind(_cmd);
+    
+        ObjectPC objectPC;
+        objectPC.useInstanceBuffer.x = 1;
+        objectPC.objectID = call.nodeID;
+
+        instance->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
+        vkCmdDrawIndexed(_cmd, call.mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
+    }
+}
+
+void RenderData::Reset()
+{
     _calls.clear();
 }
 
