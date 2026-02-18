@@ -93,30 +93,33 @@ private:
     void AcquireSampleCounts();
     void TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageSubresourceRange range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout);
 
-    VulkanDevice* _device;
-    VulkanWindow* _window;
-    VulkanSwapchain* _swapchain;
-    FrameCounter& _frameCounter;
+    VulkanDevice*       _device;
+    VulkanWindow*       _window;
+    VulkanSwapchain*    _swapchain;
+    FrameCounter&       _frameCounter;
 
     // Frame Synchronization
     RenderData _renderData;
     std::array<VkCommandBuffer, VulkanConfig::maxFramesInFlight> _commandBuffers;
 
     // Render Pass Data
-    VkSampleCountFlagBits _sampleCount = VK_SAMPLE_COUNT_1_BIT;
-    VkSampleCountFlagBits _newSampleCount = VK_SAMPLE_COUNT_1_BIT;
-    VkFormat _depthFormat, _positionFormat;
-    std::unique_ptr<VulkanImage> _colorImage;
-    std::unique_ptr<VulkanImageView> _colorImageView;
-    std::unique_ptr<VulkanImage> _depthImage;
-    std::unique_ptr<VulkanImageView> _depthImageView;
+    VkSampleCountFlagBits               _sampleCount = VK_SAMPLE_COUNT_1_BIT;
+    VkSampleCountFlagBits               _newSampleCount = VK_SAMPLE_COUNT_1_BIT;
+    VkFormat                            _depthFormat, _positionFormat;
+    std::unique_ptr<VulkanImage>        _colorImage;
+    std::unique_ptr<VulkanImageView>    _colorImageView;
+    std::unique_ptr<VulkanImage>        _selectionImage;
+    std::unique_ptr<VulkanImageView>    _selectionImageView;
+    std::unique_ptr<VulkanBuffer>       _selectionBuffer;
+    std::unique_ptr<VulkanImage>        _depthImage;
+    std::unique_ptr<VulkanImageView>    _depthImageView;
 
-    std::unique_ptr<SelectionPass> _selectionPass;
+    std::unique_ptr<SelectionPass>      _selectionPass;
 
-    std::array<VkImage, VulkanConfig::maxFramesInFlight> _swapchainImages;
-    std::array<VkImageView, VulkanConfig::maxFramesInFlight> _swapchainImageViews;
-    bool recreateRequested = false;
-    VkPresentModeKHR recreatePresentMode = VK_PRESENT_MODE_FIFO_KHR;
+    std::array<VkImage, VulkanConfig::maxFramesInFlight>        _swapchainImages;
+    std::array<VkImageView, VulkanConfig::maxFramesInFlight>    _swapchainImageViews;
+    bool                                                        recreateRequested = false;
+    VkPresentModeKHR                                            recreatePresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
     bool _enableSelectionBuffer;
 
@@ -125,11 +128,11 @@ private:
     // Uniform data
     void UpdateGlobalUniform(uint32_t currentFrame);
 
-    GlobalUBO _uboData;
-    VkDescriptorSetLayout _globalLayout;
-    std::array<VulkanBuffer, VulkanConfig::maxFramesInFlight> _globalBuffer;
-    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalSet;
-    std::array<void*, VulkanConfig::maxFramesInFlight> _globalBufferMap;
+    GlobalUBO                                                       _uboData;
+    VkDescriptorSetLayout                                           _globalLayout;
+    std::array<VulkanBuffer, VulkanConfig::maxFramesInFlight>       _globalBuffer;
+    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight>    _globalSet;
+    std::array<void*, VulkanConfig::maxFramesInFlight>              _globalBufferMap;
 
     // Instance rendering
     struct DrawCall {
