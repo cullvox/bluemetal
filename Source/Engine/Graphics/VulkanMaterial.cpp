@@ -50,6 +50,8 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
                 pair.second.SetType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
             }
         }
+
+        _flags |= VulkanMaterialSupportFlags::eMaterialBuffer;
     }
 
     // Determine if this pipeline layout uses the global uniform buffer.
@@ -60,6 +62,14 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
             binding.GetName() == "globals" &&
             binding.GetSize() == sizeof(GlobalUBO)) {
             _flags |= VulkanMaterialSupportFlags::eGlobalBuffer;
+        }
+    }
+
+    if (sets.contains(1) && sets[1].Contains(0)) {
+        auto& materialSet = sets[1];
+        auto& binding = materialSet[0];
+        if (binding.GetType() != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC) {
+            Print::Error("Invalid material buffer type!");
         }
     }
 

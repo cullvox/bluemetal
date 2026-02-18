@@ -16,6 +16,7 @@ enum class VulkanMaterialSupportFlags : uint32_t
     eNone           = 0x00000000,
     eGlobalBuffer   = 0x00000001,
     eInstanceBuffer = 0x00000002,
+    eMaterialBuffer = 0x00000004,
 };
 
 inline constexpr VulkanMaterialSupportFlags operator|(VulkanMaterialSupportFlags lhs, VulkanMaterialSupportFlags rhs) noexcept {

@@ -292,7 +292,7 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     renderArea.offset = { 0, 0 };
     renderArea.extent = _swapchain->GetExtent();
 
-    std::array<VkRenderingAttachmentInfo, 1> colorAttachments = {};
+    std::array<VkRenderingAttachmentInfo, 2> colorAttachments = {};
     colorAttachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     colorAttachments[0].pNext = nullptr;
     colorAttachments[0].imageView = _colorImageView->Get();
@@ -312,6 +312,17 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     } else {
         colorAttachments[0].imageView = _swapchainImageViews[imageIndex];
     }
+
+    colorAttachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    colorAttachments[1].pNext = nullptr;
+    colorAttachments[1].imageView = _selectionImageView->Get();
+    colorAttachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachments[1].resolveMode = VK_RESOLVE_MODE_NONE;
+    colorAttachments[1].resolveImageView = VK_NULL_HANDLE;
+    colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachments[1].clearValue = VkClearValue { .color = { -1, -1, -1, -1 } };
 
     VkRenderingAttachmentInfo depthAttachment = {};
     depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
