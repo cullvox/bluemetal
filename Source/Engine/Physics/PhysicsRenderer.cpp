@@ -38,7 +38,7 @@ void PhysicsRenderer::DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::
     _renderer->DrawTriangle(a, b, c, 3.0f, color);
 }
 
-void PhysicsRenderer::DrawText3D(JPH::RVec3Arg inPosition, const std::string_view &inString, JPH::ColorArg inColor, float inHeight)
+void PhysicsRenderer::DrawText3D(JPH::RVec3Arg, const std::string_view &, JPH::ColorArg, float)
 {
     // Can't yet.
 }

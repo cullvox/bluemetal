@@ -372,6 +372,15 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         VK_IMAGE_LAYOUT_UNDEFINED,
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
 
+    _selectionImage->Transition(
+        cmd,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        0,
+        VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+        range);
+
     // If using a multisampled image transition to a color image.
     if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
         TransitionImageLayout(cmd,
@@ -623,8 +632,7 @@ std::vector<VkFormat> Renderer::GetColorAttachmentFormats(RenderPassType pass)
 {
     std::vector<VkFormat> out;
     switch (pass) {
-        case RenderPassType::eGeometry: return { _swapchain->GetFormat() };
-        case RenderPassType::eSelection: _selectionPass->GetColorFormats(out); break;
+        case RenderPassType::eGeometry: return { _swapchain->GetFormat(), VK_FORMAT_R32_UINT };
     }
 
     return out;
@@ -634,14 +642,14 @@ VkFormat Renderer::GetDepthAttachmentFormat(RenderPassType pass)
 {
     switch (pass) {
         case RenderPassType::eGeometry: return _depthFormat;
-        case RenderPassType::eSelection: return _selectionPass->GetDepthFormat();
+        default: throw std::runtime_error("Invalid enum");
     }
 }
 
 VkFormat Renderer::GetStencilAttachmentFormat(RenderPassType pass)
 {    switch (pass) {
         case RenderPassType::eGeometry: return VK_FORMAT_UNDEFINED;
-        case RenderPassType::eSelection: return _selectionPass->GetStencilFormat();
+        default: throw std::runtime_error("Invalid enum");
     }
 }
 

@@ -31,8 +31,6 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
 
         if (renderPass == "geometry") {
             info.pass = RenderPassType::eGeometry;
-        } else if (renderPass == "selection") {
-            info.pass = RenderPassType::eSelection;
         } else {
             Print::Warn("Invalid render pass type! Using geometry.");
             info.pass = RenderPassType::eGeometry;
