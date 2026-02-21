@@ -17,10 +17,35 @@
 #include "Resources/ResourceSystem.h"
 #include "Window/Input.h"
 
+#include "Jolt/Core/Core.h"
+
 namespace bl {
 
 Engine::Engine(int argc, const char** argv)
 {
+
+
+    Print::Raw(fmt::fg(fmt::color::sky_blue), " 888888ba  dP                   8888ba.88ba             dP            dP \n");
+    Print::Raw(fmt::fg(fmt::color::sky_blue), " 88    `8b 88                   88  `8b  `8b            88            88 \n");
+    Print::Raw(fmt::fg(fmt::color::sky_blue), "a88aaaa8P' 88 dP    dP .d8888b. 88   88   88 .d8888b. d8888P .d8888b. 88 \n");
+    Print::Raw(fmt::fg(fmt::color::sky_blue), " 88   `8b. 88 88    88 88ooood8 88   88   88 88ooood8   88   88'  `88 88 \n");
+    Print::Raw(fmt::fg(fmt::color::sky_blue), " 88    .88 88 88.  .88 88.  ... 88   88   88 88.  ...   88   88.  .88 88 \n");
+    Print::Raw(fmt::fg(fmt::color::sky_blue), " 88888888P dP `88888P' `88888P' dP   dP   dP `88888P'   dP   `88888P8 dP \n");
+    Print::Raw(fmt::fg(fmt::color::sky_blue), "                                                                  Engine \n");
+    Print::NewLine();
+    Print::Raw(fmt::fg(fmt::color::orange), "Written By: {}", "Caden (cullvox) Miller\n");
+    Print::Raw(fmt::fg(fmt::color::orange), "Version:    {}\n", bl::engineVersion.ToString());
+    Print::Raw(fmt::fg(fmt::color::orange), ("Build Date: {}\n", __DATE__ " " __TIME__));
+    Print::NewLine();
+    Print::Raw("Using:\n");
+    Print::Raw("    SDL " BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION) "\n");
+    Print::Raw("    Vulkan Header " BL_STRINGIFY(VK_HEADER_VERSION) "\n");
+    Print::Raw("    Jolt Physics " BL_STRINGIFY(JPH_VERSION_MAJOR) "." BL_STRINGIFY(JPH_VERSION_MINOR) "." BL_STRINGIFY(JPH_VERSION_PATCH) "\n");
+    Print::Raw("    FMOD {}.{:0>2}.{:0>2}\n", (FMOD_VERSION >> 16) & 0xFFFF, (FMOD_VERSION >> 8) & 0xFF, FMOD_VERSION & 0xFF);
+    Print::NewLine();
+    Print::NewLine();
+
+
     argparse::ArgumentParser program("BlueMetal Engine");
 
     program.add_argument("-v", "--verbose")
@@ -38,8 +63,6 @@ Engine::Engine(int argc, const char** argv)
 
     bool verbose = program.get<bool>("--verbose");
     Print::EnableVerboseLogging(verbose);
-
-    Print::Info("Initializing BlueMetal v{}", bl::engineVersion.ToString());
 
     uint32_t flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS;
 

@@ -22,21 +22,21 @@ static inline constexpr std::string_view to_string(VersionRelease release)
 {
     switch (release) {
     case VersionRelease::eAlpha:
-        return "alpha";
+        return "Alpha";
     case VersionRelease::eBeta:
-        return "beta";
+        return "Beta";
     case VersionRelease::eDev:
-        return "dev";
+        return "Dev";
     case VersionRelease::eInfDev:
-        return "infdev";
+        return "Infdev";
     case VersionRelease::eRelease:
-        return "release";
+        return "Release";
     case VersionRelease::eStaging:
-        return "staging";
+        return "Staging";
     case VersionRelease::eSnapshot:
-        return "snapshot";
+        return "Snapshot";
     default:
-        return "undefined";
+        return "Undefined";
     }
 }
 

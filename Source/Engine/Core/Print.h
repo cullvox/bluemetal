@@ -38,12 +38,30 @@ public:
         fmt::print("\n");
     }
 
+    static void NewLine()
+    {
+        fmt::print("\n");
+    }
+
     template <typename... TArgs>
     static void Verbose(FormatWithLocation fmt, TArgs&&... args)
     {
         if (IsVerboseLogging())
             VLog(fmt, fg(fmt::color::cyan), fmt::make_format_args(args...));
     }
+
+    template <typename... TArgs>
+    static void Raw(const std::string_view& fmt, TArgs&&... args)
+    {
+        fmt::vprint(fmt, fmt::make_format_args(args...));
+    }
+
+    template <typename... TArgs>
+    static void Raw(const fmt::text_style& style, const std::string_view& fmt, TArgs&&... args)
+    {
+        fmt::vprint(stdout, style, fmt, fmt::make_format_args(args...));
+    }
+
 
     template <typename... TArgs>
     static void Debug(FormatWithLocation fmt, TArgs&&... args)
