@@ -246,7 +246,9 @@ int main(int argc, const char** argv)
                 auto extent = window->GetExtent();
 
                 renderer->DrawLine(playerNode->GetWorldPosition(), {0.0f, 0.0f, 0.0f});
+            };
 
+            auto imguiFunc = [&](bl::RenderData& rd){
                 imgui->BeginFrame();
                 editor.Draw(rd);
 
@@ -339,7 +341,7 @@ int main(int argc, const char** argv)
             };
 
             profiler.StartProfile("Render");
-            renderer->Render(renderFunc, objectFunc);
+            renderer->Render(renderFunc, imguiFunc, objectFunc);
             profiler.EndProfile("Render");
             frameCounter.EndFrame();
             profiler.EndFrame();

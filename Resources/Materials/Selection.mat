@@ -1,5 +1,4 @@
 {
-    "renderPass": "selection",
     "shaders": {
         "vertex": "Resources/Shaders/Selection.vert.spv",
         "fragment": "Resources/Shaders/Selection.frag.spv"
@@ -8,12 +7,5 @@
     "vertexState": {
         "vertex": "Default",
         "topology": "VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST"
-    },
-    "colorBlendState": {
-        "attachments": [
-            {
-                "blendEnable": false
-            }
-        ]
     }
 }

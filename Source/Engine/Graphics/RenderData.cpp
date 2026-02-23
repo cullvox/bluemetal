@@ -220,6 +220,16 @@ void RenderData::WriteDrawCommands(VulkanMaterialInstance* instance)
     }
 }
 
+void RenderData::SetSampleCount(VkSampleCountFlagBits sampleCount)
+{
+    _sampleCount = sampleCount;
+}
+
+VkSampleCountFlagBits RenderData::GetSampleCount()
+{
+    return _sampleCount;
+}
+
 void RenderData::Reset()
 {
     _calls.clear();

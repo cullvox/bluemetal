@@ -139,6 +139,13 @@ void Renderer::RecreateImages()
     // Create selection buffer images
     _selectionImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     _selectionImageView = std::make_unique<VulkanImageView>(_device, _selectionImage.get(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, mapping, range);
+    
+    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) 
+    {
+        _selectionImageSampled = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false, _sampleCount);
+        _selectionImageSampledView = std::make_unique<VulkanImageView>(_device, _selectionImageSampled.get(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, mapping, range);
+    }
+
     _selectionBuffer = std::make_unique<VulkanBuffer>(_device, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_TO_CPU, extent.width * extent.height * sizeof(uint32_t), nullptr, true, VMA_ALLOCATION_CREATE_MAPPED_BIT);
 
     // Create depth image
@@ -226,7 +233,7 @@ void Renderer::Render(Node* root)
 {
 }
 
-void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
+void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFunction objectFunc)
 {
     // If the window is minimized, we don't draw anything.
     if (_window->GetMinimized())
@@ -237,7 +244,11 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 
         // DestroyRenderPasses();
         // CreateRenderPasses();
-        _sampleCount = _newSampleCount;
+        if (_changedSampleCount)
+        {
+            _sampleCount = _newSampleCount;
+            _changedSampleCount = false;
+        }
         _swapchain->Recreate(recreatePresentMode);
         RecreateImages();
         recreateRequested = false;
@@ -330,6 +341,14 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     colorAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
     colorAttachments[1].clearValue = VkClearValue { .color = { -1, -1, -1, -1 } };
 
+        // When using a higher sample count, the image must be resolved from the sampled image.
+    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
+        colorAttachments[1].imageView = _selectionImageSampledView->Get();
+        colorAttachments[1].resolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+        colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachments[1].resolveImageView = _selectionImageView->Get();
+    }
+
     VkRenderingAttachmentInfo depthAttachment = {};
     depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     depthAttachment.pNext = nullptr;
@@ -383,6 +402,16 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 
     // If using a multisampled image transition to a color image.
     if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
+
+        _selectionImageSampled->Transition(
+            cmd,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            0,
+            VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+            range);
+
         TransitionImageLayout(cmd,
             _colorImage->Get(),
             range,
@@ -420,14 +449,15 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
     viewport.height = (float)extent.height;
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(cmd, 0, 1, &viewport);
+    vkCmdSetViewportWithCount(cmd, 1, &viewport);
 
     VkRect2D scissor;
     scissor.offset = { 0, 0 };
     scissor.extent = { extent.width, extent.height };
-    vkCmdSetScissor(cmd, 0, 1, &scissor);
+    vkCmdSetScissorWithCount(cmd, 1, &scissor);
 
-    vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
+    _renderData.SetSampleCount(_sampleCount);
+
 
     _renderData.WriteDrawCommands();
 
@@ -435,6 +465,33 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
 
     UpdateDebugBuffers(currentFrame);
     DrawDebugBuffers(_renderData);
+
+    vkCmdEndRendering(cmd);
+
+    VkRenderingAttachmentInfo colorAttachment{
+        .sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO,
+        .pNext = nullptr,
+        .imageView = _swapchainImageViews[imageIndex],
+        .imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+        .resolveMode = VK_RESOLVE_MODE_NONE,
+        .resolveImageView = VK_NULL_HANDLE,
+        .resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_LOAD,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .clearValue = clearColors[0],
+    };
+
+    renderingInfo.colorAttachmentCount = 1;
+    renderingInfo.pColorAttachments = &colorAttachment;
+    renderingInfo.pDepthAttachment = nullptr;
+
+    vkCmdBeginRendering(cmd, &renderingInfo);
+
+    vkCmdSetViewport(cmd, 0, 1, &viewport);
+    vkCmdSetScissor(cmd, 0, 1, &scissor);
+
+    _renderData.SetSampleCount(VK_SAMPLE_COUNT_1_BIT);
+    guiPassFunc(_renderData);
 
     vkCmdEndRendering(cmd);
 
@@ -448,8 +505,6 @@ void Renderer::Render(RenderFunction func, ObjectFunction objectFunc)
         getAccessFlags(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR),
         VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
         VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
-
-    _selectionPass->Render(_renderData);
 
     VK_CHECK(vkEndCommandBuffer(cmd))
 
@@ -619,6 +674,7 @@ void Renderer::SetMultisampleCount(VkSampleCountFlagBits count)
         return;
     }
 
+    _changedSampleCount = true;
     _newSampleCount = count;
     recreateRequested = true;
 }
@@ -636,6 +692,24 @@ std::vector<VkFormat> Renderer::GetColorAttachmentFormats(RenderPassType pass)
     }
 
     return out;
+}
+
+std::vector<VkPipelineColorBlendAttachmentState> Renderer::GetColorBlendAttachmentStates(RenderPassType pass)
+{
+
+    return {{
+        .blendEnable = VK_TRUE,
+        .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
+        .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+        .colorBlendOp = VK_BLEND_OP_ADD,
+        .srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE,
+        .dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO,
+        .alphaBlendOp = VK_BLEND_OP_ADD,
+        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
+    },
+    {
+        .blendEnable = VK_FALSE,
+    }};
 }
 
 VkFormat Renderer::GetDepthAttachmentFormat(RenderPassType pass)

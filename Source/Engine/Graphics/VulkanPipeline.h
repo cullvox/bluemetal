@@ -27,7 +27,7 @@ class VulkanPipeline {
     VulkanDevice* _device;
     VulkanReflectedPipeline _reflection;
     VkPipelineLayout _layout;
-    VkPipeline _pipeline;
+    std::unordered_map<uint32_t, VkPipeline> _pipelines;
     std::map<uint32_t, VkDescriptorSetLayout> _descriptorSetLayouts;
 
 public:
@@ -83,7 +83,7 @@ public:
      * @brief Gets the Vulkan pipeline handle.
      * @return The Vulkan pipeline handle.
      */
-    VkPipeline GetPipeline() const;
+    VkPipeline GetPipeline(VkSampleCountFlagBits multisampleCount) const;
 
     /**
      * @brief Gets the descriptor set layouts used by this pipeline.

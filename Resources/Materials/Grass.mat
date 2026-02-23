@@ -6,8 +6,5 @@
     },
     "rasterizerState": {
         "cullMode": "VK_CULL_MODE_NONE_BIT"
-    },
-    "colorBlendState": {
-        "attachments": [{}, {}]
     }
 }

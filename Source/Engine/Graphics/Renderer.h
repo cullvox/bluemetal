@@ -39,7 +39,7 @@ public:
 
     uint32_t GetSwapchainImageCount();
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::maxFramesInFlight - 1. */
-    void Render(RenderFunction func, ObjectFunction objectFunc);
+    void Render(RenderFunction func, RenderFunction guiPassFunc, ObjectFunction objectFunc);
     void Render(Node* root);
 
     void SetProjection(const glm::mat4& projection);
@@ -51,6 +51,7 @@ public:
     void DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness = 1.0f, Color color = Color::Violet());
     void DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness = 1.0f, Color color = Color::Violet());
     void SetSelectionMaterialInstance(VulkanMaterialInstance* instance);
+
 
     /// @brief Enables the selection buffer.
     ///
@@ -73,6 +74,7 @@ public:
     VkSampleCountFlagBits GetMultisampleCount();
 
     std::vector<VkFormat> GetColorAttachmentFormats(RenderPassType pass);
+    std::vector<VkPipelineColorBlendAttachmentState> GetColorBlendAttachmentStates(RenderPassType pass);
     VkFormat GetDepthAttachmentFormat(RenderPassType pass);
     VkFormat GetStencilAttachmentFormat(RenderPassType pass);
 
@@ -103,11 +105,14 @@ private:
     std::array<VkCommandBuffer, VulkanConfig::maxFramesInFlight> _commandBuffers;
 
     // Render Pass Data
+    bool _changedSampleCount = false;
     VkSampleCountFlagBits               _sampleCount = VK_SAMPLE_COUNT_1_BIT;
     VkSampleCountFlagBits               _newSampleCount = VK_SAMPLE_COUNT_1_BIT;
     VkFormat                            _depthFormat, _positionFormat;
     std::unique_ptr<VulkanImage>        _colorImage;
     std::unique_ptr<VulkanImageView>    _colorImageView;
+    std::unique_ptr<VulkanImage>        _selectionImageSampled;
+    std::unique_ptr<VulkanImageView>    _selectionImageSampledView;
     std::unique_ptr<VulkanImage>        _selectionImage;
     std::unique_ptr<VulkanImageView>    _selectionImageView;
     std::unique_ptr<VulkanBuffer>       _selectionBuffer;

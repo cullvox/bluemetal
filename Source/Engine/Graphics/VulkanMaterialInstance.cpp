@@ -87,7 +87,7 @@ void VulkanMaterialInstance::Bind(RenderData& rd)
         }
     }
 
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipeline());
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipeline(rd.GetSampleCount()));
 
     std::array<VkDescriptorSet, 3> descriptorSets { globalSet, currentSet, instanceSet };
 

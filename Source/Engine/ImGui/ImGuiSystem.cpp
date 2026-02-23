@@ -147,8 +147,8 @@ void ImGuiSystem::Init()
     rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
     rendering.pNext = nullptr;
     rendering.viewMask = 0;
-    rendering.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentFormats.size());
-    rendering.pColorAttachmentFormats = colorAttachmentFormats.data();
+    rendering.colorAttachmentCount = 1;
+    rendering.pColorAttachmentFormats = &colorAttachmentFormats[0]; // To do make get swapchain iamge format things
     rendering.depthAttachmentFormat = _renderer->GetDepthAttachmentFormat(RenderPassType::eGeometry);
     rendering.stencilAttachmentFormat = _renderer->GetStencilAttachmentFormat(RenderPassType::eGeometry);
 
@@ -163,7 +163,7 @@ void ImGuiSystem::Init()
     initInfo.MinImageCount = 3;
     initInfo.ImageCount = 3;
     initInfo.PipelineInfoMain.PipelineRenderingCreateInfo = rendering;
-    initInfo.PipelineInfoMain.MSAASamples = _renderer->GetMultisampleCount();
+    initInfo.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
     initInfo.UseDynamicRendering = true;
     initInfo.Allocator = nullptr;
     initInfo.CheckVkResultFn = nullptr;
@@ -171,27 +171,6 @@ void ImGuiSystem::Init()
     if (!ImGui_ImplVulkan_Init(&initInfo)) {
         throw std::runtime_error("Could not initialize ImGui Vulkan!");
     }
-
-    _renderer->SetImageRecreateCallback([this](){
-
-        auto colorFormats = _renderer->GetColorAttachmentFormats(RenderPassType::eGeometry);
-        ImGui_ImplVulkan_PipelineInfo info{};
-
-        auto colorAttachmentFormats = _renderer->GetColorAttachmentFormats(RenderPassType::eGeometry);
-        VkPipelineRenderingCreateInfo rendering = {};
-        rendering.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
-        rendering.pNext = nullptr;
-        rendering.viewMask = 0;
-        rendering.colorAttachmentCount = static_cast<uint32_t>(colorAttachmentFormats.size());
-        rendering.pColorAttachmentFormats = colorAttachmentFormats.data();
-        rendering.depthAttachmentFormat = _renderer->GetDepthAttachmentFormat(RenderPassType::eGeometry);
-        rendering.stencilAttachmentFormat = _renderer->GetStencilAttachmentFormat(RenderPassType::eGeometry);
-
-        info.PipelineRenderingCreateInfo = rendering;
-        info.MSAASamples = _renderer->GetMultisampleCount();
-
-        ImGui_ImplVulkan_CreateMainPipeline(&info);
-    });
 
     // Upload the Vulkan ImGui font textures.
     ImFontConfig cfg;
