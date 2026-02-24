@@ -310,7 +310,7 @@ void VulkanImage::Transition(VkCommandBuffer cmd, VkPipelineStageFlags srcStageF
     barrier.subresourceRange = subresourceRange;
 
     vkCmdPipelineBarrier(cmd, srcStageFlags, dstStageFlags, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-
+    _layout = newLayout;
 }
 
 void VulkanImage::GenerateMipmaps()

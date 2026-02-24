@@ -52,6 +52,8 @@ vec4 triplanarTexture(sampler2D tex, vec3 worldPos, vec3 normal, float scale)
 
 void main() 
 {
+    outSelector = object.objectID;
+
     if (material.useTriplanar) {
         vec3 N = normalize(inNormal);
         vec4 col = triplanarTexture(inAlbedo, inPosition, N, 0.1);
@@ -60,5 +62,5 @@ void main()
     }
 
     outColor = texture(inAlbedo, inTextureCoordinates);
-    outSelector = object.objectID;
+    
 }

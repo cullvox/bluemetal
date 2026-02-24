@@ -409,7 +409,7 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             0,
-            VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
             range);
 
         TransitionImageLayout(cmd,
