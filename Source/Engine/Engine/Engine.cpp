@@ -31,7 +31,7 @@ Engine::Engine(int argc, const char** argv)
     Print::Raw(fmt::fg(fmt::color::sky_blue), " 88   `8b. 88 88    88 88ooood8 88   88   88 88ooood8   88   88'  `88 88 \n");
     Print::Raw(fmt::fg(fmt::color::sky_blue), " 88    .88 88 88.  .88 88.  ... 88   88   88 88.  ...   88   88.  .88 88 \n");
     Print::Raw(fmt::fg(fmt::color::sky_blue), " 88888888P dP `88888P' `88888P' dP   dP   dP `88888P'   dP   `88888P8 dP \n");
-    Print::Raw(fmt::fg(fmt::color::sky_blue), "                                                                  Engine \n");
+    Print::Raw(fmt::fg(fmt::color::sky_blue), "Engine\n");
     Print::NewLine();
     Print::Raw(fmt::fg(fmt::color::orange), "Written By: {}", "Caden (cullvox) Miller\n");
     Print::Raw(fmt::fg(fmt::color::orange), "Version:    {}\n", bl::engineVersion.ToString());

@@ -95,7 +95,7 @@ void main() {
 
     float playerDistance = distance(material.playerParams.xyz, instance.position.xyz);
     // float bendFromPlayerFactor = max(material.playerParams.w - playerDistance, 0.0) * 1.4 / material.playerParams.w;
-    float bendFromPlayerFactor = pow(max(material.playerParams.w - playerDistance, 0.0), 2) * 0.75;
+    float bendFromPlayerFactor = max(material.playerParams.w - playerDistance, 0.0) * 0.75;
     bendFromPlayerFactor = clamp(bendFromPlayerFactor, 0.0, 1.0);
 
     vec2 bendDirection = normalize(material.playerParams.xz - instance.position.xz);

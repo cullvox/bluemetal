@@ -216,7 +216,6 @@ std::vector<const char*> VulkanDevice::GetExtensions()
     // The engines required device extensions.
     std::vector requiredExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-        "VK_EXT_extended_dynamic_state3",
 #ifdef BLUEMETAL_VULKAN_PORTABILITY
         "VK_KHR_portability_subset",
 #endif

@@ -14,6 +14,11 @@ layout(set=1, binding=0) uniform MaterialUniform
     bool useTriplanar;
 } material;
 
+struct InstanceData {
+    mat4 instance;
+    vec4 position;
+};
+
 layout(push_constant) uniform Constants
 {
     InstanceData objectInstance;

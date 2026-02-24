@@ -193,6 +193,8 @@ void RenderData::WriteDrawCommands()
             objectPC.useInstanceBuffer.x = 0;
         }
 
+        objectPC.objectID = i;
+
         call.material->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
         vkCmdDrawIndexed(_cmd, call.mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
     }
@@ -213,7 +215,7 @@ void RenderData::WriteDrawCommands(VulkanMaterialInstance* instance)
     
         ObjectPC objectPC;
         objectPC.useInstanceBuffer.x = 1;
-        objectPC.objectID = call.nodeID;
+        objectPC.objectID = i;
 
         instance->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
         vkCmdDrawIndexed(_cmd, call.mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
@@ -233,6 +235,7 @@ VkSampleCountFlagBits RenderData::GetSampleCount()
 void RenderData::Reset()
 {
     _calls.clear();
+    _instanceToCallMap.clear();
 }
 
 } // namespace bl

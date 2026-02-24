@@ -9,6 +9,19 @@ layout(location=5) in vec3 inColorLarge;
 layout(location=6) in float inSpecularFactor;
 
 layout(location=0) out vec4 outColor;
+layout(location=1) out uint outSelector;
+
+struct InstanceData {
+    mat4 instance;
+    vec4 position;
+};
+
+layout(push_constant) uniform DrawConstants
+{
+    InstanceData objectInstance;
+    ivec4 useInstanceBuffer;
+    uint objectID;
+} drawConstants;
 
 void main() {
     float AO = (inBottomToTop - inCurrentWindBend * 0.3); // * windAOEffect;
@@ -16,6 +29,8 @@ void main() {
     outColor = vec4(0.6, 0.7, 0.3, 1.0);
     outColor *= AO;
     outColor.a = 1.0;
+
+    outSelector = 200;
     // BACKLIGHT = vec3(backLightColor);
     // ROUGHNESS = roughnessFactor;
     // NORMAL = mix(NORMAL, vec3(0.0,1.0,0.0), inBottomToTop);

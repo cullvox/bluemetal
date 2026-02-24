@@ -709,6 +709,7 @@ std::vector<VkPipelineColorBlendAttachmentState> Renderer::GetColorBlendAttachme
     },
     {
         .blendEnable = VK_FALSE,
+        .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
     }};
 }
 
@@ -781,8 +782,6 @@ void Renderer::DrawDebugBuffers(RenderData& rd)
     auto cmd = rd.GetCommandBuffer();
     VkDeviceSize vertexOffset = _debugBuffer.GetDynamicOffset(rd.GetCurrentFrame());
     VkBuffer buffer = _debugBuffer.GetBuffer();
-
-    vkCmdSetRasterizationSamplesEXT(cmd, _sampleCount);
 
     if (_pointMaterial != nullptr && _points.size() > 0) {
         _pointMaterial->Bind(rd);
