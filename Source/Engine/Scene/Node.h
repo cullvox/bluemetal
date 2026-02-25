@@ -56,7 +56,7 @@ class Node {
 
 protected:
     friend class NodeFilterIterator;
-    const std::vector<std::unique_ptr<Node>>& GetVecChildren();
+    std::vector<std::unique_ptr<Node>>& GetVecChildren();
 
 public:
     Node(Engine& engine);

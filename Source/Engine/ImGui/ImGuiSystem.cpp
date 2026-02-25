@@ -30,15 +30,11 @@ std::shared_ptr<Resource> ImGuiSystem::ConstructResource(ResourceSystem&, std::s
 
 void ImGuiSystem::ApplyStyle()
 {
-    float scale = SDL_GetWindowDisplayScale(_window->Get());
-
-    Print::Debug("SDL Display scale: {}", scale);
 
     ImFontConfig cfg;
-    cfg.SizePixels = 13 * scale;
+    cfg.SizePixels = 13;
     ImGui::GetIO().Fonts->AddFontDefault(&cfg);
-    // ImGui::GetIO().FontGlobalScale = scale;
-    ImGui::GetIO().DisplayFramebufferScale = ImVec2 { scale, scale };
+
 
     ImGuiStyle& style = ImGui::GetStyle();
     style.Colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
@@ -178,8 +174,7 @@ void ImGuiSystem::Init()
 
     auto io = ImGui::GetIO();
 
-    float scale = SDL_GetWindowDisplayScale(_window->Get());
-    ImFont* pFont = io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto-Regular.ttf", 18.0f * scale);
+    ImFont* pFont = io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto-Regular.ttf", 18.0f);
     io.FontDefault = pFont;
 
     // ImGui_ImplVulkan_CreateFontsTexture();
@@ -205,6 +200,13 @@ void ImGuiSystem::BeginFrame()
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
+
+    SDL_DisplayID displayID = SDL_GetDisplayForWindow(_window->Get());
+    float scale = SDL_GetDisplayContentScale(displayID);
+    float density = SDL_GetWindowPixelDensity(_window->Get());
+
+    ImGui::GetIO().DisplayFramebufferScale = ImVec2 { density, density };
+    ImGui::GetIO().FontGlobalScale = scale;
 }
 
 void ImGuiSystem::EndFrame(VkCommandBuffer cmd)

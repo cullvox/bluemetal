@@ -243,7 +243,7 @@ void Node::DeleteChild(const std::string& child)
     _children.erase(vecIt);
 }
 
-const std::vector<std::unique_ptr<Node>>& Node::GetVecChildren()
+std::vector<std::unique_ptr<Node>>& Node::GetVecChildren()
 {
     return _children;
 }

@@ -65,13 +65,6 @@ void Node3D::UpdateMatrix()
         return;
     }
 
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), _position);
-    glm::mat4 R = glm::mat4_cast(_rotation);
-    glm::mat4 S = glm::scale(glm::mat4(1.0f), _scale);
-
-    _matrix = T * R * S;
-    _isDirty = false;
-
     // Update world matrix if there's a parent
     if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
         _worldMatrix = parent->GetWorldMatrix() * _matrix;
@@ -79,22 +72,22 @@ void Node3D::UpdateMatrix()
         _worldMatrix = _matrix;
     }
 
-    // Set all children as dirty
-    for (auto child : GetChildren()) {
-        if (auto child3D = dynamic_cast<Node3D*>(child)) {
-            child3D->_isDirty = true;
-        }
-    }
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), _position);
+    glm::mat4 R = glm::mat4_cast(_rotation);
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), _scale);
 
+    _matrix = T * R * S;
     // Update world position
     _worldPosition = glm::vec3(_worldMatrix[3]);
+
+    _isDirty = false;
 }
 
 void Node3D::SetDirty()
 {
     _isDirty = true;
-    for (auto child : GetChildren()) {
-        if (auto child3D = dynamic_cast<Node3D*>(child)) {
+    for (auto& child : GetVecChildren()) {
+        if (Node3D* child3D = dynamic_cast<Node3D*>(child.get())) {
             child3D->SetDirty();
         }
     }
@@ -114,8 +107,10 @@ void Node3D::SetWorldPosition(const glm::vec3& pos)
         glm::vec4 localPos = parentInverse * glm::vec4(pos, 1.0f);
         _position = glm::vec3(localPos);
     } else {
-        _position = _position;
+        _position = pos;
     }
+
+    SetDirty();
 }
 
 void Node3D::SetRotation(const glm::vec3& eulerAngles)
@@ -144,6 +139,8 @@ void Node3D::SetWorldRotation(const glm::quat& newRotation)
     } else {
         _rotation = newRotation;
     }
+
+    SetDirty();
 }
 
 void Node3D::SetScale(const glm::vec3& newScale)
@@ -175,11 +172,7 @@ const glm::vec3& Node3D::GetScale() const
 glm::vec3 Node3D::GetWorldPosition()
 {
     UpdateMatrix();
-    if (GetParent()) {
-        return _worldPosition;
-    } else {
-        return _position;
-    }
+    return _worldPosition;
 }
 
 glm::vec3 Node3D::GetWorldRotation()
@@ -209,20 +202,14 @@ glm::vec3 Node3D::GetWorldScale()
 
 const glm::mat4& Node3D::GetMatrix()
 {
+    UpdateMatrix();
     return _matrix;
 }
 
 const glm::mat4& Node3D::GetWorldMatrix()
 {
-    if (GetParent()) {
-        if (_isDirty) {
-            UpdateMatrix();
-        }
-
-        return _worldMatrix;
-    } else {
-        return _matrix;
-    }
+    UpdateMatrix();
+    return _worldMatrix;
 }
 
 

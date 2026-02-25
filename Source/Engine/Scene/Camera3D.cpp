@@ -44,17 +44,26 @@ void Camera3D::SetFOV(float fov)
 
 const glm::mat4& Camera3D::GetProjectionMatrix()
 {
+    Extent2D extent = GetEngine().GetWindow()->GetExtent();
+    float width = static_cast<float>(extent.width);
+    float height = static_cast<float>(extent.height);
+    float aspect = width / height;
+
+    if (_aspect != aspect) {
+        _aspect = aspect;
+        _isDirty = true;
+    }
+
     if (!_isDirty) {
         return _projectionMatrix;
     }
 
-    Extent2D extent = GetEngine().GetWindow()->GetExtent();
     switch (_projection) {
     case CameraProjection::ePerspective:
-        _projectionMatrix = glm::perspective(glm::radians(_fov), (float)extent.width / (float)extent.height, _nearClip, _farClip);
+        _projectionMatrix = glm::perspective(glm::radians(_fov), _aspect, _nearClip, _farClip);
         break;
     case CameraProjection::eOrthographic:
-        _projectionMatrix = glm::ortho((float)extent.height, (float)extent.height, (float)extent.width, (float)extent.width, _nearClip, _farClip);
+        _projectionMatrix = glm::ortho(height, height, width, width, _nearClip, _farClip);
         break;
     }
 
