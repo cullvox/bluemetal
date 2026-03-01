@@ -131,23 +131,15 @@ public:
      */
     VkSwapchainKHR Get() const;
 
-    /**
-     * @brief Returns the current index of the swapchain image being used.
-     * @return The index of the current swapchain image.
-     */
-    uint32_t GetImageIndex() const;
-
-    uint32_t GetCurrentFrame() const;
-
     bool GetMailboxSupported() const; /** @brief Returns true on VK_PRESENT_MODE_MAILBOX being supported on current physical device. */
     bool GetImmediateSupported() const; /** @brief Returns true on VK_PRESENT_MODE_IMMEDIATE being supported on current physical device. */
 
     void SetSurfaceFormat(VkSurfaceFormatKHR format);
     void SetPresentMode(VkPresentModeKHR mode);
     void Recreate(std::optional<VkPresentModeKHR> presentMode = {}, std::optional<VkSurfaceFormatKHR> surfaceFormat = {});
-    bool AcquireNext();
+    bool AcquireNext(uint32_t& imageIndex, VkSemaphore imageAvailableSemaphore);
     void QueueSubmit(VkCommandBuffer cmd, VkPipelineStageFlags waitDstStageMask);
-    bool QueuePresent(); /** Presents the image at GetImageIndex() to the screen. */
+    bool QueuePresent(uint32_t imageIndex, std::span<VkSemaphore> waitSemaphores); /** Presents the image at GetImageIndex() to the screen. */
     void Destroy();
 };
 

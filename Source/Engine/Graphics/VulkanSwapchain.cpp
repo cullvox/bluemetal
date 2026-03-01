@@ -80,16 +80,6 @@ std::vector<VkImageView> VulkanSwapchain::GetImageViews() const
     return _swapImageViews;
 }
 
-uint32_t VulkanSwapchain::GetImageIndex() const
-{
-    return _imageIndex;
-}
-
-uint32_t VulkanSwapchain::GetCurrentFrame() const
-{
-    return _currentFrame;
-}
-
 bool VulkanSwapchain::GetMailboxSupported() const
 {
     return _isMailboxSupported;
@@ -100,16 +90,9 @@ bool VulkanSwapchain::GetImmediateSupported() const
     return _isImmediateSupported;
 }
 
-bool VulkanSwapchain::AcquireNext()
+bool VulkanSwapchain::AcquireNext(uint32_t& imageIndex, VkSemaphore imageAvailableSemaphore)
 {
-    // Wait for the current image up coming in the chain to finish.
-    VkResult result = vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX);
-
-    if (result != VK_SUCCESS) {
-        throw std::runtime_error("Error");
-    }
-
-    result = vkAcquireNextImageKHR(_device->Get(), _swapchain, UINT32_MAX, _imageAvailableSemaphores[_currentFrame], VK_NULL_HANDLE, &_imageIndex);
+    VkResult result = vkAcquireNextImageKHR(_device->Get(), _swapchain, UINT32_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
 
     bool recreate = false;
     switch (result) {
@@ -124,43 +107,19 @@ bool VulkanSwapchain::AcquireNext()
         throw std::runtime_error("Could not acquire the next swapchain image!");
     }
 
-    // Reset the fence for this image so it can signal when it's done.
-    VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
     return recreate;
 }
 
-void VulkanSwapchain::QueueSubmit(VkCommandBuffer cmd, VkPipelineStageFlags waitDstStageMask)
-{
-    // Submit the command buffer to the graphics queue.
-    std::array<VkCommandBuffer, 1>      commandBuffers = { cmd };
-    std::array<VkPipelineStageFlags, 1> waitStages = { waitDstStageMask };
-    std::array<VkSemaphore, 1>          waitSemaphores = { _imageAvailableSemaphores[_currentFrame] };
-    std::array<VkSemaphore, 1>          signalSemaphores = { _renderFinishedSemaphores[_imageIndex] };
-
-    VkSubmitInfo submitInfo = {};
-    submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-    submitInfo.pNext = nullptr;
-    submitInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
-    submitInfo.pWaitSemaphores = waitSemaphores.data();
-    submitInfo.pWaitDstStageMask = waitStages.data();
-    submitInfo.commandBufferCount = static_cast<uint32_t>(commandBuffers.size());
-    submitInfo.pCommandBuffers = commandBuffers.data();
-    submitInfo.signalSemaphoreCount = static_cast<uint32_t>(signalSemaphores.size());
-    submitInfo.pSignalSemaphores = signalSemaphores.data();
-
-    VK_CHECK(vkQueueSubmit(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
-}
-
-bool VulkanSwapchain::QueuePresent()
+bool VulkanSwapchain::QueuePresent(uint32_t imageIndex, std::span<VkSemaphore> waitSemaphores)
 {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.pNext = nullptr;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = &_renderFinishedSemaphores[_imageIndex];
+    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
+    presentInfo.pWaitSemaphores = waitSemaphores.data();
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &_swapchain;
-    presentInfo.pImageIndices = &_imageIndex;
+    presentInfo.pImageIndices = &imageIndex;
     presentInfo.pResults = nullptr;
 
     VkResult result = vkQueuePresentKHR(_device->GetPresentQueue(), &presentInfo);
@@ -172,8 +131,6 @@ bool VulkanSwapchain::QueuePresent()
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Could not queue Vulkan present!");
     }
-
-    _currentFrame = (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
 
     return recreated;
 }

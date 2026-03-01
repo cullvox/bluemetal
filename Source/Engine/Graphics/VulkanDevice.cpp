@@ -306,15 +306,11 @@ void VulkanDevice::CreateDevice()
     features13.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
     features13.pNext = &features11;
     features13.dynamicRendering = VK_TRUE;
-
-    VkPhysicalDeviceExtendedDynamicState3FeaturesEXT dynamicStateFeatures3 = {};
-    dynamicStateFeatures3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT;
-    dynamicStateFeatures3.pNext = &features13;
-    dynamicStateFeatures3.extendedDynamicState3RasterizationSamples = VK_TRUE;
+    features13.synchronization2 = VK_TRUE;
 
     VkPhysicalDeviceExtendedDynamicStateFeaturesEXT dynamicStateFeatures = {};
     dynamicStateFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT;
-    dynamicStateFeatures.pNext = &dynamicStateFeatures3;
+    dynamicStateFeatures.pNext = &features13;
     dynamicStateFeatures.extendedDynamicState = VK_TRUE;
 
     VkDeviceCreateInfo createInfo = {};

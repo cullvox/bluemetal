@@ -9,6 +9,7 @@
 #include "VulkanBuffer.h"
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
+#include "VulkanConfig.h"
 #include "VulkanSampler.h"
 
 namespace bl {
@@ -212,7 +213,7 @@ private:
     int32_t _materialSet;
     uint32_t _currentFrame;
     std::map<uint32_t, BindingData> _bindings;
-    std::vector<PerFrameData> _perFrameData;
+    std::array<PerFrameData, VulkanConfig::maxFramesInFlight> _perFrameData;
 
 };
 

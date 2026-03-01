@@ -78,6 +78,8 @@ public:
     VkFormat GetDepthAttachmentFormat(RenderPassType pass);
     VkFormat GetStencilAttachmentFormat(RenderPassType pass);
 
+    static constexpr uint32_t GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
+
 
 protected:
     friend class Material;
@@ -86,25 +88,32 @@ protected:
     void RemoveMaterial(VulkanMaterialInstance* instance);
 
 private:
-    void CreateCommandBuffers();
-    void DestroyCommandBuffers();
-    void DestroyImagesAndFramebuffers();
-    void CreateGlobalUniform();
-    void DestroyGlobalUniform();
-    void RecreateImages();
-    void AcquireSampleCounts();
-    void TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageSubresourceRange range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout);
-
     VulkanDevice*       _device;
     VulkanWindow*       _window;
     VulkanSwapchain*    _swapchain;
     FrameCounter&       _frameCounter;
 
+
     // Frame Synchronization
-    RenderData _renderData;
-    std::array<VkCommandBuffer, VulkanConfig::maxFramesInFlight> _commandBuffers;
+    struct PerFrameData {
+        VkSemaphore imageAvailableSemaphore;
+        VkFence inFlightFence;
+        VkCommandBuffer commandBuffer;
+    };
+
+    static constexpr uint32_t                       MAX_FRAMES_IN_FLIGHT = 2;
+    RenderData                                      _renderData;
+    uint32_t                                        _currentFrame = 0;
+    std::array<PerFrameData, MAX_FRAMES_IN_FLIGHT>  _perFrame;
+    std::vector<VkSemaphore>                        _renderFinishedSemaphores;
+
+    void CreatePerFrameSyncedData();
+    void DestroyPerFrameSyncedData();
+
 
     // Render Pass Data
+    std::vector<VkImage>                _swapchainImages;
+    std::vector<VkImageView>            _swapchainImageViews;
     bool _changedSampleCount = false;
     VkSampleCountFlagBits               _sampleCount = VK_SAMPLE_COUNT_1_BIT;
     VkSampleCountFlagBits               _newSampleCount = VK_SAMPLE_COUNT_1_BIT;
@@ -121,55 +130,46 @@ private:
 
     std::unique_ptr<SelectionPass>      _selectionPass;
 
-    std::array<VkImage, VulkanConfig::maxFramesInFlight>        _swapchainImages;
-    std::array<VkImageView, VulkanConfig::maxFramesInFlight>    _swapchainImageViews;
     bool                                                        recreateRequested = false;
     VkPresentModeKHR                                            recreatePresentMode = VK_PRESENT_MODE_FIFO_KHR;
 
-    bool _enableSelectionBuffer;
+    void DestroyImagesAndFramebuffers();
+    void RecreateImages();
+    void AcquireSampleCounts();
+    void TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageSubresourceRange range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout);
 
+
+    // Global Uniform Buffer
     std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache;
+    GlobalUBO               _uboData;
+    VkDescriptorSetLayout   _globalDescriptorLayout;
+    VulkanBufferFrameRing   _globalBuffer;
+    VkDescriptorSet         _globalDescriptorSet;
 
-    // Uniform data
-    void UpdateGlobalUniform(uint32_t currentFrame);
+    void CreateGlobalUniform();
+    void DestroyGlobalUniform();
+    void UpdateGlobalUniform();
 
-    GlobalUBO                                                       _uboData;
-    VkDescriptorSetLayout                                           _globalLayout;
-    std::array<VulkanBuffer, VulkanConfig::maxFramesInFlight>       _globalBuffer;
-    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight>    _globalSet;
-    std::array<void*, VulkanConfig::maxFramesInFlight>              _globalBufferMap;
-
-    // Instance rendering
-    struct DrawCall {
-        int count;
-        std::vector<InstanceData> instances;
-    };
-
-    using DrawKey = std::pair<MaterialInstance*, Mesh*>;
-    std::map<DrawKey, DrawCall> _calls;
-
-    std::function<void()> _recreateCallback;
 
     // Material Uniform Updates
-    void UpdateMaterialUniforms(uint32_t currentFrame);
-
     std::unordered_set<VulkanMaterialInstance*> _materials;
 
+    void UpdateMaterialUniforms();
+
+
     // Debug Rendering
+    VulkanMaterialInstance*     _pointMaterial = nullptr;
+    VulkanMaterialInstance*     _lineMaterial = nullptr;
+    VulkanMaterialInstance*     _triangleMaterial = nullptr;
+    std::vector<VertexDebug>    _points;
+    std::vector<VertexDebug>    _lines;
+    std::vector<VertexDebug>    _triangles;
+    std::vector<VertexDebug>    _debugVertices;
+    VulkanBufferFrameRing       _debugBuffer;
+
     void CreateDebugBuffer();
-    void UpdateDebugBuffers(uint32_t currentFrame);
+    void UpdateDebugBuffers();
     void DrawDebugBuffers(RenderData& rd);
-
-
-
-    VulkanMaterialInstance* _pointMaterial = nullptr;
-    VulkanMaterialInstance* _lineMaterial = nullptr;
-    VulkanMaterialInstance* _triangleMaterial = nullptr;
-    std::vector<VertexDebug> _points;
-    std::vector<VertexDebug> _lines;
-    std::vector<VertexDebug> _triangles;
-    std::vector<VertexDebug> _debugVertices;
-    VulkanBufferFrameRing _debugBuffer;
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RenderPassType, {

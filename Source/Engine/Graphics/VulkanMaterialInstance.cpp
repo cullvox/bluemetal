@@ -2,6 +2,7 @@
 #include "VulkanMaterial.h"
 #include "UniformData.h"
 #include "RenderData.h"
+#include "Renderer.h"
 
 namespace bl {
 
@@ -81,7 +82,7 @@ void VulkanMaterialInstance::Bind(RenderData& rd)
             if (binding.second.index() == 0) {
                 auto& variant = _bindings[binding.first];
                 UniformData& uniform = std::get<UniformData>(variant);
-                uint32_t blockSize = static_cast<uint32_t>(uniform.buffer.GetSize()) / _material->_swapchainImageCount;
+                uint32_t blockSize = static_cast<uint32_t>(uniform.buffer.GetSize()) / VulkanConfig::maxFramesInFlight;
                 offsets.push_back(blockSize * currentFrame);
             }
         }
@@ -177,8 +178,6 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
         return;
     }
 
-    uint32_t previousFrame = (static_cast<int>(currentFrame - 1) % static_cast<int>(_material->_swapchainImageCount) + static_cast<int>(_material->_swapchainImageCount)) % static_cast<int>(_material->_swapchainImageCount);
-
     PerFrameData& currentFrameData = _perFrameData[currentFrame];
 
     // If any previous frames changed their data this frame is dirty and must
@@ -195,7 +194,7 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
         switch (variant.index()) {
         case 0: { // buffer type
             UniformData& uniform = std::get<UniformData>(variant);
-            VkDeviceSize blockSize = uniform.buffer.GetSize() / _material->_swapchainImageCount;
+            VkDeviceSize blockSize = uniform.buffer.GetSize() / VulkanConfig::maxFramesInFlight;
 
             uintptr_t dstOffset = static_cast<uintptr_t>(blockSize) * currentFrame;
 
@@ -253,8 +252,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
     }
 
     // Allocate the per frame descriptor sets.
-    _perFrameData.resize(_material->_swapchainImageCount);
-    for (uint32_t i = 0; i < _material->_swapchainImageCount; i++) {
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
         _perFrameData[i].set = _material->_descriptorSetCache.Allocate(layout);
     }
 
@@ -278,7 +276,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
         switch (binding.GetType()) {
         case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
             auto dynamicAlignment = _device->GetDynamicAlignment(binding.GetSize());
-            auto bufferSize = dynamicAlignment * _material->_swapchainImageCount;
+            auto bufferSize = dynamicAlignment * VulkanConfig::maxFramesInFlight;
 
             UniformData data;
             data.buffer = VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, bufferSize, nullptr };
@@ -307,7 +305,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
         }
     }
 
-    for (uint32_t i = 0; i < _material->_swapchainImageCount; i++) {
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
         for (auto& write_ : writes)
             write_.dstSet = _perFrameData[i].set;
 
@@ -320,7 +318,7 @@ void VulkanMaterialInstance::SetBindingDirty(uint32_t binding)
     assert(_bindings.contains(binding) && "Binding must exist to set it dirty!");
 
     _perFrameData[_currentFrame].dirty[binding] = false; /* This current frame is now the current data and is no longer dirty. */
-    for (uint32_t i = 0; i < _material->_swapchainImageCount; i++) {
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
         _perFrameData[i].dirty[binding] = true;
     }
 }
