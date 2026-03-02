@@ -25,17 +25,12 @@ VulkanSwapchain::VulkanSwapchain(
     , _imageIndex(0)
     , _currentFrame(0)
 {
-    _imageAvailableSemaphores.fill(VK_NULL_HANDLE);
-    _renderFinishedSemaphores.fill(VK_NULL_HANDLE);
-    _inFlightFences.fill(VK_NULL_HANDLE);
-
     EnsureSurfaceSupported();
     Recreate();
 }
 
 VulkanSwapchain::~VulkanSwapchain()
 {
-    DestroySyncObjects();
     DestroyImageViews();
     vkDestroySwapchainKHR(_device->Get(), _swapchain, nullptr);
 }
@@ -266,41 +261,6 @@ void VulkanSwapchain::DestroyImageViews()
     _swapImageViews.clear();
 }
 
-void VulkanSwapchain::CreateSyncObjects()
-{
-    VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreInfo.pNext = nullptr;
-    semaphoreInfo.flags = 0;
-
-    VkFenceCreateInfo fenceInfo = {};
-    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-    fenceInfo.pNext = nullptr;
-    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-
-    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
-        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]))
-        VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_inFlightFences[i]))
-    }
-
-    for (uint32_t i = 0; i < _imageCount; i++) {
-        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
-    }
-}
-
-void VulkanSwapchain::DestroySyncObjects()
-{
-    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
-        vkDestroySemaphore(_device->Get(), _imageAvailableSemaphores[i], nullptr);
-        vkDestroyFence(_device->Get(), _inFlightFences[i], nullptr);
-    }
-
-    for (uint32_t i = 0; i < _imageCount; i++) {
-        vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
-    }
-}
-
-
 void VulkanSwapchain::Destroy()
 {
 }
@@ -311,7 +271,6 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     _device->WaitForDevice();
 
     DestroyImageViews(); // Image views will be recreated later.
-    DestroySyncObjects();
     ChooseImageCount();
     ChooseExtent();
 
@@ -368,7 +327,6 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     }
 
     ObtainImages();
-    CreateSyncObjects();
     CreateImageViews();
 }
 

@@ -158,7 +158,7 @@ int main(int argc, const char** argv)
         followCamera->SetPosition({ 0.0f, 10.0f, -10.0f });
         followCamera->SetRotation({ -45.0f, 180.0f, 0.0f});
         followCamera->SetProjection(bl::CameraProjection::ePerspective);
-        followCamera->SetFOV(75.0f);
+        followCamera->SetFOV(15.0f);
         followCamera->SetNearClip(0.1f);
         followCamera->SetFarClip(1000.0f);
 

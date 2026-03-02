@@ -53,9 +53,6 @@ private:
     uint32_t _currentFrame;
     bool _isMailboxSupported;
     bool _isImmediateSupported;
-    std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> _imageAvailableSemaphores;
-    std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> _renderFinishedSemaphores;
-    std::array<VkFence, VulkanConfig::maxFramesInFlight> _inFlightFences;
 
 public:
     /**
