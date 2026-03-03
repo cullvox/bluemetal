@@ -37,20 +37,6 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
         throw std::runtime_error("VulkanMaterial does not contain the used set!");
 
     if (materialSet != -1) {
-        auto& meta = sets.at(materialSet);
-
-        // Ensure that all uniform buffers are actually dynamic uniform buffers.
-        // This allows for us to use one buffer and swap between areas of it.
-        auto& bindings = meta.GetBindings();
-
-        for (auto& pair : bindings) {
-            auto binding = pair.second.GetBinding();
-
-            if (binding.descriptorType == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
-                pair.second.SetType(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
-            }
-        }
-
         _flags |= VulkanMaterialSupportFlags::eMaterialBuffer;
     }
 
@@ -66,23 +52,20 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
     }
 
     if (sets.contains(1) && sets[1].Contains(0)) {
-        auto& materialSet = sets[1];
-        auto& binding = materialSet[0];
-        if (binding.GetType() != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC) {
-            Print::Error("Invalid material buffer type!");
-        }
-    }
-
-    if (sets.contains(2) && sets[2].Contains(0)) {
-        auto& instanceSet = sets[2];
+        auto& instanceSet = sets[1];
         auto& binding = instanceSet[0];
         if (binding.GetType() == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER) {
             _flags |= VulkanMaterialSupportFlags::eInstanceBuffer;
         }
     }
 
-    if ((_flags & VulkanMaterialSupportFlags::eInstanceBuffer) != VulkanMaterialSupportFlags::eNone) {
-        sets[2][0].SetType(VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC);
+
+    if (sets.contains(2) && sets[2].Contains(0)) {
+        auto& materialSet = sets[2];
+        auto& binding = materialSet[0];
+        if (binding.GetType() != VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER) {
+            Print::Error("Descriptor (set=2, binding=0) must be a uniform buffer!");
+        }
     }
 
     // Construct the pipeline.
@@ -101,8 +84,7 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
     auto metaBindings = meta.GetMetaBindings();
     for (const auto& binding : metaBindings) {
         switch (binding.GetType()) {
-        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
-        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
             auto blocks = binding.GetMembers();
 
             // Get each uniform members block for its offsets.

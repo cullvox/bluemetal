@@ -21,33 +21,37 @@ RenderData::RenderData(Renderer* renderer)
     _instanceToCallMap.reserve(MAX_INSTANCE_BUFFER_SIZE);
     _instances.reserve(MAX_INSTANCE_BUFFER_SIZE);
 
-    _instanceBuffer = VulkanBufferFrameRing{renderer->GetDevice(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, VulkanConfig::maxFramesInFlight, MAX_INSTANCE_BUFFER_SIZE * sizeof(InstanceData), false};
+    _instanceBuffer = VulkanBufferFrameRing{renderer->GetDevice(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, MAX_INSTANCE_BUFFER_SIZE * sizeof(InstanceData)};
 
     std::array<VkDescriptorSetLayoutBinding, 1> instanceBindings = {
-        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}
+        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}
     };
 
     _instanceSetLayout = renderer->GetDevice()->AcquireDescriptorSetLayout(instanceBindings);
-    _instanceSet = _descriptorCache.Allocate(_instanceSetLayout);
 
-    VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = _instanceBuffer.GetBuffer();
-    bufferInfo.offset = 0;
-    bufferInfo.range = MAX_INSTANCE_BUFFER_SIZE * sizeof(InstanceData);
+    std::array<VkDescriptorBufferInfo, VulkanConfig::maxFramesInFlight> descriptorBufferInfos;
+    std::array<VkWriteDescriptorSet, VulkanConfig::maxFramesInFlight> descriptorWrites;
 
-    VkWriteDescriptorSet write = {};
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = _instanceSet;
-    write.dstBinding = 0;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
-    write.pImageInfo = nullptr;
-    write.pBufferInfo = &bufferInfo;
-    write.pTexelBufferView = nullptr;
+    for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++)
+    {
+        _instanceSets[i] = _descriptorCache.Allocate(_instanceSetLayout);
 
-    vkUpdateDescriptorSets(renderer->GetDevice()->Get(), 1, &write, 0, nullptr);
+        descriptorBufferInfos[i] = _instanceBuffer.GetDescriptorInfo(i);
+        descriptorWrites[i] = {
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .pNext = nullptr,
+            .dstSet = _instanceSets[i],
+            .dstBinding = 0,
+            .dstArrayElement = 0,
+            .descriptorCount = 1,
+            .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+            .pImageInfo = nullptr,
+            .pBufferInfo = &descriptorBufferInfos[i],
+            .pTexelBufferView = nullptr,
+        };
+    }
+
+    vkUpdateDescriptorSets(renderer->GetDevice()->Get(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
 void RenderData::SetCommandBuffer(VkCommandBuffer cmd)
@@ -93,7 +97,7 @@ VkDescriptorSet RenderData::GetGlobalDescriptorSet()
 
 VkDescriptorSet RenderData::GetInstanceDescriptorSet()
 {
-    return _instanceSet;
+    return _instanceSets[_currentFrame];
 }
 
 static Profiler profiler;
@@ -128,16 +132,8 @@ void RenderData::DrawMultiInstance(Node* node, MaterialInstance* material, Mesh*
 
 void RenderData::WriteInstanceBuffer()
 {
-    // Sort instances into the proper buffer areas.
-    profiler.StartProfile("Upload Instance Data");
     // Upload instances to the staging buffer.
-    _instanceBuffer.Upload(_cmd, std::as_bytes(std::span(_instances)), _currentFrame);
-    profiler.EndProfile("Upload Instance Data");
-}
-
-uint32_t RenderData::GetInstanceBufferDynamicOffset()
-{
-    return _instanceBuffer.GetDynamicOffset(_currentFrame);
+    _instanceBuffer.Upload(std::as_bytes(std::span(_instances)), _currentFrame);
 }
 
 void RenderData::WriteDrawCommands()
@@ -155,10 +151,9 @@ void RenderData::WriteDrawCommands()
             call.mesh->Bind(_cmd);
 
         bool shouldInstance = call.count > 1;
-        bool materialSupportsInstancing = (call.material->GetInstance()->GetBaseMaterial()->GetSupportFlags() & VulkanMaterialSupportFlags::eInstanceBuffer) != VulkanMaterialSupportFlags::eNone;
 
         ObjectPC objectPC;
-        if (shouldInstance && materialSupportsInstancing) {
+        if (shouldInstance) {
             objectPC.useInstanceBuffer.x = 1;
         } else {
             objectPC.data.model = _instances[call.offset];

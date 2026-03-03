@@ -7,12 +7,13 @@ layout(location=2) in vec3 inNormal;
 layout(location=0) out vec4 outColor;
 layout(location=1) out uint outSelector;
 
-layout(set=1, binding=1) uniform sampler2D inAlbedo;
 
-layout(set=1, binding=0) uniform MaterialUniform
+layout(set=2, binding=0) uniform MaterialUniform
 {
     bool useTriplanar;
 } material;
+
+layout(set=2, binding=1) uniform sampler2D inAlbedo;
 
 struct InstanceData {
     mat4 instance;

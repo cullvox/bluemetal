@@ -144,7 +144,7 @@ private:
     GlobalUBO               _uboData;
     VkDescriptorSetLayout   _globalDescriptorLayout;
     VulkanBufferFrameRing   _globalBuffer;
-    VkDescriptorSet         _globalDescriptorSet;
+    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalDescriptorSets;
 
     void CreateGlobalUniform();
     void DestroyGlobalUniform();

@@ -6,7 +6,7 @@
 
 #include "Core/Flags.h"
 #include "Math/Math.h"
-#include "VulkanBuffer.h"
+#include "VulkanBufferFrameRing.h"
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
 #include "VulkanConfig.h"
@@ -190,6 +190,7 @@ private:
      */
     struct PerFrameData {
         VkDescriptorSet set;
+        std::unordered_map<int, VulkanBuffer> buffer;
         std::bitset<32> dirty; /// @brief If a binding is dirty it must be updated somehow.
     };
 
@@ -202,8 +203,8 @@ private:
     };
 
     struct UniformData {
-        VulkanBuffer buffer;
         std::vector<std::byte> data;
+        VulkanBufferFrameRing buffer;
     };
 
     using BindingData = std::variant<UniformData, SampledImageData>;

@@ -16,6 +16,14 @@ layout(set=0, binding=0) uniform GlobalUniform
     float dt;
 } globals;
 
+struct InstanceData {
+    mat4 instance;
+};
+
+layout(std140, set = 1, binding = 0) readonly buffer InstanceBuffer {
+    InstanceData instances[];
+} instanceBuffer;
+
 void main()
 {
     outColor = inColor;

@@ -34,7 +34,7 @@ class RenderData
     VulkanBufferFrameRing _instanceBuffer;
     VulkanDescriptorSetAllocatorCache _descriptorCache;
     VkDescriptorSetLayout _instanceSetLayout;
-    VkDescriptorSet _instanceSet;
+    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _instanceSets;
 
     struct DrawCall {
         DrawCall(MaterialInstance* material, Mesh* mesh)
@@ -70,7 +70,6 @@ public:
     VkImageView GetSwapchainImageView();
     VkDescriptorSet GetGlobalDescriptorSet();
     VkDescriptorSet GetInstanceDescriptorSet();
-    uint32_t GetInstanceBufferDynamicOffset();
 
     virtual void DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh, const glm::mat4& instance);
     virtual void DrawMultiInstance(Node* node, MaterialInstance* material, Mesh* mesh, const std::span<glm::mat4> instances);

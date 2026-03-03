@@ -15,7 +15,15 @@ layout(set = 0, binding = 0) uniform GlobalUniform
     float dt;
 } globals;
 
-layout(std140, set = 1, binding = 0) uniform MaterialUniform
+struct InstanceData {
+    mat4 instance;
+};
+
+layout(std140, set = 1, binding = 0) readonly buffer InstanceBuffer {
+    InstanceData instances[];
+} instanceBuffer;
+
+layout(std140, set = 2, binding = 0) uniform MaterialUniform
 {
     // Factors
     vec4 factors;           // x=grassScale, y=bladeBendFactor, z=roughnessFactor, w=specularFactor
@@ -38,16 +46,8 @@ layout(std140, set = 1, binding = 0) uniform MaterialUniform
     vec4 playerParams;      // xyz=playerPosition, w=playerRadius
 } material;
 
-layout(set = 1, binding = 1) uniform sampler2D noiseSampler;
-layout(set = 1, binding = 2) uniform sampler2D windNoiseTexture;
-
-struct InstanceData {
-    mat4 instance;
-};
-
-layout(std140, set = 2, binding = 0) readonly buffer InstanceBuffer {
-    InstanceData instances[];
-} instanceBuffer;
+layout(set = 2, binding = 1) uniform sampler2D noiseSampler;
+layout(set = 2, binding = 2) uniform sampler2D windNoiseTexture;
 
 layout(push_constant) uniform DrawConstants
 {

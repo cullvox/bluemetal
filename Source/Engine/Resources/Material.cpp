@@ -22,7 +22,7 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
     std::string vertexPath, fragmentPath;
     nlohmann::json json;
     VulkanPipelineStateInfo info;
-    int32_t descriptorSetLocation = 1;
+    int32_t descriptorSetLocation = 2;
 
     try {
         json = nlohmann::json::parse(materialFile);

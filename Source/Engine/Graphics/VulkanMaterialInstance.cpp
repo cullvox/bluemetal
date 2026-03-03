@@ -62,60 +62,31 @@ void VulkanMaterialInstance::SetMatrix(const std::string& name, glm::mat4 value)
 
 void VulkanMaterialInstance::Bind(RenderData& rd)
 {
-    
-
-    auto cmd = rd.GetCommandBuffer();
-    auto currentFrame = rd.GetCurrentFrame();
-    auto globalSet = rd.GetGlobalDescriptorSet();
-    auto instanceSet = rd.GetInstanceDescriptorSet();
+    uint32_t currentFrame = rd.GetCurrentFrame();
+    VkCommandBuffer cmd = rd.GetCommandBuffer();
+    VkDescriptorSet globalSet = rd.GetGlobalDescriptorSet();
+    VkDescriptorSet instanceSet = rd.GetInstanceDescriptorSet();
+    VkPipeline pipeline = _material->_pipeline->GetPipeline(rd.GetSampleCount());
+    VkPipelineLayout pipelineLayout = _material->_pipeline->GetPipelineLayout();
 
     _currentFrame = currentFrame;
+    auto& frame = _perFrameData[currentFrame];
+    auto materialSet = frame.set;
 
-    std::vector<uint32_t> offsets;
-    VkDescriptorSet currentSet = VK_NULL_HANDLE;
-    if (_materialSet != -1) {
-        PerFrameData& currentFrameData = _perFrameData[currentFrame];
-        currentSet = currentFrameData.set;
-
-        // assert(currentFrameData.dirty.none());
-
-        // Compute the dynamic offsets for each uniform buffer.
-        for (const auto& binding : _bindings) {
-            if (binding.second.index() == 0) {
-                auto& variant = _bindings[binding.first];
-                UniformData& uniform = std::get<UniformData>(variant);
-                uint32_t blockSize = static_cast<uint32_t>(uniform.buffer.GetSize()) / VulkanConfig::maxFramesInFlight;
-                offsets.push_back(blockSize * currentFrame);
-            }
-        }
-    }
-
-    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipeline(rd.GetSampleCount()));
-
-    std::array<VkDescriptorSet, 3> descriptorSets { globalSet, currentSet, instanceSet };
-
-    uint32_t firstSet = 0;
-    std::span<VkDescriptorSet> sets;
+    std::array<VkDescriptorSet, 3> descriptorSets { globalSet, instanceSet, materialSet };
     auto support = _material->GetSupportFlags();
+    auto setCount = static_cast<uint32_t>(descriptorSets.size());
 
-    if ((support & VulkanMaterialSupportFlags::eGlobalBuffer) != VulkanMaterialSupportFlags::eNone) {
-        firstSet = 0;
+    std::span<VkDescriptorSet> sets = descriptorSets;
 
-        if (_materialSet == -1) {
-            sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 1};
-        } else {
-            sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 2};
-            if ((support & VulkanMaterialSupportFlags::eInstanceBuffer)  != VulkanMaterialSupportFlags::eNone) {
-                sets = std::span<VkDescriptorSet>{descriptorSets.begin(), 3};
-                offsets.push_back(rd.GetInstanceBufferDynamicOffset());
-            }
-        }
-    } else {
-        firstSet = 1;
-        sets = std::span<VkDescriptorSet>{descriptorSets.begin() + 1, 1};
+    VulkanMaterialSupportFlags out = (support & VulkanMaterialSupportFlags::eMaterialBuffer);
+    if (out != VulkanMaterialSupportFlags::eMaterialBuffer)
+    {
+        setCount--;
     }
 
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _material->_pipeline->GetPipelineLayout(), firstSet, static_cast<uint32_t>(sets.size()), sets.data(), static_cast<uint32_t>(offsets.size()), offsets.data());
+    vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, setCount, sets.data(), 0, nullptr);
 }
 
 void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image)
@@ -155,7 +126,6 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
 
 void VulkanMaterialInstance::PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* data)
 {
-
     // Find the shader stage that uses the offset and size.
     const auto& pushConstantReflections = _material->_pipeline->GetReflection().pushConstantMetadata;
 
@@ -196,19 +166,9 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
         switch (variant.index()) {
         case 0: { // buffer type
             UniformData& uniform = std::get<UniformData>(variant);
-            VkDeviceSize blockSize = uniform.buffer.GetSize() / VulkanConfig::maxFramesInFlight;
-
-            uintptr_t dstOffset = static_cast<uintptr_t>(blockSize) * currentFrame;
 
             // Update the uniform buffer
-            char* mapped = nullptr;
-            uniform.buffer.Map(reinterpret_cast<void**>(&mapped));
-
-            std::memcpy(mapped + dstOffset, uniform.data.data(), blockSize);
-
-            uniform.buffer.Unmap();
-            uniform.buffer.Flush(dstOffset, blockSize);
-
+            uniform.buffer.Upload(uniform.data, currentFrame);
             break;
         }
         case 1: { // sampler type
@@ -276,27 +236,28 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
 
     for (const auto& binding : bindings) {
         switch (binding.GetType()) {
-        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
-            auto dynamicAlignment = _device->GetDynamicAlignment(binding.GetSize());
-            auto bufferSize = dynamicAlignment * VulkanConfig::maxFramesInFlight;
+        case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
+            const auto bufferSize = binding.GetSize();
 
             UniformData data;
-            data.buffer = VulkanBuffer { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, bufferSize, nullptr };
+            data.buffer = VulkanBufferFrameRing { _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, bufferSize };
             data.data.resize(binding.GetSize());
 
             auto& variant = (_bindings[binding.GetLocation()] = std::move(data) );
 
-            bufferInfo.buffer = std::get<UniformData>(variant).buffer.Get();
-            bufferInfo.offset = 0;
-            bufferInfo.range = dynamicAlignment;
-            bufferInfos.push_back(bufferInfo);
-
             write.dstBinding = binding.GetLocation();
             write.dstArrayElement = 0;
             write.descriptorCount = 1;
-            write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-            write.pBufferInfo = &bufferInfos.back();
-            writes.push_back(write);
+            write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+
+            for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++)
+            {
+                bufferInfos.push_back(std::get<UniformData>(variant).buffer.GetDescriptorInfo(i));
+
+                write.pBufferInfo = &bufferInfos.back();
+                write.dstSet = _perFrameData[i].set;
+                writes.push_back(write);
+            }
             break;
         }
         case VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
@@ -307,12 +268,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
         }
     }
 
-    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
-        for (auto& write_ : writes)
-            write_.dstSet = _perFrameData[i].set;
-
-        vkUpdateDescriptorSets(_device->Get(), (uint32_t)writes.size(), writes.data(), 0, nullptr);
-    }
+    vkUpdateDescriptorSets(_device->Get(), static_cast<uint32_t>(writes.size()), writes.data(), 0, nullptr);
 }
 
 void VulkanMaterialInstance::SetBindingDirty(uint32_t binding)

@@ -137,7 +137,10 @@ void Renderer::DestroyImagesAndFramebuffers()
 
 void Renderer::DestroyGlobalUniform()
 {
-    _descriptorSetCache->Free(_globalDescriptorLayout, _globalDescriptorSet);
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
+    {
+        _descriptorSetCache->Free(_globalDescriptorLayout, _globalDescriptorSets[i]);
+    }
 }
 
 VulkanDevice* Renderer::GetDevice() const
@@ -500,7 +503,7 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     vkCmdBeginRendering(cmd, &renderingInfo);
 
     // Render all the frame data to the gbuffer.
-    _renderData.SetGlobalDescriptorSet(_globalDescriptorSet);
+    _renderData.SetGlobalDescriptorSet(_globalDescriptorSets[_currentFrame]);
 
     VkExtent2D extent = _swapchain->GetExtent();
 
@@ -641,26 +644,30 @@ void Renderer::CreateGlobalUniform()
     bindings[0].pImmutableSamplers = nullptr;
 
     _globalDescriptorLayout = _device->AcquireDescriptorSetLayout(bindings);
-    _globalBuffer = VulkanBufferFrameRing{ _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, MAX_FRAMES_IN_FLIGHT, sizeof(bl::GlobalUBO), true };
+    _globalBuffer = VulkanBufferFrameRing{ _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO) };
 
-    _globalDescriptorSet = _descriptorSetCache->Allocate(_globalDescriptorLayout);
+    std::array<VkDescriptorBufferInfo, VulkanConfig::maxFramesInFlight> descriptorBufferInfos;
+    std::array<VkWriteDescriptorSet, VulkanConfig::maxFramesInFlight> descriptorWrites;
 
-    VkDescriptorBufferInfo bufferInfo = {};
-    bufferInfo.buffer = _globalBuffer.GetBuffer();
-    bufferInfo.offset = 0;
-    bufferInfo.range = VK_WHOLE_SIZE;
+    for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++)
+    {
+        _globalDescriptorSets[i] = _descriptorSetCache->Allocate(_globalDescriptorLayout);
 
-    VkWriteDescriptorSet write = {};
-    write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    write.pNext = nullptr;
-    write.dstSet = _globalDescriptorSet;
-    write.dstBinding = 0;
-    write.dstArrayElement = 0;
-    write.descriptorCount = 1;
-    write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    write.pBufferInfo = &bufferInfo;
+        descriptorBufferInfos[i] = _globalBuffer.GetDescriptorInfo(i);
 
-    vkUpdateDescriptorSets(_device->Get(), 1, &write, 0, nullptr);
+        descriptorWrites[i] = {
+            .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+            .pNext = nullptr,
+            .dstSet = _globalDescriptorSets[i],
+            .dstBinding = 0,
+            .dstArrayElement = 0,
+            .descriptorCount = 1,
+            .descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+            .pBufferInfo = &descriptorBufferInfos[i],
+        };
+    }
+
+    vkUpdateDescriptorSets(_device->Get(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
 void Renderer::TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageSubresourceRange range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout)
@@ -839,7 +846,7 @@ void Renderer::UpdateGlobalUniform()
     _uboData.resolution = glm::vec2 { (float)extent.width, (float)extent.height };
     _uboData.mouse = {}; // TODO: mouse position to be added later.
 
-    _globalBuffer.UploadHostVisible(std::as_bytes(std::span<GlobalUBO, 1>{&_uboData, 1}), _currentFrame);
+    _globalBuffer.Upload(std::as_bytes(std::span<GlobalUBO, 1>{&_uboData, 1}), _currentFrame);
 }
 
 #define MAX_DEBUG_VERTICES 8196
@@ -850,7 +857,7 @@ void Renderer::CreateDebugBuffer()
     _points.reserve(MAX_DEBUG_VERTICES / 3);
     _triangles.reserve(MAX_DEBUG_VERTICES / 3);
     _debugVertices.reserve(MAX_DEBUG_VERTICES);
-    _debugBuffer = VulkanBufferFrameRing(_device, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, MAX_FRAMES_IN_FLIGHT, MAX_DEBUG_VERTICES * sizeof(VertexDebug), true, false);
+    _debugBuffer = VulkanBufferFrameRing(_device, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, MAX_DEBUG_VERTICES * sizeof(VertexDebug));
 }
 
 void Renderer::UpdateDebugBuffers()
@@ -862,7 +869,7 @@ void Renderer::UpdateDebugBuffers()
     std::copy_n(_triangles.begin(), std::min(_debugVertices.capacity(), _triangles.size()), std::back_inserter(_debugVertices));
 
     // Update this current frames buffer.
-    _debugBuffer.UploadHostVisible(std::as_bytes(std::span { _debugVertices }), _currentFrame);
+    _debugBuffer.Upload(std::as_bytes(std::span { _debugVertices }), _currentFrame);
 }
 
 void Renderer::DrawDebugBuffers(RenderData& rd)
@@ -872,8 +879,8 @@ void Renderer::DrawDebugBuffers(RenderData& rd)
         return;
 
     auto cmd = rd.GetCommandBuffer();
-    VkDeviceSize vertexOffset = _debugBuffer.GetDynamicOffset(rd.GetCurrentFrame());
-    VkBuffer buffer = _debugBuffer.GetBuffer();
+    VkBuffer buffer = _debugBuffer.GetBuffer(rd.GetCurrentFrame());
+    VkDeviceSize vertexOffset = 0;
 
     if (_pointMaterial != nullptr && _points.size() > 0) {
         _pointMaterial->Bind(rd);

@@ -46,9 +46,7 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     _pointMaterial = rs->Load<Material>("Resources/Materials/DebugPoint.mat");
     _lineMaterial = rs->Load<Material>("Resources/Materials/DebugLine.mat");
     _triangleMaterial = rs->Load<Material>("Resources/Materials/DebugTriangle.mat");
-    _selectionMaterial = rs->Load<Material>("Resources/Materials/Selection.mat");
     _renderer->SetDebugMaterialInstance(_pointMaterial.lock()->GetVulkanMaterial(), _lineMaterial.lock()->GetVulkanMaterial(), _triangleMaterial.lock()->GetVulkanMaterial());
-    _renderer->SetSelectionMaterialInstance(_selectionMaterial.lock()->GetVulkanMaterial());
 }
 
 GraphicsSystem::~GraphicsSystem()

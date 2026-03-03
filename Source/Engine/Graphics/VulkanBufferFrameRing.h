@@ -1,7 +1,9 @@
 #pragma once
 
 #include <span>
+#include <array>
 
+#include "VulkanConfig.h"
 #include "VulkanBuffer.h"
 
 namespace bl {
@@ -15,18 +17,18 @@ namespace bl {
  */
 class VulkanBufferFrameRing
 {
-    uint32_t _frameCount;
-    VkDeviceSize _frameSize;
-    VkDeviceSize _alignedFrameSize;
-    VkDeviceSize _bufferWholeSize;
-    VulkanBuffer _buffer;
-    bool _usesStagingBuffer;
-    VulkanBuffer _stagingBuffer;
-    void* _mapped;
+    VkDeviceSize _bufferSize;
+    std::array<VulkanBuffer, VulkanConfig::maxFramesInFlight> _buffers;
+    std::array<void*, VulkanConfig::maxFramesInFlight> _mappings;
 
 public:
     VulkanBufferFrameRing();
-    VulkanBufferFrameRing(VulkanDevice* device, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, uint32_t frameCount, VkDeviceSize frameSize, bool mapped, bool dynamicAlignment = true);
+    VulkanBufferFrameRing(
+        VulkanDevice*               device,
+        VkBufferUsageFlags          usage,
+        VmaMemoryUsage              memoryUsage,
+        VkDeviceSize                size,
+        VmaAllocationCreateFlags    flags = VMA_ALLOCATION_CREATE_HOST_ACCESS_SEQUENTIAL_WRITE_BIT);
     VulkanBufferFrameRing(VulkanBufferFrameRing& rhs) = delete;
     VulkanBufferFrameRing(VulkanBufferFrameRing&& rhs) noexcept;
     ~VulkanBufferFrameRing();
@@ -34,13 +36,10 @@ public:
     VulkanBufferFrameRing& operator=(const VulkanBufferFrameRing& rhs) = delete;
     VulkanBufferFrameRing& operator=(VulkanBufferFrameRing&& rhs) noexcept;
 
-    uint32_t GetFrameCount() const;
-    uint32_t GetDynamicOffset(uint32_t currentFrame) const;
-    VkDeviceSize GetWholeSize() const;
-    VkBuffer GetBuffer() const;
+    VkBuffer GetBuffer(uint32_t currentFrame) const;
+    VkDescriptorBufferInfo GetDescriptorInfo(uint32_t currentFrame) const;
 
-    void UploadHostVisible(std::span<const std::byte> data, uint32_t currentFrame);
-    void Upload(VkCommandBuffer cmd, std::span<const std::byte> data, uint32_t currentFrame);
+    void Upload(std::span<const std::byte> data, uint32_t currentFrame);
 };
 
 }
