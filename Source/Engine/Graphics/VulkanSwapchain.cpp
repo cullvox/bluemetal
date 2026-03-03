@@ -22,8 +22,6 @@ VulkanSwapchain::VulkanSwapchain(
     , _window(window)
     , _imageCount(0)
     , _swapchain(VK_NULL_HANDLE)
-    , _imageIndex(0)
-    , _currentFrame(0)
 {
     EnsureSurfaceSupported();
     Recreate();

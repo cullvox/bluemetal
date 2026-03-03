@@ -21,7 +21,7 @@ RenderData::RenderData(Renderer* renderer)
     _instanceToCallMap.reserve(MAX_INSTANCE_BUFFER_SIZE);
     _instances.reserve(MAX_INSTANCE_BUFFER_SIZE);
 
-    _instanceBuffer = VulkanBufferFrameRing{renderer->GetDevice(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, Renderer::GetMaxFramesInFlight(), MAX_INSTANCE_BUFFER_SIZE * sizeof(InstanceData), false};
+    _instanceBuffer = VulkanBufferFrameRing{renderer->GetDevice(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, VulkanConfig::maxFramesInFlight, MAX_INSTANCE_BUFFER_SIZE * sizeof(InstanceData), false};
 
     std::array<VkDescriptorSetLayoutBinding, 1> instanceBindings = {
         {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}

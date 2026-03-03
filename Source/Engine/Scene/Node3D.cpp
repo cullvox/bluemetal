@@ -61,9 +61,15 @@ void Node3D::Draw(RenderData& rd)
 
 void Node3D::UpdateMatrix()
 {
-    if (!_isDirty) {
-        return;
-    }
+    //if (!_isDirty) {
+    //    return;
+    //}
+
+    glm::mat4 T = glm::translate(glm::mat4(1.0f), _position);
+    glm::mat4 R = glm::mat4_cast(_rotation);
+    glm::mat4 S = glm::scale(glm::mat4(1.0f), _scale);
+
+    _matrix = T * R * S;
 
     // Update world matrix if there's a parent
     if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
@@ -72,13 +78,9 @@ void Node3D::UpdateMatrix()
         _worldMatrix = _matrix;
     }
 
-    glm::mat4 T = glm::translate(glm::mat4(1.0f), _position);
-    glm::mat4 R = glm::mat4_cast(_rotation);
-    glm::mat4 S = glm::scale(glm::mat4(1.0f), _scale);
-
-    _matrix = T * R * S;
     // Update world position
     _worldPosition = glm::vec3(_worldMatrix[3]);
+
 
     _isDirty = false;
 }

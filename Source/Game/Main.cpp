@@ -158,7 +158,7 @@ int main(int argc, const char** argv)
         followCamera->SetPosition({ 0.0f, 10.0f, -10.0f });
         followCamera->SetRotation({ -45.0f, 180.0f, 0.0f});
         followCamera->SetProjection(bl::CameraProjection::ePerspective);
-        followCamera->SetFOV(15.0f);
+        followCamera->SetFOV(65.0f);
         followCamera->SetNearClip(0.1f);
         followCamera->SetFarClip(1000.0f);
 
@@ -190,6 +190,8 @@ int main(int argc, const char** argv)
         activity.art.largeImageTooltip = "I call these, corrupted canyons.";
 
         discord.UpdateActivity(activity);
+
+        static float accumulator = 0.0f;
 
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
@@ -228,7 +230,16 @@ int main(int argc, const char** argv)
             profiler.EndProfile("Update");
 
             profiler.StartProfile("Physics");
-            physics.Update(frameCounter.GetDeltaTime());
+
+            const float fixedTimeStep = 1.0f / 60.0f;
+            accumulator += frameCounter.GetDeltaTime();
+            while (accumulator >= fixedTimeStep)
+            {
+                physics.Update(fixedTimeStep);
+                accumulator -= fixedTimeStep;
+            }
+
+            
             profiler.EndProfile("Physics");
 
             renderer->SetView(cameraNode->GetViewMatrix());

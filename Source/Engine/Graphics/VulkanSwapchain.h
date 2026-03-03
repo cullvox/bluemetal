@@ -49,8 +49,6 @@ private:
     VkSwapchainKHR _swapchain;
     std::vector<VkImage> _swapImages;
     std::vector<VkImageView> _swapImageViews;
-    uint32_t _imageIndex;
-    uint32_t _currentFrame;
     bool _isMailboxSupported;
     bool _isImmediateSupported;
 

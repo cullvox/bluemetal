@@ -69,6 +69,8 @@ void VulkanMaterialInstance::Bind(RenderData& rd)
     auto globalSet = rd.GetGlobalDescriptorSet();
     auto instanceSet = rd.GetInstanceDescriptorSet();
 
+    _currentFrame = currentFrame;
+
     std::vector<uint32_t> offsets;
     VkDescriptorSet currentSet = VK_NULL_HANDLE;
     if (_materialSet != -1) {

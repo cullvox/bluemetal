@@ -899,6 +899,10 @@ void Renderer::DrawDebugBuffers(RenderData& rd)
         vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
         vkCmdDraw(cmd, static_cast<uint32_t>(_triangles.size()), 1, firstVertex, 0);
     }
+
+    _points.clear();
+    _lines.clear();
+    _triangles.clear();
 }
 
 void Renderer::SetSelectionMaterialInstance(VulkanMaterialInstance* instance)
