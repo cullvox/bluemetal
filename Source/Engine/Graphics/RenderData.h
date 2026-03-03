@@ -28,9 +28,9 @@ class RenderData
     VkImageView _swapchainImageView;
     uint32_t _nodeID;
 
-    std::vector<InstanceData> _tempInstances;
+    std::vector<glm::mat4> _tempInstances;
     std::vector<uint32_t> _instanceToCallMap;
-    std::vector<InstanceData> _instances;
+    std::vector<glm::mat4> _instances;
     VulkanBufferFrameRing _instanceBuffer;
     VulkanDescriptorSetAllocatorCache _descriptorCache;
     VkDescriptorSetLayout _instanceSetLayout;
@@ -72,7 +72,8 @@ public:
     VkDescriptorSet GetInstanceDescriptorSet();
     uint32_t GetInstanceBufferDynamicOffset();
 
-    virtual void DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh, const InstanceData& instance);
+    virtual void DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh, const glm::mat4& instance);
+    virtual void DrawMultiInstance(Node* node, MaterialInstance* material, Mesh* mesh, const std::span<glm::mat4> instances);
 
     void WriteInstanceBuffer();
 

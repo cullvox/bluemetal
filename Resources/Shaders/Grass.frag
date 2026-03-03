@@ -13,7 +13,6 @@ layout(location=1) out uint outSelector;
 
 struct InstanceData {
     mat4 instance;
-    vec4 position;
 };
 
 layout(push_constant) uniform DrawConstants

@@ -43,7 +43,6 @@ layout(set = 1, binding = 2) uniform sampler2D windNoiseTexture;
 
 struct InstanceData {
     mat4 instance;
-    vec4 position;
 };
 
 layout(std140, set = 2, binding = 0) readonly buffer InstanceBuffer {
@@ -80,7 +79,8 @@ void main() {
     }
 
     //wind
-    vec2 windPosition = instance.position.xz * material.windParams.z; // materialWindParams.z = windScale
+    vec4 instancePosition = instance.instance[3];
+    vec2 windPosition = instancePosition.xz * material.windParams.z; // materialWindParams.z = windScale
     windPosition -= globals.time * material.windDirection.xy * material.windParams.x; // material.windParams.x = windSpeed
     outCurrentWindBend = texture(windNoiseTexture, windPosition).x;
     outCurrentWindBend *= material.windParams.y; // windParams.y = windSway
@@ -93,12 +93,12 @@ void main() {
 
     //player position
 
-    float playerDistance = distance(material.playerParams.xyz, instance.position.xyz);
+    float playerDistance = distance(material.playerParams.xyz, instancePosition.xyz);
     // float bendFromPlayerFactor = max(material.playerParams.w - playerDistance, 0.0) * 1.4 / material.playerParams.w;
     float bendFromPlayerFactor = max(material.playerParams.w - playerDistance, 0.0) * 0.75;
     bendFromPlayerFactor = clamp(bendFromPlayerFactor, 0.0, 1.0);
 
-    vec2 bendDirection = normalize(material.playerParams.xz - instance.position.xz);
+    vec2 bendDirection = normalize(material.playerParams.xz - instancePosition.xz);
     vertex.xz -= (inverseModel * vec4(bendDirection.x, 0.0, bendDirection.y, 0.0)).xz * bendFromPlayerFactor * outBottomToTop;
     vertex.x -= bendFromPlayerFactor * outBottomToTop * .5;
 
@@ -107,7 +107,7 @@ void main() {
     //VERTEX = grassScale;
 
     // material.clumping.x = patchScale
-    outPatchFactor = texture(noiseSampler, instance.position.xz / material.clumping.x).r;
+    outPatchFactor = texture(noiseSampler, instancePosition.xz / material.clumping.x).r;
     //VERTEX= patchFactor;
 
     // material.clumping.y = minGrassScale, material.clumping.z = maxGrassScale

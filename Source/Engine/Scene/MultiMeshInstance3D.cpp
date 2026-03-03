@@ -33,13 +33,7 @@ void MultiMeshInstance3D::Draw(RenderData& rd)
     auto materialPtr = _material.lock();
 
     if (meshPtr && materialPtr && _instanceCount > 0 && !_instanceTransforms.empty()) {
-
-        for (uint32_t i = 0; i < _instanceCount; ++i) {
-            InstanceData instanceData;
-            instanceData.model = _instanceTransforms[i];
-            instanceData.position = glm::vec4(_instanceTransforms[i][3]);
-            rd.DrawInstance(this, materialPtr.get(), meshPtr.get(), instanceData);
-        }
+        rd.DrawMultiInstance(this, materialPtr.get(), meshPtr.get(), _instanceTransforms);
     }
 }
 

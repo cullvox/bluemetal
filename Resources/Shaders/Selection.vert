@@ -9,7 +9,6 @@ layout(location = 0) out uint objectID;
 
 struct InstanceData {
     mat4 instance;
-    vec4 position;
 };
 
 layout(set = 0, binding = 0) uniform GlobalUniform

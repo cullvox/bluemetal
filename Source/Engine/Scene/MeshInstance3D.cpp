@@ -30,11 +30,10 @@ static Profiler profiler;
 void MeshInstance3D::Draw(RenderData& rd)
 {
     // TODO: This isn't really instancing, the renderer will have to buffer instances.
-    bl::InstanceData object {};
-    object.model = GetWorldMatrix();
-    object.position = glm::vec4{GetWorldPosition(), 1.0f};
+    //bl::InstanceData object {};
+    //object.model = GetWorldMatrix();
 
-    rd.DrawInstance(this, _material.lock().get(), _mesh.lock().get(), object);
+    rd.DrawInstance(this, _material.lock().get(), _mesh.lock().get(), GetWorldMatrix());
 
     //rd.renderer->AddInstance(_mesh.get(), object);
 

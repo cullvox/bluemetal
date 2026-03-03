@@ -33,8 +33,6 @@ Renderer::Renderer(VulkanWindow* window, FrameCounter& frameCounter)
             _sampleCount = VK_SAMPLE_COUNT_2_BIT;
     }
 
-    assert(_sampleCount > VK_SAMPLE_COUNT_1_BIT);
-
     try {
         _descriptorSetCache = std::make_unique<VulkanDescriptorSetAllocatorCache>(_device, 1024, VulkanDescriptorRatio::Default());
 

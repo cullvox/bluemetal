@@ -106,57 +106,29 @@ uint32_t HashDrawCall(MaterialInstance* material, Mesh* mesh)
     return static_cast<uint32_t>(h1 ^ (h2 << 1));
 }
 
-void RenderData::DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh, const InstanceData& instance)
+void RenderData::DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh, const glm::mat4& instance)
 {
-    uint32_t hash = HashDrawCall(material, mesh);
+    DrawCall newCall(material, mesh);
+    newCall.offset = static_cast<uint32_t>(_instances.size());
+    newCall.count = 1;
+    _calls.push_back(newCall);
 
-    for (int i = 0; i < _calls.size(); i++) {
-        if (_calls[i].hash == hash) {
-            hash = i;
-            break;
-        }
-    }
+    _instances.push_back(instance);
+}
 
-    if (hash >= _calls.size()) {
-        DrawCall newCall(material, mesh);
-        newCall.hash = hash;
-        _calls.push_back(newCall);
-        hash = static_cast<uint32_t>(_calls.size() - 1);
-    }
+void RenderData::DrawMultiInstance(Node* node, MaterialInstance* material, Mesh* mesh, const std::span<glm::mat4> instances)
+{
+    DrawCall call{material, mesh};
+    call.offset = static_cast<uint32_t>(_instances.size());
+    call.count = static_cast<uint32_t>(instances.size());
+    _calls.push_back(call);
 
-    _tempInstances.push_back(instance);
-    _instanceToCallMap.push_back(hash);
+    std::copy_n(instances.begin(), std::min(_instances.capacity(), instances.size()), std::back_inserter(_instances));
 }
 
 void RenderData::WriteInstanceBuffer()
 {
     // Sort instances into the proper buffer areas.
-
-    profiler.StartProfile("Clear Instance Data");
-    _instances.clear();
-    profiler.EndProfile("Clear Instance Data");
-
-    if (_tempInstances.empty())
-        return;
-
-    profiler.StartProfile("Sort Instance Data");
-    for (int i = 0; i < _tempInstances.size(); i++) {
-        InstanceData& instance = _tempInstances[i];
-        uint32_t callIndex = _instanceToCallMap[i];
-        _instances.push_back(instance);
-
-        DrawCall& call = _calls[callIndex];
-        if (call.count == 0) {
-            call.offset = i;
-        }
-
-        call.count++;
-    }
-
-    profiler.EndProfile("Sort Instance Data");
-
-    _tempInstances.clear();
-
     profiler.StartProfile("Upload Instance Data");
     // Upload instances to the staging buffer.
     _instanceBuffer.Upload(_cmd, std::as_bytes(std::span(_instances)), _currentFrame);
@@ -189,7 +161,7 @@ void RenderData::WriteDrawCommands()
         if (shouldInstance && materialSupportsInstancing) {
             objectPC.useInstanceBuffer.x = 1;
         } else {
-            objectPC.data = _instances[call.offset];
+            objectPC.data.model = _instances[call.offset];
             objectPC.useInstanceBuffer.x = 0;
         }
 
@@ -236,6 +208,7 @@ void RenderData::Reset()
 {
     _calls.clear();
     _instanceToCallMap.clear();
+    _instances.clear();
 }
 
 } // namespace bl

@@ -33,7 +33,6 @@ layout(set=2, binding=0) readonly buffer BoneBuffer
 
 struct InstanceData {
     mat4 model;
-    vec4 position;
 };
 
 layout(push_constant) uniform Constants
