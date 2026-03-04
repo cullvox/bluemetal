@@ -35,7 +35,6 @@ void PhysicsSystem::Update(float deltaTime)
 
     JPH::BodyManager::DrawSettings drawSettings = {};
     drawSettings.mDrawShapeWireframe = true;
-    drawSettings.mDrawShape = true;
     drawSettings.mDrawWorldTransform = true;
     drawSettings.mDrawVelocity = true;
     _physicsSystem.DrawBodies(drawSettings, _physicsRenderer.get());
