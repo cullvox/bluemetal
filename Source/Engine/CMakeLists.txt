@@ -33,9 +33,8 @@ list(APPEND Sources
   "Graphics/VulkanSwapchain.cpp"
   "Graphics/VulkanMaterial.cpp"
   "Graphics/VulkanMaterialInstance.cpp"
+  "Graphics/VulkanMesh.cpp"
   "Graphics/RenderData.cpp"
-  #"Graphics/Debug/RenderPassDebug.cpp"
-  "Graphics/Passes/SelectionPass.cpp"
   "Graphics/Renderer.cpp"
   "Graphics/GraphicsSystem.cpp"
 

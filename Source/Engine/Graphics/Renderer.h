@@ -9,13 +9,11 @@
 #include "VulkanBuffer.h"
 #include "RenderData.h"
 #include "Vertex.h"
-#include "Passes/PassType.h"
+#include "RenderPassType.h"
 
 namespace bl {
 
 class FrameCounter;
-class Material;
-class Mesh;
 class VulkanWindow;
 class VulkanDevice;
 class VulkanSwapchain;
@@ -24,8 +22,6 @@ class VulkanImageView;
 class VulkanImage;
 class VulkanDescriptorSetAllocatorCache;
 class Node;
-
-class SelectionPass;
 
 using ObjectFunction = std::function<void(RenderData& rd)>;
 using RenderFunction = std::function<void(RenderData& rd)>;
@@ -44,26 +40,13 @@ public:
 
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
-    void SetImageRecreateCallback(std::function<void()> onRecreate);
-    void AddInstance(Mesh* mesh, const InstanceData& data);
     void SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial);
     void DrawPoint(const glm::vec3& point, float size = 1.0f, Color color = Color::Violet());
     void DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness = 1.0f, Color color = Color::Violet());
     void DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness = 1.0f, Color color = Color::Violet());
-    void SetSelectionMaterialInstance(VulkanMaterialInstance* instance);
 
-
-    /// @brief Enables the selection buffer.
-    ///
-    /// Enable or disable the selection buffer.
-    /// The selection buffer allows the user to easily resolve object the user is trying to click on.
-    /// Very useful and very quick, has some flaws but overall really useful.
-    ///
-    void EnableSelectionBuffer(bool enabled = true);
-
-    /// @brief Gets the value stored in the selection buffer at a given pixel position.
-    /// @return The stored index value at the pixel.
-    uint32_t GetSelectionBufferValue(const glm::ivec2& position);
+    void QueueSelectionBuffer();
+    uint32_t GetSelectionValue(const glm::ivec2& position);
 
     std::vector<VkPresentModeKHR> GetPresentModes();
     void SetPresentMode(VkPresentModeKHR mode);
@@ -78,7 +61,7 @@ public:
     VkFormat GetDepthAttachmentFormat(RenderPassType pass);
     VkFormat GetStencilAttachmentFormat(RenderPassType pass);
 
-    static constexpr uint32_t GetMaxFramesInFlight() { return MAX_FRAMES_IN_FLIGHT; }
+    RenderData& GetRenderData();
 
 
 protected:
@@ -128,7 +111,7 @@ private:
     std::unique_ptr<VulkanImage>        _depthImage;
     std::unique_ptr<VulkanImageView>    _depthImageView;
 
-    std::unique_ptr<SelectionPass>      _selectionPass;
+    bool _queuedSelectionBuffer;
 
     bool                                                        recreateRequested = false;
     VkPresentModeKHR                                            recreatePresentMode = VK_PRESENT_MODE_FIFO_KHR;

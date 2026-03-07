@@ -68,7 +68,7 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
         }
 
         if (json.contains("descriptorSetLocation") && json["descriptorSetLocation"].is_number_integer()) {
-            descriptorSetLocation = json.value("descriptorSetLocation", 1);
+            descriptorSetLocation = json.value("descriptorSetLocation", 2);
         }
 
         if (json.contains("rasterizerState") && json["rasterizerState"].is_object()) {

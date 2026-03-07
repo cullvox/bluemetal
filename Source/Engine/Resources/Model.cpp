@@ -245,8 +245,7 @@ Model::Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::
         auto m = std::make_shared<Mesh>(resourceSystem, system, "");
         AddSubResource(m);
         _meshes.push_back(m);
-        m->UploadVertices<Vertex>(vertices);
-        m->UploadIndices(indices);
+        m->Upload<Vertex>(vertices, indices);
     }
 
     // model.textures[0].source

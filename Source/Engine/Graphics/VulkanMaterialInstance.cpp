@@ -60,17 +60,15 @@ void VulkanMaterialInstance::SetMatrix(const std::string& name, glm::mat4 value)
     SetGenericUniform(name, value);
 }
 
-void VulkanMaterialInstance::Bind(RenderData& rd)
+void VulkanMaterialInstance::Bind(RenderData& rd) const
 {
-    uint32_t currentFrame = rd.GetCurrentFrame();
     VkCommandBuffer cmd = rd.GetCommandBuffer();
     VkDescriptorSet globalSet = rd.GetGlobalDescriptorSet();
     VkDescriptorSet instanceSet = rd.GetInstanceDescriptorSet();
     VkPipeline pipeline = _material->_pipeline->GetPipeline(rd.GetSampleCount());
     VkPipelineLayout pipelineLayout = _material->_pipeline->GetPipelineLayout();
 
-    _currentFrame = currentFrame;
-    auto& frame = _perFrameData[currentFrame];
+    auto& frame = _perFrameData[_currentFrame];
     auto materialSet = frame.set;
 
     std::array<VkDescriptorSet, 3> descriptorSets { globalSet, instanceSet, materialSet };
@@ -124,7 +122,7 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
     SetBindingDirty(binding);
 }
 
-void VulkanMaterialInstance::PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* data)
+void VulkanMaterialInstance::PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* data) const
 {
     // Find the shader stage that uses the offset and size.
     const auto& pushConstantReflections = _material->_pipeline->GetReflection().pushConstantMetadata;
@@ -231,8 +229,8 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
 
     std::vector<VkDescriptorBufferInfo> bufferInfos;
     std::vector<VkWriteDescriptorSet> writes;
-    bufferInfos.reserve(bindings.size());
-    writes.reserve(bindings.size());
+    bufferInfos.reserve(bindings.size() * VulkanConfig::maxFramesInFlight);
+    writes.reserve(bindings.size() * VulkanConfig::maxFramesInFlight);
 
     for (const auto& binding : bindings) {
         switch (binding.GetType()) {

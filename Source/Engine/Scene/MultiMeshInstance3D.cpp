@@ -33,7 +33,7 @@ void MultiMeshInstance3D::Draw(RenderData& rd)
     auto materialPtr = _material.lock();
 
     if (meshPtr && materialPtr && _instanceCount > 0 && !_instanceTransforms.empty()) {
-        rd.DrawMultiInstance(this, materialPtr.get(), meshPtr.get(), _instanceTransforms);
+        rd.DrawMultiInstance(this, materialPtr.get()->GetInstance(), meshPtr.get()->GetMesh(), _instanceTransforms);
     }
 }
 

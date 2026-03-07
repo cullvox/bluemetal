@@ -1,0 +1,10 @@
+{
+    "shaders": {
+        "vertex": "Resources/Shaders/PhysicsDebugFlat.vert.spv",
+        "fragment": "Resources/Shaders/PhysicsDebugFlat.frag.spv"
+    },
+    "vertexState": {
+        "vertex": "Debug",
+        "topology": "VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LISTVK_PRIMITIVE_TOPOLOGY_"
+    }
+}

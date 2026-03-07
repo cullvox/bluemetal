@@ -124,7 +124,7 @@ public:
      * @brief Binds the material instance to the current render data.
      * @param rd Render data to bind the material instance to.
      */
-    void Bind(RenderData& rd);
+    void Bind(RenderData& rd) const;
 
     /**
      * @brief Pushes a constant value to the current command buffer.
@@ -133,7 +133,7 @@ public:
      * @param size Size in bytes of the constant.
      * @param value Pointer to the constant data.
      */
-    void PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* value);
+    void PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* value) const;
 
     /**
      * @brief Pushes a constant value to the current command buffer.
@@ -142,7 +142,7 @@ public:
      * @param data Constant data to push.
      */
     template <typename T>
-    void PushConstant(RenderData& rd, uint32_t offset, const T& data)
+    void PushConstant(RenderData& rd, uint32_t offset, const T& data) const
     {
         PushConstant(rd, offset, sizeof(T), &data);
     }

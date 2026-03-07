@@ -89,6 +89,9 @@ int main(int argc, const char** argv)
         auto nearestSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Nearest.json");
         auto noiseTexture = resourceMgr->Load<bl::NoiseTexture2D>("Resources/Textures/Noise.json");
         auto grssMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Grass.mat");
+        auto physDebugFlatMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/PhysicsDebugFlat.mat");
+
+        physicsRenderer->SetMaterial(physDebugFlatMaterial.lock()->GetVulkanMaterial());
 
         auto grassMaterial = grssMaterial.lock()->CreateInstance();
         grassMaterial->SetSampledTexture2D("noiseSampler", defaultSampler, noiseTexture);
@@ -245,9 +248,7 @@ int main(int argc, const char** argv)
             renderer->SetView(cameraNode->GetViewMatrix());
             renderer->SetProjection(cameraNode->GetProjectionMatrix());
 
-            glm::vec3 cameraPos = cameraNode->GetWorldPosition();
-            JPH::Vec3 cameraPosJPH{cameraPos.x, cameraPos.y, cameraPos.z};
-            physicsRenderer->SetCameraPos(cameraPosJPH);
+            physicsRenderer->NextFrame();
 
             auto objectFunc = [&](bl::RenderData& rd) {
                 rootNode->Draw(rd);

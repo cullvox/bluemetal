@@ -4,7 +4,6 @@
 #include "Core/Time.h"
 #include "Engine/Engine.h"
 #include "GraphicsSystem.h"
-#include "Passes/SelectionPass.h"
 #include "Resources/Mesh.h"
 #include "Scene/Node.h"
 #include "UniformData.h"
@@ -39,8 +38,6 @@ Renderer::Renderer(VulkanWindow* window, FrameCounter& frameCounter)
         auto physicalDevice = _device->GetPhysicalDevice();
         _depthFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, 0);
         _positionFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_R32G32B32A32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, 0);
-
-        _selectionPass = std::make_unique<SelectionPass>(_device, _swapchain->GetExtent());
 
         CreatePerFrameSyncedData();
         RecreateImages();
@@ -174,7 +171,7 @@ void Renderer::RecreateImages()
     
     if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) 
     {
-        _selectionImageSampled = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false, _sampleCount);
+        _selectionImageSampled = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false, _sampleCount);
         _selectionImageSampledView = std::make_unique<VulkanImageView>(_device, _selectionImageSampled.get(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, mapping, range);
     }
 
@@ -255,8 +252,6 @@ void Renderer::RecreateImages()
     // Create image views for swapchain images
     _swapchainImages = _swapchain->GetImages();
     _swapchainImageViews = _swapchain->GetImageViews();
-
-    _selectionPass->Resize(extent);
 }
 
 VkPipelineStageFlags getPipelineStageFlags(VkImageLayout layout)
@@ -557,6 +552,9 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
 
     // Barrier transition the swapchain image to a presentable layout.
     range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+    barrierCount = 1;
+
     barriers[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     barriers[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     barriers[0].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
@@ -568,12 +566,79 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     barriers[0].image = _swapchainImages[imageIndex];
     barriers[0].subresourceRange = range;
 
+    if (_queuedSelectionBuffer)
+    {
+        barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+        barriers[1].pNext = nullptr;
+        barriers[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        barriers[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barriers[1].dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        barriers[1].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barriers[1].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barriers[1].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[1].image = _selectionImage->Get();
+        barriers[1].subresourceRange = range;
+
+        barrierCount++;
+    }
+
     info.memoryBarrierCount = 0;
     info.bufferMemoryBarrierCount = 0;
-    info.imageMemoryBarrierCount = 1;
+    info.imageMemoryBarrierCount = barrierCount;
     info.pImageMemoryBarriers = &barriers[0];
 
     vkCmdPipelineBarrier2(cmd, &info);
+
+    if (_queuedSelectionBuffer)
+    {
+        VkImageSubresourceLayers layers = {};
+        layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        layers.mipLevel = 0;
+        layers.baseArrayLayer = 0;
+        layers.layerCount = 1;
+
+        VkBufferImageCopy2 copy = {};
+        copy.sType = VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2;
+        copy.pNext = nullptr;
+        copy.bufferOffset = 0;
+        copy.bufferRowLength = 0;
+        copy.bufferImageHeight = 0;
+        copy.imageSubresource = layers;
+        copy.imageOffset = {};
+        copy.imageExtent = VkExtent3D{extent.width, extent.height, 1};
+
+        VkCopyImageToBufferInfo2 selectionCopy = {};
+        selectionCopy.sType = VK_STRUCTURE_TYPE_COPY_IMAGE_TO_BUFFER_INFO_2;
+        selectionCopy.pNext = nullptr;
+        selectionCopy.srcImage = _selectionImage->Get();
+        selectionCopy.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        selectionCopy.dstBuffer = _selectionBuffer->Get();
+        selectionCopy.regionCount = 1;
+        selectionCopy.pRegions = &copy;
+
+        vkCmdCopyImageToBuffer2(cmd, &selectionCopy);
+
+        barriers[0].srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        barriers[0].srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+        barriers[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        barriers[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        barriers[0].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barriers[0].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[0].image = _selectionImage->Get();
+        barriers[0].subresourceRange = range;
+
+        info.memoryBarrierCount = 0;
+        info.bufferMemoryBarrierCount = 0;
+        info.imageMemoryBarrierCount = 1;
+        info.pImageMemoryBarriers = &barriers[0];
+
+        vkCmdPipelineBarrier2(cmd, &info);
+        _queuedSelectionBuffer = false;
+    }
 
     VK_CHECK(vkEndCommandBuffer(cmd))
 
@@ -625,13 +690,6 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     _triangles.clear();
 
     _currentFrame = (_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-}
-
-uint32_t Renderer::GetSelectionBufferValue(const glm::ivec2& position)
-{
-
-    // Transition the image to a readable buffer.
-    return 0;
 }
 
 void Renderer::CreateGlobalUniform()
@@ -711,6 +769,17 @@ void Renderer::DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::v
     _triangles.emplace_back(b, color.ToVector3(), 0.0f);
     _triangles.emplace_back(c, color.ToVector3(), 0.0f);
 }
+
+void Renderer::QueueSelectionBuffer()
+{
+    _queuedSelectionBuffer = true;
+}
+
+uint32_t Renderer::GetSelectionValue(const glm::ivec2& position)
+{
+    return 0;
+}
+
 
 void Renderer::AddMaterial(VulkanMaterialInstance* material)
 {
@@ -910,9 +979,9 @@ void Renderer::DrawDebugBuffers(RenderData& rd)
     _triangles.clear();
 }
 
-void Renderer::SetSelectionMaterialInstance(VulkanMaterialInstance* instance)
+RenderData& Renderer::GetRenderData()
 {
-    _selectionPass->SetMaterial(instance);
+    return _renderData;
 }
 
 } // namespace bl

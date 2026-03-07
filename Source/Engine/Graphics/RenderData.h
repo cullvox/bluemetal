@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <functional>
 
 #include "Core/Color.h"
 #include "Vulkan.h"
@@ -12,11 +11,10 @@
 namespace bl
 {
 
-class MaterialInstance;
-class VulkanMaterialInstance;
-class Mesh;
-class Renderer;
 class Node;
+class Renderer;
+class VulkanMaterialInstance;
+class VulkanMesh;
 
 class RenderData
 {
@@ -37,14 +35,14 @@ class RenderData
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _instanceSets;
 
     struct DrawCall {
-        DrawCall(MaterialInstance* material, Mesh* mesh)
+        DrawCall(const VulkanMaterialInstance* material, const VulkanMesh* mesh)
             : material(material)
             , mesh(mesh)
         {
         }
 
-        MaterialInstance* material;
-        Mesh* mesh;
+        const VulkanMaterialInstance* material;
+        const VulkanMesh* mesh;
         uint32_t hash;
         uint32_t nodeID;
         uint32_t offset = 0;
@@ -71,17 +69,11 @@ public:
     VkDescriptorSet GetGlobalDescriptorSet();
     VkDescriptorSet GetInstanceDescriptorSet();
 
-    virtual void DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh, const glm::mat4& instance);
-    virtual void DrawMultiInstance(Node* node, MaterialInstance* material, Mesh* mesh, const std::span<glm::mat4> instances);
+    void DrawInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const glm::mat4& instance);
+    void DrawMultiInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const std::span<glm::mat4> instances);
 
     void WriteInstanceBuffer();
-
-    /**
-     * @brief Sorts calls and executes them to the command buffer.
-     */
-    virtual void WriteDrawCommands();
-
-    void WriteDrawCommands(VulkanMaterialInstance* material);
+    void WriteDrawCommands();
     void Reset();
 };
 

@@ -5,32 +5,29 @@
 #include <span>
 
 #include "Graphics/Vertex.h"
-#include "Graphics/VulkanBuffer.h"
 #include "Resource.h"
 
 namespace bl {
 
 class GraphicsSystem;
+class VulkanMesh;
 
 class Mesh : public Resource {
     GraphicsSystem* _system;
-    VulkanBuffer _vertexBuffer;
-    VulkanBuffer _indexBuffer;
-    uint32_t _indicesCount;
-
-    void UploadVertices(std::span<const std::byte> bytes);
+    std::unique_ptr<VulkanMesh> _mesh;
+    void Upload(std::span<const std::byte> bytes, std::span<uint32_t> indices);
 
 public:
     Mesh(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
     ~Mesh();
 
     template <typename T>
-    void UploadVertices(std::span<T> vertices)
+    void Upload(std::span<T> vertices, std::span<uint32_t> indices)
     {
-        UploadVertices(std::as_bytes<T>(vertices));
+        Upload(std::as_bytes<T>(vertices), indices);
     }
 
-    void UploadIndices(std::span<uint32_t> indices);
+    VulkanMesh* GetMesh();
     uint32_t GetIndicesCount();
 
     void Bind(VkCommandBuffer buffer);

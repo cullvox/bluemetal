@@ -1,9 +1,7 @@
 #include "RenderData.h"
 #include "Renderer.h"
-#include "Resources/MaterialInstance.h"
-#include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanMaterial.h"
-#include "Resources/Mesh.h"
+#include "Graphics/VulkanMesh.h"
 #include "Core/Profiler.h"
 
 namespace bl {
@@ -102,15 +100,7 @@ VkDescriptorSet RenderData::GetInstanceDescriptorSet()
 
 static Profiler profiler;
 
-uint32_t HashDrawCall(MaterialInstance* material, Mesh* mesh)
-{
-    size_t h1 = std::hash<MaterialInstance*>{}(material);
-    size_t h2 = std::hash<Mesh*>{}(mesh);
-
-    return static_cast<uint32_t>(h1 ^ (h2 << 1));
-}
-
-void RenderData::DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh, const glm::mat4& instance)
+void RenderData::DrawInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const glm::mat4& instance)
 {
     DrawCall newCall(material, mesh);
     newCall.offset = static_cast<uint32_t>(_instances.size());
@@ -120,7 +110,7 @@ void RenderData::DrawInstance(Node* node, MaterialInstance* material, Mesh* mesh
     _instances.push_back(instance);
 }
 
-void RenderData::DrawMultiInstance(Node* node, MaterialInstance* material, Mesh* mesh, const std::span<glm::mat4> instances)
+void RenderData::DrawMultiInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const std::span<glm::mat4> instances)
 {
     DrawCall call{material, mesh};
     call.offset = static_cast<uint32_t>(_instances.size());
@@ -139,16 +129,20 @@ void RenderData::WriteInstanceBuffer()
 void RenderData::WriteDrawCommands()
 {
     // Perform draw commands.
-    MaterialInstance* prevMaterial = nullptr;
-    Mesh* prevMesh = nullptr;
+    const VulkanMaterialInstance* material = nullptr;
+    const VulkanMesh* mesh = nullptr;
     for (int i = 0; i < _calls.size(); i++) {
         DrawCall& call = _calls[i];
 
-        if (prevMaterial != call.material)
-            call.material->Bind(*this);
+        if (material != call.material) {
+            material = call.material;
+            material->Bind(*this);
+        }
 
-        if (prevMesh != call.mesh)
-            call.mesh->Bind(_cmd);
+        if (mesh != call.mesh) {
+            mesh = call.mesh;
+            mesh->Bind(_cmd);
+        }
 
         bool shouldInstance = call.count > 1;
 
@@ -162,30 +156,9 @@ void RenderData::WriteDrawCommands()
 
         objectPC.objectID = i;
 
-        call.material->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
-        vkCmdDrawIndexed(_cmd, call.mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
-    }
-}
+        material->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
 
-
-void RenderData::WriteDrawCommands(VulkanMaterialInstance* instance)
-{
-    // Perform draw commands.
-    instance->Bind(*this);
-
-    Mesh* prevMesh = nullptr;
-    for (int i = 0; i < _calls.size(); i++) {
-        DrawCall& call = _calls[i];
-
-        if (prevMesh != call.mesh)
-            call.mesh->Bind(_cmd);
-    
-        ObjectPC objectPC;
-        objectPC.useInstanceBuffer.x = 1;
-        objectPC.objectID = i;
-
-        instance->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
-        vkCmdDrawIndexed(_cmd, call.mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
+        vkCmdDrawIndexed(_cmd, mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
     }
 }
 

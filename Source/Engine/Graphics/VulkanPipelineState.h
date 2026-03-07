@@ -5,7 +5,8 @@
 
 #include "Vertex.h"
 #include "Vulkan.h"
-#include "Passes/PassType.h"
+#include "RenderPassType.h"
+
 
 namespace bl {
 
