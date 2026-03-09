@@ -6,6 +6,7 @@
 #include "Vulkan.h"
 #include "VulkanBufferFrameRing.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
+#include "Vertex.h"
 #include "UniformData.h"
 
 namespace bl
@@ -13,6 +14,7 @@ namespace bl
 
 class Node;
 class Renderer;
+class VulkanDevice;
 class VulkanMaterialInstance;
 class VulkanMesh;
 
@@ -51,6 +53,20 @@ class RenderData
 
     std::vector<DrawCall> _calls;
 
+    // Debug Rendering
+    VulkanMaterialInstance*     _pointMaterial = nullptr;
+    VulkanMaterialInstance*     _lineMaterial = nullptr;
+    VulkanMaterialInstance*     _triangleMaterial = nullptr;
+    std::vector<VertexDebug>    _points;
+    std::vector<VertexDebug>    _lines;
+    std::vector<VertexDebug>    _triangles;
+    std::vector<VertexDebug>    _debugVertices;
+    VulkanBufferFrameRing       _debugBuffer;
+
+    void CreateDebugBuffer(VulkanDevice* device);
+    void UpdateDebugBuffers();
+    void DrawDebugBuffers(RenderData& rd);
+
 public:
     RenderData(Renderer* renderer);
 
@@ -60,6 +76,7 @@ public:
     void SetGlobalDescriptorSet(VkDescriptorSet set);
     void SetSampleCount(VkSampleCountFlagBits sampleCount);
     void SetSwapchainImageView(VkImageView swapchainImageView);
+    void SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial);
 
     VkCommandBuffer GetCommandBuffer();
     uint32_t GetCurrentFrame();
@@ -72,9 +89,15 @@ public:
     void DrawInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const glm::mat4& instance);
     void DrawMultiInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const std::span<glm::mat4> instances);
 
+    void DrawPoint(const glm::vec3& point, float size = 1.0f, Color color = Color::Violet());
+    void DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness = 1.0f, Color color = Color::Violet());
+    void DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness = 1.0f, Color color = Color::Violet());
+
     void WriteInstanceBuffer();
     void WriteDrawCommands();
     void Reset();
+
+
 };
 
 }

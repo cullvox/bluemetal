@@ -142,19 +142,7 @@ private:
     void UpdateMaterialUniforms();
 
 
-    // Debug Rendering
-    VulkanMaterialInstance*     _pointMaterial = nullptr;
-    VulkanMaterialInstance*     _lineMaterial = nullptr;
-    VulkanMaterialInstance*     _triangleMaterial = nullptr;
-    std::vector<VertexDebug>    _points;
-    std::vector<VertexDebug>    _lines;
-    std::vector<VertexDebug>    _triangles;
-    std::vector<VertexDebug>    _debugVertices;
-    VulkanBufferFrameRing       _debugBuffer;
 
-    void CreateDebugBuffer();
-    void UpdateDebugBuffers();
-    void DrawDebugBuffers(RenderData& rd);
 };
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RenderPassType, {
