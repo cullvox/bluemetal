@@ -225,6 +225,20 @@ int main(int argc, const char** argv)
             audio->Update();
             profiler.EndProfile("Audio");
 
+            profiler.StartProfile("Physics");
+
+            const float fixedTimeStep = 1.0f / 60.0f;
+            accumulator += frameCounter.GetDeltaTime();
+            bool physUpdate = false;
+            while (accumulator >= fixedTimeStep)
+            {
+               physics.Update(fixedTimeStep);
+               physUpdate = true;
+               accumulator -= fixedTimeStep;
+            }
+
+            profiler.EndProfile("Physics");
+
             profiler.StartProfile("Update");
             grassMaterial->SetVector4("material.playerParams", glm::vec4{playerNode->GetWorldPosition(), 2.0f});
             grassMaterial->SetVector4("material.colorSmall", {sinf(bl::Time::Current()), sinf(bl::Time::Current() + bl::Math::Pi), 0.9f, 1.0f});
@@ -232,23 +246,10 @@ int main(int argc, const char** argv)
             rootNode->Update(frameCounter.GetDeltaTime());
             profiler.EndProfile("Update");
 
-            profiler.StartProfile("Physics");
 
-            const float fixedTimeStep = 1.0f / 60.0f;
-            accumulator += frameCounter.GetDeltaTime();
-            while (accumulator >= fixedTimeStep)
-            {
-                physics.Update(fixedTimeStep);
-                accumulator -= fixedTimeStep;
-            }
-
-            
-            profiler.EndProfile("Physics");
 
             renderer->SetView(cameraNode->GetViewMatrix());
             renderer->SetProjection(cameraNode->GetProjectionMatrix());
-
-            physicsRenderer->NextFrame();
 
             auto objectFunc = [&](bl::RenderData& rd) {
                 rootNode->Draw(rd);
@@ -258,6 +259,15 @@ int main(int argc, const char** argv)
                 auto extent = window->GetExtent();
 
                 renderer->DrawLine(playerNode->GetWorldPosition(), {0.0f, 0.0f, 0.0f});
+                if (physUpdate)
+                {
+                    physicsRenderer->Reset();
+                    //physicsRenderer->ResetRenderData();
+                    physics.Draw();
+                    //physicsRenderer->WriteInstances();
+                    physUpdate = false;
+                }
+                physicsRenderer->RecordCommands();
             };
 
             auto imguiFunc = [&](bl::RenderData& rd){

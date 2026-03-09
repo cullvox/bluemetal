@@ -63,6 +63,8 @@ public:
 
     RenderData& GetRenderData();
 
+    void PrepareRenderData(RenderData& rd);
+
 
 protected:
     friend class Material;

@@ -4,6 +4,7 @@
 #include <Jolt/Core/Core.h>
 #include <Jolt/Renderer/DebugRenderer.h>
 
+#include "Graphics/RenderData.h"
 #include "Graphics/VulkanMesh.h"
 
 #include <Core/Color.h>
@@ -12,7 +13,6 @@ namespace bl {
 
 class Renderer;
 class VulkanMaterialInstance;
-class RenderData;
 
 class PhysicsRenderer : public JPH::DebugRenderer {
     static Color ConvertColor(JPH::Color color);
@@ -32,7 +32,7 @@ class PhysicsRenderer : public JPH::DebugRenderer {
     };
 
     Renderer* _renderer;
-    RenderData& _rd;
+    RenderData _rd;
     VulkanMaterialInstance* _material;
 
 public:
@@ -48,6 +48,9 @@ public:
 
     virtual JPH::DebugRenderer::Batch CreateTriangleBatch(const JPH::DebugRenderer::Triangle *inTriangles, int inTriangleCount) override;
 	virtual JPH::DebugRenderer::Batch CreateTriangleBatch(const JPH::DebugRenderer::Vertex *inVertices, int inVertexCount, const JPH::uint32 *inIndices, int inIndexCount) override;
+
+    void Reset();
+    void RecordCommands();
 };
 
 } // namespace bl

@@ -12,7 +12,7 @@ Color PhysicsRenderer::ConvertColor(JPH::Color color)
 
 PhysicsRenderer::PhysicsRenderer(Renderer* renderer)
     : _renderer(renderer)
-    , _rd(renderer->GetRenderData())
+    , _rd(renderer)
     , _material(nullptr)
 {
     Initialize();
@@ -74,13 +74,21 @@ JPH::DebugRenderer::Batch PhysicsRenderer::CreateTriangleBatch(const JPH::DebugR
         const auto& v1 = inTriangles[i].mV[1];
         const auto& v2 = inTriangles[i].mV[2];
 
-        vertices.emplace_back(glm::vec3{v0.mPosition.x, v0.mPosition.y, v0.mPosition.z}, glm::vec3{v0.mColor.r, v0.mColor.g, v0.mColor.b}, 0.0f);
-        vertices.emplace_back(glm::vec3{v1.mPosition.x, v1.mPosition.y, v1.mPosition.z}, glm::vec3{v1.mColor.r, v1.mColor.g, v1.mColor.b}, 0.0f);
-        vertices.emplace_back(glm::vec3{v2.mPosition.x, v2.mPosition.y, v2.mPosition.z}, glm::vec3{v2.mColor.r, v2.mColor.g, v2.mColor.b}, 0.0f);
+        vertices[i].position = glm::vec3{v0.mPosition.x, v0.mPosition.y, v0.mPosition.z};
+        vertices[i].color = glm::vec3{v0.mColor.r, v0.mColor.g, v0.mColor.b};
+        vertices[i].pointSize = 0.0f;
+
+        vertices[i + 1].position = glm::vec3{v1.mPosition.x, v1.mPosition.y, v1.mPosition.z};
+        vertices[i + 1].color = glm::vec3{v1.mColor.r, v1.mColor.g, v1.mColor.b};
+        vertices[i + 1].pointSize = 0.0f;
+
+        vertices[i + 2].position = glm::vec3{v2.mPosition.x, v2.mPosition.y, v2.mPosition.z};
+        vertices[i + 2].color = glm::vec3{v2.mColor.r, v2.mColor.g, v2.mColor.b};
+        vertices[i + 2].pointSize = 0.0f;
     }
 
     BatchImpl* batch = new BatchImpl();
-    batch->mesh = VulkanMesh{_renderer->GetDevice(), std::as_bytes(std::span{vertices})};
+    batch->mesh = VulkanMesh{_renderer->GetDevice(), std::as_bytes(std::span{vertices}), static_cast<uint32_t>(vertices.size())};
     return batch;
 }
 
@@ -91,7 +99,9 @@ JPH::DebugRenderer::Batch PhysicsRenderer::CreateTriangleBatch(const JPH::DebugR
     for (int i = 0; i < inVertexCount; i++)
     {
         const auto& v = inVertices[i];
-        vertices.emplace_back(glm::vec3{v.mPosition.x, v.mPosition.y, v.mPosition.z}, glm::vec3{v.mColor.r, v.mColor.g, v.mColor.b}, 0.0f);
+        vertices[i].position = glm::vec3{v.mPosition.x, v.mPosition.y, v.mPosition.z};
+        vertices[i].color = glm::vec3{v.mColor.r, v.mColor.g, v.mColor.b};
+        vertices[i].pointSize = 0.0f;
     }
 
     BatchImpl* batch = new BatchImpl();
@@ -99,5 +109,17 @@ JPH::DebugRenderer::Batch PhysicsRenderer::CreateTriangleBatch(const JPH::DebugR
     return batch;
 }
 
+void PhysicsRenderer::RecordCommands()
+{
+    _renderer->PrepareRenderData(_rd);
+    _rd.WriteInstanceBuffer();
+    _rd.WriteDrawCommands();
+}
+
+void PhysicsRenderer::Reset()
+{
+    NextFrame();
+    _rd.Reset();
+}
 
 }

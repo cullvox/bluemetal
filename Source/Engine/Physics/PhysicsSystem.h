@@ -34,6 +34,7 @@ public:
 
     JPH::PhysicsSystem& GetJolt();
     void Update(float deltaTime);
+    void Draw();
     PhysicsRenderer* GetPhysicsRenderer();
 };
 

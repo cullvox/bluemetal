@@ -984,4 +984,15 @@ RenderData& Renderer::GetRenderData()
     return _renderData;
 }
 
+void Renderer::PrepareRenderData(RenderData& rd)
+{
+
+    auto& frame = _perFrame[_currentFrame];
+
+    rd.SetCurrentFrame(_currentFrame);
+    rd.SetCommandBuffer(frame.commandBuffer);
+    rd.SetGlobalDescriptorSet(_globalDescriptorSets[_currentFrame]);
+    rd.SetSampleCount(_sampleCount);
+}
+
 } // namespace bl

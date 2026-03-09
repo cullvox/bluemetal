@@ -32,17 +32,20 @@ PhysicsSystem::PhysicsSystem(Engine& engine)
 void PhysicsSystem::Update(float deltaTime)
 {
     _physicsSystem.Update(deltaTime, 3, _tempAllocator.get(), _jobSystem.get());
-
-    JPH::BodyManager::DrawSettings drawSettings = {};
-    drawSettings.mDrawShapeWireframe = true;
-    drawSettings.mDrawWorldTransform = true;
-    drawSettings.mDrawVelocity = true;
-    _physicsSystem.DrawBodies(drawSettings, _physicsRenderer.get());
 }
 
 JPH::PhysicsSystem& PhysicsSystem::GetJolt()
 {
     return _physicsSystem;
+}
+
+void PhysicsSystem::Draw()
+{
+    JPH::BodyManager::DrawSettings drawSettings = {};
+    drawSettings.mDrawShapeWireframe = true;
+    drawSettings.mDrawWorldTransform = true;
+    drawSettings.mDrawVelocity = true;
+    _physicsSystem.DrawBodies(drawSettings, _physicsRenderer.get());
 }
 
 PhysicsRenderer* PhysicsSystem::GetPhysicsRenderer()
