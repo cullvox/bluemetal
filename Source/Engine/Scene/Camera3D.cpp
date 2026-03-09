@@ -61,13 +61,12 @@ const glm::mat4& Camera3D::GetProjectionMatrix()
     switch (_projection) {
     case CameraProjection::ePerspective:
         _projectionMatrix = glm::perspective(glm::radians(_fov), _aspect, _nearClip, _farClip);
+        _projectionMatrix[1][1] *= -1; // Invert the projection for Vulkan y (0, 1)
         break;
     case CameraProjection::eOrthographic:
-        _projectionMatrix = glm::ortho(height, height, width, width, _nearClip, _farClip);
+        _projectionMatrix = glm::ortho((-(width / 2.0f))/_fov, (width/2.0f)/_fov, (height/2.0f)/_fov, (-(height / 2.0f))/_fov, _nearClip, _farClip);
         break;
     }
-
-    _projectionMatrix[1][1] *= -1; // Invert the projection for Vulkan y (0, 1)
 
     _isDirty = false;
     return _projectionMatrix;

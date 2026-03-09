@@ -58,7 +58,7 @@ void PhysicsRenderer::DrawGeometry(JPH::RMat44Arg inModelMatrix, const JPH::AABo
     glm::mat4 model;
     inModelMatrix.StoreFloat4x4(reinterpret_cast<JPH::Float4*>(&model));
 
-    const auto& lod = inGeometry->mLODs[0];
+    const auto& lod = inGeometry->GetLOD({_cameraPosition.x, _cameraPosition.y, _cameraPosition.z}, inWorldSpaceBounds, inLODScaleSq);
     const auto& mesh = static_cast<BatchImpl*>(lod.mTriangleBatch.GetPtr())->mesh;
 
     _rd.DrawInstance(nullptr, _material, &mesh, model);
@@ -109,10 +109,22 @@ JPH::DebugRenderer::Batch PhysicsRenderer::CreateTriangleBatch(const JPH::DebugR
     return batch;
 }
 
+void PhysicsRenderer::SetCameraPosition(glm::vec3 position)
+{
+    _cameraPosition = position;
+}
+
+void PhysicsRenderer::WriteInstances()
+{
+    _renderer->PrepareRenderData(_rd);
+    _rd.WriteInstanceBuffer();
+}
+
 void PhysicsRenderer::RecordCommands()
 {
     _renderer->PrepareRenderData(_rd);
     _rd.WriteInstanceBuffer();
+    vkCmdSetLineWidth(_rd.GetCommandBuffer(), 2.0f);
     _rd.WriteDrawCommands();
 }
 

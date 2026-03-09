@@ -5,6 +5,6 @@
     },
     "vertexState": {
         "vertex": "Debug",
-        "topology": "VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LISTVK_PRIMITIVE_TOPOLOGY_"
+        "topology": "VK_PRIMITIVE_TOPOLOGY_LINE_STRIP"
     }
 }

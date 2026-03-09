@@ -162,7 +162,7 @@ int main(int argc, const char** argv)
         followCamera->SetRotation({ -45.0f, 180.0f, 0.0f});
         followCamera->SetProjection(bl::CameraProjection::ePerspective);
         followCamera->SetFOV(65.0f);
-        followCamera->SetNearClip(0.1f);
+        followCamera->SetNearClip(0.01f);
         followCamera->SetFarClip(1000.0f);
 
         playerNode->AddChild(std::move(followCamera));
@@ -261,10 +261,10 @@ int main(int argc, const char** argv)
                 renderer->DrawLine(playerNode->GetWorldPosition(), {0.0f, 0.0f, 0.0f});
                 if (physUpdate)
                 {
+                    physicsRenderer->SetCameraPosition(cameraNode->GetWorldPosition());
                     physicsRenderer->Reset();
-                    //physicsRenderer->ResetRenderData();
                     physics.Draw();
-                    //physicsRenderer->WriteInstances();
+                    physicsRenderer->WriteInstances();
                     physUpdate = false;
                 }
                 physicsRenderer->RecordCommands();

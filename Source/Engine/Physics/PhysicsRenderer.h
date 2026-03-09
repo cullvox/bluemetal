@@ -34,6 +34,7 @@ class PhysicsRenderer : public JPH::DebugRenderer {
     Renderer* _renderer;
     RenderData _rd;
     VulkanMaterialInstance* _material;
+    glm::vec3 _cameraPosition;
 
 public:
     PhysicsRenderer(Renderer* renderer);
@@ -49,7 +50,9 @@ public:
     virtual JPH::DebugRenderer::Batch CreateTriangleBatch(const JPH::DebugRenderer::Triangle *inTriangles, int inTriangleCount) override;
 	virtual JPH::DebugRenderer::Batch CreateTriangleBatch(const JPH::DebugRenderer::Vertex *inVertices, int inVertexCount, const JPH::uint32 *inIndices, int inIndexCount) override;
 
+    void SetCameraPosition(glm::vec3 position);
     void Reset();
+    void WriteInstances();
     void RecordCommands();
 };
 
