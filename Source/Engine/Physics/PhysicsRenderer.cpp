@@ -35,7 +35,7 @@ void PhysicsRenderer::DrawLine(JPH::RVec3Arg inFrom, JPH::RVec3Arg inTo, JPH::Co
     const glm::vec3 b{inTo.GetX(), inTo.GetY(), inTo.GetZ()};
     const Color color = ConvertColor(inColor);
 
-    _renderer->DrawLine(a, b, 3.0f, color);
+    _rd.DrawLine(a, b, 3.0f, color);
 }
 
 void PhysicsRenderer::DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::RVec3Arg inV3, JPH::ColorArg inColor, ECastShadow inCastShadow)
@@ -45,7 +45,7 @@ void PhysicsRenderer::DrawTriangle(JPH::RVec3Arg inV1, JPH::RVec3Arg inV2, JPH::
     const glm::vec3 c{inV3.GetX(), inV3.GetY(), inV3.GetZ()};
     const Color color = ConvertColor(inColor);
 
-    _renderer->DrawTriangle(a, b, c, 3.0f, color);
+    _rd.DrawTriangle(a, b, c, 3.0f, color);
 }
 
 void PhysicsRenderer::DrawText3D(JPH::RVec3Arg, const std::string_view &, JPH::ColorArg, float)

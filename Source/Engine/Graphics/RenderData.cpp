@@ -126,6 +126,7 @@ void RenderData::WriteInstanceBuffer()
 {
     // Upload instances to the staging buffer.
     _instanceBuffer.Upload(std::as_bytes(std::span(_instances)), _currentFrame);
+    UpdateDebugBuffers();
 }
 
 void RenderData::WriteDrawCommands()
@@ -162,6 +163,8 @@ void RenderData::WriteDrawCommands()
 
         vkCmdDrawIndexed(_cmd, mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
     }
+
+    DrawDebugBuffers();
 }
 
 void RenderData::SetSampleCount(VkSampleCountFlagBits sampleCount)
@@ -183,6 +186,7 @@ void RenderData::Reset()
     _points.clear();
     _lines.clear();
     _triangles.clear();
+    _debugVertices.clear();
 }
 
 void RenderData::DrawPoint(const glm::vec3& point, float size, Color color)
@@ -216,53 +220,55 @@ void RenderData::CreateDebugBuffer(VulkanDevice* device)
 
 void RenderData::UpdateDebugBuffers()
 {
-    _debugVertices.clear();
-
-    std::copy_n(_points.begin(), std::min(_debugVertices.capacity(), _points.size()), std::back_inserter(_debugVertices));
-    std::copy_n(_lines.begin(), std::min(_debugVertices.capacity(), _lines.size()), std::back_inserter(_debugVertices));
-    std::copy_n(_triangles.begin(), std::min(_debugVertices.capacity(), _triangles.size()), std::back_inserter(_debugVertices));
+    if (_debugVertices.empty())
+    {
+        std::copy_n(_points.begin(), std::min(_debugVertices.capacity(), _points.size()), std::back_inserter(_debugVertices));
+        std::copy_n(_lines.begin(), std::min(_debugVertices.capacity(), _lines.size()), std::back_inserter(_debugVertices));
+        std::copy_n(_triangles.begin(), std::min(_debugVertices.capacity(), _triangles.size()), std::back_inserter(_debugVertices));
+    }
 
     // Update this current frames buffer.
     _debugBuffer.Upload(std::as_bytes(std::span { _debugVertices }), _currentFrame);
 }
 
-void RenderData::DrawDebugBuffers(RenderData& rd)
+void RenderData::DrawDebugBuffers()
 {
     // Draw the points list
     if (_points.empty() && _lines.empty() && _triangles.empty())
         return;
 
-    auto cmd = rd.GetCommandBuffer();
-    VkBuffer buffer = _debugBuffer.GetBuffer(rd.GetCurrentFrame());
+    VkBuffer buffer = _debugBuffer.GetBuffer(_currentFrame);
     VkDeviceSize vertexOffset = 0;
 
     if (_pointMaterial != nullptr && _points.size() > 0) {
-        _pointMaterial->Bind(rd);
-        vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
-        vkCmdDraw(cmd, static_cast<uint32_t>(_points.size()), 1, 0, 0);
+        _pointMaterial->Bind(*this);
+        vkCmdBindVertexBuffers(_cmd, 0, 1, &buffer, &vertexOffset);
+        vkCmdDraw(_cmd, static_cast<uint32_t>(_points.size()), 1, 0, 0);
     }
 
     // Draw the lines list
     uint32_t firstVertex = static_cast<uint32_t>(_points.size());
     if (_lineMaterial != nullptr && _lines.size() > 0) {
-        _lineMaterial->Bind(rd);
-        vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
-        vkCmdSetLineWidth(cmd, 3.0f);
-        vkCmdDraw(cmd, static_cast<uint32_t>(_lines.size()), 1, firstVertex, 0);
+        _lineMaterial->Bind(*this);
+        vkCmdBindVertexBuffers(_cmd, 0, 1, &buffer, &vertexOffset);
+        vkCmdSetLineWidth(_cmd, 3.0f);
+        vkCmdDraw(_cmd, static_cast<uint32_t>(_lines.size()), 1, firstVertex, 0);
     }
 
     // Draw the trangles list
     firstVertex += static_cast<uint32_t>(_lines.size());
     if (_triangleMaterial != nullptr && _triangles.size() > 0) {
-        _triangleMaterial->Bind(rd);
-        vkCmdBindVertexBuffers(cmd, 0, 1, &buffer, &vertexOffset);
-        vkCmdDraw(cmd, static_cast<uint32_t>(_triangles.size()), 1, firstVertex, 0);
+        _triangleMaterial->Bind(*this);
+        vkCmdBindVertexBuffers(_cmd, 0, 1, &buffer, &vertexOffset);
+        vkCmdDraw(_cmd, static_cast<uint32_t>(_triangles.size()), 1, firstVertex, 0);
     }
-
-    _points.clear();
-    _lines.clear();
-    _triangles.clear();
 }
 
+void RenderData::SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial)
+{
+    _pointMaterial = pointMaterial;
+    _lineMaterial = lineMaterial;
+    _triangleMaterial = triangleMaterial;
+}
 
 } // namespace bl

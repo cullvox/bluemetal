@@ -521,9 +521,6 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
 
     func(_renderData);
 
-    UpdateDebugBuffers();
-    DrawDebugBuffers(_renderData);
-
     vkCmdEndRendering(cmd);
 
     colorAttachments[0].imageView = _swapchainImageViews[imageIndex];
@@ -741,14 +738,6 @@ void Renderer::TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImage
     vkCmdPipelineBarrier(cmd, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial)
-{
-    _pointMaterial = pointMaterial;
-    _lineMaterial = lineMaterial;
-    _triangleMaterial = triangleMaterial;
-}
-
-
 void Renderer::QueueSelectionBuffer()
 {
     _queuedSelectionBuffer = true;
@@ -758,7 +747,6 @@ uint32_t Renderer::GetSelectionValue(const glm::ivec2& position)
 {
     return 0;
 }
-
 
 void Renderer::AddMaterial(VulkanMaterialInstance* material)
 {
@@ -913,6 +901,31 @@ void Renderer::PrepareRenderData(RenderData& rd)
     rd.SetCommandBuffer(frame.commandBuffer);
     rd.SetGlobalDescriptorSet(_globalDescriptorSets[_currentFrame]);
     rd.SetSampleCount(_sampleCount);
+
+    rd.SetDebugMaterialInstance(_pointMaterial, _lineMaterial, _triangleMaterial);
 }
+
+void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial)
+{
+    _pointMaterial = pointMaterial;
+    _lineMaterial = lineMaterial;
+    _triangleMaterial = triangleMaterial;
+}
+
+void Renderer::DrawPoint(const glm::vec3& point, float size, Color color)
+{
+    _renderData.DrawPoint(point, size, color);
+}
+
+void Renderer::DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness, Color color)
+{
+    _renderData.DrawLine(a, b, thickness, color);
+}
+
+void Renderer::DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness, Color color)
+{
+    _renderData.DrawTriangle(a, b, c, thickness, color);
+}
+
 
 } // namespace bl

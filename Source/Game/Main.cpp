@@ -246,8 +246,6 @@ int main(int argc, const char** argv)
             rootNode->Update(frameCounter.GetDeltaTime());
             profiler.EndProfile("Update");
 
-
-
             renderer->SetView(cameraNode->GetViewMatrix());
             renderer->SetProjection(cameraNode->GetProjectionMatrix());
 

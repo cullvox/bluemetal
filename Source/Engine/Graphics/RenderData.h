@@ -65,7 +65,7 @@ class RenderData
 
     void CreateDebugBuffer(VulkanDevice* device);
     void UpdateDebugBuffers();
-    void DrawDebugBuffers(RenderData& rd);
+    void DrawDebugBuffers();
 
 public:
     RenderData(Renderer* renderer);

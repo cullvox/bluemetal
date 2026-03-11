@@ -141,6 +141,9 @@ private:
 
     void UpdateMaterialUniforms();
 
+    VulkanMaterialInstance* _pointMaterial;
+    VulkanMaterialInstance* _lineMaterial;
+    VulkanMaterialInstance* _triangleMaterial;
 
 
 };
