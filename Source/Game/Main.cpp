@@ -308,6 +308,10 @@ int main(int argc, const char** argv)
                         }
                     }
 
+                    static bool enablePhysDebugRenderer = false;
+                    ImGui::Checkbox("Enable Physics Debug", &enablePhysDebugRenderer);
+                    physicsRenderer->SetEnable(enablePhysDebugRenderer);
+
                     ImGui::TreePop();
                 }
 

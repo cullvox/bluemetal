@@ -160,7 +160,6 @@ void RenderData::WriteDrawCommands()
         objectPC.objectID = i;
 
         material->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
-
         vkCmdDrawIndexed(_cmd, mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
     }
 

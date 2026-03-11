@@ -109,6 +109,11 @@ JPH::DebugRenderer::Batch PhysicsRenderer::CreateTriangleBatch(const JPH::DebugR
     return batch;
 }
 
+void PhysicsRenderer::SetEnable(bool enable)
+{
+    _enable = enable;
+}
+
 void PhysicsRenderer::SetCameraPosition(glm::vec3 position)
 {
     _cameraPosition = position;
@@ -122,6 +127,8 @@ void PhysicsRenderer::WriteInstances()
 
 void PhysicsRenderer::RecordCommands()
 {
+    if (!_enable) return;
+
     _renderer->PrepareRenderData(_rd);
     _rd.WriteInstanceBuffer();
     vkCmdSetLineWidth(_rd.GetCommandBuffer(), 2.0f);
