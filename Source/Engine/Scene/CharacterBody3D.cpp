@@ -1,12 +1,14 @@
 #include "CharacterBody3D.h"
 #include "Engine/Engine.h"
 #include "Window/Input.h"
+#include "Scene/Orbit3D.h"
 
 namespace bl {
 
 CharacterBody3D::CharacterBody3D(Engine& engine)
     : PhysicsBody3D(engine)
 {
+    _orbiter = nullptr;
 }
 
 CharacterBody3D::~CharacterBody3D() = default;
@@ -15,8 +17,12 @@ void CharacterBody3D::Update(float dt)
 {
     PhysicsBody3D::Update(dt);
 
+    if (!_orbiter)
+        _orbiter = GetChild("Orbiter")->As<Orbit3D>();
+
     auto input = GetEngine().GetInput();
     auto& keyboard = input->GetKeyboard();
+    auto& mouse = input->GetMouse();
 
     glm::vec3 velocity = GetVelocity();
 
@@ -62,6 +68,13 @@ void CharacterBody3D::Update(float dt)
     SetVelocity(velocity);
 
     // Rotate the player to input.
+    if (mouse.GetCaptured(GetEngine().GetWindow()))
+    {
+        glm::vec2 delta = mouse.GetMouseDelta();
+
+        _orbiter->RotateAzimuth(glm::radians(delta.x));
+        _orbiter->RotatePolar(glm::radians(delta.y));
+    }
     
 }
 

@@ -24,6 +24,7 @@
 #include <Scene/CharacterBody3D.h>
 #include <Scene/FlyCamera3D.h>
 #include <Scene/MultiMeshInstance3D.h>
+#include <Scene/Orbit3D.h>
 #include <Physics/PhysicsRenderer.h>
 #include <Social/Discord.h>
 
@@ -109,15 +110,15 @@ int main(int argc, const char** argv)
         multimesh->SetName("GrassMultiMesh");
         multimesh->SetMesh(grass.lock()->GetMeshes()[0]);
         multimesh->SetMaterial(grassMaterial);
-        multimesh->SetInstanceCount(4096);
+        multimesh->SetInstanceCount(6000);
 
-        for (int i = 0; i < 4096; i++) {
-            float x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(40.0f)));
-            float z = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(40.0f)));
+        for (int i = 0; i < 6000; i++) {
+            float x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(80.0f)));
+            float z = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(80.0f)));
             float rot_x = static_cast<float>(rand()) / ( static_cast<float>(RAND_MAX/(360.0f)));
 
             glm::mat4 transform = glm::mat4(1.0f);
-            transform = glm::translate(transform, glm::vec3(x - 20.0f, -4.f, z - 20.0f));
+            transform = glm::translate(transform, glm::vec3(x - 40.0f, -4.f, z - 40.0f));
             transform = glm::rotate(transform, glm::radians(rot_x), glm::vec3(0.0f, 1.0f, 0.0f));
             transform = glm::scale(transform, glm::vec3(1.0f, 1.0f, 1.0f));
             multimesh->SetInstanceTransform(i, transform);
@@ -156,18 +157,23 @@ int main(int argc, const char** argv)
         //auto flyCamNode = rootNode->GetChild("FlyCam")->As<bl::FlyCamera3D>();
         auto playerNode = rootNode->GetChild("CharacterBody")->As<bl::Node3D>();
 
+        auto cameraOrbit = std::make_unique<bl::Orbit3D>(engine);
+        cameraOrbit->SetName("Orbiter");
+        playerNode->AddChild(std::move(cameraOrbit));
+
         auto followCamera = std::make_unique<bl::Camera3D>(engine);
         followCamera->SetName("FollowCam");
-        followCamera->SetPosition({ 0.0f, 10.0f, -10.0f });
-        followCamera->SetRotation({ -45.0f, 180.0f, 0.0f});
+        //followCamera->SetPosition({ 0.0f, 10.0f, -10.0f });
+        followCamera->SetRotation({ 0.0f, 0.0f, 0.0f});
         followCamera->SetProjection(bl::CameraProjection::ePerspective);
         followCamera->SetFOV(65.0f);
         followCamera->SetNearClip(0.01f);
         followCamera->SetFarClip(1000.0f);
 
-        playerNode->AddChild(std::move(followCamera));
+        auto orbiter = playerNode->GetChild("Orbiter")->As<bl::Orbit3D>();
 
-        auto cameraNode = rootNode->GetChild("CharacterBody")->GetChild("FollowCam")->As<bl::Camera3D>();
+        orbiter->AddChild(std::move(followCamera));
+        auto cameraNode = orbiter->GetChild("FollowCam")->As<bl::Camera3D>();
 
         bl::FrameCounter& frameCounter = engine.GetFrameCounter();
         auto presentModes = renderer->GetPresentModes();

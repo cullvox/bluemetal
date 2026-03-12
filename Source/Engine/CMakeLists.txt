@@ -87,6 +87,7 @@ list(APPEND Sources
   "Scene/CharacterBody3D.cpp"
   "Scene/NodeFilterIterator.cpp"
   "Scene/SceneSystem.cpp"
+  "Scene/Orbit3D.cpp"
 
   "Social/Discord.cpp"
 
