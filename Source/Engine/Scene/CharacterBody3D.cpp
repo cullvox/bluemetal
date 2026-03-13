@@ -70,7 +70,7 @@ void CharacterBody3D::Update(float dt)
     // Rotate the player to input.
     if (mouse.GetCaptured(GetEngine().GetWindow()))
     {
-        glm::vec2 delta = mouse.GetMouseDelta();
+        glm::vec2 delta = mouse.GetMouseDelta() * 0.09f;
 
         _orbiter->RotateAzimuth(glm::radians(delta.x));
         _orbiter->RotatePolar(glm::radians(delta.y));
