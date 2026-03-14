@@ -76,6 +76,24 @@ void Orbit3D::RotatePolar(float radians)
     }
 }
 
+void Orbit3D::SetMaxRadius(float maxRadius)
+{
+    _maxRadius = maxRadius;
+}
 
+void Orbit3D::AddRadius(float radius)
+{
+    _radius += radius;
+
+    if (_radius <= 0.001)
+    {
+        _radius = 0.001;
+    }
+
+    if (_radius >= _maxRadius)
+    {
+        _radius = _maxRadius;
+    }
+}
 
 } // namespace bl

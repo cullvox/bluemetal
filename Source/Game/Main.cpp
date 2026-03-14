@@ -55,7 +55,7 @@ int main(int argc, const char** argv)
         auto& editor = engine.GetEditor();
         auto physicsRenderer = physics.GetPhysicsRenderer();
 
-        auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Aria Math.ogg");
+        auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Aaron Cherof - Anagnorisis - 06 Mare Marginis.ogg");
         auto source = std::make_unique<bl::AudioSource3D>(engine);
 
         source->Play(sound, true);

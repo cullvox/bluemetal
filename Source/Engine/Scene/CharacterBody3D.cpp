@@ -71,11 +71,12 @@ void CharacterBody3D::Update(float dt)
     if (mouse.GetCaptured(GetEngine().GetWindow()))
     {
         glm::vec2 delta = mouse.GetMouseDelta() * 0.09f;
+        glm::vec2 scrollDelta = mouse.GetMouseScrollDelta() * 0.09f;
 
         _orbiter->RotateAzimuth(glm::radians(delta.x));
         _orbiter->RotatePolar(glm::radians(delta.y));
+        _orbiter->AddRadius(scrollDelta.y);
     }
-    
 }
 
 }

@@ -14,6 +14,8 @@ std::shared_ptr<Resource> InputSystem::ConstructResource(ResourceSystem&, std::s
 
 void InputSystem::Poll(std::function<void(SDL_Event&)> extraFunc)
 {
+    _mouse.SetWheel({ 0.0f, 0.0f });
+
     SDL_Event event {};
     while (SDL_PollEvent(&event)) {
         SDL_PropertiesID props = SDL_GetWindowProperties(SDL_GetWindowFromEvent(&event));
