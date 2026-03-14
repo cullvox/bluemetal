@@ -28,7 +28,7 @@ Orbit3D* Orbit3D::Clone()
     return new Orbit3D(*this);
 }
 
-void Orbit3D::Update(float dt)
+void Orbit3D::Update(float)
 {
     const float sineAzimuth = sin(_azimuthAngle);
     const float cosineAzimuth = cos(_azimuthAngle);

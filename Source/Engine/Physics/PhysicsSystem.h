@@ -9,6 +9,7 @@
 #include "BroadPhaseLayerImpl.h"
 #include "ObjectVsBroadPhaseLayerFilterImpl.h"
 #include "ObjectLayerPairFilterImpl.h"
+#include "Core/FrameCounter.h"
 
 namespace bl {
 
@@ -27,15 +28,21 @@ class PhysicsSystem : public System {
     std::unique_ptr<JPH::JobSystemThreadPool> _jobSystem;
     JPH::PhysicsSystem _physicsSystem;
     std::unique_ptr<PhysicsRenderer> _physicsRenderer;
+    float _accumulator = 0.0f;
+    float _interpolationFraction = 0.0f;
+    FrameCounter physFrameCounter;
 
 public:
     PhysicsSystem(Engine& engine);
     ~PhysicsSystem() override = default;
 
     JPH::PhysicsSystem& GetJolt();
-    void Update(float deltaTime);
+    bool Update(float deltaTime, std::function<void()> update);
+    void InterpolateBodies(float alpha);
+    float GetPhysicsInterpolationFraction();
     void Draw();
     PhysicsRenderer* GetPhysicsRenderer();
+    FrameCounter& GetPhysFrameCounter() { return physFrameCounter; };
 };
 
 }

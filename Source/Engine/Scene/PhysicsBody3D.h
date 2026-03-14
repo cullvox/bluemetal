@@ -18,6 +18,8 @@ class PhysicsBody3D : public Node3D {
     float _restitution = 0.0f;
     JPH::ObjectLayer _objectLayer = ObjectLayers::MOVABLE;
     JPH::EMotionType _motionType = JPH::EMotionType::Dynamic;
+    glm::vec3 _currPosition;
+    glm::quat _currRotation;
 
 public:
     PhysicsBody3D(Engine& engine);
@@ -25,6 +27,7 @@ public:
     ~PhysicsBody3D();
 
     virtual void Update(float deltaTime) override;
+    virtual void PhysicsUpdate() override;
 
     glm::vec3 GetVelocity();
     void SetVelocity(const glm::vec3& velocity);

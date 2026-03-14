@@ -8,6 +8,7 @@
 #include "Engine/Engine.h"
 #include "PhysicsRenderer.h"
 #include "BroadPhaseLayerImpl.h"
+#include "Scene/PhysicsBody3D.h"
 
 namespace bl {
 
@@ -29,9 +30,66 @@ PhysicsSystem::PhysicsSystem(Engine& engine)
     _physicsRenderer = std::make_unique<PhysicsRenderer>(engine.GetRenderer());
 }
 
-void PhysicsSystem::Update(float deltaTime)
+bool PhysicsSystem::Update(float deltaTime, std::function<void()> update)
 {
-    _physicsSystem.Update(deltaTime, 3, _tempAllocator.get(), _jobSystem.get());
+
+    const float fixedTimeStep = 1.0f / 60.0f;
+    _accumulator += deltaTime;
+    _accumulator = std::clamp(_accumulator, 0.0f, 2.0f * fixedTimeStep);
+
+    bool physUpdate = false;
+    while (_accumulator >= fixedTimeStep)
+    {
+        physFrameCounter.BeginFrame();
+
+        _physicsSystem.Update(fixedTimeStep, 3, _tempAllocator.get(), _jobSystem.get());
+        physUpdate = true;
+        _accumulator -= fixedTimeStep;
+
+        update();
+
+        physFrameCounter.EndFrame();
+        // rootNode->PhysicsUpdate(fixedTimeStep);
+    }
+
+    _interpolationFraction = _accumulator / fixedTimeStep;
+
+
+    return physUpdate;
+}
+
+void PhysicsSystem::InterpolateBodies(float alpha)
+{
+    JPH::BodyIDVector bodyIDs;
+    _physicsSystem.GetActiveBodies(JPH::EBodyType::RigidBody, bodyIDs);
+
+    // float alpha = deltaTime / timeStep;
+
+    for (const JPH::BodyID& id : bodyIDs)
+    {
+        auto& bodyInterface = _physicsSystem.GetBodyInterface();
+
+        JPH::Vec3 pos;
+        JPH::Quat rot;
+
+        bodyInterface.GetPositionAndRotation(id, pos, rot);
+        uint64_t userData = bodyInterface.GetUserData(id);
+
+        PhysicsBody3D* physBody = reinterpret_cast<PhysicsBody3D*>(static_cast<uintptr_t>(userData));
+
+        glm::vec3 newPosition;
+        glm::quat newRotation;
+        pos.StoreFloat3(reinterpret_cast<JPH::Float3*>(&newPosition));
+        rot.StoreFloat4(reinterpret_cast<JPH::Float4*>(&newRotation));
+
+        //physBody->SetWorldPosition(newPosition * alpha + physBody->GetPreviousPosition() * (1 - alpha));
+        //physBody->SetWorldRotation(glm::slerp(physBody->GetPreviousRotation(), newRotation, alpha));
+
+        Print::Debug("{}", alpha);
+
+        //physBody->SetPreviousPosition(newPosition);
+        //physBody->SetPreviousRotation(newRotation);
+    }
 }
 
 JPH::PhysicsSystem& PhysicsSystem::GetJolt()
@@ -51,6 +109,11 @@ void PhysicsSystem::Draw()
 PhysicsRenderer* PhysicsSystem::GetPhysicsRenderer()
 {
     return _physicsRenderer.get();
+}
+
+float PhysicsSystem::GetPhysicsInterpolationFraction()
+{
+    return _interpolationFraction;
 }
 
 }

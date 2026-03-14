@@ -14,6 +14,8 @@ namespace bl {
 PhysicsBody3D::PhysicsBody3D(Engine& engine)
     : Node3D(engine)
 {
+    _currPosition = {};
+    _currRotation = {};
 }
 
 PhysicsBody3D::PhysicsBody3D(const PhysicsBody3D& copy)
@@ -44,6 +46,27 @@ void PhysicsBody3D::Update(float deltaTime)
 {
     Node3D::Update(deltaTime);
 
+    float alpha = GetEngine().GetPhysics().GetPhysicsInterpolationFraction();
+
+    bool interp = true;
+
+    if (interp)
+    {
+        auto prevPos = GetPosition();
+        SetPosition(prevPos + ((_currPosition - prevPos)) * alpha);
+        SetRotation(glm::slerp(GetRotationQuat(), _currRotation, alpha));
+    }
+    else
+    {
+        SetPosition(_currPosition);
+        SetRotation(_currRotation);
+    }
+}
+
+void PhysicsBody3D::PhysicsUpdate()
+{
+    Node3D::PhysicsUpdate();
+
     // Update the body's transform to match the node's transform
     auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
 
@@ -51,9 +74,8 @@ void PhysicsBody3D::Update(float deltaTime)
     JPH::Quat rotationQuat{};
     bodyInterface.GetPositionAndRotation(_bodyId, positionVec, rotationQuat);
 
-    SetPosition(glm::vec3(positionVec.GetX(), positionVec.GetY(), positionVec.GetZ()));
-    SetRotation(glm::quat(rotationQuat.GetW(), rotationQuat.GetX(), rotationQuat.GetY(), rotationQuat.GetZ()));
-
+    _currPosition = glm::vec3(positionVec.GetX(), positionVec.GetY(), positionVec.GetZ());
+    _currRotation = glm::quat(rotationQuat.GetW(), rotationQuat.GetX(), rotationQuat.GetY(), rotationQuat.GetZ());
 }
 
 glm::vec3 PhysicsBody3D::GetVelocity()
@@ -193,5 +215,6 @@ void PhysicsBody3D::SetDOF(
         jolt.AddConstraint(constraint);
     }
 }
+
 
 } // namespace bl

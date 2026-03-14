@@ -8,6 +8,7 @@
 #include "Graphics/VulkanConversions.h"
 #include "Graphics/RenderData.h"
 #include "Graphics/VulkanWindow.h"
+#include "Physics/PhysicsSystem.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Audio/AudioSystem.h"
 
@@ -36,6 +37,7 @@ void DebugEditor::Draw(RenderData& rd)
     GraphicsSystem& graphics = engine.GetGraphics();
     AudioSystem* audio = engine.GetAudio();
     VulkanWindow* window = graphics.GetWindow();
+    FrameCounter& physFrameCounter = engine.GetPhysics().GetPhysFrameCounter();
 
     if (!_open) return;
 
@@ -79,6 +81,8 @@ void DebugEditor::Draw(RenderData& rd)
     ImGui::Text("Present Mode: %s", bl::ToString(window->GetSwapchain()->GetPresentMode()).data());
     ImGui::Text("Surface Format: %s", bl::ToString(window->GetSwapchain()->GetSurfaceFormat().format).data());
     ImGui::Text("Surface Color Space: %s", bl::ToString(window->GetSwapchain()->GetSurfaceFormat().colorSpace).data());
+
+    ImGui::Text("Phys F/S: %d", physFrameCounter.GetFramesPerSecond());
 
     if (ImGui::TreeNode("Physical Devices")) {
         auto physicalDevices = graphics.GetInstance()->GetPhysicalDevices();

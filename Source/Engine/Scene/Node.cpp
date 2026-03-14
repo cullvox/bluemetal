@@ -30,8 +30,12 @@ void Node::Update(float dt)
     }
 }
 
-void Node::PhysicsUpdate(float)
+void Node::PhysicsUpdate()
 {
+    // Update children
+    for (auto& node : _children) {
+        node->PhysicsUpdate();
+    }
 }
 
 void Node::Ready()

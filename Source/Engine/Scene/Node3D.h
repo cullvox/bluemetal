@@ -29,7 +29,7 @@ public:
 
     virtual Node3D* Clone();
     virtual void Update(float deltaTime);
-    virtual void PhysicsUpdate(float delta);
+    virtual void PhysicsUpdate();
     virtual void Draw(RenderData& rd);
 
     void SetPosition(const glm::vec3& position);

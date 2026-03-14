@@ -200,6 +200,8 @@ int main(int argc, const char** argv)
 
         discord.UpdateActivity(activity);
 
+        auto physFrameCounter = physics.GetPhysFrameCounter();
+
         static float accumulator = 0.0f;
 
         while (!window->GetCloseRequested()) {
@@ -233,15 +235,13 @@ int main(int argc, const char** argv)
 
             profiler.StartProfile("Physics");
 
-            const float fixedTimeStep = 1.0f / 60.0f;
-            accumulator += frameCounter.GetDeltaTime();
-            bool physUpdate = false;
-            while (accumulator >= fixedTimeStep)
-            {
-               physics.Update(fixedTimeStep);
-               physUpdate = true;
-               accumulator -= fixedTimeStep;
-            }
+            auto physUpdater = [&](){
+                rootNode->PhysicsUpdate();
+            };
+
+            bool physUpdate = physics.Update(frameCounter.GetDeltaTime(), physUpdater);
+
+            //physics.InterpolateBodies((fixedTimeStep + accumulator) / fixedTimeStep);
 
             profiler.EndProfile("Physics");
 

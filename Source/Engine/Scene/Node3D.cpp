@@ -49,9 +49,9 @@ void Node3D::Update(float deltaTime)
     Node::Update(deltaTime);
 }
 
-void Node3D::PhysicsUpdate(float delta)
+void Node3D::PhysicsUpdate()
 {
-    Node::PhysicsUpdate(delta);
+    Node::PhysicsUpdate();
 }
 
 void Node3D::Draw(RenderData& rd)

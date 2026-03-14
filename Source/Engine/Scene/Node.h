@@ -65,7 +65,7 @@ public:
 
     virtual void Ready(); // Children are ready.
     virtual void Update(float deltaTime);
-    virtual void PhysicsUpdate(float delta);
+    virtual void PhysicsUpdate();
     virtual void Draw(RenderData& rd);
     virtual Node* Clone(); // Creates a non-owning deep copy of this node and its children.
     
