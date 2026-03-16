@@ -85,9 +85,9 @@ void Orbit3D::AddRadius(float radius)
 {
     _radius += radius;
 
-    if (_radius <= 0.001)
+    if (_radius <= 0.001f)
     {
-        _radius = 0.001;
+        _radius = 0.001f;
     }
 
     if (_radius >= _maxRadius)

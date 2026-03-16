@@ -11,6 +11,8 @@ namespace bl {
  * @brief Represents a 3D node in the scene graph.
  */
 class Node3D : public Node {
+    OBJECT_BOILER(Node3D, Node)
+
     glm::mat4 _matrix;
     glm::vec3 _position;
     glm::quat _rotation;
@@ -21,8 +23,8 @@ class Node3D : public Node {
 
     void SetDirty();
     void UpdateMatrix();
-public:
 
+public:
     Node3D(Engine& engine);
     Node3D(const Node3D&);
     virtual ~Node3D();
@@ -32,25 +34,27 @@ public:
     virtual void PhysicsUpdate();
     virtual void Draw(RenderData& rd);
 
-    void SetPosition(const glm::vec3& position);
-    void SetRotation(const glm::vec3& eulerAngleDegrees);
-    void SetRotation(const glm::quat& rotation);
-    void SetScale(const glm::vec3& scale);
-    void SetWorldPosition(const glm::vec3& position);
-    void SetWorldRotation(const glm::quat& rotation);
-    void SetWorldRotation(const glm::vec3& eulerAngleDegrees);
-    void SetWorldScale(const glm::vec3& scale);
+    void SetPosition(glm::vec3 position);
+    void SetRotationEuler(glm::vec3 eulerDegrees);
+    void SetRotation(glm::quat rotation);
+    void SetScale(glm::vec3 scale);
+    void SetWorldPosition(glm::vec3 position);
+    void SetWorldRotation(glm::quat rotation);
+    void SetWorldRotationEuler(glm::vec3 eulerDegrees);
+    void SetWorldScale(glm::vec3 scale);
 
-    const glm::vec3& GetPosition() const;
-    glm::vec3 GetRotation() const;
-    const glm::quat& GetRotationQuat() const;
-    const glm::vec3& GetScale() const;
+    glm::vec3 GetPosition();
+    glm::vec3 GetRotationEuler();
+    glm::quat GetRotation();
+    glm::vec3 GetScale();
     const glm::mat4& GetMatrix();
     glm::vec3 GetWorldPosition();
-    glm::vec3 GetWorldRotation();
-    glm::quat GetWorldRotationQuat();
+    glm::vec3 GetWorldRotationEuler();
+    glm::quat GetWorldRotation();
     glm::vec3 GetWorldScale();
     const glm::mat4& GetWorldMatrix();
+
+    static void Register();
 
 };
 

@@ -28,25 +28,25 @@ void CharacterBody3D::Update(float dt)
 
     if (keyboard.GetKeyDown(Scancode::W)) {
         // Move forward
-        glm::vec3 forward = GetWorldRotationQuat() * glm::vec3(0.0f, 0.0f, 1.0f);
+        glm::vec3 forward = GetWorldRotation() * glm::vec3(0.0f, 0.0f, 1.0f);
         velocity += forward * 5.0f * dt;
     }
 
     if (keyboard.GetKeyDown(Scancode::S)) {
         // Move backward
-        glm::vec3 backward = GetWorldRotationQuat() * glm::vec3(0.0f, 0.0f, -1.0f);
+        glm::vec3 backward = GetWorldRotation() * glm::vec3(0.0f, 0.0f, -1.0f);
         velocity += backward * 5.0f * dt;
     }
 
     if (keyboard.GetKeyDown(Scancode::A)) {
         // Move left
-        glm::vec3 left = GetWorldRotationQuat() * glm::vec3(1.0f, 0.0f, 0.0f);
+        glm::vec3 left = GetWorldRotation() * glm::vec3(1.0f, 0.0f, 0.0f);
         velocity += left * 5.0f * dt;
     }
 
     if (keyboard.GetKeyDown(Scancode::D)) {
         // Move right
-        glm::vec3 right = GetWorldRotationQuat() * glm::vec3(-1.0f, 0.0f, 0.0f);
+        glm::vec3 right = GetWorldRotation() * glm::vec3(-1.0f, 0.0f, 0.0f);
         velocity += right * 5.0f * dt;
     }
 

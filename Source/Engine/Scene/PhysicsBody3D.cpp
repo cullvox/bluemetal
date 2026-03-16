@@ -54,7 +54,7 @@ void PhysicsBody3D::Update(float deltaTime)
     {
         auto prevPos = GetPosition();
         SetPosition(prevPos + ((_currPosition - prevPos)) * alpha);
-        SetRotation(glm::slerp(GetRotationQuat(), _currRotation, alpha));
+        SetRotation(glm::slerp(GetRotation(), _currRotation, alpha));
     }
     else
     {
@@ -132,7 +132,7 @@ void PhysicsBody3D::ResetBody()
     auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
 
     glm::vec3 position = GetPosition();
-    glm::quat rotation = GetRotationQuat();
+    glm::quat rotation = GetRotation();
 
     JPH::BodyCreationSettings settings;
     settings.SetShape(_shape);

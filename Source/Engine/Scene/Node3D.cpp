@@ -1,5 +1,7 @@
 #include "Node3D.h"
 
+#include "Core/Reflection/Property.h"
+
 namespace bl {
 
 Node3D::Node3D(Engine& engine)
@@ -95,13 +97,13 @@ void Node3D::SetDirty()
     }
 }
 
-void Node3D::SetPosition(const glm::vec3& pos)
+void Node3D::SetPosition(glm::vec3 pos)
 {
     _position = pos;
     SetDirty();
 }
 
-void Node3D::SetWorldPosition(const glm::vec3& pos)
+void Node3D::SetWorldPosition(glm::vec3 pos)
 {
     if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
         const glm::mat4& parentWorldTransform = parent->GetWorldMatrix();
@@ -115,27 +117,27 @@ void Node3D::SetWorldPosition(const glm::vec3& pos)
     SetDirty();
 }
 
-void Node3D::SetRotation(const glm::vec3& eulerAngles)
+void Node3D::SetRotationEuler(glm::vec3 eulerDegrees)
 {
-    SetRotation(glm::quat(glm::radians(eulerAngles)));
+    SetRotation(glm::quat(glm::radians(eulerDegrees)));
 }
 
-void Node3D::SetRotation(const glm::quat& newRotation)
+void Node3D::SetRotation(glm::quat newRotation)
 {
     _rotation = newRotation;
     SetDirty();
 }
 
-void Node3D::SetWorldRotation(const glm::vec3& eulerAngles)
+void Node3D::SetWorldRotationEuler(glm::vec3 eulerDegrees)
 {
-    SetWorldRotation(glm::quat(glm::radians(eulerAngles)));
+    SetWorldRotation(glm::quat(glm::radians(eulerDegrees)));
 }
 
-void Node3D::SetWorldRotation(const glm::quat& newRotation)
+void Node3D::SetWorldRotation(glm::quat newRotation)
 {
     if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
         UpdateMatrix();
-        glm::quat parentWorldRotation = parent->GetWorldRotationQuat();
+        glm::quat parentWorldRotation = parent->GetWorldRotation();
         glm::quat localRotation = glm::inverse(parentWorldRotation) * newRotation;
         _rotation = localRotation;
     } else {
@@ -145,28 +147,28 @@ void Node3D::SetWorldRotation(const glm::quat& newRotation)
     SetDirty();
 }
 
-void Node3D::SetScale(const glm::vec3& newScale)
+void Node3D::SetScale(glm::vec3 newScale)
 {
     _scale = newScale;
     SetDirty();
 }
 
-const glm::vec3& Node3D::GetPosition() const
+glm::vec3 Node3D::GetPosition()
 {
     return _position;
 }
 
-glm::vec3 Node3D::GetRotation() const
+glm::vec3 Node3D::GetRotationEuler()
 {
     return glm::degrees(glm::eulerAngles(_rotation));
 }
 
-const glm::quat& Node3D::GetRotationQuat() const
+glm::quat Node3D::GetRotation()
 {
     return _rotation;
 }
 
-const glm::vec3& Node3D::GetScale() const
+glm::vec3 Node3D::GetScale()
 {
     return _scale;
 }
@@ -177,17 +179,17 @@ glm::vec3 Node3D::GetWorldPosition()
     return _worldPosition;
 }
 
-glm::vec3 Node3D::GetWorldRotation()
+glm::vec3 Node3D::GetWorldRotationEuler()
 {
-    return glm::degrees(glm::eulerAngles(GetWorldRotationQuat()));
+    return glm::degrees(glm::eulerAngles(GetWorldRotation()));
 }
 
 
-glm::quat Node3D::GetWorldRotationQuat()
+glm::quat Node3D::GetWorldRotation()
 {
     UpdateMatrix();
     if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
-        return parent->GetWorldRotationQuat() * _rotation;
+        return parent->GetWorldRotation() * _rotation;
     } else {
         return _rotation;
     }
@@ -214,6 +216,18 @@ const glm::mat4& Node3D::GetWorldMatrix()
     return _worldMatrix;
 }
 
+void Node3D::Register()
+{
+    TProperty("position", &Node3D::SetPosition, &Node3D::GetPosition);
+    TProperty("rotation", &Node3D::SetRotation, &Node3D::GetRotation);
+    TProperty("rotationEuler", &Node3D::SetRotationEuler, &Node3D::GetRotationEuler);
+    TProperty("scale", &Node3D::SetScale, &Node3D::GetScale);
+
+    TProperty("worldPosition", &Node3D::SetWorldPosition, &Node3D::GetWorldPosition);
+    TProperty("worldRotation", &Node3D::SetWorldRotation, &Node3D::GetWorldRotation);
+    TProperty("worldRotationEuler", &Node3D::SetWorldRotationEuler, &Node3D::GetWorldRotationEuler);
+    TProperty("worldScale", &Node3D::SetWorldScale, &Node3D::GetWorldScale);
+}
 
 
 } // namespace bl
