@@ -29,7 +29,6 @@ public:
     Node3D(const Node3D&);
     virtual ~Node3D();
 
-    virtual Node3D* Clone();
     virtual void Update(float deltaTime);
     virtual void PhysicsUpdate();
     virtual void Draw(RenderData& rd);
@@ -55,7 +54,6 @@ public:
     const glm::mat4& GetWorldMatrix();
 
     static void Register();
-
 };
 
 } // namespace bl

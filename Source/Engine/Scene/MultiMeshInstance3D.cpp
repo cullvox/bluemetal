@@ -10,21 +10,16 @@ MultiMeshInstance3D::MultiMeshInstance3D(Engine& engine)
 {
 }
 
-MultiMeshInstance3D::MultiMeshInstance3D(const MultiMeshInstance3D& other)
-    : Node3D(other)
-    , _mesh(other._mesh)
-    , _instanceCount(other._instanceCount)
-    , _instanceTransforms(other._instanceTransforms)
+MultiMeshInstance3D::MultiMeshInstance3D(const MultiMeshInstance3D& rhs)
+    : Node3D(rhs)
+    , _mesh(rhs._mesh)
+    , _instanceCount(rhs._instanceCount)
+    , _instanceTransforms(rhs._instanceTransforms)
 {
 }
 
 MultiMeshInstance3D::~MultiMeshInstance3D()
 {
-}
-
-MultiMeshInstance3D* MultiMeshInstance3D::Clone()
-{
-    return new MultiMeshInstance3D(*this);
 }
 
 void MultiMeshInstance3D::Draw(RenderData& rd)

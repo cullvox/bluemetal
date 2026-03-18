@@ -9,6 +9,8 @@ namespace bl {
 /// @brief A node that can render multiple instances of a mesh with different transforms.
 /// This is more efficient than creating multiple MeshInstance3D nodes when rendering many copies of the same mesh.
 class MultiMeshInstance3D : public Node3D {
+    OBJECT_BOILER(MultiMeshInstance3D, Node3D)
+
     Ref<Mesh> _mesh;
     Ref<MaterialInstance> _material;
     uint32_t _instanceCount;
@@ -20,20 +22,14 @@ public:
     MultiMeshInstance3D(Engine& engine);
 
     /// @brief Copy constructor.
-    MultiMeshInstance3D(const MultiMeshInstance3D& other);
+    MultiMeshInstance3D(const MultiMeshInstance3D& rhs);
 
     /// @brief Destructor.
     ~MultiMeshInstance3D();
 
-
-    /// @brief Clones this MultiMeshInstance3D node.
-    /// @return A raw pointer to the cloned node.
-    virtual MultiMeshInstance3D* Clone() override;
-
     /// @brief Draws the multi-mesh instance.
     /// @param rd Render data for the current frame.
     virtual void Draw(RenderData& rd) override;
-
 
     /// @brief Sets the mesh to be instanced.
     /// @param mesh Reference to the mesh resource.

@@ -7,27 +7,24 @@
 public: \
     static std::string_view GetClassName() { return BL_STRINGIFY(name); } \
     static std::string_view GetParentClassName() { return BL_STRINGIFY(parent); } \
+    static Object* Create(Engine& engine) { return new name(engine); } \
+    virtual name* Clone() { return new name(*this); } \
 private:
 
 namespace bl
 {
+class Engine;
 
 class Object {
+    OBJECT_BOILER(Object, )
+
+    Engine& _engine;
 public:
-    Object() = default;
-    Object(Object& rhs) = default;
-    virtual ~Object() = default;
+    Object(Engine& engine);
+    Object(const Object& rhs);
+    virtual ~Object();
 
-    static std::string_view GetClassName() { return "Object"; }
-
-    virtual std::string_view ClassName();
-    virtual std::string_view ParentClassName();
-    virtual Object* Clone();
-
-    static void RegisterClass()
-    {
-        
-    }
+    Engine& GetEngine();
 };
 
 } // namespace bl

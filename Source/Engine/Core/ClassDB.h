@@ -20,6 +20,9 @@ class ClassDB
     Object* Instantiate(std::string_view className);
     std::string_view GetParentClassName(std::string_view className);
 
+    void RegisterClass(std::string_view className);
+    void RegisterProperty(Property& property);
+
 };
 
 

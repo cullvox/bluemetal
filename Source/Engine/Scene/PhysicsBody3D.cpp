@@ -18,13 +18,12 @@ PhysicsBody3D::PhysicsBody3D(Engine& engine)
     _currRotation = {};
 }
 
-PhysicsBody3D::PhysicsBody3D(const PhysicsBody3D& copy)
-    : Node3D(copy)
+PhysicsBody3D::PhysicsBody3D(const PhysicsBody3D& rhs)
+    : Node3D(rhs)
+    , _shape(rhs._shape)
+    , _objectLayer(rhs._objectLayer)
+    , _motionType(rhs._motionType)
 {
-    _shape = copy._shape;
-    _objectLayer = copy._objectLayer;
-    _motionType = copy._motionType;
-
     ResetBody();
 }
 
@@ -35,11 +34,6 @@ PhysicsBody3D::~PhysicsBody3D()
         bodyInterface.RemoveBody(_bodyId);
         bodyInterface.DestroyBody(_bodyId);
     }
-}
-
-PhysicsBody3D* PhysicsBody3D::Clone()
-{
-    return new PhysicsBody3D(*this);
 }
 
 void PhysicsBody3D::Update(float deltaTime)

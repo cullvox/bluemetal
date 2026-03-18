@@ -4,13 +4,13 @@
 namespace bl {
 
 Node::Node(Engine& engine)
-    : _engine(engine)
+    : Object(engine)
     , _parent(nullptr)
 {
 }
 
 Node::Node(const Node& node)
-    : _engine(node._engine)
+    : Object(node)
     , _name(node._name)
     , _parent(nullptr) // Parent is not copied
 {
@@ -47,23 +47,6 @@ void Node::Draw(RenderData& rd)
     for (auto& node : _children) {
         node->Draw(rd);
     }
-}
-
-Node* Node::Clone()
-{
-    Node* node = new Node(_engine);
-    node->SetName(_name);
-
-    for (auto& childNode : _children) {
-        node->AddChild(childNode->Clone());
-    }
-
-    return node;
-}
-
-Engine& Node::GetEngine()
-{
-    return _engine;
 }
 
 bool Node::SetName(const std::string& name)

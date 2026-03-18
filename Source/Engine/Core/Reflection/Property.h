@@ -23,13 +23,15 @@ protected:
     }
 
 public:
-    virtual ~Property();
+    virtual ~Property()
+    {
+    }
 
     constexpr std::string_view GetName() { return _name; }
     constexpr VariantType GetType() { return _type; }
 
-    virtual void Set(Object* object, const Variant& value);
-    virtual Variant Get(Object* object);
+    virtual void Set(Object* object, const Variant& value) = 0;
+    virtual Variant Get(Object* object) = 0;
 };
 
 template<class T>

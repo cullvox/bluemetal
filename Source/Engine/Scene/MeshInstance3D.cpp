@@ -20,13 +20,6 @@ MeshInstance3D::MeshInstance3D(const MeshInstance3D& node)
 {
 }
 
-MeshInstance3D* MeshInstance3D::Clone()
-{
-    return new MeshInstance3D(*this);
-}
-
-static Profiler profiler;
-
 void MeshInstance3D::Draw(RenderData& rd)
 {
     // TODO: This isn't really instancing, the renderer will have to buffer instances.

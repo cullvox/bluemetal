@@ -9,6 +9,8 @@ namespace bl {
 class AudioSystem;
 
 class AudioSource3D : public Node3D {
+    OBJECT_BOILER(AudioSource3D, Node3D)
+
     AudioSystem* _system;
     Ref<Sound> _sound;
     glm::vec3 _prevPosition; /** @brief Used for calculating the node's velocity. */

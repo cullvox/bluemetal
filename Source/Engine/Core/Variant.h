@@ -36,7 +36,7 @@ enum class VariantType
 template<typename T>
 constexpr VariantType GetVariantType()
 {
-    return static_cast<VariantType>(variant_index<T>());
+    return static_cast<VariantType>(variant_index<Variant, T>());
 }
 
 }

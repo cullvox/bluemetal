@@ -16,11 +16,12 @@ class RenderData;
 class Node;
 
 class Node : public Object {
+    OBJECT_BOILER(Node, Object)
+
     std::string _name;
     Node* _parent;
     std::vector<std::unique_ptr<Node>> _children;
     std::unordered_map<std::string, Node*> _childrenMap;
-    Engine& _engine;
 
 protected:
     friend class NodeFilterIterator;
@@ -36,7 +37,6 @@ public:
     virtual void Update(float deltaTime);
     virtual void PhysicsUpdate();
     virtual void Draw(RenderData& rd);
-    virtual Node* Clone(); // Creates a non-owning deep copy of this node and its children.
 
     template <typename T>
     T* As()
@@ -52,7 +52,6 @@ public:
     void Set(const std::string& name, const Variant& value);
     Variant Get(const std::string& name);
 
-    Engine& GetEngine();
     bool SetName(const std::string& name);
     std::string GetName() const;
     void SetParent(Node* parent);

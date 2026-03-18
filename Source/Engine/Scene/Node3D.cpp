@@ -29,23 +29,6 @@ Node3D::Node3D(const Node3D& node)
 
 Node3D::~Node3D() = default;
 
-Node3D* Node3D::Clone()
-{
-    Node3D* node = new Node3D(GetEngine());
-    node->SetName(GetName());
-
-    for (auto child : GetChildren()) {
-        node->AddChild(child->Clone());
-    }
-
-    node->SetPosition(_position);
-    node->SetRotation(_rotation);
-    node->SetScale(_scale);
-    node->UpdateMatrix();
-
-    return node;
-}
-
 void Node3D::Update(float deltaTime)
 {
     Node::Update(deltaTime);
@@ -150,6 +133,20 @@ void Node3D::SetWorldRotation(glm::quat newRotation)
 void Node3D::SetScale(glm::vec3 newScale)
 {
     _scale = newScale;
+    SetDirty();
+}
+
+void Node3D::SetWorldScale(glm::vec3 newScale)
+{
+    if (auto parent = dynamic_cast<Node3D*>(GetParent())) {
+        UpdateMatrix();
+        glm::vec3 parentWorldScale = parent->GetWorldScale();
+        glm::vec3 localScale = (1.0f / parentWorldScale) * newScale;
+        _scale = localScale;
+    } else {
+        _scale = newScale;
+    }
+
     SetDirty();
 }
 

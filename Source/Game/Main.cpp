@@ -164,7 +164,7 @@ int main(int argc, const char** argv)
         auto followCamera = std::make_unique<bl::Camera3D>(engine);
         followCamera->SetName("FollowCam");
         //followCamera->SetPosition({ 0.0f, 10.0f, -10.0f });
-        followCamera->SetRotation({ 0.0f, 0.0f, 0.0f});
+        followCamera->SetRotationEuler({ 0.0f, 0.0f, 0.0f});
         followCamera->SetProjection(bl::CameraProjection::ePerspective);
         followCamera->SetFOV(65.0f);
         followCamera->SetNearClip(0.01f);
