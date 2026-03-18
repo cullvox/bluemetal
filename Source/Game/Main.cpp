@@ -241,8 +241,6 @@ int main(int argc, const char** argv)
 
             bool physUpdate = physics.Update(frameCounter.GetDeltaTime(), physUpdater);
 
-            //physics.InterpolateBodies((fixedTimeStep + accumulator) / fixedTimeStep);
-
             profiler.EndProfile("Physics");
 
             profiler.StartProfile("Update");
@@ -356,7 +354,7 @@ int main(int argc, const char** argv)
                         ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
                         ImPlot::SetupAxesLimits(0, 1, 0, 1, ImPlotCond_None);
 
-                        ImPlot::PlotPieChart(labels.data(), values.data(), values.size(), 0.5, 0.5, 0.4, "%.2f", 90, ImPlotPieChartFlags_Normalize);
+                        ImPlot::PlotPieChart(labels.data(), values.data(), static_cast<int>(values.size()), 0.5, 0.5, 0.4, "%.2f", 90, ImPlotPieChartFlags_Normalize);
                         ImPlot::EndPlot();
                     }
 

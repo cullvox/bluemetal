@@ -5,6 +5,7 @@
 
 #include <nlohmann/json.hpp>
 
+#include "Core/Object.h"
 #include "Core/ReferenceCounted.h"
 
 namespace bl {
@@ -23,7 +24,7 @@ class ResourceSystem;
  * be instantiated throughout the program lifetime. Once the @ref Load function is
  * called, the heavy data lifting will begin.
  */
-class Resource : public std::enable_shared_from_this<Resource> {
+class Resource : public Object, public std::enable_shared_from_this<Resource> {
     friend class ResourceSystem;
     ResourceSystem& _resourceSystem; /** @brief Pointer to the resource manager that manages this resource. */
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
