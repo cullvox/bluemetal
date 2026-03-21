@@ -3,9 +3,9 @@
 
 namespace bl {
 
-Shader::Shader(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
-    : Resource(resourceSystem, system, path)
-    , _device(system->GetDevice())
+Shader::Shader(Engine& engine, const std::filesystem::path& path)
+    : Resource(engine, path)
+    , _device(engine.GetGraphics().GetDevice())
 {
     std::vector<uint32_t> code;
 
@@ -23,7 +23,7 @@ Shader::Shader(ResourceSystem& resourceSystem, GraphicsSystem* system, const std
         throw std::runtime_error("Code byte size must be divisible by 4 for valid SPIR-V code!");
     }
 
-    _shader = std::make_unique<VulkanShader>(system->GetDevice(), code);
+    _shader = std::make_unique<VulkanShader>(engine.GetGraphics().GetDevice(), code);
 }
 
 Shader::~Shader()

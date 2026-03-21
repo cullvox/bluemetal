@@ -18,7 +18,7 @@ class Mesh : public Resource {
     void Upload(std::span<const std::byte> bytes, std::span<uint32_t> indices);
 
 public:
-    Mesh(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
+    Mesh(Engine& engine, const std::filesystem::path& path);
     ~Mesh();
 
     template <typename T>

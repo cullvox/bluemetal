@@ -3,6 +3,8 @@
 #include "Core/FileByte.h"
 #include "Core/Print.h"
 
+#include "Engine/Engine.h"
+
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/UniformData.h"
 #include "Graphics/VulkanImage.h"
@@ -81,10 +83,12 @@ std::unique_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
     return newNode;
 }
 
-Model::Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
-    : Resource(resourceSystem, system, path)
-    , _graphicsSystem(system)
+Model::Model(Engine& engine, const std::filesystem::path& path)
+    : Resource(engine, path)
+    , _graphicsSystem(&engine.GetGraphics())
 {
+    auto resourceSystem = engine.GetResourceSystem();
+
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
     std::string err;
@@ -132,15 +136,15 @@ Model::Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::
 
         const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(image.image.data()), image.image.size());
 
-        auto texture = std::make_shared<Texture2D>(resourceSystem, system, bytes, format, extent);
+        auto texture = std::make_shared<Texture2D>(engine, bytes, format, extent);
         AddSubResource(texture);
         _textures[i] = texture;
     }
 
     // Load materials
     // Here we are assuming a default material type.
-    auto defaultMaterial = resourceSystem.Load<Material>("Resources/Materials/Default.mat");
-    auto defaultSampler = resourceSystem.Load<Sampler>("Resources/Samplers/Default.json");
+    auto defaultMaterial = resourceSystem->Load<Material>("Resources/Materials/Default.mat");
+    auto defaultSampler = resourceSystem->Load<Sampler>("Resources/Samplers/Default.json");
 
     for (auto& material : model.materials) {
         auto instance = defaultMaterial.lock()->CreateInstance();
@@ -242,7 +246,7 @@ Model::Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::
             }
         }
 
-        auto m = std::make_shared<Mesh>(resourceSystem, system, "");
+        auto m = std::make_shared<Mesh>(engine, "");
         AddSubResource(m);
         _meshes.push_back(m);
         m->Upload<Vertex>(vertices, indices);
@@ -253,7 +257,7 @@ Model::Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::
     // Build out the scene tree for model loading.
     const auto& scene = model.scenes[model.defaultScene];
 
-    _root = std::make_unique<Node3D>(system->GetEngine());
+    _root = std::make_unique<Node3D>(engine);
 
     for (int i : scene.nodes) {
         _root->AddChild(LoadNode(model, model.nodes[i]));

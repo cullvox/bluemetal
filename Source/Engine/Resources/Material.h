@@ -29,7 +29,7 @@ public:
     /// @param resourceSystem Pointer to the resource system.
     /// @param graphicsSystem Pointer to the graphics system.
     /// @param path Filesystem path to the material JSON file.
-    Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path);
+    Material(Engine& engine, const std::filesystem::path& path);
 
     /// @brief Destructor
     virtual ~Material();

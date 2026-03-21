@@ -4,8 +4,8 @@
 
 namespace bl {
 
-Texture::Texture(ResourceSystem& resourceSystem, System* system, const std::filesystem::path& path)
-    : Resource(resourceSystem, system, path)
+Texture::Texture(Engine& engine, const std::filesystem::path& path)
+    : Resource(engine, path)
 {
 }
 

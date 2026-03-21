@@ -5,6 +5,7 @@
 #include "VulkanShader.h"
 #include "VulkanWindow.h"
 
+#include "Resources/Mesh.h"
 #include "Resources/Material.h"
 #include "Resources/MaterialInstance.h"
 #include "Resources/Model.h"
@@ -53,24 +54,24 @@ GraphicsSystem::~GraphicsSystem()
 {
 }
 
-std::shared_ptr<Resource> GraphicsSystem::ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path)
+std::shared_ptr<Resource> GraphicsSystem::ConstructResource(std::size_t typeHash, const std::filesystem::path& path)
 {
     if (typeHash == typeid(Shader).hash_code()) {
-        return std::make_shared<Shader>(resourceSystem, this, path);
+        return std::make_shared<Shader>(GetEngine(), path);
     } else if (typeHash == typeid(Sampler).hash_code()) {
-        return std::make_shared<Sampler>(resourceSystem, this, path);
+        return std::make_shared<Sampler>(GetEngine(), path);
     } else if (typeHash == typeid(Material).hash_code()) {
-        return std::make_shared<Material>(resourceSystem, this, path);
+        return std::make_shared<Material>(GetEngine(), path);
     } else if (typeHash == typeid(MaterialInstance).hash_code()) {
-        return std::make_shared<MaterialInstance>(resourceSystem, this, path);
+        return std::make_shared<MaterialInstance>(GetEngine(), path);
     } else if (typeHash == typeid(Texture2D).hash_code()) {
-        return std::make_shared<Texture2D>(resourceSystem, this, path);
+        return std::make_shared<Texture2D>(GetEngine(), path);
     } else if (typeHash == typeid(NoiseTexture2D).hash_code()) {
-        return std::make_shared<NoiseTexture2D>(resourceSystem, this, path);
+        return std::make_shared<NoiseTexture2D>(GetEngine(), path);
     } else if (typeHash == typeid(Mesh).hash_code()) {
-        return std::make_shared<Mesh>(resourceSystem, this, path);
+        return std::make_shared<Mesh>(GetEngine(), path);
     } else if (typeHash == typeid(Model).hash_code()) {
-        return std::make_shared<Model>(resourceSystem, this, path);
+        return std::make_shared<Model>(GetEngine(), path);
     }
 
     return nullptr;

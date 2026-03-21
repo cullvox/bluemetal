@@ -1,17 +1,19 @@
 #pragma once
 
-#include "Audio/AudioSystem.h"
 #include "Resources/Resource.h"
 
-namespace bl {
+namespace FMOD
+{
+    class Sound;
+}
 
-class AudioSystem;
+namespace bl {
 
 class Sound : public Resource {
     FMOD::Sound* _sound;
 
 public:
-    Sound(ResourceSystem& resourceSystem, AudioSystem* system, const std::filesystem::path& path);
+    Sound(Engine& engine, const std::filesystem::path& path);
     ~Sound();
 
     FMOD::Sound* Get();

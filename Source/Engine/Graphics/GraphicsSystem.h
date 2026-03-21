@@ -31,7 +31,7 @@ public:
     GraphicsSystem(Engine& engine);
     ~GraphicsSystem();
 
-    virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
+    virtual std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path) override;
 
     VulkanInstance* GetInstance();
     VulkanPhysicalDevice* GetPhysicalDevice();

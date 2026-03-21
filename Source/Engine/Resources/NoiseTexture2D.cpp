@@ -1,5 +1,6 @@
 #include "NoiseTexture2D.h"
 #include "Core/Print.h"
+#include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
 
 #include <fstream>
@@ -8,8 +9,8 @@
 
 namespace bl {
 
-NoiseTexture2D::NoiseTexture2D(ResourceSystem& rs, GraphicsSystem* gs, const std::filesystem::path& path)
-    : Texture2D(rs, gs)
+NoiseTexture2D::NoiseTexture2D(Engine& engine, const std::filesystem::path& path)
+    : Texture2D(engine, path)
 {
 
     std::ifstream noiseJsonFile { path };
@@ -87,9 +88,10 @@ NoiseTexture2D::NoiseTexture2D(ResourceSystem& rs, GraphicsSystem* gs, const std
     }
 
     // Create texture.
+    auto& graphics = engine.GetGraphics();
     _extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
     VkExtent3D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1 };
-    _image = std::make_unique<VulkanImage>(gs->GetDevice(), VK_IMAGE_TYPE_2D, extent, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    _image = std::make_unique<VulkanImage>(graphics.GetDevice(), VK_IMAGE_TYPE_2D, extent, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     _image->UploadData(pixels);
 
 }

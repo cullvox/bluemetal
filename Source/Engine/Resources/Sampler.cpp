@@ -1,12 +1,13 @@
 #include "Sampler.h"
+#include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/VulkanConversions.h"
 
 namespace bl {
 
-Sampler::Sampler(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
-    : Resource(resourceSystem, system, path)
-    , _device(system->GetDevice())
+Sampler::Sampler(Engine& engine, const std::filesystem::path& path)
+    : Resource(engine, path)
+    , _device(engine.GetGraphics().GetDevice())
 {
     nlohmann::json data;
     std::ifstream file(path);

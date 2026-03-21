@@ -21,10 +21,10 @@ AudioSystem::~AudioSystem()
     _fmod->close();
 }
 
-std::shared_ptr<Resource> AudioSystem::ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path)
+std::shared_ptr<Resource> AudioSystem::ConstructResource(std::size_t typeHash, const std::filesystem::path& path)
 {
     if (typeHash == typeid(Sound).hash_code()) {
-        return std::make_shared<Sound>(resourceSystem, this, path);
+        return std::make_shared<Sound>(GetEngine(), path);
     }
 
     throw std::runtime_error("AudioSystem cannot construct resource of the given type!");

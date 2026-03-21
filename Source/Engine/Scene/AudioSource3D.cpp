@@ -1,4 +1,6 @@
 #include "AudioSource3D.h"
+#include "Audio/FMOD.h"
+#include "Audio/AudioSystem.h"
 #include "Engine/Engine.h"
 
 namespace bl {

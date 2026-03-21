@@ -11,7 +11,7 @@ class RandomSound : public Sound
     std::vector<SoundAndProbability> _sounds;
 
 public:
-    RandomSound(ResourceSystem& resourceSystem, AudioSystem* system, const std::filesystem::path& path);
+    RandomSound(Engine& engine, const std::filesystem::path& path);
     ~RandomSound();
 
     void AddSound(int index, Ref<Sound> sound, float probability = 1.0f);

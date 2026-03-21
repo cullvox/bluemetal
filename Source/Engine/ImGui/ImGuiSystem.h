@@ -27,7 +27,7 @@ public:
     ImGuiSystem(Engine& engine, VulkanWindow* window, Renderer* renderer);
     ~ImGuiSystem();
 
-    virtual std::shared_ptr<Resource> ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
+    virtual std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path) override;
     void Process(const SDL_Event& event);
     void BeginFrame();
     void EndFrame(VkCommandBuffer cmd);

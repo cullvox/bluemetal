@@ -11,7 +11,7 @@ SceneSystem::~SceneSystem()
 {
 }
 
-std::shared_ptr<Resource> SceneSystem::ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path)
+std::shared_ptr<Resource> SceneSystem::ConstructResource(std::size_t typeHash, const std::filesystem::path& path)
 {
     throw std::runtime_error("No scene loading made");
 }

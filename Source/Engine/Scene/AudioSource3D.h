@@ -4,6 +4,10 @@
 #include "Node3D.h"
 #include "Resources/Sound.h"
 
+namespace FMOD {
+    class Channel;
+}
+
 namespace bl {
 
 class AudioSystem;

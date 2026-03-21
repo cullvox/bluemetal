@@ -3,8 +3,8 @@
 namespace bl
 {
 
-RandomSound::RandomSound(ResourceSystem& resourceSystem, AudioSystem* system, const std::filesystem::path& path)
-    : Sound(resourceSystem, system, path)
+RandomSound::RandomSound(Engine& engine, const std::filesystem::path& path)
+    : Sound(engine, path)
 {
 
 }

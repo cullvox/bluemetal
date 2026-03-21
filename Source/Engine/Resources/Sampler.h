@@ -33,7 +33,7 @@ class Sampler : public Resource {
     void RecreateSampler();
 
 public:
-    Sampler(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
+    Sampler(Engine& engine, const std::filesystem::path& path);
     virtual ~Sampler() = default;
 
     VkSampler Get() const;

@@ -21,7 +21,7 @@ public:
     AudioSystem& operator=(const AudioSystem&) = delete;
     AudioSystem& operator=(AudioSystem&&) = delete;
 
-    std::shared_ptr<Resource> ConstructResource(ResourceSystem& resourceSystem, std::size_t typeHash, const std::filesystem::path& path) override;
+    std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path) override;
 
     FMOD::System* GetFMOD(); /** @brief Returns the internal FMOD system. */
     void Update(); /** @brief Ticks the audio system. */

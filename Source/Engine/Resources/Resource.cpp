@@ -3,8 +3,8 @@
 
 namespace bl {
 
-Resource::Resource(ResourceSystem& resourceSystem, System*, const std::filesystem::path& path)
-    : _resourceSystem(resourceSystem)
+Resource::Resource(Engine& engine, const std::filesystem::path& path)
+    : Object(engine)
     , _path(path)
 {
 }
@@ -20,11 +20,6 @@ Resource::~Resource()
 const std::filesystem::path& Resource::GetPath()
 {
     return _path;
-}
-
-ResourceSystem& Resource::GetResourceSystem()
-{
-    return _resourceSystem;
 }
 
 void Resource::AddSubResource(std::shared_ptr<Resource> res)

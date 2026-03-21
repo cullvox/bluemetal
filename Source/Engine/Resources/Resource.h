@@ -26,7 +26,6 @@ class ResourceSystem;
  */
 class Resource : public Object, public std::enable_shared_from_this<Resource> {
     friend class ResourceSystem;
-    ResourceSystem& _resourceSystem; /** @brief Pointer to the resource manager that manages this resource. */
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
     std::vector<std::shared_ptr<Resource>> _subResources; /** @brief Sub-resources that are part of this resource, but managed by it. */
 
@@ -36,7 +35,7 @@ public:
      * @param manager Pointer to the resource manager that manages this resource.
      * @param data JSON data describing the resource.
      */
-    Resource(ResourceSystem& resourceSystem, System* system, const std::filesystem::path& path);
+    Resource(Engine& engine, const std::filesystem::path& path);
 
     /**
      * @brief Destructor for the Resource class.
@@ -48,8 +47,6 @@ public:
      * @return The unique path of the resource.
      */
     const std::filesystem::path& GetPath();
-
-    ResourceSystem& GetResourceSystem();
 
     void AddSubResource(std::shared_ptr<Resource> res);
 };

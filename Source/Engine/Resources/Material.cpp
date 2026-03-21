@@ -9,10 +9,10 @@
 
 namespace bl {
 
-Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
-    : MaterialInstance(resourceSystem, graphicsSystem)
-    , _graphicsSystem(graphicsSystem)
-    , _renderer(graphicsSystem->GetRenderer())
+Material::Material(Engine& engine, const std::filesystem::path& path)
+    : MaterialInstance(engine)
+    , _graphicsSystem(&engine.GetGraphics())
+    , _renderer(_graphicsSystem->GetRenderer())
 {
     std::ifstream materialFile { path };
     if (!materialFile.is_open()) {
@@ -221,15 +221,16 @@ Material::Material(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSyste
             }
         }
 
-        auto vertexShader = resourceSystem.Load<Shader>(vertexPath);
-        auto fragmentShader = resourceSystem.Load<Shader>(fragmentPath);
+        auto resourceSystem = engine.GetResourceSystem();
+        auto vertexShader = resourceSystem->Load<Shader>(vertexPath);
+        auto fragmentShader = resourceSystem->Load<Shader>(fragmentPath);
         info.stages.shaders = std::vector<VulkanShader*> { vertexShader.lock()->Get(), fragmentShader.lock()->Get() };
     } catch (const nlohmann::json::exception& e) {
         Print::Error("Could not parse material JSON file. Error: {}", e.what());
         return;
     }
 
-    _material = std::make_unique<VulkanMaterial>(graphicsSystem->GetDevice(), _renderer, info, descriptorSetLocation);
+    _material = std::make_unique<VulkanMaterial>(_graphicsSystem->GetDevice(), _renderer, info, descriptorSetLocation);
     _renderer->AddMaterial(_material.get());
 }
 
@@ -245,7 +246,7 @@ VulkanMaterialInstance* Material::GetInstance() const
 
 std::shared_ptr<MaterialInstance> Material::CreateInstance()
 {
-    return std::make_shared<MaterialInstance>(GetResourceSystem(), _graphicsSystem, std::move(_material->CreateInstance()));
+    return std::make_shared<MaterialInstance>(GetEngine(), std::move(_material->CreateInstance()));
 }
 
 const VulkanPipeline* Material::GetVulkanPipeline()

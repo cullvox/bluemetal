@@ -10,7 +10,7 @@ public:
     /** @brief Creates a noise texture from a json descriptor file.
      *
      */
-    NoiseTexture2D(ResourceSystem& rs, GraphicsSystem* gs, const std::filesystem::path& path);
+    NoiseTexture2D(Engine& engine, const std::filesystem::path& path);
 
     /** @brief Destructor. */
     ~NoiseTexture2D() = default;

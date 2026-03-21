@@ -6,17 +6,17 @@
 
 namespace bl {
 
-MaterialInstance::MaterialInstance(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem)
-    : Resource(resourceSystem, graphicsSystem, "")
-    , _renderer(graphicsSystem->GetRenderer())
+MaterialInstance::MaterialInstance(Engine& engine)
+    : Resource(engine, "")
+    , _renderer(engine.GetGraphics().GetRenderer())
     , _materialInstance(nullptr)
 {
     // Empty constructor for creating material instances from a base material.
 }
 
-MaterialInstance::MaterialInstance(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, std::unique_ptr<VulkanMaterialInstance> instance)
-    : Resource(resourceSystem, graphicsSystem, "")
-    , _renderer(graphicsSystem->GetRenderer())
+MaterialInstance::MaterialInstance(Engine& engine, std::unique_ptr<VulkanMaterialInstance> instance)
+    : Resource(engine, "")
+    , _renderer(engine.GetGraphics().GetRenderer())
     , _materialInstance(std::move(instance))
 {
     // Since the material instance now owns this, it's responsible
@@ -24,9 +24,9 @@ MaterialInstance::MaterialInstance(ResourceSystem& resourceSystem, GraphicsSyste
     _renderer->AddMaterial(_materialInstance.get());
 }
 
-MaterialInstance::MaterialInstance(ResourceSystem& resourceSystem, GraphicsSystem* graphicsSystem, const std::filesystem::path& path)
-    : Resource(resourceSystem, graphicsSystem, path)
-    , _renderer(graphicsSystem->GetRenderer())
+MaterialInstance::MaterialInstance(Engine& engine, const std::filesystem::path& path)
+    : Resource(engine, path)
+    , _renderer(engine.GetGraphics().GetRenderer())
     , _materialInstance(nullptr)
 {
     std::ifstream file { path };
@@ -42,7 +42,8 @@ MaterialInstance::MaterialInstance(ResourceSystem& resourceSystem, GraphicsSyste
         throw std::runtime_error("Could not parse material JSON file.");
     }
 
-    auto mat = resourceSystem.Load<Material>(json["material"].get<std::string>());
+    auto resourceSystem = engine.GetResourceSystem();
+    auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
     _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat.lock()->GetVulkanMaterial()->CreateInstance());
 
     // Ensure that the material buffers get properly cleaned updated every frame.

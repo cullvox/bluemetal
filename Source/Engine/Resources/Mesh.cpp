@@ -1,13 +1,14 @@
 #include "Mesh.h"
+#include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/Vulkan.h"
 #include "Graphics/VulkanMesh.h"
 
 namespace bl {
 
-Mesh::Mesh(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
-    : Resource(resourceSystem, system, path)
-    , _system(system)
+Mesh::Mesh(Engine& engine, const std::filesystem::path& path)
+    : Resource(engine, path)
+    , _system(&engine.GetGraphics())
 {
 
 }

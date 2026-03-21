@@ -1,6 +1,7 @@
 #include "Texture2D.h"
 
 #include "Graphics/GraphicsSystem.h"
+#include "Engine/Engine.h"
 
 #include "qoixx.hpp"
 #include "stb_image.h"
@@ -45,16 +46,16 @@ bool DecodeSTBI(std::span<std::byte> data, std::vector<std::byte>& out, Extent2D
     return true;
 }
 
-Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs)
-    : Texture(rs, gs, {})
+Texture2D::Texture2D(Engine& engine)
+    : Texture(engine, {})
 {
     // Only used in child texture classes.
 }
 
-Texture2D::Texture2D(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path)
-    : Texture(resourceSystem, system, path)
+Texture2D::Texture2D(Engine& engine, const std::filesystem::path& path)
+    : Texture(engine, path)
 {
-    std::ifstream file { path, std::ios::binary };
+    std::ifstream file{path, std::ios::binary};
 
     file.seekg(0, std::ios::end);
     std::size_t size = file.tellg();
@@ -101,12 +102,14 @@ Texture2D::Texture2D(ResourceSystem& resourceSystem, GraphicsSystem* system, con
         throw std::runtime_error("Invalid texture format!");
     }
 
-    _image = std::make_unique<VulkanImage>(system->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, true);
+    auto& graphics = engine.GetGraphics();
+
+    _image = std::make_unique<VulkanImage>(graphics.GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, true);
     _image->UploadData(imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs, std::span<std::byte> data)
-    : Texture(rs, gs, "")
+Texture2D::Texture2D(Engine& engine, std::span<std::byte> data)
+    : Texture(engine, "")
 {
     std::vector<std::byte> imageData;
 
@@ -130,12 +133,14 @@ Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs, std::span<std::byte
         throw std::runtime_error("Invalid texture format!");
     }
 
-    _image = std::make_unique<VulkanImage>(gs->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT, true);
+    auto& graphics = engine.GetGraphics();
+
+    _image = std::make_unique<VulkanImage>(graphics.GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT, true);
     _image->UploadData(imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
-Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs, const std::span<const std::byte> pixels, TextureFormat format, Extent2D extent)
-    : Texture(rs, gs, "")
+Texture2D::Texture2D(Engine& engine, const std::span<const std::byte> pixels, TextureFormat format, Extent2D extent)
+    : Texture(engine, "")
 {
     _format = format;
     _extent = extent.To3D();
@@ -154,7 +159,8 @@ Texture2D::Texture2D(ResourceSystem& rs, GraphicsSystem* gs, const std::span<con
 
     VkExtent3D vulkanExtent = { _extent.width, _extent.height, _extent.depth };
 
-    _image = std::make_unique<VulkanImage>(gs->GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT, true);
+    auto& graphics = engine.GetGraphics();
+    _image = std::make_unique<VulkanImage>(graphics.GetDevice(), VK_IMAGE_TYPE_2D, vulkanExtent, imageFormat, VK_IMAGE_USAGE_SAMPLED_BIT, true);
     _image->UploadData(pixels, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     assert(_image->GetLayout() == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

@@ -3,12 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "Resources/MaterialInstance.h"
-#include "Resources/Mesh.h"
 #include "Resources/Resource.h"
-#include "Resources/Texture2D.h"
-
-#include "Scene/Node3D.h"
 
 namespace tinygltf {
 class Model;
@@ -16,6 +11,11 @@ class Node;
 }
 
 namespace bl {
+
+class Mesh;
+class MaterialInstance;
+class Texture2D;
+class Node3D;
 
 class Model : public Resource {
     GraphicsSystem* _graphicsSystem;
@@ -27,7 +27,7 @@ class Model : public Resource {
     std::unique_ptr<Node3D> LoadNode(const tinygltf::Model& model, const tinygltf::Node& node);
 
 public:
-    Model(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
+    Model(Engine& engine, const std::filesystem::path& path);
     ~Model();
 
     Node3D* GetTree();

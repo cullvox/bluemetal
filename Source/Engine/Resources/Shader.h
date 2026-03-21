@@ -12,7 +12,7 @@ class Shader : public Resource {
     std::unique_ptr<VulkanShader> _shader;
 
 public:
-    Shader(ResourceSystem& resourceSystem, GraphicsSystem* system, const std::filesystem::path& path);
+    Shader(Engine& engine, const std::filesystem::path& path);
     ~Shader();
 
     VulkanShader* Get() const { return _shader.get(); }
