@@ -74,7 +74,7 @@ bool Node::SetName(const std::string& name)
     return true;
 }
 
-std::string Node::GetName() const
+const std::string& Node::GetName() const
 {
     return _name;
 }
@@ -83,7 +83,7 @@ void Node::SetParent(Node* parent)
 {
     // Remove from current parent if exists.
     if (_parent) {
-        _parent->UnlinkChild(this->GetName());
+        _parent->UnlinkChild(_name);
     }
 
     if (parent) {
@@ -138,14 +138,14 @@ void Node::AddChild(Node* child)
 
     std::unique_ptr<Node> childPtr(nullptr);
     if (child->_parent) {
-        childPtr = child->_parent->UnlinkChild(child->GetName());
+        childPtr = child->_parent->UnlinkChild(_name);
     } else {
         childPtr.reset(child); // Take ownership if no parent.
     }
 
     // Avoid adding the same child multiple times.
-    if (_childrenMap.find(child->GetName()) == _childrenMap.end()) {
-        _childrenMap.insert({ child->GetName(), childPtr.get() });
+    if (_childrenMap.find(child->_name) == _childrenMap.end()) {
+        _childrenMap.insert({ child->_name, childPtr.get() });
         _children.push_back(std::move(childPtr));
         child->_parent = this;
     } else {
@@ -171,13 +171,13 @@ void Node::AddChild(std::unique_ptr<Node> child)
     }
 
     if (child->_parent) {
-        child = child->_parent->UnlinkChild(child->GetName());
+        child = child->_parent->UnlinkChild(child->_name);
     }
 
     // Avoid adding the same child multiple times.
-    if (_childrenMap.find(child->GetName()) == _childrenMap.end()) {
+    if (_childrenMap.find(child->_name) == _childrenMap.end()) {
         child->_parent = this;
-        _childrenMap.insert({ child->GetName(), child.get() });
+        _childrenMap.insert({ child->_name, child.get() });
         _children.push_back(std::move(child));
     } else {
         Print::Warn("A child with the name '{}' already exists in node '{}'.", child->GetName(), this->GetName());

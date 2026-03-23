@@ -23,11 +23,6 @@ class Node : public Object {
     std::vector<std::unique_ptr<Node>> _children;
     std::unordered_map<std::string, Node*> _childrenMap;
 
-protected:
-    friend class NodeFilterIterator;
-    friend class SceneExporter;
-    std::vector<std::unique_ptr<Node>>& GetVecChildren();
-
 public:
     Node(Engine& engine);
     Node(const Node&);
@@ -53,7 +48,7 @@ public:
     Variant Get(const std::string& name);
 
     bool SetName(const std::string& name);
-    std::string GetName() const;
+    const std::string& GetName() const;
     void SetParent(Node* parent);
     virtual Node* GetParent() const;
     Node* GetChild(const std::string& name) const;
@@ -62,6 +57,7 @@ public:
     virtual void AddChild(std::unique_ptr<Node> child);
     std::unique_ptr<Node> UnlinkChild(const std::string& child);
     void DeleteChild(const std::string& child);
+    std::vector<std::unique_ptr<Node>>& GetVecChildren();
 };
 
 } // namespace bl

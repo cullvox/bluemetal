@@ -81,6 +81,11 @@ Engine::Engine(int argc, const char** argv)
     _scenes = std::make_unique<SceneSystem>(*this);
     _editor = std::make_unique<Editor>(*this);
     _discord = std::make_unique<DiscordSystem>(*this);
+
+    auto _pointMaterial = _resourceManager->Load<Material>("Resources/Materials/DebugPoint.mat");
+    auto _lineMaterial = _resourceManager->Load<Material>("Resources/Materials/DebugLine.mat");
+    auto _triangleMaterial = _resourceManager->Load<Material>("Resources/Materials/DebugTriangle.mat");
+    _graphics->GetRenderer()->SetDebugMaterialInstance(_pointMaterial.lock()->GetVulkanMaterial(), _lineMaterial.lock()->GetVulkanMaterial(), _triangleMaterial.lock()->GetVulkanMaterial());
 }
 
 Engine::~Engine()

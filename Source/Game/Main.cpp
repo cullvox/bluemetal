@@ -28,6 +28,7 @@
 #include <Scene/Orbit3D.h>
 #include <Physics/PhysicsRenderer.h>
 #include <Social/Discord.h>
+#include <Scene/NodeFilterIterator.h>
 
 #include "ImGui/implot.h"
 
@@ -66,6 +67,7 @@ int main(int argc, const char** argv)
         auto grass = resourceMgr->Load<bl::Model>("Resources/Models/Grass.glb");
 
         auto rootNode = std::make_unique<bl::Node3D>(engine);
+        rootNode->SetName("Root");
 
         auto characterNode = model.lock()->GetTree()->Clone();
         characterNode->SetName("Character");
@@ -205,6 +207,38 @@ int main(int argc, const char** argv)
 
         static float accumulator = 0.0f;
 
+        std::function<void(bl::Node*)> doChildren;
+
+        bl::Node* selectedNode = nullptr;
+
+        doChildren = [&](bl::Node* node){
+            auto& children = node->GetVecChildren();
+
+            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
+            if (node == selectedNode)
+                flags |= ImGuiTreeNodeFlags_Selected;
+
+            if (children.empty())
+                flags |= ImGuiTreeNodeFlags_Leaf;
+
+            if (ImGui::TreeNodeEx(node->GetName().c_str(), flags))
+            {
+
+                if (ImGui::IsItemClicked())
+                {
+                    selectedNode = node;
+                }
+
+                for (const auto& child : children)
+                {
+                    doChildren(child.get());
+                }
+                ImGui::TreePop();
+            }
+
+        };
+
+
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
             frameCounter.BeginFrame();
@@ -279,6 +313,9 @@ int main(int argc, const char** argv)
 
                 if (enableEditor) {
                     ImGui::Begin("Heirarchy");
+
+
+                    doChildren(rootNode.get());
 
                     //ImGui::Text("Objects in Scene: %d", rootNode->GetChildCount());
                     ImGui::End();

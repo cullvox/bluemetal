@@ -43,11 +43,6 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     _device->WaitForDevice();
     _window = std::make_unique<VulkanWindow>(_device.get(), "Maginvox", Rect2D { {}, displays[0].GetDesktopMode().extent }, false);
     _renderer = std::make_unique<Renderer>(_window.get(), engine.GetFrameCounter());
-
-    _pointMaterial = rs->Load<Material>("Resources/Materials/DebugPoint.mat");
-    _lineMaterial = rs->Load<Material>("Resources/Materials/DebugLine.mat");
-    _triangleMaterial = rs->Load<Material>("Resources/Materials/DebugTriangle.mat");
-    _renderer->SetDebugMaterialInstance(_pointMaterial.lock()->GetVulkanMaterial(), _lineMaterial.lock()->GetVulkanMaterial(), _triangleMaterial.lock()->GetVulkanMaterial());
 }
 
 GraphicsSystem::~GraphicsSystem()

@@ -10,7 +10,7 @@
 namespace bl {
 
 NoiseTexture2D::NoiseTexture2D(Engine& engine, const std::filesystem::path& path)
-    : Texture2D(engine, path)
+    : Texture2D(engine)
 {
 
     std::ifstream noiseJsonFile { path };
