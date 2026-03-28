@@ -1,4 +1,5 @@
 #include "Node.h"
+#include "Core/ClassDB.h"
 #include "Core/Print.h"
 
 namespace bl {
@@ -49,17 +50,15 @@ void Node::Draw(RenderData& rd)
     }
 }
 
-bool Node::SetName(const std::string& name)
+void Node::SetName(const std::string& name)
 {
     if (!_parent) {
         _name = name;
-        return true;
     }
 
     // Rename in parent's children map.
     if (_parent->_childrenMap.find(name) != _parent->_childrenMap.end()) {
-        Print::Warn("A sibling node with the name '{}' already exists in parent node '{}'.", name, _parent->GetName());
-        return false;
+        Print::Error("A sibling node with the name '{}' already exists in parent node '{}'.", name, _parent->GetName());
     }
 
     auto it = _parent->_childrenMap.find(_name);
@@ -70,11 +69,9 @@ bool Node::SetName(const std::string& name)
     }
 
     _name = name;
-
-    return true;
 }
 
-const std::string& Node::GetName() const
+const std::string& Node::GetName()
 {
     return _name;
 }
@@ -233,6 +230,13 @@ void Node::DeleteChild(const std::string& child)
 std::vector<std::unique_ptr<Node>>& Node::GetVecChildren()
 {
     return _children;
+}
+
+void Node::RegisterClass(ClassDB& db)
+{
+    db.RegisterClass("Node", &Node::Create);
+    db.RegisterProperty("Node", std::make_unique<TStringProperty<Node>>("name", &Node::SetName, &Node::GetName));
+
 }
 
 } // namespace bl

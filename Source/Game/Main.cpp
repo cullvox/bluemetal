@@ -223,6 +223,8 @@ int main(int argc, const char** argv)
 
             if (ImGui::TreeNodeEx(node->GetName().c_str(), flags))
             {
+                ImGui::SameLine();
+                ImGui::TextColored({0.45f, 0.34f, 0.45f, 1.0f}, "%s", node->GetClassName().data());
 
                 if (ImGui::IsItemClicked())
                 {
@@ -234,8 +236,10 @@ int main(int argc, const char** argv)
                     doChildren(child.get());
                 }
                 ImGui::TreePop();
+            } else {
+                ImGui::SameLine();
+                ImGui::TextColored({0.45f, 0.34f, 0.45f, 1.0f}, "%s", node->GetClassName().data());
             }
-
         };
 
 
@@ -318,6 +322,12 @@ int main(int argc, const char** argv)
                     doChildren(rootNode.get());
 
                     //ImGui::Text("Objects in Scene: %d", rootNode->GetChildCount());
+                    ImGui::End();
+
+                    ImGui::Begin("Inspector");
+
+                    for (int i = 0; i < engine.GetClassDB())
+
                     ImGui::End();
                 }
 

@@ -17,6 +17,7 @@ class FrameCounter;
 class Editor;
 class SceneSystem;
 class DiscordSystem;
+class ClassDB;
 
 class Engine {
     std::unique_ptr<FrameCounter> _counter;
@@ -32,6 +33,9 @@ class Engine {
     std::unique_ptr<Editor> _editor;
     std::unique_ptr<DiscordSystem> _discord;
     std::unique_ptr<EngineVars> _vars;
+    std::unique_ptr<ClassDB> _classDB;
+
+    void RegisterClasses();
 
 public:
     Engine(int argc, const char** argv);
@@ -50,13 +54,7 @@ public:
     SceneSystem* GetSceneSystem();
     Editor& GetEditor();
     DiscordSystem& GetDiscord();
-
-    void Log()
-    {
-        
-    }
-    void LogError();
-    void LogDebug();
+    ClassDB& GetClassDB();
 };
 
 } // namespace bl

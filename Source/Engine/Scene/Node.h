@@ -47,8 +47,8 @@ public:
     void Set(const std::string& name, const Variant& value);
     Variant Get(const std::string& name);
 
-    bool SetName(const std::string& name);
-    const std::string& GetName() const;
+    void SetName(const std::string& name);
+    const std::string& GetName();
     void SetParent(Node* parent);
     virtual Node* GetParent() const;
     Node* GetChild(const std::string& name) const;
@@ -58,6 +58,8 @@ public:
     std::unique_ptr<Node> UnlinkChild(const std::string& child);
     void DeleteChild(const std::string& child);
     std::vector<std::unique_ptr<Node>>& GetVecChildren();
+
+    static void RegisterClass(ClassDB& db);
 };
 
 } // namespace bl

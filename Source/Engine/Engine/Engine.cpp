@@ -15,6 +15,7 @@
 #include "Physics/PhysicsSystem.h"
 #include "Scene/SceneSystem.h"
 #include "Resources/ResourceSystem.h"
+#include "Core/ClassDB.h"
 #include "Window/Input.h"
 
 #include "Jolt/Core/Core.h"
@@ -24,7 +25,10 @@ namespace bl {
 Engine::Engine(int argc, const char** argv)
 {
 
+    // Register all engine classes with the class DB.
 
+
+    // Print out a pretty little initialization message.
     Print::Raw(fmt::fg(fmt::color::sky_blue), " 888888ba  dP                   8888ba.88ba             dP            dP \n");
     Print::Raw(fmt::fg(fmt::color::sky_blue), " 88    `8b 88                   88  `8b  `8b            88            88 \n");
     Print::Raw(fmt::fg(fmt::color::sky_blue), "a88aaaa8P' 88 dP    dP .d8888b. 88   88   88 .d8888b. d8888P .d8888b. 88 \n");
@@ -46,6 +50,7 @@ Engine::Engine(int argc, const char** argv)
     Print::NewLine();
 
 
+    // Parse out the programs arguments for any relevant to the engine.
     argparse::ArgumentParser program("BlueMetal Engine");
 
     program.add_argument("-v", "--verbose")
@@ -64,12 +69,15 @@ Engine::Engine(int argc, const char** argv)
     bool verbose = program.get<bool>("--verbose");
     Print::EnableVerboseLogging(verbose);
 
+    // Initialize SDL, it's used all over the place.
     uint32_t flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS;
 
     if (SDL_Init(flags) == false) {
         throw std::runtime_error("Could not initialize SDL!");
     }
 
+    // Initialize all the in engine systems.
+    // Order of initialization here matters, some systems are dependant on others existing.
     _vars = std::make_unique<EngineVars>();
     _resourceManager = std::make_unique<ResourceSystem>(*this);
     _audio = std::make_unique<AudioSystem>(*this);
@@ -82,6 +90,7 @@ Engine::Engine(int argc, const char** argv)
     _editor = std::make_unique<Editor>(*this);
     _discord = std::make_unique<DiscordSystem>(*this);
 
+    // Setup the debug renderer materials.
     auto _pointMaterial = _resourceManager->Load<Material>("Resources/Materials/DebugPoint.mat");
     auto _lineMaterial = _resourceManager->Load<Material>("Resources/Materials/DebugLine.mat");
     auto _triangleMaterial = _resourceManager->Load<Material>("Resources/Materials/DebugTriangle.mat");
@@ -157,6 +166,52 @@ Editor& Engine::GetEditor()
 DiscordSystem& Engine::GetDiscord()
 {
     return *_discord.get();
+}
+
+#include "Core/Object.h"
+#include "Scene/AudioListener3D.h"
+#include "Scene/AudioSource3D.h"
+#include "Scene/Camera3D.h"
+#include "Scene/CharacterBody3D.h"
+#include "Scene/FlyCamera3D.h"
+#include "Scene/MeshInstance3D.h"
+#include "Scene/MultiMeshInstance3D.h"
+#include "Scene/Node.h"
+#include "Scene/Node3D.h"
+#include "Scene/NodeFilter.h"
+#include "Scene/NodeFilterFrustumCull.h"
+#include "Scene/NodeFilterIterator.h"
+#include "Scene/Orbit3D.h"
+#include "Scene/PhysicsBody3D.h"
+#include "Scene/RigidBody3D.h"
+#include "Scene/SceneExporter.h"
+#include "Scene/SceneSystem.h"
+#include "Scene/SkinnedMeshInstance3D.h"
+#include "Scene/StaticBody3D.h"
+
+void Engine::RegisterClasses()
+{
+
+    _classDB.Register<AudioListener3D>();
+    _classDB.Register<AudioSource3D>();
+    _classDB.Register<Camera3D>();
+    _classDB.Register<CharacterBody3D>();
+    _classDB.Register<FlyCamera3D>();
+    _classDB.Register<MeshInstance3D>();
+    _classDB.Register<MultiMeshInstance3D>();
+    _classDB.Register<Node>();
+    _classDB.Register<Node3D>();
+    _classDB.Register<NodeFilter>();
+    _classDB.Register<NodeFilterFrustumCull>();
+    _classDB.Register<NodeFilterIterator>();
+    _classDB.Register<Orbit3D>();
+    _classDB.Register<PhysicsBody3D>();
+    _classDB.Register<RigidBody3D>();
+    _classDB.Register<SceneExporter>();
+    _classDB.Register<SceneSystem>();
+    _classDB.Register<SkinnedMeshInstance3D>();
+    _classDB.Register<StaticBody3D>();
+
 }
 
 } // namespace bl

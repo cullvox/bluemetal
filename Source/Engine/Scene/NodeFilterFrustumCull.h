@@ -6,8 +6,6 @@
 namespace bl {
 
 struct NodeFilterFrustumCull {
-    Frustum frustum;
-
     bool operator()(Node& node);
 };
 

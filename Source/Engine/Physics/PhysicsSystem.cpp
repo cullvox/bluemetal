@@ -75,7 +75,7 @@ void PhysicsSystem::InterpolateBodies(float alpha)
         bodyInterface.GetPositionAndRotation(id, pos, rot);
         uint64_t userData = bodyInterface.GetUserData(id);
 
-        PhysicsBody3D* physBody = reinterpret_cast<PhysicsBody3D*>(static_cast<uintptr_t>(userData));
+        // PhysicsBody3D* physBody = reinterpret_cast<PhysicsBody3D*>(static_cast<uintptr_t>(userData));
 
         glm::vec3 newPosition;
         glm::quat newRotation;

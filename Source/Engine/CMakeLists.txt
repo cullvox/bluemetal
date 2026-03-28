@@ -95,6 +95,7 @@ list(APPEND Sources
   "Editor/DebugEditor.cpp"
   "Editor/Editor.cpp"
 
+  "Core/ClassDB.cpp"
   "Engine/System.cpp"
   "Engine/Engine.cpp"
   )

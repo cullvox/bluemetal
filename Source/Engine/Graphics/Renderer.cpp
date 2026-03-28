@@ -313,7 +313,7 @@ VkAccessFlags getAccessFlags(VkImageLayout layout)
 
 Profiler profiler;
 
-void Renderer::Render(Node* root)
+void Renderer::Render(Node*)
 {
 }
 
@@ -743,7 +743,7 @@ void Renderer::QueueSelectionBuffer()
     _queuedSelectionBuffer = true;
 }
 
-uint32_t Renderer::GetSelectionValue(const glm::ivec2& position)
+uint32_t Renderer::GetSelectionValue(const glm::ivec2&)
 {
     return 0;
 }
@@ -831,7 +831,7 @@ std::vector<VkFormat> Renderer::GetColorAttachmentFormats(RenderPassType pass)
     return out;
 }
 
-std::vector<VkPipelineColorBlendAttachmentState> Renderer::GetColorBlendAttachmentStates(RenderPassType pass)
+std::vector<VkPipelineColorBlendAttachmentState> Renderer::GetColorBlendAttachmentStates(RenderPassType)
 {
 
     return {{
