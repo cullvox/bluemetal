@@ -153,7 +153,7 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
     // If any previous frames changed their data this frame is dirty and must
     // preform a descriptor copy to this frame.
 
-    for (int i = 0; i < currentFrameData.dirty.size(); i++) {
+    for (std::size_t i = 0; i < currentFrameData.dirty.size(); i++) {
         // If second is marked as true, the binding is dirty and needs to be updated.
         if (!currentFrameData.dirty[i]) {
             continue;
@@ -220,7 +220,6 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
     const auto& sets = reflection.descriptorSetMetadata;
     const auto& set = sets.at(_materialSet);
 
-    VkDescriptorBufferInfo bufferInfo = {};
     VkWriteDescriptorSet write = {};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write.pNext = nullptr;
@@ -248,7 +247,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
             write.descriptorCount = 1;
             write.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 
-            for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++)
+            for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
             {
                 bufferInfos.push_back(std::get<UniformData>(variant).buffer.GetDescriptorInfo(i));
 

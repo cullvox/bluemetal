@@ -52,7 +52,7 @@ void CharacterBody3D::Update(float dt)
 
     if (keyboard.GetKeyDown(Scancode::Space)) {
         // Jump
-        glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+        //glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
         velocity += glm::vec3(0, 20, 0) * dt;
         //ApplyImpulse(up * 4.0f);
     }

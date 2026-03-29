@@ -952,7 +952,7 @@ bool Keyboard::GetKeyDown(Scancode code)
     return _keystates[scancode];
 }
 
-constexpr std::string_view Keyboard::ScancodeToLocalKeyName(Scancode code)
+std::string_view Keyboard::ScancodeToLocalKeyName(Scancode code)
 {
     const auto scancode = ConvertScancodeToSDL(code);
     return SDL_GetKeyName(scancode);

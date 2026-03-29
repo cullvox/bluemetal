@@ -30,7 +30,7 @@ RenderData::RenderData(Renderer* renderer)
     std::array<VkDescriptorBufferInfo, VulkanConfig::maxFramesInFlight> descriptorBufferInfos;
     std::array<VkWriteDescriptorSet, VulkanConfig::maxFramesInFlight> descriptorWrites;
 
-    for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++)
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
     {
         _instanceSets[i] = _descriptorCache.Allocate(_instanceSetLayout);
 
@@ -134,7 +134,7 @@ void RenderData::WriteDrawCommands()
     // Perform draw commands.
     const VulkanMaterialInstance* material = nullptr;
     const VulkanMesh* mesh = nullptr;
-    for (int i = 0; i < _calls.size(); i++) {
+    for (std::size_t i = 0; i < _calls.size(); i++) {
         DrawCall& call = _calls[i];
 
         if (material != call.material) {

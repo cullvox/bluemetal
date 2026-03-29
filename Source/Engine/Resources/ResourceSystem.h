@@ -127,7 +127,7 @@ Ref<T> ResourceSystem::Add(const std::filesystem::path& path, std::shared_ptr<T>
 template <typename T>
 Ref<T> ResourceSystem::AddSubResource(Ref<Resource> parent, std::shared_ptr<T> resource)
 {
-    parent->_subResources.push_back(std::move(resource));
+    parent.lock()->_subResources.push_back(std::move(resource));
     return resource;
 }
 
@@ -135,7 +135,7 @@ template <typename T>
 Ref<T> ResourceSystem::AddSubResource(Ref<Resource> parent)
 {
     System* system = GetSystemType<T>();
-    std::shared_ptr<Resource> resource = system->ConstructResource(*this, typeid(T).hash_code(), ""); // Sub-resources do not have paths.
+    std::shared_ptr<Resource> resource = system->ConstructResource(typeid(T).hash_code(), ""); // Sub-resources do not have paths.
 
     if (auto res = std::dynamic_pointer_cast<T>(resource)) {
         return AddSubResource<T>(parent, std::move(res));

@@ -204,7 +204,7 @@ std::unique_ptr<Node> Node::UnlinkChild(const std::string& child)
     auto uniqueNode = std::move(*vecIt);
     _children.erase(vecIt);
 
-    return std::move(uniqueNode);
+    return uniqueNode;
 }
 
 void Node::DeleteChild(const std::string& child)

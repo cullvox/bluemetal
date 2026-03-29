@@ -44,7 +44,7 @@ void Mouse::SetLocation(glm::vec2 location)
     _location = location;
 }
 
-void Mouse::SetMouseButtonFlag(int pos, bool value)
+void Mouse::SetMouseButtonFlag(std::size_t pos, bool value)
 {
     const std::size_t bits = sizeof(int) * 8;
     if (pos >= bits)

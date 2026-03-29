@@ -67,6 +67,8 @@ set(ZLIB_FOUND FALSE)
 
 set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF)
 
+set(CPP_RTTI_ENABLED ON)
+
 add_subdirectory("ThirdParty/JoltPhysics/Build")
 add_subdirectory("ThirdParty/discord_game_sdk")
 

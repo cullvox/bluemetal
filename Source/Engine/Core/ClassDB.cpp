@@ -76,7 +76,7 @@ void ClassDB::RegisterProperty(const std::string_view className, std::unique_ptr
 }
 
 
-const std::vector<Property*>& ClassDB::GetClassProperties(const std::string_view className)
+std::span<Property*> ClassDB::GetClassProperties(const std::string_view className)
 {
         // Find the class data and check if it exists.
     auto it = _nameToClassIndex.find(className);

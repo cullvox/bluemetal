@@ -86,10 +86,9 @@ private:
         VkCommandBuffer commandBuffer;
     };
 
-    static constexpr uint32_t                       MAX_FRAMES_IN_FLIGHT = 2;
     RenderData                                      _renderData;
     uint32_t                                        _currentFrame = 0;
-    std::array<PerFrameData, MAX_FRAMES_IN_FLIGHT>  _perFrame;
+    std::array<PerFrameData, VulkanConfig::maxFramesInFlight>  _perFrame;
     std::vector<VkSemaphore>                        _renderFinishedSemaphores;
 
     void CreatePerFrameSyncedData();
@@ -150,7 +149,6 @@ private:
 
 NLOHMANN_JSON_SERIALIZE_ENUM(RenderPassType, {
                                                  { RenderPassType::eGeometry, "geometry" },
-                                                 { RenderPassType::eUI, "ui" },
                                              });
 
 } // namespace bl

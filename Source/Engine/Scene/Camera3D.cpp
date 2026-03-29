@@ -7,9 +7,9 @@ namespace bl {
 Camera3D::Camera3D(Engine& engine)
     : Node3D(engine)
     , _projection(CameraProjection::ePerspective)
+    , _fov(85.0f)
     , _nearClip(0.01f)
     , _farClip(1000.0f)
-    , _fov(85.0f)
     , _projectionMatrix(glm::perspective(glm::radians(_fov), 1.77778f, _nearClip, _farClip))
 {
 }

@@ -1,4 +1,7 @@
 #include "Discord.h"
+#include "Core/Print.h"
+
+#include <cstring>
 
 #include <Engine/Engine.h>
 #include <Engine/EngineVars.h>
@@ -91,6 +94,7 @@ DiscordSystem::DiscordSystem(Engine& engine)
     EDiscordResult result = DiscordCreate(DISCORD_VERSION, &params, &core);
 
     if (result != DiscordResult_Ok) {
+        Print::Error("Could not initialize discord core, error ({}).", ToString(result));
         //engine.LogError("Failed to instantiate discord core! (err {} ({}))", ToString(result), static_cast<int>(result));
     }
 
@@ -128,10 +132,10 @@ void DiscordSystem::UpdateActivity(DiscordActivity& activity)
     std::snprintf(raw.name, sizeof(raw.name), "%s", activity.name.data());
     std::snprintf(raw.state, sizeof(raw.state), "%s", activity.state.data());
     std::snprintf(raw.details, sizeof(raw.details), "%s", activity.details.data());
-    
+
     raw.timestamps.start = activity.startTime;
     raw.timestamps.end = activity.endTime;
-    
+
     std::snprintf(raw.assets.large_image, sizeof(raw.assets.large_image), "%s", activity.art.largeImage.data());
     std::snprintf(raw.assets.large_text, sizeof(raw.assets.large_text), "%s", activity.art.largeImageTooltip.data());
     std::snprintf(raw.assets.small_image, sizeof(raw.assets.small_image), "%s", activity.art.smallImage.data());

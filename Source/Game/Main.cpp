@@ -205,8 +205,6 @@ int main(int argc, const char** argv)
 
         auto physFrameCounter = physics.GetPhysFrameCounter();
 
-        static float accumulator = 0.0f;
-
         std::function<void(bl::Node*)> doChildren;
 
         bl::Node* selectedNode = nullptr;
@@ -266,8 +264,6 @@ int main(int argc, const char** argv)
 
             profiler.EndProfile("Input");
 
-            bl::Extent2D extent = window->GetExtent();
-
             profiler.StartProfile("Audio");
             audio->Update();
             profiler.EndProfile("Audio");
@@ -297,7 +293,7 @@ int main(int argc, const char** argv)
             };
 
             auto renderFunc = [&](bl::RenderData& rd){
-                auto extent = window->GetExtent();
+                //auto extent = window->GetExtent();
 
                 renderer->DrawLine(playerNode->GetWorldPosition(), {0.0f, 0.0f, 0.0f});
                 if (physUpdate)
@@ -326,7 +322,7 @@ int main(int argc, const char** argv)
 
                     ImGui::Begin("Inspector");
 
-                    for (int i = 0; i < engine.GetClassDB())
+                    //for (int i = 0; i < engine.GetClassDB())
 
                     ImGui::End();
                 }
@@ -340,21 +336,15 @@ int main(int argc, const char** argv)
                 }
 
                 if (ImGui::TreeNode("Renderer")) {
-                    for (int i = 0; i < presentModes.size(); i++) {
-                        if (presentModes[i] == VK_PRESENT_MODE_FIFO_LATEST_READY_EXT)
-                            ImGui::BeginDisabled();
-
+                    for (std::size_t i = 0; i < presentModes.size(); i++) {
                         if (ImGui::RadioButton(bl::ToString(presentModes[i]).data(), presentModes[i] == renderer->GetPresentMode())) {
                             renderer->SetPresentMode(presentModes[i]);
                         }
-
-                        if (presentModes[i] == VK_PRESENT_MODE_FIFO_LATEST_READY_EXT)
-                            ImGui::EndDisabled();
                     }
 
                     ImGui::Separator();
 
-                    for (int i = 0; i < multisampleModes.size(); i++) {
+                    for (std::size_t i = 0; i < multisampleModes.size(); i++) {
                         if (ImGui::RadioButton(bl::ToString(multisampleModes[i]).data(), multisampleModes[i] == renderer->GetMultisampleCount())) {
                             renderer->SetMultisampleCount(multisampleModes[i]);
                         }

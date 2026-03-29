@@ -22,16 +22,20 @@ elseif(NOT OS STREQUAL "Windows" AND NOT OS STREQUAL "Macos" AND NOT OS STREQUAL
 endif ()
 
 
-add_library(discord_game_sdk INTERFACE)
+
+add_library(discord_game_sdk SHARED IMPORTED GLOBAL)
 
 ### Installs Discord Game SDK binaries
 if (OS STREQUAL "Windows")
-    target_link_libraries(discord_game_sdk INTERFACE "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.dll.lib")
+    set_target_properties(discord_game_sdk PROPERTIES
+        IMPORTED_LOCATION   "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.dll"
+        IMPORTED_IMPLIB     "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.dll.lib")
 elseif (OS STREQUAL "Linux")
-    target_link_libraries(discord_game_sdk "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.so")
+    set_target_properties(discord_game_sdk PROPERTIES
+        IMPORTED_LOCATION   "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.so")
 elseif (OS STREQUAL "Macos")
-    target_link_libraries(discord_game_sdk "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.dylib")
+    set_target_properties(discord_game_sdk PROPERTIES
+        IMPORTED_LOCATION   "${CMAKE_CURRENT_LIST_DIR}/lib/x86_64/discord_game_sdk.dylib")
 endif ()
 
-
-target_include_directories(discord_game_sdk INTERFACE "${CMAKE_CURRENT_LIST_DIR}/c")
+set_target_properties(discord_game_sdk PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_CURRENT_LIST_DIR}/c")

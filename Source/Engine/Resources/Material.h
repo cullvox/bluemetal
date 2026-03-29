@@ -8,7 +8,7 @@ namespace bl {
 class Renderer;
 class GraphicsSystem;
 
-enum class VertexType {
+enum class EVertexType {
     eDefault,
     eSkinned,
     eDebug

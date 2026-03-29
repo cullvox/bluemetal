@@ -84,7 +84,7 @@ void FlyCamera3D::Update(float dt)
         cameraVelocity = glm::zero<glm::vec3>();
     }
 
-    auto mousePos = mouse.GetMousePosition();
+    //auto mousePos = mouse.GetMousePosition();
     auto mouseDelta = mouse.GetMouseDelta();
 
     // Update camera direction based on mouse movement, use acceleration for smoother movement

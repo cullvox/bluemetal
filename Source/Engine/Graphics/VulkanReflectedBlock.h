@@ -32,6 +32,11 @@ enum class VulkanVariableBlockType {
  * of uniform blocks in Vulkan pipelines.
  */
 class VulkanVariableBlock {
+    uint32_t _binding;
+    VulkanVariableBlockType _type;
+    uint32_t _offset;
+    uint32_t _size;
+    std::string _name;
 public:
     VulkanVariableBlock() = default;
     VulkanVariableBlock(uint32_t binding, VulkanVariableBlockType type, uint32_t offset, uint32_t size, const std::string& name)
@@ -107,13 +112,6 @@ public:
      * @return The name of this variable block.
      */
     const std::string& GetName() const;
-
-private:
-    std::string _name;
-    uint32_t _binding;
-    VulkanVariableBlockType _type;
-    uint32_t _offset;
-    uint32_t _size;
 };
 
 /**

@@ -22,10 +22,6 @@ VulkanImageView::VulkanImageView(VulkanDevice* device, VulkanImage* image, VkIma
 
 VulkanImageView::VulkanImageView(VulkanImageView&& from)
 {
-    if (_imageView) {
-        vkDestroyImageView(_device->Get(), _imageView, nullptr);
-    }
-
     _device = from._device;
     _imageView = from._imageView;
 

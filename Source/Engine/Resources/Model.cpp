@@ -112,7 +112,7 @@ Model::Model(Engine& engine, const std::filesystem::path& path)
 
     // Load images
     _textures.resize(model.images.size());
-    for (int i = 0; i < model.images.size(); i++) {
+    for (std::size_t i = 0; i < model.images.size(); i++) {
         auto& image = model.images[i];
 
         if (image.pixel_type != TINYGLTF_COMPONENT_TYPE_UNSIGNED_BYTE || image.bits != 8 || image.as_is || image.component < 3 || image.component > 4) {
@@ -170,7 +170,7 @@ Model::Model(Engine& engine, const std::filesystem::path& path)
 
     // Load meshes
     _meshes.reserve(model.meshes.size());
-    for (int i = 0; i < model.meshes.size(); i++) {
+    for (std::size_t i = 0; i < model.meshes.size(); i++) {
         auto& mesh = model.meshes[i];
 
         auto& primitive = mesh.primitives[0];
@@ -202,7 +202,7 @@ Model::Model(Engine& engine, const std::filesystem::path& path)
         if (indicesWidth == 4) {
             std::memcpy(indices.data(), indexBuffer.data.data() + indexView.byteOffset, 4 * indexAccessor.count);
         } else {
-            for (int j = 0; j < indexAccessor.count; j++) {
+            for (std::size_t j = 0; j < indexAccessor.count; j++) {
                 std::memcpy(&indices[j], indexBuffer.data.data() + indexView.byteOffset + (j * indicesWidth), indicesWidth);
             }
         }
@@ -216,7 +216,7 @@ Model::Model(Engine& engine, const std::filesystem::path& path)
                 if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC3) {
                     throw std::runtime_error("Invalid position type.");
                 }
-                for (int j = 0; j < attribAccessor.count; j++) {
+                for (std::size_t j = 0; j < attribAccessor.count; j++) {
                     // sorta unsafe
                     size_t offset = bufferView.byteOffset + (j * sizeof(glm::vec3));
                     std::memcpy(&vertices[j].position, &buffer.data[offset], sizeof(glm::vec3));
@@ -227,7 +227,7 @@ Model::Model(Engine& engine, const std::filesystem::path& path)
                 if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC3) {
                     throw std::runtime_error("Invalid normal type.");
                 }
-                for (int j = 0; j < attribAccessor.count; j++) {
+                for (std::size_t j = 0; j < attribAccessor.count; j++) {
                     // sorta unsafe
                     size_t offset = bufferView.byteOffset + (j * sizeof(glm::vec3));
                     std::memcpy(&vertices[j].normal, &buffer.data[offset], sizeof(glm::vec3));
@@ -238,7 +238,7 @@ Model::Model(Engine& engine, const std::filesystem::path& path)
                 if (attribAccessor.componentType != TINYGLTF_COMPONENT_TYPE_FLOAT || attribAccessor.type != TINYGLTF_TYPE_VEC2) {
                     throw std::runtime_error("Invalid normal type.");
                 }
-                for (int j = 0; j < attribAccessor.count; j++) {
+                for (std::size_t j = 0; j < attribAccessor.count; j++) {
                     // sorta unsafe
                     size_t offset = j * sizeof(glm::vec2) + bufferView.byteOffset;
                     std::memcpy(&vertices[j].texCoords, &buffer.data[offset], sizeof(glm::vec2));

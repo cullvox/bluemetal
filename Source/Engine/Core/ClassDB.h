@@ -45,7 +45,7 @@ public:
     void RegisterProperty(const std::string_view className, std::unique_ptr<Property> property);
 
     bool HasClass(const std::string_view name);
-    const std::vector<Property*>& GetClassProperties(const std::string_view name);
+    std::span<Property*> GetClassProperties(const std::string_view name);
 
 };
 

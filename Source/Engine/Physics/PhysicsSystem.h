@@ -34,7 +34,7 @@ class PhysicsSystem : public System {
 
 public:
     PhysicsSystem(Engine& engine);
-    ~PhysicsSystem() override = default;
+    ~PhysicsSystem();
 
     JPH::PhysicsSystem& GetJolt();
     bool Update(float deltaTime, std::function<void()> update);

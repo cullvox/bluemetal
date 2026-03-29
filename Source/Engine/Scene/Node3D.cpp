@@ -7,10 +7,11 @@ namespace bl {
 Node3D::Node3D(Engine& engine)
     : Node(engine)
     , _matrix(1.0f)
-    , _worldMatrix(1.0f)
     , _position(0.0f, 0.0f, 0.0f)
     , _rotation(1.0f, 0.0f, 0.0f, 0.0f) // Identity quaternion
     , _scale(1.0f, 1.0f, 1.0f)
+    , _worldMatrix(1.0f)
+    , _worldPosition(0.0f)
     , _isDirty(true)
 {
     UpdateMatrix();
@@ -19,10 +20,10 @@ Node3D::Node3D(Engine& engine)
 Node3D::Node3D(const Node3D& node)
     : Node(node)
     , _matrix(node._matrix)
-    , _worldMatrix(node._worldMatrix)
     , _position(node._position)
     , _rotation(node._rotation)
     , _scale(node._scale)
+    , _worldMatrix(node._worldMatrix)
     , _isDirty(node._isDirty)
 {
 }

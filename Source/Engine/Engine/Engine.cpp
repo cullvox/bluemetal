@@ -18,6 +18,27 @@
 #include "Core/ClassDB.h"
 #include "Window/Input.h"
 
+#include "Core/Object.h"
+#include "Scene/AudioListener3D.h"
+#include "Scene/AudioSource3D.h"
+#include "Scene/Camera3D.h"
+#include "Scene/CharacterBody3D.h"
+#include "Scene/FlyCamera3D.h"
+#include "Scene/MeshInstance3D.h"
+#include "Scene/MultiMeshInstance3D.h"
+#include "Scene/Node.h"
+#include "Scene/Node3D.h"
+#include "Scene/NodeFilter.h"
+#include "Scene/NodeFilterFrustumCull.h"
+#include "Scene/NodeFilterIterator.h"
+#include "Scene/Orbit3D.h"
+#include "Scene/PhysicsBody3D.h"
+#include "Scene/RigidBody3D.h"
+#include "Scene/SceneExporter.h"
+#include "Scene/SceneSystem.h"
+#include "Scene/SkinnedMeshInstance3D.h"
+#include "Scene/StaticBody3D.h"
+
 #include "Jolt/Core/Core.h"
 
 namespace bl {
@@ -39,7 +60,7 @@ Engine::Engine(int argc, const char** argv)
     Print::NewLine();
     Print::Raw(fmt::fg(fmt::color::orange), "Written By: {}", "Caden (cullvox) Miller\n");
     Print::Raw(fmt::fg(fmt::color::orange), "Version:    {}\n", bl::engineVersion.ToString());
-    Print::Raw(fmt::fg(fmt::color::orange), ("Build Date: {}\n", __DATE__ " " __TIME__));
+    Print::Raw(fmt::fg(fmt::color::orange), "Build Date: {}\n", __DATE__ " " __TIME__);
     Print::NewLine();
     Print::Raw("Using:\n");
     Print::Raw("    SDL " BL_STRINGIFY(SDL_MAJOR_VERSION) "." BL_STRINGIFY(SDL_MINOR_VERSION) "\n");
@@ -168,49 +189,27 @@ DiscordSystem& Engine::GetDiscord()
     return *_discord.get();
 }
 
-#include "Core/Object.h"
-#include "Scene/AudioListener3D.h"
-#include "Scene/AudioSource3D.h"
-#include "Scene/Camera3D.h"
-#include "Scene/CharacterBody3D.h"
-#include "Scene/FlyCamera3D.h"
-#include "Scene/MeshInstance3D.h"
-#include "Scene/MultiMeshInstance3D.h"
-#include "Scene/Node.h"
-#include "Scene/Node3D.h"
-#include "Scene/NodeFilter.h"
-#include "Scene/NodeFilterFrustumCull.h"
-#include "Scene/NodeFilterIterator.h"
-#include "Scene/Orbit3D.h"
-#include "Scene/PhysicsBody3D.h"
-#include "Scene/RigidBody3D.h"
-#include "Scene/SceneExporter.h"
-#include "Scene/SceneSystem.h"
-#include "Scene/SkinnedMeshInstance3D.h"
-#include "Scene/StaticBody3D.h"
-
 void Engine::RegisterClasses()
 {
 
-    _classDB.Register<AudioListener3D>();
-    _classDB.Register<AudioSource3D>();
-    _classDB.Register<Camera3D>();
-    _classDB.Register<CharacterBody3D>();
-    _classDB.Register<FlyCamera3D>();
-    _classDB.Register<MeshInstance3D>();
-    _classDB.Register<MultiMeshInstance3D>();
-    _classDB.Register<Node>();
-    _classDB.Register<Node3D>();
-    _classDB.Register<NodeFilter>();
-    _classDB.Register<NodeFilterFrustumCull>();
-    _classDB.Register<NodeFilterIterator>();
-    _classDB.Register<Orbit3D>();
-    _classDB.Register<PhysicsBody3D>();
-    _classDB.Register<RigidBody3D>();
-    _classDB.Register<SceneExporter>();
-    _classDB.Register<SceneSystem>();
-    _classDB.Register<SkinnedMeshInstance3D>();
-    _classDB.Register<StaticBody3D>();
+    _classDB->Register<AudioListener3D>();
+    _classDB->Register<AudioSource3D>();
+    _classDB->Register<Camera3D>();
+    _classDB->Register<CharacterBody3D>();
+    _classDB->Register<FlyCamera3D>();
+    _classDB->Register<MeshInstance3D>();
+    _classDB->Register<MultiMeshInstance3D>();
+    _classDB->Register<Node>();
+    _classDB->Register<Node3D>();
+    // _classDB->Register<NodeFilter>();
+    // _classDB->Register<NodeFilterFrustumCull>();
+    // _classDB->Register<NodeFilterIterator>();
+    _classDB->Register<Orbit3D>();
+    _classDB->Register<PhysicsBody3D>();
+    _classDB->Register<RigidBody3D>();
+    //_classDB->Register<SceneExporter>();
+    _classDB->Register<SkinnedMeshInstance3D>();
+    _classDB->Register<StaticBody3D>();
 
 }
 

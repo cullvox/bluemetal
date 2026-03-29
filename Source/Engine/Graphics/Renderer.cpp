@@ -16,10 +16,10 @@
 namespace bl {
 
 Renderer::Renderer(VulkanWindow* window, FrameCounter& frameCounter)
-    : _frameCounter(frameCounter)
-    , _device(window->GetDevice())
+    : _device(window->GetDevice())
     , _window(window)
     , _swapchain(window->GetSwapchain())
+    , _frameCounter(frameCounter)
     , _renderData(this)
 {
 
@@ -78,9 +78,9 @@ void Renderer::CreatePerFrameSyncedData()
     allocateInfo.pNext = nullptr;
     allocateInfo.commandPool = _device->GetCommandPool();
     allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocateInfo.commandBufferCount = MAX_FRAMES_IN_FLIGHT;
+    allocateInfo.commandBufferCount = VulkanConfig::maxFramesInFlight;
 
-    VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
+    VkCommandBuffer commandBuffers[VulkanConfig::maxFramesInFlight];
     VK_CHECK(vkAllocateCommandBuffers(_device->Get(), &allocateInfo, commandBuffers))
 
     VkSemaphoreCreateInfo semaphoreInfo = {};
@@ -93,7 +93,7 @@ void Renderer::CreatePerFrameSyncedData()
     fenceInfo.pNext = nullptr;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) 
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) 
     {
         VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_perFrame[i].imageAvailableSemaphore))
         VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_perFrame[i].inFlightFence))
@@ -109,15 +109,15 @@ void Renderer::CreatePerFrameSyncedData()
 
 void Renderer::DestroyPerFrameSyncedData()
 {
-    VkCommandBuffer commandBuffers[MAX_FRAMES_IN_FLIGHT];
-    for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    VkCommandBuffer commandBuffers[VulkanConfig::maxFramesInFlight];
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
     {
         vkDestroySemaphore(_device->Get(), _perFrame[i].imageAvailableSemaphore, nullptr);
         vkDestroyFence(_device->Get(), _perFrame[i].inFlightFence, nullptr);
         commandBuffers[i] = _perFrame[i].commandBuffer;
     }
 
-    vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), MAX_FRAMES_IN_FLIGHT, commandBuffers);
+    vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), VulkanConfig::maxFramesInFlight, commandBuffers);
 
     for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++)
     {
@@ -682,7 +682,7 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     _renderData.Reset();
 
 
-    _currentFrame = (_currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    _currentFrame = (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
 }
 
 void Renderer::CreateGlobalUniform()
@@ -700,7 +700,7 @@ void Renderer::CreateGlobalUniform()
     std::array<VkDescriptorBufferInfo, VulkanConfig::maxFramesInFlight> descriptorBufferInfos;
     std::array<VkWriteDescriptorSet, VulkanConfig::maxFramesInFlight> descriptorWrites;
 
-    for (int i = 0; i < VulkanConfig::maxFramesInFlight; i++)
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
     {
         _globalDescriptorSets[i] = _descriptorSetCache->Allocate(_globalDescriptorLayout);
 

@@ -6,6 +6,7 @@
 #include <Jolt/Physics/PhysicsSystem.h>
 
 #include "Engine/Engine.h"
+#include "Jolt/Core/Memory.h"
 #include "PhysicsRenderer.h"
 #include "BroadPhaseLayerImpl.h"
 #include "Scene/PhysicsBody3D.h"
@@ -28,6 +29,10 @@ PhysicsSystem::PhysicsSystem(Engine& engine)
     _physicsSystem.SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
     _physicsRenderer = std::make_unique<PhysicsRenderer>(engine.GetRenderer());
+}
+
+PhysicsSystem::~PhysicsSystem()
+{
 }
 
 bool PhysicsSystem::Update(float deltaTime, std::function<void()> update)
@@ -73,7 +78,7 @@ void PhysicsSystem::InterpolateBodies(float alpha)
         JPH::Quat rot;
 
         bodyInterface.GetPositionAndRotation(id, pos, rot);
-        uint64_t userData = bodyInterface.GetUserData(id);
+        // uint64_t userData = bodyInterface.GetUserData(id);
 
         // PhysicsBody3D* physBody = reinterpret_cast<PhysicsBody3D*>(static_cast<uintptr_t>(userData));
 

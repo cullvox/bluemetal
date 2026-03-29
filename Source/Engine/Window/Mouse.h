@@ -35,7 +35,7 @@ protected:
 
     void SetRelativeMotion(glm::vec2 motion);
     void SetLocation(glm::vec2 location);
-    void SetMouseButtonFlag(int flags, bool value);
+    void SetMouseButtonFlag(std::size_t flags, bool value);
     void SetWheel(glm::vec2 wheel);
 
 public:

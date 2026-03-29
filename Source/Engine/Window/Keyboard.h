@@ -314,7 +314,7 @@ public:
     ///
     /// @return The name of the key from scancode.
     ///
-    constexpr std::string_view ScancodeToLocalKeyName(Scancode key);
+    std::string_view ScancodeToLocalKeyName(Scancode key);
 
     /// @brief An easy way to check what modifiers are currently down.
     ///

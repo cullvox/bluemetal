@@ -126,7 +126,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
 
     std::vector<VkPipelineColorBlendAttachmentState> colorBlendAttachmentStates = renderer->GetColorBlendAttachmentStates(state.pass);
 
-    for (int i = 0; i < colorBlendAttachmentStates.size() && i < state.colorBlendState.attachments.size(); i++)
+    for (std::size_t i = 0; i < colorBlendAttachmentStates.size() && i < state.colorBlendState.attachments.size(); i++)
     {
         colorBlendAttachmentStates[i] = state.colorBlendState.attachments[i];
     }
@@ -215,7 +215,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
     std::vector<VkPipeline> pipelines(pipelineCreateInfos.size());
     VK_CHECK(vkCreateGraphicsPipelines(_device->Get(), VK_NULL_HANDLE, static_cast<uint32_t>(pipelineCreateInfos.size()), pipelineCreateInfos.data(), nullptr, pipelines.data()))
 
-    for (int i = 0; i < multisampleCounts.size(); i++)
+    for (std::size_t i = 0; i < multisampleCounts.size(); i++)
     {
         _pipelines[multisampleCounts[i]] = pipelines[i];
     }
