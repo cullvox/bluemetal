@@ -54,6 +54,7 @@ void Node::SetName(const std::string& name)
 {
     if (!_parent) {
         _name = name;
+        return;
     }
 
     // Rename in parent's children map.
@@ -68,6 +69,7 @@ void Node::SetName(const std::string& name)
         _parent->_childrenMap.insert({ name, std::move(nodePtr) });
     }
 
+    
     _name = name;
 }
 

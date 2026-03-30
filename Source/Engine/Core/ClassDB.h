@@ -18,6 +18,12 @@ class ClassDB
 
     struct ClassData
     {
+        ClassData() = default;
+        ClassData(const ClassData&) = delete;
+        ClassData(ClassData&&) = default;
+        ClassData& operator=(const ClassData&) = delete;
+        ClassData& operator=(ClassData&&) = default;
+
         std::string_view name;
         ObjectInstantiationFunc instantiationFunc;
         std::vector<std::unique_ptr<Property>> properties;

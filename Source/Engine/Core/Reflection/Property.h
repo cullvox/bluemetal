@@ -23,13 +23,7 @@ protected:
     }
 
 public:
-    Property()
-    {
-    }
-
-    virtual ~Property()
-    {
-    }
+    virtual ~Property() = default;
 
     constexpr std::string_view GetName() { return _name; }
     constexpr VariantType GetType() { return _type; }
