@@ -53,7 +53,7 @@ public:
     glm::vec3 GetWorldScale();
     const glm::mat4& GetWorldMatrix();
 
-    static void Register();
+    static void RegisterClass(ClassDB& db);
 };
 
 } // namespace bl

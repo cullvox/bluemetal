@@ -47,7 +47,8 @@ Engine::Engine(int argc, const char** argv)
 {
 
     // Register all engine classes with the class DB.
-
+    _classDB = std::make_unique<ClassDB>(*this);
+    RegisterClasses();
 
     // Print out a pretty little initialization message.
     Print::Raw(fmt::fg(fmt::color::sky_blue), " 888888ba  dP                   8888ba.88ba             dP            dP \n");
@@ -99,6 +100,7 @@ Engine::Engine(int argc, const char** argv)
 
     // Initialize all the in engine systems.
     // Order of initialization here matters, some systems are dependant on others existing.
+
     _vars = std::make_unique<EngineVars>();
     _resourceManager = std::make_unique<ResourceSystem>(*this);
     _audio = std::make_unique<AudioSystem>(*this);
@@ -187,6 +189,11 @@ Editor& Engine::GetEditor()
 DiscordSystem& Engine::GetDiscord()
 {
     return *_discord.get();
+}
+
+ClassDB& Engine::GetClassDB()
+{
+    return *_classDB.get();
 }
 
 void Engine::RegisterClasses()

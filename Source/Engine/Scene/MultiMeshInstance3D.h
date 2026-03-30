@@ -16,15 +16,8 @@ class MultiMeshInstance3D : public Node3D {
     uint32_t _instanceCount;
     std::vector<glm::mat4> _instanceTransforms;
 public:
-
-    /// @brief Creates a new MultiMeshInstance3D node.
-    /// @param engine Reference to the engine.
     MultiMeshInstance3D(Engine& engine);
-
-    /// @brief Copy constructor.
     MultiMeshInstance3D(const MultiMeshInstance3D& rhs);
-
-    /// @brief Destructor.
     ~MultiMeshInstance3D();
 
     /// @brief Draws the multi-mesh instance.
@@ -59,6 +52,8 @@ public:
     /// @param index Index of the instance.
     /// @param transform Transform matrix for the instance.
     void SetInstanceTransform(uint32_t index, const glm::mat4& transform);
+
+    static void RegisterClass(ClassDB& db);
 };
 
 } // namespace bl

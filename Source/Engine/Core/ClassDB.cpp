@@ -44,6 +44,8 @@ void ClassDB::RegisterClass(const std::string_view className, ObjectInstantiatio
 
     // Set the mapped name to the index.
     _nameToClassIndex[className] = _classes.size() - 1;
+
+    _classNames.push_back(className);
 }
 
 void ClassDB::RegisterProperty(const std::string_view className, std::unique_ptr<Property> property)
@@ -69,10 +71,10 @@ void ClassDB::RegisterProperty(const std::string_view className, std::unique_ptr
     classData.properties.push_back(std::move(property));
 
     // Store the user pointer.
-    classData.userPropertyPointers.push_back(classData.properties.end()->get());
+    classData.userPropertyPointers.push_back(classData.properties.back().get());
 
     // Add property name to map.
-    classData.nameToPropertyIndex[property->GetName()] = classData.properties.size() - 1;
+    classData.nameToPropertyIndex[classData.properties.back()->GetName()] = classData.properties.size() - 1;
 }
 
 
@@ -90,6 +92,11 @@ std::span<Property*> ClassDB::GetClassProperties(const std::string_view classNam
     ClassData& classData = _classes[index];
 
     return classData.userPropertyPointers;
+}
+
+std::span<const std::string_view> ClassDB::GetClassNames() const
+{
+    return _classNames;
 }
 
 }

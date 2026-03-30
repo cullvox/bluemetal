@@ -1,5 +1,5 @@
 #include "Node3D.h"
-
+#include "Core/ClassDB.h"
 #include "Core/Reflection/Property.h"
 
 namespace bl {
@@ -214,17 +214,18 @@ const glm::mat4& Node3D::GetWorldMatrix()
     return _worldMatrix;
 }
 
-void Node3D::Register()
+void Node3D::RegisterClass(ClassDB& db)
 {
-    TProperty("position", &Node3D::SetPosition, &Node3D::GetPosition);
-    TProperty("rotation", &Node3D::SetRotation, &Node3D::GetRotation);
-    TProperty("rotationEuler", &Node3D::SetRotationEuler, &Node3D::GetRotationEuler);
-    TProperty("scale", &Node3D::SetScale, &Node3D::GetScale);
+    db.RegisterClass("Node3D", &Node3D::Create);
+    db.RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("position", &Node3D::SetPosition, &Node3D::GetPosition));
+    db.RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::quat>>("rotation", &Node3D::SetRotation, &Node3D::GetRotation));
+    db.RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("rotationEuler", &Node3D::SetRotationEuler, &Node3D::GetRotationEuler));
+    db.RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("scale", &Node3D::SetScale, &Node3D::GetScale));
 
-    TProperty("worldPosition", &Node3D::SetWorldPosition, &Node3D::GetWorldPosition);
-    TProperty("worldRotation", &Node3D::SetWorldRotation, &Node3D::GetWorldRotation);
-    TProperty("worldRotationEuler", &Node3D::SetWorldRotationEuler, &Node3D::GetWorldRotationEuler);
-    TProperty("worldScale", &Node3D::SetWorldScale, &Node3D::GetWorldScale);
+    db.RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("worldPosition", &Node3D::SetWorldPosition, &Node3D::GetWorldPosition));
+    db.RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::quat>>("worldRotation", &Node3D::SetWorldRotation, &Node3D::GetWorldRotation));
+    db.RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("worldRotationEuler", &Node3D::SetWorldRotationEuler, &Node3D::GetWorldRotationEuler));
+    db.RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("worldScale", &Node3D::SetWorldScale, &Node3D::GetWorldScale));
 }
 
 

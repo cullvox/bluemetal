@@ -32,6 +32,7 @@ class ClassDB
     };
 
     std::vector<ClassData> _classes;
+    std::vector<std::string_view> _classNames;
     std::unordered_map<std::string_view, std::size_t> _nameToClassIndex;
 
 public:
@@ -51,6 +52,7 @@ public:
     void RegisterProperty(const std::string_view className, std::unique_ptr<Property> property);
 
     bool HasClass(const std::string_view name);
+    std::span<const std::string_view> GetClassNames() const;
     std::span<Property*> GetClassProperties(const std::string_view name);
 
 };

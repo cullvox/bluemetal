@@ -29,6 +29,7 @@
 #include <Physics/PhysicsRenderer.h>
 #include <Social/Discord.h>
 #include <Scene/NodeFilterIterator.h>
+#include <Core/ClassDB.h>
 
 #include "ImGui/implot.h"
 
@@ -240,6 +241,8 @@ int main(int argc, const char** argv)
             }
         };
 
+        auto& classDB = engine.GetClassDB();
+        auto classNames = classDB.GetClassNames();
 
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
@@ -325,6 +328,15 @@ int main(int argc, const char** argv)
                     //for (int i = 0; i < engine.GetClassDB())
 
                     ImGui::End();
+
+                    ImGui::Begin("ClassDB");
+
+                    for (std::size_t i = 0; i < classNames.size(); i++) {
+                        ImGui::Text("%s", classNames[i].data());
+                    }
+
+                    ImGui::End();
+
                 }
 
                 ImGui::Begin("Settings");
