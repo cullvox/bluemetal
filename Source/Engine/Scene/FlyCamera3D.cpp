@@ -7,6 +7,7 @@
 #include "Graphics/VulkanWindow.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/Renderer.h"
+#include "Core/ClassDB.h"
 
 namespace bl {
 
@@ -163,12 +164,29 @@ void FlyCamera3D::Draw(RenderData&)
 
 void FlyCamera3D::SetSpeed(float speed)
 {
-    (void) speed;
+    _speed = speed;
+}
+
+float FlyCamera3D::GetSpeed()
+{
+    return _speed;
 }
 
 void FlyCamera3D::SetSmoothness(float smoothness)
 {
-    (void) smoothness;
+    _smooth = smoothness;
+}
+
+float FlyCamera3D::GetSmoothness()
+{
+    return _smooth;
+}
+
+void FlyCamera3D::RegisterClass(ClassDB& db)
+{
+    db.RegisterClass("FlyCamera3D", &FlyCamera3D::Create);
+    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>("speed", &FlyCamera3D::SetSpeed, &FlyCamera3D::GetSpeed));
+    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>("smoothness", &FlyCamera3D::SetSmoothness, &FlyCamera3D::GetSmoothness));
 }
 
 }

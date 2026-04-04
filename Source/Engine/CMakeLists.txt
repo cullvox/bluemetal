@@ -80,6 +80,7 @@ list(APPEND Sources
   "Scene/Node.cpp"
   "Scene/Node3D.cpp"
   "Scene/AudioSource3D.cpp"
+  "Scene/AudioListener3D.cpp"
   "Scene/MeshInstance3D.cpp"
   "Scene/MultiMeshInstance3D.cpp"
   "Scene/Camera3D.cpp"

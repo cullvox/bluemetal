@@ -2,6 +2,7 @@
 #include "Audio/FMOD.h"
 #include "Audio/AudioSystem.h"
 #include "Engine/Engine.h"
+#include "Core/ClassDB.h"
 
 namespace bl {
 
@@ -54,6 +55,11 @@ void AudioSource3D::Play(Ref<Sound> sound, bool repeat)
 void AudioSource3D::SetVolume(float volume)
 {
     FMOD_CHECK(_channel->setVolume(volume))
+}
+
+void AudioSource3D::RegisterClass(ClassDB& db)
+{
+    db.RegisterClass("AudioSource3D", &AudioSource3D::Create);
 }
 
 } // namespace bl

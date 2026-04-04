@@ -32,6 +32,8 @@ public:
 
     bool IsPlaying();
     bool IsStopped();
+
+    static void RegisterClass(ClassDB& db);
 };
 
 } // namespace bl

@@ -72,7 +72,7 @@ void MultiMeshInstance3D::SetInstanceTransform(uint32_t index, const glm::mat4& 
 
 void MultiMeshInstance3D::RegisterClass(ClassDB& db)
 {
-    
+    db.
 }
 
 }

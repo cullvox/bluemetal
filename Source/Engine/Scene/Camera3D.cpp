@@ -1,6 +1,7 @@
 #include "Camera3D.h"
 #include "Engine/Engine.h"
 #include "Window/Window.h"
+#include "Core/ClassDB.h"
 
 namespace bl {
 
@@ -30,16 +31,31 @@ void Camera3D::SetNearClip(float near)
     _isDirty = true;
 }
 
+float Camera3D::GetNearClip()
+{
+    return _nearClip;
+}
+
 void Camera3D::SetFarClip(float far)
 {
     _farClip = far;
     _isDirty = true;
 }
 
+float Camera3D::GetFarClip()
+{
+    return _farClip;
+}
+
 void Camera3D::SetFOV(float fov)
 {
     _fov = fov;
     _isDirty = true;
+}
+
+float Camera3D::GetFOV()
+{
+    return _fov;
 }
 
 const glm::mat4& Camera3D::GetProjectionMatrix()
@@ -76,6 +92,15 @@ const glm::mat4& Camera3D::GetViewMatrix()
 {
     _viewMatrix = glm::inverse(GetWorldMatrix());
     return _viewMatrix;
+}
+
+void Camera3D::RegisterClass(ClassDB& db)
+{
+    db.RegisterClass("Camera3D", &Camera3D::Create);
+    db.RegisterEnum<CameraProjection>("CameraProjection", {{"Perspective", CameraProjection::ePerspective}, {"Orthographic", CameraProjection::ePerspective}});
+    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("fov", &Camera3D::SetFOV, &Camera3D::GetFOV));
+    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("nearClip", &Camera3D::SetNearClip, &Camera3D::GetNearClip));
+    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("farClip", &Camera3D::SetNearClip, &Camera3D::GetNearClip));
 }
 
 } // namespace bl

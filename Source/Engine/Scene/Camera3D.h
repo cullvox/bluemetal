@@ -4,7 +4,7 @@
 
 namespace bl {
 
-enum class CameraProjection {
+enum class CameraProjection : int64_t {
     ePerspective,
     eOrthographic
 };
@@ -22,14 +22,20 @@ class Camera3D : public Node3D {
 public:
     Camera3D(Engine& engine);
     ~Camera3D();
-
+    
     void SetProjection(CameraProjection projection);
-    void SetNearClip(float near);
-    void SetFarClip(float far);
+    CameraProjection GetProjection();
     void SetFOV(float fov);
+    float GetFOV();
+    void SetNearClip(float near);
+    float GetNearClip();
+    void SetFarClip(float far);
+    float GetFarClip();
 
     const glm::mat4& GetProjectionMatrix();
     const glm::mat4& GetViewMatrix();
+
+    static void RegisterClass(ClassDB& db);
 };
 
 } // namespace bl

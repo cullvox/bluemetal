@@ -96,7 +96,7 @@ std::span<Property*> ClassDB::GetClassProperties(const std::string_view classNam
 
 std::span<const std::string_view> ClassDB::GetClassNames() const
 {
-    return _classNames;
+    return std::span{_classNames};
 }
 
 }

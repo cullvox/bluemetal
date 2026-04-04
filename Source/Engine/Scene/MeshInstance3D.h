@@ -24,6 +24,8 @@ public:
     void SetMaterial(Ref<MaterialInstance> material);
     Ref<Mesh> GetMesh() const;
     Ref<MaterialInstance> GetMaterial() const;
+
+    static void RegisterClass(ClassDB& db);
 };
 
 } // namespace bl

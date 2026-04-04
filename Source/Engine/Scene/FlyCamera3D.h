@@ -32,7 +32,11 @@ public:
     virtual void Draw(RenderData& rd) override;
 
     void SetSpeed(float speed);
+    float GetSpeed();
     void SetSmoothness(float smoothness);
+    float GetSmoothness();
+
+    static void RegisterClass(ClassDB& db);
 };
 
 } // namespace bl

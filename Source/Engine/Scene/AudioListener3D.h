@@ -10,6 +10,8 @@ public:
     ~AudioListener3D();
 
     virtual void Update(float dt) override;
+
+    static void RegisterClass(ClassDB& db);
 };
 
 } // namespace bl

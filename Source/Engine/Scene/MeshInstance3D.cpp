@@ -4,6 +4,7 @@
 #include "Graphics/Renderer.h"
 #include "Resources/ResourceSystem.h"
 #include "Core/Profiler.h"
+#include "Core/ClassDB.h"
 
 namespace bl {
 
@@ -41,6 +42,13 @@ void MeshInstance3D::SetMesh(Ref<Mesh> mesh)
 void MeshInstance3D::SetMaterial(Ref<MaterialInstance> material)
 {
     _material = material;
+}
+
+void MeshInstance3D::RegisterClass(ClassDB& db)
+{
+    db.RegisterClass("MeshInstance3D", &MeshInstance3D::Create);
+    db.RegisterProperty("MeshInstance3D", std::make_unique<TProperty<MeshInstance3D, ResourceReference<Mesh>>>("mesh", ))
+
 }
 
 }
