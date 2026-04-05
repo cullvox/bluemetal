@@ -2,6 +2,7 @@
 #include "Engine/Engine.h"
 #include "Window/Input.h"
 #include "Scene/Orbit3D.h"
+#include "Core/ClassDB.h"
 
 namespace bl {
 
@@ -77,6 +78,11 @@ void CharacterBody3D::Update(float dt)
         _orbiter->RotatePolar(glm::radians(delta.y));
         _orbiter->AddRadius(scrollDelta.y);
     }
+}
+
+void CharacterBody3D::RegisterClass(ClassDB& db)
+{
+    db.RegisterClass("CharacterBody3D", &CharacterBody3D::Create);
 }
 
 }

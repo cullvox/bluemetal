@@ -19,6 +19,8 @@ public:
 
     bool IsGrounded();
 
+    static void RegisterClass(ClassDB& db);
+
 };
 
 } // namespace bl

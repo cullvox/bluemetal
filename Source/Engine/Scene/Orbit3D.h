@@ -7,11 +7,11 @@ namespace bl
 
 class Orbit3D : public Node3D
 {
-    float _radius = 10.0f;
-    float _maxRadius = 50.0f;
-    glm::vec3 _up = glm::vec3{0.0f, 1.0f, 0.0f};
-    float _azimuthAngle = glm::radians(0.0f);
-    float _polarAngle = glm::radians(0.0f);
+    float _minRadius;
+    float _maxRadius;
+    float _radius;
+    float _azimuthAngle;
+    float _polarAngle;
 
 public:
     Orbit3D(Engine& engine);
@@ -21,10 +21,23 @@ public:
     virtual Orbit3D* Clone() override;
     virtual void Update(float dt) override;
 
+    void SetMinRadius(float minRadius);
     void SetMaxRadius(float maxRadius);
+    void SetRadius(float radius);
+    void SetAzimuthAngle(float radians);
+    void SetPolarAngle(float radians);
+
+    float GetMinRadius();
+    float GetMaxRadius();
+    float GetRadius();
+    float GetAzimuthAngle();
+    float GetPolarAngle();
+
     void RotateAzimuth(float radians);
     void RotatePolar(float radians);
     void AddRadius(float radius);
+
+    static void RegisterClass(ClassDB& db);
 
 };
 

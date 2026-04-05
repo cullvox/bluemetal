@@ -216,10 +216,10 @@ void Engine::RegisterClasses()
     // _classDB->Register<NodeFilterIterator>();
     _classDB->Register<Orbit3D>();
     _classDB->Register<PhysicsBody3D>();
-    _classDB->Register<RigidBody3D>();
+    //_classDB->Register<RigidBody3D>();
     //_classDB->Register<SceneExporter>();
-    _classDB->Register<SkinnedMeshInstance3D>();
-    _classDB->Register<StaticBody3D>();
+    //_classDB->Register<SkinnedMeshInstance3D>();
+    //_classDB->Register<StaticBody3D>();
 
 }
 
