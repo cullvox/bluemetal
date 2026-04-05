@@ -1,9 +1,5 @@
 #pragma once
 
-
-#include <cstdint>
-#include <span>
-
 #include "Graphics/Vertex.h"
 #include "Resource.h"
 

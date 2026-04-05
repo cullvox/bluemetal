@@ -1,7 +1,6 @@
 #pragma once
 
-#include <string_view>
-
+#include "Core/MacroUtils.h"
 
 #define OBJECT_BOILER(name, parent) \
 public: \

@@ -18,6 +18,9 @@
 #include "Core/ClassDB.h"
 #include "Window/Input.h"
 
+#include "Resources/Material.h"
+#include "Graphics/VulkanMaterialInstance.h"
+
 #include "Core/Object.h"
 #include "Scene/AudioListener3D.h"
 #include "Scene/AudioSource3D.h"

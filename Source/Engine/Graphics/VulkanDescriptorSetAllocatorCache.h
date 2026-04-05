@@ -1,9 +1,5 @@
 #pragma once
 
-#include <unordered_set>
-#include <unordered_map>
-#include <span>
-
 #include "VulkanDevice.h"
 
 namespace bl {

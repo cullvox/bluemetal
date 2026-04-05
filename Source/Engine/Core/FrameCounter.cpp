@@ -57,7 +57,12 @@ bool FrameCounter::EndFrame()
     // Add the ms to the frames
     _millisecondsPerFrame.push_back(ns);
 
-    _delta = std::chrono::duration_cast<std::chrono::microseconds>(_endOfFrame - _startOfFrame).count() / 1000000.0f;
+    using sec = std::chrono::seconds;
+    using durf = std::chrono::duration<float>;
+    
+    durf duration = _endOfFrame - _startOfFrame;
+
+    _delta = duration.count();
 
     return endedSecond;
 }
@@ -134,6 +139,12 @@ float FrameCounter::GetAverageMillisecondsPerFrame(uint32_t frames)
 float FrameCounter::GetDeltaTime() const
 {
     return _delta;
+}
+
+uint64_t FrameCounter::GetCurrentFrameTimeNS() const
+{
+    auto now = time_point::clock::now();
+    return std::chrono::nanoseconds(now - _startOfFrame).count();
 }
 
 } // namespace bl

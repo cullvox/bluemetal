@@ -1,6 +1,7 @@
 #include "PhysicsBody3D.h"
 #include "Engine/Engine.h"
 #include "Physics/PhysicsSystem.h"
+#include "Core/ClassDB.h"
 
 #include <Jolt/Jolt.h>
 #include <Jolt/Physics/PhysicsSystem.h>
@@ -36,6 +37,26 @@ PhysicsBody3D::~PhysicsBody3D()
     }
 }
 
+glm::vec3 hermite_position(const glm::vec3& p0, const glm::vec3& v0, const glm::vec3& p1, const glm::vec3& v1, float dt, float alpha)
+{
+    const float t  = (alpha < 0.f) ? 0.f : (alpha > 1.f) ? 1.f : alpha;
+    const float t2 = t  * t;
+    const float t3 = t2 * t;
+
+    const float h00 =  2.f*t3 - 3.f*t2 + 1.f;
+    const float h10 =       t3 - 2.f*t2 + t;
+    const float h01 = -2.f*t3 + 3.f*t2;
+    const float h11 =       t3 -      t2;
+
+    const glm::vec3 m0 = v0 * dt;
+    const glm::vec3 m1 = v1 * dt;
+
+    return p0 * h00
+         + m0 * h10
+         + p1 * h01
+         + m1 * h11;
+}
+
 void PhysicsBody3D::Update(float deltaTime)
 {
     Node3D::Update(deltaTime);
@@ -46,9 +67,9 @@ void PhysicsBody3D::Update(float deltaTime)
 
     if (interp)
     {
-        auto prevPos = GetPosition();
-        SetPosition(prevPos + ((_currPosition - prevPos)) * alpha);
-        SetRotation(glm::slerp(GetRotation(), _currRotation, alpha));
+        //SetPosition(hermite_position(prevPos, _prevLinVel, _currPosition, _currLinVel, deltaTime, alpha));
+        SetPosition(glm::lerp(_prevPosition, _currPosition, alpha));
+        SetRotation(glm::slerp(_prevRotation, _currRotation, alpha));
     }
     else
     {
@@ -67,9 +88,15 @@ void PhysicsBody3D::PhysicsUpdate()
     JPH::Vec3 positionVec{};
     JPH::Quat rotationQuat{};
     bodyInterface.GetPositionAndRotation(_bodyId, positionVec, rotationQuat);
+    JPH::Vec3 linVel = bodyInterface.GetLinearVelocity(_bodyId);
 
+    _prevPosition = _currPosition;
+    _prevRotation = _currRotation;
     _currPosition = glm::vec3(positionVec.GetX(), positionVec.GetY(), positionVec.GetZ());
     _currRotation = glm::quat(rotationQuat.GetW(), rotationQuat.GetX(), rotationQuat.GetY(), rotationQuat.GetZ());
+    _prevLinVel = _currLinVel;
+    _currLinVel = glm::vec3(linVel.GetX(), linVel.GetY(), linVel.GetZ());
+
 }
 
 glm::vec3 PhysicsBody3D::GetVelocity()
@@ -104,11 +131,11 @@ void PhysicsBody3D::SetFriction(float friction)
     bodyInterface.SetFriction(_bodyId, friction);
 }
 
-void PhysicsBody3D::SetMassProperties(float mass)
+void PhysicsBody3D::SetMass(float mass)
 {
     _mass = mass;
-    JPH::BodyLockWrite lock(GetEngine().GetPhysics().GetJolt().GetBodyLockInterface(), _bodyId);  
-    if (lock.Succeeded()) {  
+    JPH::BodyLockWrite lock(GetEngine().GetPhysics().GetJolt().GetBodyLockInterface(), _bodyId);
+    if (lock.Succeeded()) {
         JPH::Body& body = lock.GetBody();
         body.GetMotionProperties()->ScaleToMass(mass);
     }
@@ -210,5 +237,9 @@ void PhysicsBody3D::SetDOF(
     }
 }
 
+void PhysicsBody3D::RegisterClass(ClassDB& db)
+{
+    db.RegisterClass("PhysicsBody3D", &PhysicsBody3D::Create);
+}
 
 } // namespace bl

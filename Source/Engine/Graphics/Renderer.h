@@ -2,9 +2,6 @@
 
 #include <nlohmann/json.hpp>
 
-#include <unordered_set>
-#include <map>
-
 #include "UniformData.h"
 #include "VulkanBuffer.h"
 #include "RenderData.h"

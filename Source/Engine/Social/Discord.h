@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Engine/System.h>
-#include <string>
 
 namespace bl {
 

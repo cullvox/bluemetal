@@ -1,10 +1,5 @@
 #pragma once
 
-#include <span>
-#include <vector>
-#include <stack>
-#include <functional>
-
 #include "Node.h"
 #include "NodeFilter.h"
 

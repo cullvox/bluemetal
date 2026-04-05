@@ -1,8 +1,5 @@
 #pragma once
 
-#include "Math/Math.h"
-#include "Vulkan.h"
-
 namespace bl {
 
 template <typename T>

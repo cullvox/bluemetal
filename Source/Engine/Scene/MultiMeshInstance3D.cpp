@@ -1,5 +1,6 @@
 #include "MultiMeshInstance3D.h"
 #include "Graphics/RenderData.h"
+#include "Core/ClassDB.h"
 
 namespace bl {
 
@@ -72,7 +73,7 @@ void MultiMeshInstance3D::SetInstanceTransform(uint32_t index, const glm::mat4& 
 
 void MultiMeshInstance3D::RegisterClass(ClassDB& db)
 {
-    db.
+    db.RegisterClass("MultiMeshInstance3D", &MultiMeshInstance3D::Create);
 }
 
 }

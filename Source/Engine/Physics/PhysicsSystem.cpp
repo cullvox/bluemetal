@@ -38,29 +38,27 @@ PhysicsSystem::~PhysicsSystem()
 bool PhysicsSystem::Update(float deltaTime, std::function<void()> update)
 {
 
-    const float fixedTimeStep = 1.0f / 60.0f;
-    _accumulator += deltaTime;
-    _accumulator = std::clamp(_accumulator, 0.0f, 2.0f * fixedTimeStep);
+    const float FIXED_STEP = 1.0f / 60.0f;
+    const float MAX_STEPS = 4;
 
-    bool physUpdate = false;
-    while (_accumulator >= fixedTimeStep)
+    float clampedDelta = std::min(deltaTime, MAX_STEPS * FIXED_STEP);
+    _accumulator += clampedDelta;
+
+    int steps = 0;
+    while (_accumulator >= FIXED_STEP && steps < MAX_STEPS)
     {
         physFrameCounter.BeginFrame();
-
-        _physicsSystem.Update(fixedTimeStep, 3, _tempAllocator.get(), _jobSystem.get());
-        physUpdate = true;
-        _accumulator -= fixedTimeStep;
-
+        _physicsSystem.Update(FIXED_STEP, 1, _tempAllocator.get(), _jobSystem.get());
+        _accumulator -= FIXED_STEP;
+        steps++;
         update();
-
         physFrameCounter.EndFrame();
         // rootNode->PhysicsUpdate(fixedTimeStep);
     }
 
-    _interpolationFraction = _accumulator / fixedTimeStep;
+    _interpolationFraction = _accumulator / FIXED_STEP;
 
-
-    return physUpdate;
+    return true;
 }
 
 void PhysicsSystem::InterpolateBodies(float alpha)

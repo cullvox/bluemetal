@@ -19,6 +19,7 @@ public:
     float GetMillisecondsPerFrame();
     float GetAverageMillisecondsPerFrame(uint32_t frames);
     float GetDeltaTime() const;
+    uint64_t GetCurrentFrameTimeNS() const;
 
 private:
     using time_point = std::chrono::high_resolution_clock::time_point;

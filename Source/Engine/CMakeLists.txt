@@ -99,9 +99,11 @@ list(APPEND Sources
   "Core/ClassDB.cpp"
   "Engine/System.cpp"
   "Engine/Engine.cpp"
+
+  "Core/Main.cpp"
   )
 
-add_library(Bluemetal STATIC ${Sources})
+add_executable(Bluemetal ${Sources})
 
 set_property(TARGET Bluemetal PROPERTY CXX_STANDARD 20)
 
@@ -124,4 +126,4 @@ target_link_libraries(Bluemetal PUBLIC
   Jolt::Jolt
   discord_game_sdk)
 
-target_precompile_headers(Bluemetal PRIVATE "Graphics/Vulkan.h" "Math/Math.h" "Core/Precompiled.h")
+target_precompile_headers(Bluemetal PRIVATE "Precompiled.h")

@@ -2,6 +2,7 @@
 #include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Material.h"
+#include "Graphics/Renderer.h"
 #include "ResourceSystem.h"
 
 namespace bl {

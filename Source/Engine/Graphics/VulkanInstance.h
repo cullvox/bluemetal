@@ -1,7 +1,5 @@
 #pragma once
 
-#include <vector>
-
 #include "Core/Version.h"
 #include "Vulkan.h"
 #include "VulkanConfig.h"

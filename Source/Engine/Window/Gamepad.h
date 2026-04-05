@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <string_view>
-
 #include "Math/Math.h"
 
 namespace bl {

@@ -3,10 +3,6 @@
 #include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
 
-#include <fstream>
-#include <nlohmann/json.hpp>
-#include <FastNoise/FastNoise.h>
-
 namespace bl {
 
 NoiseTexture2D::NoiseTexture2D(Engine& engine, const std::filesystem::path& path)

@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Engine/System.h"
-#include "ImGui/ImGuiSystem.h"
-#include "Renderer.h"
-#include "Resources/Material.h"
-#include "VulkanDescriptorSetLayoutCache.h"
-#include "VulkanDevice.h"
-#include "VulkanInstance.h"
-#include "VulkanPhysicalDevice.h"
-#include "VulkanPipelineLayoutCache.h"
+#include "Core/ReferenceCounted.h"
 
 namespace bl {
 
 class Engine;
+class VulkanInstance;
+class VulkanPhysicalDevice;
+class VulkanDevice;
+class Renderer;
 class ResourceSystem;
+class ImGuiSystem;
+class Material;
+class VulkanWindow;
 
 class GraphicsSystem : public System {
     std::unique_ptr<VulkanInstance> _vulkanInstance;
@@ -36,8 +36,8 @@ public:
     VulkanInstance* GetInstance();
     VulkanPhysicalDevice* GetPhysicalDevice();
     VulkanDevice* GetDevice();
-    VulkanWindow* GetWindow() { return _window.get(); }
-    Renderer* GetRenderer() { return _renderer.get(); }
+    VulkanWindow* GetWindow();
+    Renderer* GetRenderer();
 };
 
 } // namespace bl

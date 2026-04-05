@@ -47,7 +47,7 @@ void MeshInstance3D::SetMaterial(Ref<MaterialInstance> material)
 void MeshInstance3D::RegisterClass(ClassDB& db)
 {
     db.RegisterClass("MeshInstance3D", &MeshInstance3D::Create);
-    db.RegisterProperty("MeshInstance3D", std::make_unique<TProperty<MeshInstance3D, ResourceReference<Mesh>>>("mesh", ))
+    //db.RegisterProperty("MeshInstance3D", std::make_unique<TProperty<MeshInstance3D, ResourceReference<Mesh>>>("mesh", ))
 
 }
 

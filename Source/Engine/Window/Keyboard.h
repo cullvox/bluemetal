@@ -1,7 +1,5 @@
 #pragma once
 
-#include <string_view>
-
 #include "Core/Flags.h"
 #include "Engine/SDL.h"
 

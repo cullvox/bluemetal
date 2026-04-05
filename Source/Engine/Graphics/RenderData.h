@@ -1,13 +1,9 @@
 #pragma once
 
-#include <vector>
-
 #include "Core/Color.h"
-#include "Vulkan.h"
 #include "VulkanBufferFrameRing.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "Vertex.h"
-#include "UniformData.h"
 
 namespace bl
 {

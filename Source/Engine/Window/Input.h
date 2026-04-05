@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+
 
 #include "Core/Flags.h"
 #include "Engine/System.h"

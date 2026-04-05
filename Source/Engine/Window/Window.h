@@ -1,6 +1,5 @@
 #pragma once
 
-#include <string>
 
 #include "Display.h"
 #include "Engine/SDL.h"

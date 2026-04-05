@@ -1,9 +1,5 @@
 #pragma once
 
-#include <cstddef>
-#include <span>
-
-
 #include "Texture.h"
 
 namespace bl {

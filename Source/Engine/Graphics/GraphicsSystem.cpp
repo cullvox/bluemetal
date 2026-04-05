@@ -4,6 +4,7 @@
 #include "VulkanInstance.h"
 #include "VulkanShader.h"
 #include "VulkanWindow.h"
+#include "Renderer.h"
 
 #include "Resources/Mesh.h"
 #include "Resources/Material.h"
@@ -16,6 +17,7 @@
 #include "Resources/NoiseTexture2D.h"
 
 #include "Engine/Engine.h"
+#include "ImGui/ImGuiSystem.h"
 #include "GraphicsSystem.h"
 
 namespace bl {
@@ -85,6 +87,16 @@ VulkanPhysicalDevice* GraphicsSystem::GetPhysicalDevice()
 VulkanDevice* GraphicsSystem::GetDevice()
 {
     return _device.get();
+}
+
+VulkanWindow* GraphicsSystem::GetWindow()
+{
+    return _window.get();
+}
+
+Renderer* GraphicsSystem::GetRenderer() 
+{
+    return _renderer.get(); 
 }
 
 } // namespace bl

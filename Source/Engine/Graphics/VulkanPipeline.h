@@ -1,9 +1,5 @@
 #pragma once
 
-#include <map>
-
-#include <nlohmann/json.hpp>
-
 #include "Vulkan.h"
 #include "VulkanConversions.h"
 #include "VulkanDescriptorSetLayoutCache.h"
