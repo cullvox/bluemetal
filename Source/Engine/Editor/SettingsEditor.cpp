@@ -70,13 +70,13 @@ static const char* UserFriendlyMultisampleModeName(VkSampleCountFlagBits samples
 {
     switch (samples)
     {
-    case VK_SAMPLE_COUNT_1_BIT: return "x1";
-    case VK_SAMPLE_COUNT_2_BIT: return "x2";
-    case VK_SAMPLE_COUNT_4_BIT: return "x4";
-    case VK_SAMPLE_COUNT_8_BIT: return "x8";
-    case VK_SAMPLE_COUNT_16_BIT: return "x16";
-    case VK_SAMPLE_COUNT_32_BIT: return "x32";
-    case VK_SAMPLE_COUNT_64_BIT: return "x64";
+    case VK_SAMPLE_COUNT_1_BIT: return "x1 (Off)";
+    case VK_SAMPLE_COUNT_2_BIT: return "x2 (Low)";
+    case VK_SAMPLE_COUNT_4_BIT: return "x4 (Medium)";
+    case VK_SAMPLE_COUNT_8_BIT: return "x8 (High)";
+    case VK_SAMPLE_COUNT_16_BIT: return "x16 (Ultra)";
+    case VK_SAMPLE_COUNT_32_BIT: return "x32 (Super Duper)";
+    case VK_SAMPLE_COUNT_64_BIT: return "x64 (What hardware supports this? Email me: me@cadenmiller.dev)";
     default: return "Undefined Sample Count";
     }
 }
@@ -104,18 +104,17 @@ void SettingsEditor::Draw(RenderData& renderData)
             ImGui::HelpMarker(UserFriendlyPresentModeDescription(_presentModes[i]));
         }
 
-        ImGui::SeparatorText("MSAA");
+        ImGui::SeparatorText("Multisample Anti-aliasing (MSAA)");
 
         for (std::size_t i = 0; i < _multisampleModes.size(); i++) {
             if (ImGui::RadioButton(UserFriendlyMultisampleModeName(_multisampleModes[i]), _multisampleModes[i] == _renderer->GetMultisampleCount())) {
                 _renderer->SetMultisampleCount(_multisampleModes[i]);
             }
+            if (i != _multisampleModes.size() - 1)
+                ImGui::SameLine();
         }
 
-        static bool enablePhysDebugRenderer = false;
-        ImGui::Checkbox("Enable Physics Debug", &enablePhysDebugRenderer);
-        ImGui::HelpMarker("You may notice stuttered debug lines, caused by the physics rate not aligning with the frame. This is normal, linear interpolation smooths the movement of physics of objects.");
-        _physicsRenderer->SetEnable(enablePhysDebugRenderer);
+        ImGui::HelpMarker("Reduces jagged edges by averaging samples together. Looks good, may cause performance reduction.");
 
         ImGui::TreePop();
     }
@@ -126,6 +125,15 @@ void SettingsEditor::Draw(RenderData& renderData)
         {
             _audio->SetBusVolume(AudioBus::eMaster, masterBusVolume);
         }
+
+        ImGui::TreePop();
+    }
+
+    if (ImGui::TreeNode("Physics")) {
+        static bool enablePhysDebugRenderer = false;
+        ImGui::Checkbox("Enable Physics Debug", &enablePhysDebugRenderer);
+        ImGui::HelpMarker("You may notice stuttered debug lines, caused by the physics rate not aligning with the frame. This is normal, linear interpolation smooths the movement of physics of objects.");
+        _physicsRenderer->SetEnable(enablePhysDebugRenderer);
 
         ImGui::TreePop();
     }
