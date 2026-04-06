@@ -5,6 +5,7 @@
 #include "Core/MacroUtils.h"
 #include "Engine/System.h"
 #include "FMOD.h"
+#include "AudioBus.h"
 
 namespace bl {
 
@@ -12,6 +13,8 @@ class Sound;
 
 class AudioSystem : public System {
     FMOD::System* _fmod;
+    FMOD::ChannelGroup* _masterGroup;
+    FMOD::ChannelGroup* _musicGroup;
 
 public:
     AudioSystem(Engine& engine);
@@ -22,6 +25,9 @@ public:
     AudioSystem& operator=(AudioSystem&&) = delete;
 
     std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path) override;
+
+    void SetBusVolume(AudioBus bus, float volume);
+    FMOD::ChannelGroup* GetBusChannelGroup(AudioBus bus);
 
     FMOD::System* GetFMOD(); /** @brief Returns the internal FMOD system. */
     void Update(); /** @brief Ticks the audio system. */

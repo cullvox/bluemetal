@@ -188,8 +188,6 @@ int main(int argc, const char** argv)
 
         auto& profiler = bl::GetGlobalProfiler();
         bool enableEditor = false;
-        bool enableFrameLimiter = false;
-        int frameLimitMax = 256;
 
         auto& discord = engine.GetDiscord();
 
@@ -342,86 +340,6 @@ int main(int argc, const char** argv)
 
                 }
 
-                ImGui::Begin("Settings");
-
-                if (ImGui::TreeNode("Editor")) {
-                    ImGui::Checkbox("Editor", &enableEditor);
-
-                    ImGui::TreePop();
-                }
-
-                if (ImGui::TreeNode("Renderer")) {
-                    for (std::size_t i = 0; i < presentModes.size(); i++) {
-                        if (ImGui::RadioButton(bl::ToString(presentModes[i]).data(), presentModes[i] == renderer->GetPresentMode())) {
-                            renderer->SetPresentMode(presentModes[i]);
-                        }
-                    }
-
-                    ImGui::Separator();
-
-                    for (std::size_t i = 0; i < multisampleModes.size(); i++) {
-                        if (ImGui::RadioButton(bl::ToString(multisampleModes[i]).data(), multisampleModes[i] == renderer->GetMultisampleCount())) {
-                            renderer->SetMultisampleCount(multisampleModes[i]);
-                        }
-                    }
-
-                    static bool enablePhysDebugRenderer = false;
-                    ImGui::Checkbox("Enable Physics Debug", &enablePhysDebugRenderer);
-                    physicsRenderer->SetEnable(enablePhysDebugRenderer);
-
-                    ImGui::TreePop();
-                }
-
-                if (ImGui::TreeNode("Audio")) {
-                    static float volume = 1.0f;
-                    if (ImGui::SliderFloat("MASTER", &volume, 0.0f, 1.0f))
-                    {
-                        source->SetVolume(volume);
-                    }
-
-                    ImGui::TreePop();
-                }
-
-                if (ImGui::TreeNode("Profiler")) {
-
-
-                    bool enableProfiling = profiler.IsProfilingEnabled();
-                    ImGui::Checkbox("Enable Profiling", &enableProfiling);
-                    profiler.EnableProfiling(enableProfiling);
-
-                    ImGui::Checkbox("Enable FPS Limiter", &enableFrameLimiter);
-                    ImGui::SliderInt("Set FPS", &frameLimitMax, 1, 256);
-
-                    ImGui::Text("Frame Time: %.2f ms", frameCounter.GetDeltaTime() * 1000.0f);
-                    
-                    ImGui::Text("Phys Frac: %.4f", physics.GetPhysicsInterpolationFraction());
-
-                    // Plot a frame pie chart of the profiler data
-                    static std::vector<float> values;
-                    static std::vector<const char*> labels;
-
-                    if (enableProfiling) {
-                        profiler.GetProfileTimes(values);
-                        profiler.GetProfileNames(labels);
-                    } else {
-                        values.clear();
-                        labels.clear();
-                    }
-
-                    if (ImPlot::BeginPlot("##Pie1", ImVec2(ImGui::GetTextLineHeight()*16,ImGui::GetTextLineHeight()*16), ImPlotFlags_Equal | ImPlotFlags_NoMouseText | ImPlotFlags_NoInputs)) {
-                        ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
-                        ImPlot::SetupAxesLimits(0, 1, 0, 1, ImPlotCond_None);
-
-                        ImPlot::PlotPieChart(labels.data(), values.data(), static_cast<int>(values.size()), 0.5, 0.5, 0.4, "%.2f", 90, ImPlotPieChartFlags_Normalize);
-                        ImPlot::EndPlot();
-                    }
-
-                    ImGui::TreePop();
-                }
-
-                ImPlot::ShowDemoWindow();
-
-                ImGui::End();
 
                 imgui->EndFrame(rd.GetCommandBuffer());
             };
@@ -430,12 +348,6 @@ int main(int argc, const char** argv)
             renderer->Render(renderFunc, imguiFunc, objectFunc);
             profiler.EndProfile("Render");
 
-            if (enableFrameLimiter) {
-                uint64_t delayTime = (uint64_t)(1000000000/frameLimitMax);
-                uint64_t currentTime = frameCounter.GetCurrentFrameTimeNS();
-                delayTime -= delayTime > currentTime ? 0 : currentTime;
-                SDL_DelayNS(delayTime);
-            }
 
             frameCounter.EndFrame();
 

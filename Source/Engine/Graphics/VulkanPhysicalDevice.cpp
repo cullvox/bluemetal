@@ -56,6 +56,13 @@ const std::vector<VkPresentModeKHR>& VulkanPhysicalDevice::GetPresentModes(Vulka
     _presentModes.resize(presentModeCount);
     VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window->GetSurface(), &presentModeCount, _presentModes.data()))
 
+    std::erase_if(_presentModes, [](VkPresentModeKHR mode){
+        return  mode != VK_PRESENT_MODE_IMMEDIATE_KHR &&
+                mode != VK_PRESENT_MODE_MAILBOX_KHR &&
+                mode != VK_PRESENT_MODE_FIFO_KHR &&
+                mode != VK_PRESENT_MODE_FIFO_RELAXED_KHR;
+    });
+
     return _presentModes;
 }
 

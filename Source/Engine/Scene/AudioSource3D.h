@@ -3,6 +3,7 @@
 #include "Math/Math.h"
 #include "Node3D.h"
 #include "Resources/Sound.h"
+#include "Audio/AudioBus.h"
 
 namespace FMOD {
     class Channel;
@@ -17,6 +18,7 @@ class AudioSource3D : public Node3D {
 
     AudioSystem* _system;
     Ref<Sound> _sound;
+    AudioBus _bus;
     glm::vec3 _prevPosition; /** @brief Used for calculating the node's velocity. */
     FMOD::Channel* _channel;
 
@@ -26,6 +28,7 @@ public:
 
     virtual void Update(float dt) override;
 
+    void SetBus(AudioBus bus);
     void SetPause(bool paused = false);
     void Play(Ref<Sound> sound, bool repeat = false);
     void SetVolume(float volume);

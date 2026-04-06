@@ -8,6 +8,7 @@ namespace bl {
 
 AudioSource3D::AudioSource3D(Engine& engine)
     : Node3D(engine)
+    , _bus(AudioBus::eMaster)
 {
     _system = GetEngine().GetAudio();
 }
@@ -48,7 +49,7 @@ bool AudioSource3D::IsPlaying()
 
 void AudioSource3D::Play(Ref<Sound> sound, bool repeat)
 {
-    FMOD_CHECK(_system->GetFMOD()->playSound(sound.lock()->Get(), nullptr, false, &_channel))
+    FMOD_CHECK(_system->GetFMOD()->playSound(sound.lock()->Get(), _system->GetBusChannelGroup(_bus), false, &_channel))
     FMOD_CHECK(_channel->setLoopCount(repeat ? -1 : 0))
 }
 

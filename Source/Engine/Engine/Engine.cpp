@@ -1,27 +1,23 @@
 #include "argparse/argparse.hpp"
 
-#include "EngineVars.h"
 #include "Audio/AudioSystem.h"
-#include "Social/Discord.h"
+#include "Core/ClassDB.h"
 #include "Core/FrameCounter.h"
+#include "Core/Object.h"
 #include "Core/Print.h"
+#include "Core/Profiler.h"
 #include "Editor/Editor.h"
 #include "Engine/Engine.h"
 #include "Engine/SDL.h"
+#include "EngineVars.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/Renderer.h"
+#include "Graphics/VulkanMaterialInstance.h"
 #include "Graphics/VulkanWindow.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Physics/PhysicsSystem.h"
-#include "Scene/SceneSystem.h"
-#include "Resources/ResourceSystem.h"
-#include "Core/ClassDB.h"
-#include "Window/Input.h"
-
 #include "Resources/Material.h"
-#include "Graphics/VulkanMaterialInstance.h"
-
-#include "Core/Object.h"
+#include "Resources/ResourceSystem.h"
 #include "Scene/AudioListener3D.h"
 #include "Scene/AudioSource3D.h"
 #include "Scene/Camera3D.h"
@@ -39,8 +35,11 @@
 #include "Scene/RigidBody3D.h"
 #include "Scene/SceneExporter.h"
 #include "Scene/SceneSystem.h"
+#include "Scene/SceneSystem.h"
 #include "Scene/SkinnedMeshInstance3D.h"
 #include "Scene/StaticBody3D.h"
+#include "Social/Discord.h"
+#include "Window/Input.h"
 
 #include "Jolt/Core/Core.h"
 
@@ -197,6 +196,12 @@ DiscordSystem& Engine::GetDiscord()
 ClassDB& Engine::GetClassDB()
 {
     return *_classDB.get();
+}
+
+Profiler& Engine::GetProfiler()
+{
+    static Profiler profiler;
+    return profiler;
 }
 
 void Engine::RegisterClasses()

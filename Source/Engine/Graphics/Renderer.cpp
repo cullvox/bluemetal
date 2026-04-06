@@ -799,6 +799,8 @@ std::vector<VkSampleCountFlagBits> Renderer::GetMultisampleCounts()
         counts.push_back(VK_SAMPLE_COUNT_2_BIT);
     }
 
+    std::sort(counts.begin(), counts.end());
+
     return counts;
 }
 

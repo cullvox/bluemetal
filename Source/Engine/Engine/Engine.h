@@ -18,6 +18,7 @@ class Editor;
 class SceneSystem;
 class DiscordSystem;
 class ClassDB;
+class Profiler;
 
 class Engine {
     std::unique_ptr<FrameCounter> _counter;
@@ -55,6 +56,7 @@ public:
     Editor& GetEditor();
     DiscordSystem& GetDiscord();
     ClassDB& GetClassDB();
+    Profiler& GetProfiler();
 };
 
 } // namespace bl

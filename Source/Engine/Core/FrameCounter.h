@@ -20,6 +20,8 @@ public:
     float GetAverageMillisecondsPerFrame(uint32_t frames);
     float GetDeltaTime() const;
     uint64_t GetCurrentFrameTimeNS() const;
+    void SetFrameLimiterEnabled(bool enabled);
+    void SetFrameLimiterFPS(uint32_t fpsLimit);
 
 private:
     using time_point = std::chrono::high_resolution_clock::time_point;
@@ -34,6 +36,8 @@ private:
     std::list<uint32_t> _framesPerSecond;
     std::list<std::chrono::nanoseconds> _millisecondsPerFrame;
     float _delta = 0.0f;
+    bool _frameLimiterEnabled;
+    uint32_t _frameLimiterFPS;
 };
 
 } // namespace bl

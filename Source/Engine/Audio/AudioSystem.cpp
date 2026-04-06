@@ -10,14 +10,22 @@ AudioSystem::AudioSystem(Engine& _engine)
     : System(_engine)
     , _fmod(nullptr)
 {
+    // Set engine resource types this system is capable of producing
     GetEngine().GetResourceSystem()->AddSystemType<Sound>(this);
 
+    // Initialize FMOD
     FMOD_CHECK(FMOD::System_Create(&_fmod, FMOD_VERSION))
     FMOD_CHECK(_fmod->init(128, FMOD_INIT_NORMAL, nullptr))
+
+    // Create all of our sound bus/groups
+    FMOD_CHECK(_fmod->createChannelGroup("Master", &_masterGroup));
+    FMOD_CHECK(_fmod->createChannelGroup("Music", &_musicGroup));
+    FMOD_CHECK(_masterGroup->addGroup(_musicGroup));
 }
 
 AudioSystem::~AudioSystem()
 {
+    // Deinitialize FMOD
     _fmod->close();
 }
 
@@ -36,7 +44,7 @@ FMOD::System* AudioSystem::GetFMOD()
 }
 
 void AudioSystem::Update() {
-    FMOD_CHECK(_fmod -> update())
+    FMOD_CHECK(_fmod->update())
 }
 
 std::string AudioSystem::GetDriverName()
@@ -54,6 +62,24 @@ int AudioSystem::GetNumChannelsPlaying()
     int count = 0;
     FMOD_CHECK(_fmod->getChannelsPlaying(&count))
     return count;
+}
+
+void AudioSystem::SetBusVolume(AudioBus bus, float volume)
+{
+    FMOD::ChannelGroup* group = GetBusChannelGroup(bus);
+    FMOD_CHECK(group->setVolume(volume));
+}
+
+FMOD::ChannelGroup* AudioSystem::GetBusChannelGroup(AudioBus bus)
+{
+    switch (bus) {
+        case AudioBus::eMaster:
+            return _masterGroup;
+        case AudioBus::eMusic:
+            return _musicGroup;
+        default:
+            throw std::runtime_error("Invalid bus!");
+    }
 }
 
 } // namespace bl

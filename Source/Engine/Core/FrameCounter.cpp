@@ -1,10 +1,13 @@
 #include "FrameCounter.h"
 #include "Core/Print.h"
+#include "SDL3/SDL.h"
 
 namespace bl {
 
 FrameCounter::FrameCounter(int maxFramesCounted)
     : _maximumHeldFramesPerSecond(maxFramesCounted)
+    , _frameLimiterEnabled(false)
+    , _frameLimiterFPS(144)
 {
 }
 
@@ -21,6 +24,13 @@ void FrameCounter::BeginFrame()
 bool FrameCounter::EndFrame()
 {
     bool endedSecond {};
+
+    if (_frameLimiterEnabled) {
+        uint64_t delayTime = (uint64_t)(1000000000/_frameLimiterFPS);
+        uint64_t currentTime = GetCurrentFrameTimeNS();
+        delayTime -= delayTime > currentTime ? 0 : currentTime;
+        SDL_DelayNS(delayTime);
+    }
 
     _endOfFrame = std::chrono::high_resolution_clock::now();
 
@@ -146,5 +156,16 @@ uint64_t FrameCounter::GetCurrentFrameTimeNS() const
     auto now = time_point::clock::now();
     return std::chrono::nanoseconds(now - _startOfFrame).count();
 }
+
+void FrameCounter::SetFrameLimiterEnabled(bool enabled)
+{
+    _frameLimiterEnabled = enabled;
+}
+
+void FrameCounter::SetFrameLimiterFPS(uint32_t fpsLimit)
+{
+    _frameLimiterFPS = fpsLimit;
+}
+
 
 } // namespace bl

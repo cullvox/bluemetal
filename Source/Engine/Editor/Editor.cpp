@@ -11,7 +11,9 @@ namespace bl {
 Editor::Editor(Engine& engine)
     : System(engine)
     , _debug(*this)
+    , _settings(engine)
 {
+    _settings.SetShow(true);
 }
 
 Editor::~Editor()
@@ -42,6 +44,7 @@ void Editor::Draw(RenderData& rd)
     ImGui::EndMainMenuBar();
 
     _debug.Draw(rd);
+    _settings.Draw(rd);
 }
 
 void Editor::DrawDebug(RenderData& rd)

@@ -94,6 +94,7 @@ list(APPEND Sources
   "Social/Discord.cpp"
 
   "Editor/DebugEditor.cpp"
+  "Editor/SettingsEditor.cpp"
   "Editor/Editor.cpp"
 
   "Core/ClassDB.cpp"
