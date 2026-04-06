@@ -76,11 +76,7 @@ static const char* UserFriendlyMultisampleModeName(VkSampleCountFlagBits samples
     case VK_SAMPLE_COUNT_8_BIT: return "x8 (High)";
     case VK_SAMPLE_COUNT_16_BIT: return "x16 (Ultra)";
     case VK_SAMPLE_COUNT_32_BIT: return "x32 (Super Duper)";
-<<<<<<< HEAD
     case VK_SAMPLE_COUNT_64_BIT: return "x64 (What hardware supports this? Email me!)";
-=======
-    case VK_SAMPLE_COUNT_64_BIT: return "x64 (What hardware supports this? Email me: me@cadenmiller.dev)";
->>>>>>> 67b23a07093c840d2ca00c964d79fca5f4d47de9
     default: return "Undefined Sample Count";
     }
 }
