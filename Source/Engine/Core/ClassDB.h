@@ -100,6 +100,8 @@ public:
     bool HasClass(std::string_view name);
     std::span<const std::string_view> GetClassNames() const;
     std::span<Property*> GetClassProperties(const std::string_view name);
+
+    bool IsEnumValid(const std::string_view enumType, int64_t value);
 };
 
 

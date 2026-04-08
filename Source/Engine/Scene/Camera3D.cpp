@@ -2,6 +2,7 @@
 #include "Engine/Engine.h"
 #include "Window/Window.h"
 #include "Core/ClassDB.h"
+#include "Core/Reflection/EnumProperty.h"
 
 namespace bl {
 
@@ -23,6 +24,11 @@ void Camera3D::SetProjection(CameraProjection projection)
 {
     _projection = projection;
     _isDirty = true;
+}
+
+CameraProjection Camera3D::GetProjection()
+{
+    return _projection;
 }
 
 void Camera3D::SetNearClip(float near)
@@ -98,9 +104,11 @@ void Camera3D::RegisterClass(ClassDB& db)
 {
     db.RegisterClass("Camera3D", &Camera3D::Create);
     db.RegisterEnum<CameraProjection>("CameraProjection", {{"Perspective", CameraProjection::ePerspective}, {"Orthographic", CameraProjection::ePerspective}});
-    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("fov", &Camera3D::SetFOV, &Camera3D::GetFOV));
-    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("nearClip", &Camera3D::SetNearClip, &Camera3D::GetNearClip));
-    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("farClip", &Camera3D::SetNearClip, &Camera3D::GetNearClip));
+
+    db.RegisterProperty("Camera3D", std::make_unique<TEnumProperty<Camera3D, CameraProjection>>(db, "CameraProjection", "projection", &SetProjection, &GetProjection));
+    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "fov", &Camera3D::SetFOV, &Camera3D::GetFOV));
+    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "nearClip", &Camera3D::SetNearClip, &Camera3D::GetNearClip));
+    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "farClip", &Camera3D::SetNearClip, &Camera3D::GetNearClip));
 }
 
 } // namespace bl

@@ -237,7 +237,7 @@ std::vector<std::unique_ptr<Node>>& Node::GetVecChildren()
 void Node::RegisterClass(ClassDB& db)
 {
     db.RegisterClass("Node", &Node::Create);
-    db.RegisterProperty("Node", std::make_unique<TStringProperty<Node>>("name", &Node::SetName, &Node::GetName));
+    db.RegisterProperty("Node", std::make_unique<TStringProperty<Node>>(db, "name", &Node::SetName, &Node::GetName));
 
 }
 

@@ -99,4 +99,18 @@ std::span<const std::string_view> ClassDB::GetClassNames() const
     return std::span{_classNames};
 }
 
+bool ClassDB::IsEnumValid(std::string_view name, int64_t type)
+{
+    const auto indexIt = _nameToEnumIndex.find(name);
+    if (indexIt == _nameToEnumIndex.end()) {
+        Print::Error("Invalid enum type name: \"{}\"!", name);
+        return false;
+    }
+
+    const std::size_t index = indexIt->second;
+    const EnumData& enumData = _enums[index];
+
+    return enumData.valueToName.contains(type);
+}
+
 }

@@ -8,25 +8,27 @@
 namespace bl
 {
 
-class Object;
-
 class Property
 {
+    ClassDB& _db;
     std::string_view _name;
     VariantType _type;
 
 protected:
-    constexpr Property(std::string_view name, VariantType type)
-        : _name(name)
+    Property(ClassDB& db, std::string_view name, VariantType type)
+        : _db(db)
+        , _name(name)
         , _type(type)
     {
     }
 
+    ClassDB& GetClassDB() { return _db; }
+
 public:
     virtual ~Property() = default;
 
-    constexpr std::string_view GetName() { return _name; }
-    constexpr VariantType GetType() { return _type; }
+    std::string_view GetName() { return _name; }
+    VariantType GetType() { return _type; }
 
     virtual void Set(Object* object, const Variant& value) = 0;
     virtual Variant Get(Object* object) = 0;
@@ -41,8 +43,8 @@ class TProperty : public Property
     void (TClass::* _setter)(TValue);
     TValue (TClass::* _getter)(void);
 public:
-    constexpr TProperty(const std::string_view name, void (TClass::* setter)(TValue), TValue (TClass::* getter)(void))
-        : Property(name, GetVariantType<TValue>())
+    constexpr TProperty(ClassDB& db, const std::string_view name, void (TClass::* setter)(TValue), TValue (TClass::* getter)(void))
+        : Property(db, name, GetVariantType<TValue>())
         , _setter(setter)
         , _getter(getter)
     {
@@ -90,8 +92,8 @@ class TStringProperty : public Property
     SetterType _setter;
     GetterType _getter;
 public:
-    constexpr TStringProperty(const std::string_view name, SetterType setter, GetterType getter)
-        : Property(name, GetVariantType<std::string>())
+    constexpr TStringProperty(ClassDB& db, const std::string_view name, SetterType setter, GetterType getter)
+        : Property(db, name, GetVariantType<std::string>())
         , _setter(setter)
         , _getter(getter)
     {

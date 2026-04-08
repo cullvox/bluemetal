@@ -187,7 +187,7 @@ int main(int argc, const char** argv)
         ImPlot::CreateContext();
 
         auto& profiler = bl::GetGlobalProfiler();
-        bool enableEditor = false;
+        bool enableEditor = true;
 
         auto& discord = engine.GetDiscord();
 

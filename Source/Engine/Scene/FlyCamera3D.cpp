@@ -185,8 +185,8 @@ float FlyCamera3D::GetSmoothness()
 void FlyCamera3D::RegisterClass(ClassDB& db)
 {
     db.RegisterClass("FlyCamera3D", &FlyCamera3D::Create);
-    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>("speed", &FlyCamera3D::SetSpeed, &FlyCamera3D::GetSpeed));
-    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>("smoothness", &FlyCamera3D::SetSmoothness, &FlyCamera3D::GetSmoothness));
+    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>(db, "speed", &FlyCamera3D::SetSpeed, &FlyCamera3D::GetSpeed));
+    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>(db, "smoothness", &FlyCamera3D::SetSmoothness, &FlyCamera3D::GetSmoothness));
 }
 
 }

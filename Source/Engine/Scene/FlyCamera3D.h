@@ -7,6 +7,8 @@ namespace bl {
 
 /** @brief A camera with input controls for flying through a scene. */
 class FlyCamera3D : public Camera3D {
+    OBJECT_BOILER(FlyCamera3D, Camera3D)
+
     float _speed;
     float _smooth;
     float cameraAcceleration = 015.f;

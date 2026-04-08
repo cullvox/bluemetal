@@ -6,6 +6,19 @@ namespace bl {
 
 class Object;
 
+class EnumValue
+{
+    std::string_view _enumName;
+    int64_t _value;
+
+    int64_t Get() noexcept
+    {
+        return _value;
+    }
+
+    void Set(int64_t value);
+};
+
 using Variant = std::variant<
     Object*, 
     int64_t, 

@@ -10,6 +10,8 @@ enum class CameraProjection : int64_t {
 };
 
 class Camera3D : public Node3D {
+    OBJECT_BOILER(Camera3D, Node3D)
+
     CameraProjection _projection;
     float _fov;
     float _nearClip;
