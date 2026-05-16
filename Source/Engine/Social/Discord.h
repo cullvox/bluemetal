@@ -10,6 +10,9 @@ enum class DiscordActivityType
     eStreaming,
     eListening,
     eWatching,
+    eCustom,
+    eCompeting,
+    eHanging,
 };
 
 // Representation of Discord statuses and their UI.
@@ -55,14 +58,14 @@ struct DiscordActivity
 
     struct Secrets
     {
-        std::string_view matchCode = "";
-        std::string_view joinCode = "";
-        std::string_view spectateCode = "";
+        std::string_view matchCode = "example";
+        std::string_view joinCode = "example";
+        std::string_view spectateCode = "example";
     } secrets;
 
     struct Party
     {
-        std::string_view id = "";
+        std::string_view id = "example";
         struct PartySize
         {
             int32_t currentSize = 0;

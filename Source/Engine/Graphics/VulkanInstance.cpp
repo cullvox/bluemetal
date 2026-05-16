@@ -2,6 +2,7 @@
 #include "Core/Print.h"
 #include "VulkanPhysicalDevice.h"
 #include "VulkanWindow.h"
+#include "VulkanConfig.h"
 
 namespace bl {
 

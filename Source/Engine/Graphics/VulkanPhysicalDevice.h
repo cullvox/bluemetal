@@ -4,8 +4,6 @@
 #include <vector>
 #include <optional>
 
-#include "Vulkan.h"
-
 namespace bl {
 
 class VulkanWindow;
@@ -76,11 +74,23 @@ public:
     /// @returns The Vulkan physical device properties.
     const VkPhysicalDeviceProperties& GetProperties() const;
 
+    const VkPhysicalDeviceFeatures& GetFeatures() const;
+
+#ifdef BLUEMETAL_VULKAN_PORTABILITY
+    const VkPhysicalDevicePortabilitySubsetFeaturesKHR& GetPortabilityFeatures() const;
+#endif
+
 private:
     VkPhysicalDevice _physicalDevice;
     VkPhysicalDeviceProperties _properties;
+    VkPhysicalDeviceFeatures _features;
     std::vector<VkPresentModeKHR> _presentModes;
     std::vector<VkSurfaceFormatKHR> _surfaceFormats;
+
+#ifdef BLUEMETAL_VULKAN_PORTABILITY
+    VkPhysicalDevicePortabilitySubsetFeaturesKHR _portabilityFeatures;
+#endif
+
 };
 
 } // namespace bl

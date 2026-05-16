@@ -239,7 +239,7 @@ void PhysicsBody3D::SetDOF(
 
 void PhysicsBody3D::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("PhysicsBody3D", &PhysicsBody3D::Create);
+    db.RegisterClass("PhysicsBody3D", "Node3D", &PhysicsBody3D::Create);
 }
 
 } // namespace bl

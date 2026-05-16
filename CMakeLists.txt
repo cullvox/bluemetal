@@ -39,6 +39,8 @@ endif()
 bl_message("Found Vulkan - ${Vulkan_INCLUDE_DIR}")
 
 
+
+
 #===============================================================================
 # build third party
 #===============================================================================
@@ -70,7 +72,7 @@ set(USE_STATIC_MSVC_RUNTIME_LIBRARY OFF)
 set(CPP_RTTI_ENABLED ON)
 
 add_subdirectory("ThirdParty/JoltPhysics/Build")
-add_subdirectory("ThirdParty/discord_game_sdk")
+add_subdirectory("ThirdParty/discord_social_sdk")
 
 
 # add_subdirectory("ThirdParty/zlib")
@@ -85,8 +87,8 @@ CPMAddPackage("gh:khronosgroup/spirv-reflect#vulkan-sdk-1.4.335.0")
 CPMAddPackage("gh:nlohmann/json@3.11.3")
 CPMAddPackage("gh:syoyo/tinygltf#v2.9.6")
 CPMAddPackage("gh:auburn/fastnoise2@0.10.0-alpha")
-CPMAddPackage("gh:zeux/volk#1.4.304")
-CPMAddPackage("gh:gpuopen-librariesandsdks/vulkanmemoryallocator@3.1.0")
+CPMAddPackage("gh:zeux/volk#1.4.350")
+CPMAddPackage("gh:gpuopen-librariesandsdks/vulkanmemoryallocator@3.3.0")
 CPMAddPackage("gh:cullvox/qoixx#addspan")
 CPMAddPackage("gh:gabime/spdlog@1.17.0")
 
@@ -154,10 +156,10 @@ endif()
 # Any apple product requires the use of the Vulkan Portability Subset.
 if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   bl_message("Enabling Vulkan Portability Subset for MacOS")
-  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY")
-  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY")
+  set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY -DVK_USE_PLATFORM_MACOS_MVK")
+  set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY -DVK_USE_PLATFORM_MACOS_MVK")
+  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY -DVK_USE_PLATFORM_MACOS_MVK")
+  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_DEBUG} -DBLUEMETAL_VULKAN_PORTABILITY -DVK_USE_PLATFORM_MACOS_MVK")
 endif()
 
 #===============================================================================

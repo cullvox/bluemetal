@@ -3,10 +3,8 @@
 #include "Window/Input.h"
 #include "Window/Keyboard.h"
 #include "Window/Mouse.h"
-#include "Window/Window.h"
-#include "Graphics/VulkanWindow.h"
 #include "Graphics/GraphicsSystem.h"
-#include "Graphics/Renderer.h"
+#include "Graphics/VulkanWindow.h"
 #include "Core/ClassDB.h"
 
 namespace bl {
@@ -25,7 +23,6 @@ void FlyCamera3D::Update(float dt)
     auto& keyboard = GetEngine().GetInput()->GetKeyboard();
     auto& mouse = GetEngine().GetInput()->GetMouse();
     auto window = GetEngine().GetGraphics().GetWindow();
-    auto renderer = GetEngine().GetGraphics().GetRenderer();
 
     glm::vec3 position = GetPosition();
 
@@ -122,15 +119,6 @@ void FlyCamera3D::Update(float dt)
         SetRotation(direction);
     }
 
-    view = glm::lookAt(position, position + cameraFront, cameraUp);
-
-    bl::Extent2D extent = window->GetExtent();
-    glm::vec2 extentf = glm::vec2 { (float)extent.width, (float)extent.height };
-    glm::mat4 projection = glm::perspective(glm::radians(70.0f), extentf.x / extentf.y, 0.1f, 1000.0f);
-    projection[1][1] *= -1; // Invert the projection for Vulkan y (0, 1)
-
-    renderer->SetView(view);
-    renderer->SetProjection(projection);
 }
 
 void FlyCamera3D::Draw(RenderData&)
@@ -184,9 +172,9 @@ float FlyCamera3D::GetSmoothness()
 
 void FlyCamera3D::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("FlyCamera3D", &FlyCamera3D::Create);
-    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>(db, "speed", &FlyCamera3D::SetSpeed, &FlyCamera3D::GetSpeed));
-    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>(db, "smoothness", &FlyCamera3D::SetSmoothness, &FlyCamera3D::GetSmoothness));
+    db.RegisterClass("FlyCamera3D", "Camera3D", &FlyCamera3D::Create);
+    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>(db, "speed", PropertyFlags::Editor, &FlyCamera3D::SetSpeed, &FlyCamera3D::GetSpeed));
+    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>(db, "smoothness", PropertyFlags::Editor, &FlyCamera3D::SetSmoothness, &FlyCamera3D::GetSmoothness));
 }
 
 }

@@ -4,69 +4,12 @@
 #include <Engine/Engine.h>
 #include <Engine/EngineVars.h>
 
-#include <discord_game_sdk.h>
+#define DISCORDPP_IMPLEMENTATION
+#include <discordpp.h>
 
 namespace bl {
 
-static IDiscordCore* core = nullptr;
-
-static std::string_view ToString(EDiscordResult result)
-{
-    switch(result) {
-    case DiscordResult_Ok: return "Ok";
-    case DiscordResult_ServiceUnavailable: return "Service Unavailable";
-    case DiscordResult_InvalidVersion: return "Invalid Version";
-    case DiscordResult_LockFailed: return "Lock Failed";
-    case DiscordResult_InternalError: return "Internal Error";
-    case DiscordResult_InvalidPayload: return "Invalid Payload";
-    case DiscordResult_InvalidCommand: return "Invalid Command";
-    case DiscordResult_InvalidPermissions: return "Invalid Permissions";
-    case DiscordResult_NotFetched: return "Not Fetched";
-    case DiscordResult_NotFound: return "Not Found";
-    case DiscordResult_Conflict: return "Conflict";
-    case DiscordResult_InvalidSecret: return "Invalid Secret";
-    case DiscordResult_InvalidJoinSecret: return "Invalid Join Secret";
-    case DiscordResult_NoEligibleActivity: return "No Eligible Activity";
-    case DiscordResult_InvalidInvite: return "Invalid Invite";
-    case DiscordResult_NotAuthenticated: return "Not Authenticated";
-    case DiscordResult_InvalidAccessToken: return "Invalid Access Token";
-    case DiscordResult_ApplicationMismatch: return "Application Mismatch";
-    case DiscordResult_InvalidDataUrl: return "Invalid DataUrl";
-    case DiscordResult_InvalidBase64: return "Invalid Base64";
-    case DiscordResult_NotFiltered: return "Not Filtered";
-    case DiscordResult_LobbyFull: return "Lobby Full";
-    case DiscordResult_InvalidLobbySecret: return "Invalid Lobby Secret";
-    case DiscordResult_InvalidFilename: return "Invalid Filename";
-    case DiscordResult_InvalidFileSize: return "Invalid FileSize";
-    case DiscordResult_InvalidEntitlement: return "Invalid Entitlement";
-    case DiscordResult_NotInstalled: return "Not Installed";
-    case DiscordResult_NotRunning: return "Not Running";
-    case DiscordResult_InsufficientBuffer: return "Insufficient Buffer";
-    case DiscordResult_PurchaseCanceled: return "Purchase Canceled";
-    case DiscordResult_InvalidGuild: return "Invalid Guild";
-    case DiscordResult_InvalidEvent: return "Invalid Event";
-    case DiscordResult_InvalidChannel: return "Invalid Channel";
-    case DiscordResult_InvalidOrigin: return "Invalid Origin";
-    case DiscordResult_RateLimited: return "Rate Limited";
-    case DiscordResult_OAuth2Error: return "OAuth2 Error";
-    case DiscordResult_SelectChannelTimeout: return "Select Channel Timeout";
-    case DiscordResult_GetGuildTimeout: return "Get Guild Timeout";
-    case DiscordResult_SelectVoiceForceRequired: return "Select Voice Force Required";
-    case DiscordResult_CaptureShortcutAlreadyListening: return "Capture Shortcut Already Listening";
-    case DiscordResult_UnauthorizedForAchievement: return "Unauthorized For Achievement";
-    case DiscordResult_InvalidGiftCode: return "Invalid Gift Code";
-    case DiscordResult_PurchaseError: return "Purchase Error";
-    case DiscordResult_TransactionAborted: return "Transaction Aborted";
-    case DiscordResult_DrawingInitFailed: return "Drawing Init Failed";
-    default: return "Unknown Result";
-    }
-}
-
-static void LogCallback(void* hook_data, enum EDiscordLogLevel level, const char* message)
-{
-    if (level == DiscordLogLevel_Debug) return;
-    printf("Discord: %s\n", message);
-}
+static auto client = std::make_shared<discordpp::Client>();
 
 DiscordSystem::DiscordSystem(Engine& engine)
     : System(engine)
@@ -83,79 +26,128 @@ DiscordSystem::DiscordSystem(Engine& engine)
     //}
 
     clientID = 763767974469042178;
+  
+    client->AddLogCallback([](auto message, auto severity){
+        switch (severity) {
+        case discordpp::LoggingSeverity::Verbose:
+            Print::Verbose("{}\n", message);
+            break;
+        default:
+        case discordpp::LoggingSeverity::None:
+        case discordpp::LoggingSeverity::Info:
+            Print::Info("{}\n", message);
+            break;
+        case discordpp::LoggingSeverity::Warning:
+            Print::Warn("{}\n", message);
+            break;
+        case discordpp::LoggingSeverity::Error:
+            Print::Error("{}\n", message);
+            break;
+        }
+    }, discordpp::LoggingSeverity::Info);
 
-    DiscordCreateParams params = {};
-    DiscordCreateParamsSetDefault(&params);
-    params.client_id = clientID;
-    params.flags = requireDiscord ? DiscordCreateFlags_Default : DiscordCreateFlags_NoRequireDiscord;
+    client->SetStatusChangedCallback([](auto status, auto error, auto details){
+        Print::Info("Discord client status changed to {}\n", discordpp::Client::StatusToString(status));
 
-    EDiscordResult result = DiscordCreate(DISCORD_VERSION, &params, &core);
+        if (status == discordpp::Client::Status::Ready) {
+            Print::Info("Discord client ready.");
+        } else if (error != discordpp::Client::Error::None) {
+            Print::Error("Discord client error connecting: {} {}\n", discordpp::Client::ErrorToString(error), details);
+        }
+    });
 
-    if (result != DiscordResult_Ok) {
-        Print::Error("Could not initialize discord core, error ({}).", ToString(result));
-        //engine.LogError("Failed to instantiate discord core! (err {} ({}))", ToString(result), static_cast<int>(result));
-    }
+    // auto codeVerifier = client->CreateAuthorizationCodeVerifier();
+    // discordpp::AuthorizationArgs args{};
+    // args.SetClientId(clientID);
+    // args.SetScopes(discordpp::Client::GetDefaultPresenceScopes());
+    // args.SetCodeChallenge(codeVerifier.Challenge());
 
-    if (core)
-        core->set_log_hook(core, DiscordLogLevel_Debug, nullptr, LogCallback);
+    // client->Authorize(args, [clientID, codeVerifier](auto result, auto code, auto redirectUri){
+    //     if (!result.Successful()) {
+    //         Print::Error("Discord client authentication error: {}\n", result.ToString());
+    //     } else {
+    //         Print::Info("Discord client authentication code recieved, exchanging for access token.\n");
+    //         client->GetToken(clientID, code, codeVerifier.Verifier(), redirectUri, 
+    //         [](auto result, auto accessToken, auto refreshToken, auto, auto, auto){
+    //             Print::Info("Discord client authentication access token recieved, connecting to discord.\n");
+    //             client->UpdateToken(discordpp::AuthorizationTokenType::Bearer, accessToken, [](auto result){
+    //                 client->Connect();
+    //             });
+    //         });
+    //     }
+    // });
+
+    client->SetApplicationId(clientID);
 }
 
 DiscordSystem::~DiscordSystem()
 {
-    if (core)
-        core->destroy(core);
 }
 
-static EDiscordActivityType ToDiscord(DiscordActivityType type)
+static inline discordpp::ActivityTypes DiscordActivityType_ToDiscord(DiscordActivityType type)
 {
     switch (type) {
-        case DiscordActivityType::ePlaying: return DiscordActivityType_Playing;
-        case DiscordActivityType::eStreaming: return DiscordActivityType_Streaming;
-        case DiscordActivityType::eListening: return DiscordActivityType_Listening;
-        case DiscordActivityType::eWatching: return DiscordActivityType_Watching;
-        default: return DiscordActivityType_Playing;
+    case DiscordActivityType::ePlaying: return discordpp::ActivityTypes::Playing;
+    case DiscordActivityType::eStreaming: return discordpp::ActivityTypes::Streaming;
+    case DiscordActivityType::eListening: return discordpp::ActivityTypes::Listening;
+    case DiscordActivityType::eWatching: return discordpp::ActivityTypes::Watching;
+    case DiscordActivityType::eCustom: return discordpp::ActivityTypes::CustomStatus;
+    case DiscordActivityType::eCompeting: return discordpp::ActivityTypes::Competing;
+    case DiscordActivityType::eHanging: return discordpp::ActivityTypes::HangStatus;
+    default: return discordpp::ActivityTypes::Playing;
     }
+}
+
+static inline discordpp::ActivityPartyPrivacy DiscordActivityPartyPrivacyType_ToDiscord(bool isPrivate)
+{
+    return isPrivate ? discordpp::ActivityPartyPrivacy::Private : discordpp::ActivityPartyPrivacy::Public;
 }
 
 void DiscordSystem::UpdateActivity(DiscordActivity& activity)
 {
-    if (core == nullptr)
-        return;
+    discordpp::Activity newActivity;
 
-    ::DiscordActivity raw;
-    std::memset(&raw, 0, sizeof(raw));
+    discordpp::ActivityTimestamps timestamps;
+    timestamps.SetStart(activity.startTime);
+    timestamps.SetEnd(activity.endTime);
 
-    raw.type = ToDiscord(activity.type);
-    raw.application_id = activity.applicationID;
-    std::snprintf(raw.name, sizeof(raw.name), "%s", activity.name.data());
-    std::snprintf(raw.state, sizeof(raw.state), "%s", activity.state.data());
-    std::snprintf(raw.details, sizeof(raw.details), "%s", activity.details.data());
+    discordpp::ActivityAssets assets;
+    assets.SetSmallImage(std::string{activity.art.smallImage});
+    assets.SetSmallText(std::string{activity.art.smallImageTooltip});
+    assets.SetLargeImage(std::string{activity.art.largeImage});
+    assets.SetLargeText(std::string{activity.art.largeImage});
 
-    raw.timestamps.start = activity.startTime;
-    raw.timestamps.end = activity.endTime;
+    discordpp::ActivitySecrets secrets;
+    secrets.SetJoin(std::string{activity.secrets.joinCode});
 
-    std::snprintf(raw.assets.large_image, sizeof(raw.assets.large_image), "%s", activity.art.largeImage.data());
-    std::snprintf(raw.assets.large_text, sizeof(raw.assets.large_text), "%s", activity.art.largeImageTooltip.data());
-    std::snprintf(raw.assets.small_image, sizeof(raw.assets.small_image), "%s", activity.art.smallImage.data());
-    std::snprintf(raw.assets.small_text, sizeof(raw.assets.small_text), "%s", activity.art.smallImageTooltip.data());
+    discordpp::ActivityParty party;
+    party.SetId(std::string{activity.party.id});
+    party.SetCurrentSize(activity.party.sizes.currentSize);
+    party.SetMaxSize(activity.party.sizes.maxSize);
+    party.SetPrivacy(DiscordActivityPartyPrivacyType_ToDiscord(activity.party.isPrivate));
 
-    std::snprintf(raw.party.id, sizeof(raw.party.id), "%s", activity.party.id.data());
-    raw.party.size.current_size = activity.party.sizes.currentSize;
-    raw.party.size.max_size = activity.party.sizes.maxSize;
-    raw.party.privacy = activity.party.isPrivate ? DiscordActivityPartyPrivacy_Private : DiscordActivityPartyPrivacy_Public;
+    newActivity.SetApplicationId(activity.applicationID);
+    newActivity.SetName(std::string{activity.name});
+    newActivity.SetDetails(std::string{activity.details});
+    newActivity.SetState(std::string{activity.state});
+    newActivity.SetType(DiscordActivityType_ToDiscord(activity.type));
+    newActivity.SetTimestamps(timestamps);
+    newActivity.SetAssets(assets);
+    newActivity.SetSecrets(secrets);
+    newActivity.SetParty(party);
 
-    std::snprintf(raw.secrets.match, sizeof(raw.secrets.match), "%s", activity.secrets.matchCode.data());
-    std::snprintf(raw.secrets.join, sizeof(raw.secrets.join), "%s", activity.secrets.joinCode.data());
-    std::snprintf(raw.secrets.spectate, sizeof(raw.secrets.spectate), "%s", activity.secrets.spectateCode.data());
-
-    // Log updating discord activity.
-    core->get_activity_manager(core)->update_activity(core->get_activity_manager(core), &raw, nullptr, nullptr);
+    client->UpdateRichPresence(newActivity, [](auto result){
+        if (!result.Successful()) {
+            Print::Error("Discord client rich presense error: {}\n", result.ToString());
+        } else {
+            Print::Info("Discord rich presense updated.\n");
+        }
+    });
 }
 
 void DiscordSystem::RunCallbacks()
 {
-    if (core)
-        core->run_callbacks(core);
+    discordpp::RunCallbacks();
 }
 
 }

@@ -380,6 +380,9 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo))
 
     _renderData.SetCommandBuffer(cmd);
+    _renderData.SetSampleCount(_sampleCount);
+        // Render all the frame data to the gbuffer.
+    _renderData.SetGlobalDescriptorSet(_globalDescriptorSets[_currentFrame]);
 
     // This function doesn't know about globals or uniforms yet.
 

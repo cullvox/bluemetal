@@ -96,6 +96,9 @@ list(APPEND Sources
   "Editor/DebugEditor.cpp"
   "Editor/SettingsEditor.cpp"
   "Editor/Editor.cpp"
+  "Editor/HierarchyEditor.cpp"
+  "Editor/InspectorEditor.cpp"
+  "Editor/EditorSystem.cpp"
 
   "Core/ClassDB.cpp"
   "Engine/System.cpp"
@@ -125,6 +128,7 @@ target_link_libraries(Bluemetal PUBLIC
   qoixx::qoixx
   tinygltf
   Jolt::Jolt
-  discord_game_sdk)
+  discord_social_sdk
+  ${Vulkan_LIBRARY})
 
 target_precompile_headers(Bluemetal PRIVATE "Precompiled.h")

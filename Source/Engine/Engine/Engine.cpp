@@ -6,7 +6,7 @@
 #include "Core/Object.h"
 #include "Core/Print.h"
 #include "Core/Profiler.h"
-#include "Editor/Editor.h"
+#include "Editor/EditorSystem.h"
 #include "Engine/Engine.h"
 #include "Engine/SDL.h"
 #include "EngineVars.h"
@@ -37,7 +37,6 @@
 #include "Scene/SceneSystem.h"
 #include "Scene/SceneSystem.h"
 #include "Scene/SkinnedMeshInstance3D.h"
-#include "Scene/StaticBody3D.h"
 #include "Social/Discord.h"
 #include "Window/Input.h"
 
@@ -112,7 +111,7 @@ Engine::Engine(int argc, const char** argv)
     _imgui = std::make_unique<ImGuiSystem>(*this, _graphics->GetWindow(), _graphics->GetRenderer());
     _physics = std::make_unique<PhysicsSystem>(*this);
     _scenes = std::make_unique<SceneSystem>(*this);
-    _editor = std::make_unique<Editor>(*this);
+    _editorSystem = std::make_unique<EditorSystem>(*this);
     _discord = std::make_unique<DiscordSystem>(*this);
 
     // Setup the debug renderer materials.
@@ -183,9 +182,9 @@ SceneSystem* Engine::GetSceneSystem()
     return _scenes.get();
 }
 
-Editor& Engine::GetEditor()
+EditorSystem& Engine::GetEditorSystem()
 {
-    return *_editor.get();
+    return *_editorSystem.get();
 }
 
 DiscordSystem& Engine::GetDiscord()
@@ -224,7 +223,6 @@ void Engine::RegisterClasses()
     //_classDB->Register<RigidBody3D>();
     //_classDB->Register<SceneExporter>();
     //_classDB->Register<SkinnedMeshInstance3D>();
-    //_classDB->Register<StaticBody3D>();
 
 }
 

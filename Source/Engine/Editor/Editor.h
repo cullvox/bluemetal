@@ -1,26 +1,34 @@
 #pragma once
 
-#include "Engine/System.h"
-#include "DebugEditor.h"
-#include "SettingsEditor.h"
+#include "Core/Object.h"
 
 namespace bl {
 
+class Engine;
+class Node;
 class RenderData;
+class EditorSystem;
 
-class Editor : public System {
-    DebugEditor _debug;
-    SettingsEditor _settings;
+class Editor : public Object {
+    Engine& _engine;
+    EditorSystem& _system;
+    bool _shown;
 
-    void DrawDebug(RenderData& rd);
-    void DrawMainMenu(RenderData& rd);
-    void DrawHeirarchy(RenderData& rd);
+protected:
+    virtual void OnSelectedNodeChanged();
+    Engine& GetEngine() const;
+    EditorSystem& GetSystem() const;
+    bool GetShown() const;
 
 public:
-    Editor(Engine& engine);
+    Editor(Engine& engine, EditorSystem& system);
     ~Editor();
 
-    void Draw(RenderData& rd);
+    virtual void Draw(RenderData& rd);
+    void Show(bool visible) { _shown = visible; }
+
+    Node* GetSelectedNode() const;
+    void SetSelectedNode(Node* node);
 
 };
 

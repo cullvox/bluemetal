@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Editor.h"
+
 namespace bl
 {
 
@@ -12,8 +14,9 @@ class PhysicsSystem;
 class PhysicsRenderer;
 class Profiler;
 class FrameCounter;
+class EditorSystem;
 
-class SettingsEditor
+class SettingsEditor : public Editor
 {
     Engine& _engine;
     Renderer* _renderer;
@@ -30,7 +33,7 @@ class SettingsEditor
     bool _enableEditor;
 
 public:
-    SettingsEditor(Engine& engine);
+    SettingsEditor(Engine& engine, EditorSystem& system);
     ~SettingsEditor();
 
     void SetShow(bool show);

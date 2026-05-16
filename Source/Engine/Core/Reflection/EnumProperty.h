@@ -1,13 +1,17 @@
 #pragma once
 
+#include "Core/Variant.h"
 #include "Property.h"
+#include <type_traits>
 
 namespace bl
 {
 
 template<typename T>
-concept EnumType = requires { std::is_same_v<std::underlying_type_t<T>, int64_t>; };
+concept EnumType = std::is_enum_v<T> && std::is_same_v<std::underlying_type_t<T>, int64_t>;
 
+/// - Enum properties are enumerable properties which are a mapping of integers
+/// and strings.
 template<typename TClass, EnumType TEnum>
 class TEnumProperty : public Property
 {
@@ -19,8 +23,9 @@ class TEnumProperty : public Property
     std::string_view _type;
 
 public:
-    TEnumProperty(ClassDB& db, std::string_view enumType, std::string_view name, SetterType setter, GetterType getter)
-        : Property(db, name, GetVariantType<int64_t>())
+
+    TEnumProperty(ClassDB& db, std::string_view enumType, std::string_view propertyName, PropertyFlags flags, SetterType setter, GetterType getter)
+        : Property(db, propertyName, flags, GetVariantType<int64_t>())
         , _type(enumType)
         , _setter(setter)
         , _getter(getter)
@@ -33,38 +38,40 @@ public:
 
     void Set(Object* object, const Variant& value) override
     {
-        if (value.index() != VariantTypeIndex<Variant, int64_t>())
-        {
+        // Ensure that the variant is the correct type.
+        if (value.index() != VariantTypeIndex<Variant, EnumValue>()) {
             Print::Error("Could not set property, ({}) invalid type on class ({}).", GetName(), object->GetClassName());
             return;
         }
 
-        if (dynamic_cast<TClass*>(object) == nullptr)
-        {
+        // Ensure that the object is the correct type for this property.
+        if (dynamic_cast<TClass*>(object) == nullptr) {
             Print::Error("Invalid object ({}) on property setter class ({}).", object->GetClassName(), TClass::GetStaticClassName());
             return;
         }
 
-        // Check the value and make sure it's valid.
-        int64_t enumValue = std::get<int64_t>(value);
-        if (!GetClassDB().IsEnumValid(_type, enumValue))
-            throw std::runtime_error("Invalid enum type!");
+        // Ensure the enum value is a valid value.
+        auto enumValue = std::get<EnumValue>(value);
+        if (!GetClassDB().IsEnumValid(_type, enumValue.value)) {
+            Print::Error("Invalid enum value ({}) to set on object ({}) with the specified enum type ({}).", enumValue.value, TClass::GetStaticClassName(), enumValue.enumName);
+            return;
+        }
 
-        (static_cast<TClass*>(object)->*_setter)(static_cast<TEnum>(enumValue));
+        // Call setter.
+        (static_cast<TClass*>(object)->*_setter)(static_cast<TEnum>(enumValue.value));
     }
 
-    Variant Get(Object* object)
+    Variant Get(Object* object) override
     {
-        if (dynamic_cast<TClass*>(object) == nullptr)
-        {
+        // Ensure the object is the correct type for this property.
+        if (dynamic_cast<TClass*>(object) == nullptr) {
             Print::Error("Invalid object ({}) on property getter class ({}).", object->GetClassName(), TClass::GetStaticClassName());
             return Variant{};
         }
 
-        return static_cast<int64_t>((static_cast<TClass*>(object)->*_getter)());
+        // Call getter.
+        return EnumValue{_type, static_cast<int64_t>((static_cast<TClass*>(object)->*_getter)())};
     }
-
-
 };
 
 } // namespace bl

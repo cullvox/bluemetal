@@ -99,7 +99,7 @@ VulkanReflectedPipeline VulkanReflectedPipeline::Reflect(const VulkanPipelineSta
 
             if (doesBindingAlreadyExists && !binding.Compare(type, count)) {
                 throw std::runtime_error("Bindings using same index but hold different types of data!");
-            } else {
+            } else if (!doesBindingAlreadyExists) {
                 // This is a newly found binding
                 binding.SetBinding(location, type, count, shader->GetStage(), nullptr);
                 if (binding.IsBlock()) {
@@ -137,6 +137,15 @@ VulkanReflectedPipeline VulkanReflectedPipeline::Reflect(const VulkanPipelineSta
     }
 
     return reflection;
+}
+
+uint32_t VulkanReflectedPipeline::GetPipelineRequiredSetCount() const
+{
+    uint32_t count = 0;
+    for (const auto& pair : descriptorSetMetadata) {
+        count = std::max(count, pair.first + 1);
+    }
+    return count;
 }
 
 }

@@ -3,6 +3,26 @@
     "configurations": [
         
         {
+            "type": "lldb-dap",
+            "request": "launch",
+            "name": "Launch Debug",
+            "program": "${workspaceFolder}/build/Source/Engine/Bluemetal",
+            "args": [],
+            "env": [],
+            "cwd": "${workspaceFolder}"
+        },
+
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch Debug",
+            "program": "${workspaceFolder}/build/Source/Engine/Bluemetal",
+            "args": [],
+            "env": [],
+            "cwd": "${workspaceFolder}"
+        },
+        
+        {
             "type": "lldb",
             "request": "launch",
             "name": "Apple LLDB Launch",

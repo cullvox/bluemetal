@@ -1,4 +1,5 @@
 #include <array>
+#include <vulkan/vulkan_core.h>
 
 #include "VulkanSwapchain.h"
 #include "Core/Hash.h"
@@ -11,7 +12,11 @@ namespace bl {
 
 static inline constexpr VkFormat defaultPresentFormat = VK_FORMAT_R8G8B8A8_SRGB; /** @brief Default format to look for. */
 static inline constexpr VkColorSpaceKHR defaultPresentColorspace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; /** @brief Default color space to look for. */
-static inline constexpr VkSurfaceFormatKHR defaultSurfaceFormat = VkSurfaceFormatKHR { defaultPresentFormat, defaultPresentColorspace };
+static inline constexpr std::array<VkSurfaceFormatKHR, 3> defaultSurfaceFormats = {
+    VkSurfaceFormatKHR { VK_FORMAT_B8G8R8A8_SRGB, VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT}, // MacBook Format
+    VkSurfaceFormatKHR { VK_FORMAT_R8G8B8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR }, // Standard Format
+};
+
 static inline constexpr VkPresentModeKHR defaultPresentMode = VK_PRESENT_MODE_MAILBOX_KHR; /** @brief Desired present mode to use in swapchain. Will use present mode FIFO if this is unavailable.*/
 
 VulkanSwapchain::VulkanSwapchain(
@@ -163,16 +168,26 @@ void VulkanSwapchain::ChooseFormat()
     std::vector<VkSurfaceFormatKHR> formats = _physicalDevice->GetSurfaceFormats(_window);
 
     // Look for the desired surface format.
-    if (std::any_of(formats.begin(), formats.end(), [](auto sf) {
-            auto dsf = defaultSurfaceFormat;
-            return sf.format == dsf.format && sf.colorSpace == dsf.colorSpace;
-        })) {
-        _surfaceFormat = defaultSurfaceFormat;
-    } else // As fallback use the first format available.
-    {
-        Print::Warn("Surface format not found, using default.");
-        _surfaceFormat = formats.front();
+    for (int i = 0; i < defaultSurfaceFormats.size(); i++) {
+        for (int j = 0; j < formats.size(); j++) {
+            if (formats[j].format == defaultSurfaceFormats[i].format && formats[j].colorSpace == defaultSurfaceFormats[i].colorSpace) {
+                _surfaceFormat = defaultSurfaceFormats[i];
+                return;
+            }
+        }
     }
+
+    Print::Warn("Surface format not found, using first found with appropriate color space.");
+    
+    for (int i = 0; i < formats.size(); i++) {
+        if (formats[i].colorSpace == defaultPresentColorspace) {
+            _surfaceFormat = formats[i];
+            return;
+        }
+    }
+
+    Print::Warn("Surface format with appropriate color space not found, falling back to using first found.");
+    _surfaceFormat = formats.front();
 }
 
 void VulkanSwapchain::ChoosePresentMode()

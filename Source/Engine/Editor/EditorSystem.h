@@ -1,0 +1,37 @@
+#pragma once
+
+#include "Engine/System.h"
+#include "DebugEditor.h"
+#include "SettingsEditor.h"
+#include "HierarchyEditor.h"
+#include "InspectorEditor.h"
+
+namespace bl {
+
+class Node;
+class RenderData;
+
+class EditorSystem : public System {
+    DebugEditor _debug;
+    SettingsEditor _settings;
+    HierarchyEditor _hierarchy;
+    InspectorEditor _inspector;
+
+    Node* _selectedNode;
+
+public:
+    EditorSystem(Engine& engine);
+    ~EditorSystem();
+
+    SettingsEditor& GetSettingsEditor() { return _settings; }
+    DebugEditor& GetDebugEditor() { return _debug; }
+    HierarchyEditor& GetHierarchyEditor() { return _hierarchy; }
+    InspectorEditor& GetInspectorEditor() { return _inspector; }
+
+    void SetSelectedNode(Node* node);
+    Node* GetSelectedNode() const;
+    void Draw(RenderData& rd);
+
+};
+
+}

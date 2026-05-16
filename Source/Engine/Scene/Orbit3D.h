@@ -7,6 +7,7 @@ namespace bl
 
 class Orbit3D : public Node3D
 {
+    OBJECT_BOILER(Orbit3D, Node3D)
     float _minRadius;
     float _maxRadius;
     float _radius;
@@ -18,7 +19,6 @@ public:
     Orbit3D(const Orbit3D& rhs);
     ~Orbit3D();
 
-    virtual Orbit3D* Clone() override;
     virtual void Update(float dt) override;
 
     void SetMinRadius(float minRadius);

@@ -919,7 +919,7 @@ VkColorComponentFlags VulkanConversions::VkColorComponentFlagsFromString(const s
     std::erase_if(clean, isspace);
 
     VkCullModeFlags flags = 0;
-    std::istringstream stream(clean);
+    std::istringstream stream{clean};
     std::string item;
     bool foundFlag = false;
     while (std::getline(stream, item, '|')) {

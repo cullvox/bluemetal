@@ -3,7 +3,7 @@
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineLayoutCache.h"
-#include <SDL3/SDL_vulkan.h>
+#include "VulkanConfig.h"
 
 // VMA has a lot of warnings on a lot of different platforms.
 // Disable warnings from vk_me_alloc.h warnings on platforms.
@@ -295,7 +295,11 @@ void VulkanDevice::CreateDevice()
     queueCreateInfos.resize(AreQueuesSame() ? 1 : 2);
 
     VkPhysicalDeviceFeatures features = {};
-    features.wideLines = VK_TRUE;
+    VkPhysicalDeviceFeatures supportedFeatures = _physicalDevice->GetFeatures();
+    
+    if (supportedFeatures.wideLines)
+        features.wideLines = VK_TRUE;
+    
     features.independentBlend = VK_TRUE;
 
     VkPhysicalDeviceVulkan11Features features11 = {};
@@ -326,8 +330,6 @@ void VulkanDevice::CreateDevice()
     createInfo.pEnabledFeatures = &features;
 
     VK_CHECK(vkCreateDevice(_physicalDevice->Get(), &createInfo, nullptr, &_device))
-
-    volkLoadDevice(_device); // Load the next set of vulkan functions based on the device.
 
     // Get the graphics and present queue objects.
     vkGetDeviceQueue(_device, _graphicsFamilyIndex, 0, &_graphicsQueue);
@@ -377,9 +379,9 @@ void VulkanDevice::CreateCaches()
     _pipelineLayoutCache = std::make_unique<VulkanPipelineLayoutCache>(this);
 }
 
-VkDeviceSize VulkanDevice::GetDynamicAlignment(VkDeviceSize uboSize)
+std::size_t VulkanDevice::GetDynamicAlignment(std::size_t uboSize)
 {
-    VkDeviceSize minAlignment = _physicalDevice->GetProperties().limits.minUniformBufferOffsetAlignment;
+    std::size_t minAlignment = _physicalDevice->GetProperties().limits.minUniformBufferOffsetAlignment;
     if (minAlignment > 0) {
         return (uboSize + minAlignment - 1) & ~(minAlignment - 1);
     }

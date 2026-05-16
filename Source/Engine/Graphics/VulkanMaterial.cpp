@@ -68,6 +68,8 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
         }
     }
 
+    _setCount = reflection.GetPipelineRequiredSetCount();
+
     // Construct the pipeline.
     _pipeline = std::make_unique<VulkanPipeline>(device, renderer, state, &reflection);
 
@@ -77,6 +79,8 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
     _layout = pipelineDescriptorSetLayouts.at(materialSet);
 
     BuildPerFrameBindings(_layout);
+
+    _emptySet = _descriptorSetCache.Allocate(_device->AcquireDescriptorSetLayout({}));
 
     // Create buffers/sampler uniform data.
 

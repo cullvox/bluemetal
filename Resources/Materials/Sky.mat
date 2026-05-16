@@ -1,0 +1,10 @@
+{
+    "renderPass": "geometry",
+    "vertexState": {
+        "vertex": "None"
+    },
+    "shaders": {
+        "vertex": "Resources/Shaders/Sky.vert.spv",
+        "fragment": "Resources/Shaders/Sky.frag.spv"
+    }
+}

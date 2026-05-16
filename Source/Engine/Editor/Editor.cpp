@@ -1,55 +1,54 @@
 #include "Editor.h"
-#include "Graphics/RenderData.h"
-#include "ImGui/ImGuiSystem.h"
+#include "EditorSystem.h"
 #include "Engine/Engine.h"
-#include "Graphics/GraphicsSystem.h"
-#include "Graphics/VulkanWindow.h"
-#include "Window/Window.h"
+#include "Core/ClassDB.h"
+#include "Scene/Node.h"
+#include "ImGui/imgui.h"
 
 namespace bl {
 
-Editor::Editor(Engine& engine)
-    : System(engine)
-    , _debug(*this)
-    , _settings(engine)
+Editor::Editor(Engine& engine, EditorSystem& system)
+    : Object(engine)
+    , _engine(engine)
+    , _system(system)
 {
-    _settings.SetShow(true);
 }
 
 Editor::~Editor()
 {
 }
 
+bool Editor::GetShown() const
+{
+    return _shown;
+}
+
 void Editor::Draw(RenderData& rd)
 {
-    ImGui::BeginMainMenuBar();
-
-    if (ImGui::BeginMenu("File")) {
-
-        if (ImGui::MenuItem("Exit")) {
-            GetEngine().GetGraphics().GetWindow()->RequestClose();
-        }
-
-        ImGui::EndMenu();
-    }
-
-    if (ImGui::BeginMenu("View")) {
-        static bool showDebug = false;
-        ImGui::MenuItem("Debug Window", nullptr, &showDebug);
-        _debug.Show(showDebug);
-
-        ImGui::EndMenu();
-    }
-
-    ImGui::EndMainMenuBar();
-
-    _debug.Draw(rd);
-    _settings.Draw(rd);
 }
 
-void Editor::DrawDebug(RenderData& rd)
+void Editor::OnSelectedNodeChanged()
 {
-    (void) rd;
 }
 
+Engine& Editor::GetEngine() const 
+{ 
+    return _engine; 
 }
+
+EditorSystem& Editor::GetSystem() const 
+{ 
+    return _system; 
+}
+
+Node* Editor::GetSelectedNode() const
+{
+    return GetSystem().GetSelectedNode();
+}
+
+void Editor::SetSelectedNode(Node* node)
+{
+    GetSystem().SetSelectedNode(node);
+}
+
+} // namespace bl

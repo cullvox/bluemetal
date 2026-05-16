@@ -82,7 +82,7 @@ void CharacterBody3D::Update(float dt)
 
 void CharacterBody3D::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("CharacterBody3D", &CharacterBody3D::Create);
+    db.RegisterClass("CharacterBody3D", "PhysicsBody3D", &CharacterBody3D::Create);
 }
 
 }

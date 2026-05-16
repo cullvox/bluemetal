@@ -21,6 +21,8 @@ VulkanSampler::VulkanSampler(
     : _device(device)
     , _sampler(VK_NULL_HANDLE)
 {
+    bool supportsSamplerMipLodBias = device->GetPhysicalDevice()->GetPortabilityFeatures().samplerMipLodBias;
+
     VkSamplerCreateInfo samplerInfo = {};
     samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
     samplerInfo.pNext = nullptr;

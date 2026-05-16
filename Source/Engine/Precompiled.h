@@ -8,15 +8,17 @@
 // StdCpp
 #include <array>
 #include <filesystem>
-#include <functional>
 #include <fstream>
+#include <functional>
 #include <map>
 #include <memory>
 #include <span>
+#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string_view>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <variant>
@@ -24,7 +26,17 @@
 #include <vector>
 
 // Vulkan
+#define VK_ENABLE_BETA_EXTENSIONS
+#define VK_NO_PROTOTYPES
+#include <vulkan/vulkan.h>
 #include <volk.h>
+
+// SDL
+#include <SDL3/SDL.h>
+#include <SDL3/SDL_vulkan.h>
+
+
+
 #include <spirv_reflect.h>
 
 #ifdef BLUEMETAL_COMPILER_APPLE_CLANG

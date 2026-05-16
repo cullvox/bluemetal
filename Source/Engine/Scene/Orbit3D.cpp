@@ -30,11 +30,6 @@ Orbit3D::~Orbit3D()
 {
 }
 
-Orbit3D* Orbit3D::Clone()
-{
-    return new Orbit3D(*this);
-}
-
 void Orbit3D::Update(float)
 {
     const float sineAzimuth = sin(_azimuthAngle);
@@ -151,12 +146,12 @@ void Orbit3D::AddRadius(float radius)
 
 void Orbit3D::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("Orbit3D", &Orbit3D::Create);
-    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "minRadius", &Orbit3D::SetMinRadius, &Orbit3D::GetMinRadius));
-    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "maxRadius", &Orbit3D::SetMaxRadius, &Orbit3D::GetMaxRadius));
-    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "radius", &Orbit3D::SetRadius, &Orbit3D::GetRadius));
-    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "azimuthAngle", &Orbit3D::SetAzimuthAngle, &Orbit3D::GetAzimuthAngle));
-    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "polarAngle", &Orbit3D::SetPolarAngle, &Orbit3D::GetPolarAngle));
+    db.RegisterClass("Orbit3D", "Node3D", &Orbit3D::Create);
+    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "minRadius", PropertyFlags::Editor, &Orbit3D::SetMinRadius, &Orbit3D::GetMinRadius));
+    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "maxRadius", PropertyFlags::Editor, &Orbit3D::SetMaxRadius, &Orbit3D::GetMaxRadius));
+    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "radius", PropertyFlags::Editor, &Orbit3D::SetRadius, &Orbit3D::GetRadius));
+    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "azimuthAngle", PropertyFlags::Editor, &Orbit3D::SetAzimuthAngle, &Orbit3D::GetAzimuthAngle));
+    db.RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>(db, "polarAngle", PropertyFlags::Editor, &Orbit3D::SetPolarAngle, &Orbit3D::GetPolarAngle));
 }
 
 } // namespace bl

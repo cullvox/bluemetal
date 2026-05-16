@@ -33,6 +33,7 @@
 #include <Window/Input.h>
 #include <Window/Keyboard.h>
 #include <Window/Mouse.h>
+#include <Editor/EditorSystem.h>
 
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
@@ -56,7 +57,7 @@ int main(int argc, const char** argv)
         auto& physics = engine.GetPhysics();
         auto renderer = engine.GetRenderer();
         auto window = engine.GetWindow();
-        auto& editor = engine.GetEditor();
+        auto& editor = engine.GetEditorSystem();
         auto physicsRenderer = physics.GetPhysicsRenderer();
 
         auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Aaron Cherof - Anagnorisis - 06 Mare Marginis.ogg");
@@ -96,6 +97,44 @@ int main(int argc, const char** argv)
         auto noiseTexture = resourceMgr->Load<bl::NoiseTexture2D>("Resources/Textures/Noise.json");
         auto grssMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Grass.mat");
         auto physDebugFlatMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/PhysicsDebugFlat.mat");
+        auto skyMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Sky.mat");
+
+        auto skyMat = skyMaterial.lock()->CreateInstance();
+        skyMat->SetScaler("material.offset_horizon", 0.0f);
+
+        skyMat->SetScaler("material.horizon_intensity", -3.3f);
+        skyMat->SetVector4("material.sun_set", { 1.0f, 0.8f, 1.0f, 1.0f });
+        skyMat->SetVector4("material.horizon_color_day", { 0.0f, 0.8f, 1.0f, 1.0f });
+        skyMat->SetVector4("material.horizon_color_night", { 0.0f, 0.8f, 1.0f, 1.0f });
+
+        // Sun
+        skyMat->SetVector4("material.sun_color", glm::vec4{1.0});
+        skyMat->SetVector3("material.sunDirection", glm::vec3{1.0f, 0.0f, 0.0f});
+        skyMat->SetScaler("material.sun_radius", 0.5f);
+        skyMat->SetScaler("material.flat_sun", true);
+
+        // Moon
+        skyMat->SetVector4("material.moon_color", glm::vec4{1.0f});
+        skyMat->SetScaler("material.moon_radius", 0.15f);
+        skyMat->SetScaler("material.moon_crescent", -0.3f);
+        skyMat->SetScaler("material.dark_falloff", 4.0f);
+
+        // Day Background Colors
+        skyMat->SetVector4("material.day_bottom_color", {0.4f, 1.0f, 1.0f, 1.0f});
+        skyMat->SetVector4("material.day_top_color", {0.0f, 0.8f, 1.0f, 1.0f});
+
+        // Night Background Colors
+        skyMat->SetVector4("material.night_bottom_color", {0.0f, 0.0f, 0.2f, 1.0f});
+        skyMat->SetVector4("material.night_top_color", {0.0f, 0.0f, 0.0f, 1.0f});
+
+        // stars
+        skyMat->SetScaler("material.base_noise_scale", 0.2f);
+        skyMat->SetScaler("material.stars_speed", 0.3f);
+        skyMat->SetScaler("material.stars_cutoff", 0.08f);
+        skyMat->SetVector4("material.stars_sky_color", {0.0f, 0.2f, 0.1f, 1.0f});
+
+        skyMat->SetSampledTexture2D("stars_texture", defaultSampler, noiseTexture);
+        skyMat->SetSampledTexture2D("base_noise", defaultSampler, noiseTexture);
 
         physicsRenderer->SetMaterial(physDebugFlatMaterial.lock()->GetVulkanMaterial());
 
@@ -198,49 +237,19 @@ int main(int argc, const char** argv)
         activity.state = "Programming infinitely...";
         activity.startTime = std::time(nullptr);
         activity.endTime = 0;
+        activity.party.id = "party1234";
+        activity.party.sizes.currentSize = 1;
+        activity.party.sizes.maxSize = 4;
         activity.art.smallImage = "retrofox";
         activity.art.smallImageTooltip = "Look it's mini me!";
         activity.art.largeImage = "corruptedcanyons";
         activity.art.largeImageTooltip = "I call these, corrupted canyons.";
 
-        discord.UpdateActivity(activity);
+        discord. UpdateActivity(activity);
 
         auto physFrameCounter = physics.GetPhysFrameCounter();
 
-        std::function<void(bl::Node*)> doChildren;
-
-        bl::Node* selectedNode = nullptr;
-
-        doChildren = [&](bl::Node* node){
-            auto& children = node->GetVecChildren();
-
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-            if (node == selectedNode)
-                flags |= ImGuiTreeNodeFlags_Selected;
-
-            if (children.empty())
-                flags |= ImGuiTreeNodeFlags_Leaf;
-
-            if (ImGui::TreeNodeEx(node->GetName().c_str(), flags))
-            {
-                ImGui::SameLine();
-                ImGui::TextColored({0.45f, 0.34f, 0.45f, 1.0f}, "%s", node->GetClassName().data());
-
-                if (ImGui::IsItemClicked())
-                {
-                    selectedNode = node;
-                }
-
-                for (const auto& child : children)
-                {
-                    doChildren(child.get());
-                }
-                ImGui::TreePop();
-            } else {
-                ImGui::SameLine();
-                ImGui::TextColored({0.45f, 0.34f, 0.45f, 1.0f}, "%s", node->GetClassName().data());
-            }
-        };
+        editor.GetHierarchyEditor().SetRootNode(rootNode.get());
 
         auto& classDB = engine.GetClassDB();
         auto classNames = classDB.GetClassNames();
@@ -286,6 +295,13 @@ int main(int argc, const char** argv)
             grassMaterial->SetVector4("material.playerParams", glm::vec4{playerNode->GetWorldPosition(), 2.0f});
             grassMaterial->SetVector4("material.colorSmall", {sinf(bl::Time::Current()), sinf(bl::Time::Current() + bl::Math::Pi), 0.9f, 1.0f});
 
+            // skyMat->SetVector3("material.sunDirection", glm::normalize(glm::vec3{cosf(bl::Time::Current() * 0.1f), sinf(bl::Time::Current() * 0.1f), 0.0f}));
+
+            glm::vec3 cameraDirection = cameraNode->GetWorldRotationEuler();
+
+            bl::Print::Debug("Camera dir {}, {}, {}", cameraDirection.x, cameraDirection.y, cameraDirection.z);
+            skyMat->SetVector3("material.eyeDirection", glm::radians(cameraDirection));
+
             rootNode->Update(frameCounter.GetDeltaTime());
             profiler.EndProfile("Update");
 
@@ -298,6 +314,11 @@ int main(int argc, const char** argv)
 
             auto renderFunc = [&](bl::RenderData& rd){
                 //auto extent = window->GetExtent();
+
+                // Test draw sky.
+                skyMat->Bind(rd);
+                vkCmdDraw(rd.GetCommandBuffer(), 6, 1, 0, 0);
+
 
                 renderer->DrawLine(playerNode->GetWorldPosition(), {0.0f, 0.0f, 0.0f});
                 if (physUpdate)
@@ -314,33 +335,6 @@ int main(int argc, const char** argv)
             auto imguiFunc = [&](bl::RenderData& rd){
                 imgui->BeginFrame();
                 editor.Draw(rd);
-
-                if (enableEditor) {
-                    ImGui::Begin("Heirarchy");
-
-
-                    doChildren(rootNode.get());
-
-                    //ImGui::Text("Objects in Scene: %d", rootNode->GetChildCount());
-                    ImGui::End();
-
-                    ImGui::Begin("Inspector");
-
-                    //for (int i = 0; i < engine.GetClassDB())
-
-                    ImGui::End();
-
-                    ImGui::Begin("ClassDB");
-
-                    for (std::size_t i = 0; i < classNames.size(); i++) {
-                        ImGui::Text("%s", classNames[i].data());
-                    }
-
-                    ImGui::End();
-
-                }
-
-
                 imgui->EndFrame(rd.GetCommandBuffer());
             };
 

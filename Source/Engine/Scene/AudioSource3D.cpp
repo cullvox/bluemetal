@@ -60,7 +60,7 @@ void AudioSource3D::SetVolume(float volume)
 
 void AudioSource3D::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("AudioSource3D", &AudioSource3D::Create);
+    db.RegisterClass("AudioSource3D", "Node3D", &AudioSource3D::Create);
 }
 
 } // namespace bl

@@ -57,6 +57,9 @@ Material::Material(Engine& engine, const std::filesystem::path& path)
             } else if (vertex == "Debug") {
                 info.vertexState.inputBindings = VertexDebug::GetBindingDescriptions();
                 info.vertexState.inputAttribs = VertexDebug::GetBindingAttributeDescriptions();
+            } else if (vertex == "None") {
+                info.vertexState.inputBindings = {};
+                info.vertexState.inputAttribs = {};  
             } else {
                 Print::Warn("Invalid vertex type: \"{}\". Using default and hoping for the best.", vertex);
             }

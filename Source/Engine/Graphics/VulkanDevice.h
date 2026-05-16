@@ -22,6 +22,7 @@ class VulkanDevice {
     VmaAllocator _allocator;
     std::unique_ptr<VulkanDescriptorSetLayoutCache> _descriptorSetLayoutCache;
     std::unique_ptr<VulkanPipelineLayoutCache> _pipelineLayoutCache;
+    VkDescriptorSet _emptySet;
 
     std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
     std::vector<const char*> GetExtensions(); /** @brief Gets the device's extensions required for the engine. */
@@ -159,6 +160,12 @@ public:
      * dynamic uniform buffer alignment requirements of Vulkan.
      */
     std::size_t GetDynamicAlignment(size_t uboSize);
+
+    /**
+     * @brief Gets an empty descriptor set that can be used for binding when a pipeline doesn't use a specific set.
+     * @return The VkDescriptorSet handle.
+     */
+    VkDescriptorSet GetEmptyDescriptorSet() const;
 };
 
 } // namespace bl

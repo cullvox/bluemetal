@@ -4,6 +4,8 @@
 #include "Renderer.h"
 
 #include "Core/Print.h"
+#include <cstddef>
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -37,10 +39,19 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
     const auto& descriptorSetMetadata = _reflection.descriptorSetMetadata;
     const auto& pushConstantMetadata = _reflection.pushConstantMetadata;
 
+    // Find the highest descriptor set index used.
+    uint32_t descriptorSetCount = 0;
+    for (const auto& set : descriptorSetMetadata) {
+        if (set.first > descriptorSetCount)
+            descriptorSetCount = set.first;
+    }
+
+    if (descriptorSetCount) descriptorSetCount++;
+
     // Use the descriptor set layout cache to acquire layouts for each set.
-    std::vector<VkDescriptorSetLayout> layouts;
-    layouts.reserve(descriptorSetMetadata.size());
-    // _descriptorSetLayouts.reserve(descriptorSetMetadata.size());
+    std::vector<VkDescriptorSetLayout> layouts = {};
+    layouts.resize(descriptorSetCount);
+    std::fill(layouts.begin(), layouts.end(), VK_NULL_HANDLE);
 
     // Extract descriptor set layout bindings and create a layout.
     for (auto& pair : descriptorSetMetadata) {
@@ -50,7 +61,13 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
         auto sortedBindings = meta.GetSortedBindings();
         auto layout = device->AcquireDescriptorSetLayout(sortedBindings);
         _descriptorSetLayouts.emplace(meta.GetLocation(), layout);
-        layouts.push_back(layout);
+        layouts[pair.first] = layout;
+    }
+
+    // Fill the empty descriptor set layout indices with empty an layout.
+    for (int i = 0; i < descriptorSetCount; i++) {
+        if (layouts[i] == VK_NULL_HANDLE)
+            layouts[i] = device->AcquireDescriptorSetLayout({});
     }
 
     // Extract the push constant ranges from reflection.

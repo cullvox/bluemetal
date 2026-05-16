@@ -71,20 +71,26 @@ void VulkanMaterialInstance::Bind(RenderData& rd) const
     auto& frame = _perFrameData[_currentFrame];
     auto materialSet = frame.set;
 
-    std::array<VkDescriptorSet, 3> descriptorSets { globalSet, instanceSet, materialSet };
-    auto support = _material->GetSupportFlags();
-    auto setCount = static_cast<uint32_t>(descriptorSets.size());
+    std::array<VkDescriptorSet, 4> descriptorSets { globalSet, instanceSet, materialSet };
 
+    auto support = _material->GetSupportFlags();
     std::span<VkDescriptorSet> sets = descriptorSets;
 
-    VulkanMaterialSupportFlags out = (support & VulkanMaterialSupportFlags::eMaterialBuffer);
-    if (out != VulkanMaterialSupportFlags::eMaterialBuffer)
-    {
-        setCount--;
+    // If any of the buffers aren't used, bind an empty set to ensure that the pipeline doesn't read from a random set.
+    if ((support & VulkanMaterialSupportFlags::eGlobalBuffer) == VulkanMaterialSupportFlags::eNone) {
+        descriptorSets[0] = _material->_emptySet;
+    }
+
+    if ((support & VulkanMaterialSupportFlags::eInstanceBuffer) == VulkanMaterialSupportFlags::eNone) {
+        descriptorSets[1] = _material->_emptySet;
+    }
+
+    if ((support & VulkanMaterialSupportFlags::eMaterialBuffer) != VulkanMaterialSupportFlags::eMaterialBuffer) {
+        descriptorSets[2] = _material->_emptySet;
     }
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
-    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, setCount, sets.data(), 0, nullptr);
+    vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, _material->_setCount, sets.data(), 0, nullptr);
 }
 
 void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSampler* sampler, VulkanImage* image)

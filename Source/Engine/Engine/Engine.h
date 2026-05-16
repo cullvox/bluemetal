@@ -17,6 +17,7 @@ class FrameCounter;
 class Editor;
 class SceneSystem;
 class DiscordSystem;
+class EditorSystem;
 class ClassDB;
 class Profiler;
 
@@ -31,7 +32,7 @@ class Engine {
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<PhysicsSystem> _physics;
     std::unique_ptr<SceneSystem> _scenes;
-    std::unique_ptr<Editor> _editor;
+    std::unique_ptr<EditorSystem> _editorSystem;
     std::unique_ptr<DiscordSystem> _discord;
     std::unique_ptr<EngineVars> _vars;
     std::unique_ptr<ClassDB> _classDB;
@@ -53,7 +54,7 @@ public:
     Renderer* GetRenderer();
     PhysicsSystem& GetPhysics();
     SceneSystem* GetSceneSystem();
-    Editor& GetEditor();
+    EditorSystem& GetEditorSystem();
     DiscordSystem& GetDiscord();
     ClassDB& GetClassDB();
     Profiler& GetProfiler();

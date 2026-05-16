@@ -6,22 +6,16 @@ namespace bl {
 
 class Object;
 
-class EnumValue
+struct EnumValue
 {
-    std::string_view _enumName;
-    int64_t _value;
-
-    int64_t Get() noexcept
-    {
-        return _value;
-    }
-
-    void Set(int64_t value);
+    std::string_view enumName;
+    int64_t value;
 };
 
 using Variant = std::variant<
     Object*, 
-    int64_t, 
+    EnumValue,
+    int64_t,
     float, 
     double, 
     glm::vec2, 
@@ -56,6 +50,7 @@ constexpr std::size_t VariantTypeIndex() {
 enum class VariantType
 {
     eObject =           VariantTypeIndex<Variant, Object*>(),
+    eEnumeration =      VariantTypeIndex<Variant, EnumValue>(),
     eInteger =          VariantTypeIndex<Variant, int64_t>(),
     eFloat =            VariantTypeIndex<Variant, float>(),
     eDouble =           VariantTypeIndex<Variant, double>(),

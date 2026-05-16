@@ -102,13 +102,13 @@ const glm::mat4& Camera3D::GetViewMatrix()
 
 void Camera3D::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("Camera3D", &Camera3D::Create);
-    db.RegisterEnum<CameraProjection>("CameraProjection", {{"Perspective", CameraProjection::ePerspective}, {"Orthographic", CameraProjection::ePerspective}});
+    db.RegisterClass("Camera3D", "Node3D", &Camera3D::Create);
+    db.RegisterEnum<CameraProjection>("CameraProjection", {{"Perspective", CameraProjection::ePerspective}, {"Orthographic", CameraProjection::eOrthographic}});
 
-    db.RegisterProperty("Camera3D", std::make_unique<TEnumProperty<Camera3D, CameraProjection>>(db, "CameraProjection", "projection", &SetProjection, &GetProjection));
-    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "fov", &Camera3D::SetFOV, &Camera3D::GetFOV));
-    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "nearClip", &Camera3D::SetNearClip, &Camera3D::GetNearClip));
-    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "farClip", &Camera3D::SetNearClip, &Camera3D::GetNearClip));
+    db.RegisterProperty("Camera3D", std::make_unique<TEnumProperty<Camera3D, CameraProjection>>(db, "CameraProjection", "projection", PropertyFlags::Editor, &Camera3D::SetProjection, &Camera3D::GetProjection));
+    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "fov", PropertyFlags::Editor, &Camera3D::SetFOV, &Camera3D::GetFOV));
+    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "nearClip", PropertyFlags::Editor, &Camera3D::SetNearClip, &Camera3D::GetNearClip));
+    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "farClip", PropertyFlags::Editor, &Camera3D::SetFarClip, &Camera3D::GetFarClip));
 }
 
 } // namespace bl

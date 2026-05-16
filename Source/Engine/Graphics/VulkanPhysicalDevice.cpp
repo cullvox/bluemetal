@@ -1,6 +1,8 @@
 #include "VulkanPhysicalDevice.h"
 #include "Core/Print.h"
 #include "VulkanWindow.h"
+#include <vulkan/vulkan_beta.h>
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -8,6 +10,25 @@ VulkanPhysicalDevice::VulkanPhysicalDevice(VkPhysicalDevice physicalDevice)
     : _physicalDevice(physicalDevice)
 {
     vkGetPhysicalDeviceProperties(_physicalDevice, &_properties);
+
+#ifdef BLUEMETAL_VULKAN_PORTABILITY
+    VkPhysicalDevicePortabilitySubsetFeaturesKHR portabilityFeatures;
+    portabilityFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PORTABILITY_SUBSET_FEATURES_KHR;
+    portabilityFeatures.pNext = nullptr;
+#endif
+
+    VkPhysicalDeviceFeatures2 features = {};
+    features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+    features.pNext = nullptr;
+#ifdef BLUEMETAL_VULKAN_PORTABILITY
+    features.pNext = &portabilityFeatures;
+#endif
+
+    vkGetPhysicalDeviceFeatures2(_physicalDevice, &features);
+    _features = features.features;
+#ifdef BLUEMETAL_VULKAN_PORTABILITY
+    _portabilityFeatures = portabilityFeatures;
+#endif
 }
 
 VkPhysicalDevice VulkanPhysicalDevice::Get() const
@@ -30,8 +51,10 @@ std::string VulkanPhysicalDevice::GetVendorName() const
         return "Qualcomm";
     case 0x8086:
         return "INTEL";
+    case 0x106b:
+        return "Apple";
     default:
-        return "Undefined Vendor";
+        return "Unknown Vendor";
     }
 }
 
@@ -142,5 +165,17 @@ const VkPhysicalDeviceProperties& VulkanPhysicalDevice::GetProperties() const
 {
     return _properties;
 }
+
+const VkPhysicalDeviceFeatures& VulkanPhysicalDevice::GetFeatures() const
+{
+    return _features;
+}
+
+#ifdef BLUEMETAL_VULKAN_PORTABILITY
+const VkPhysicalDevicePortabilitySubsetFeaturesKHR& VulkanPhysicalDevice::GetPortabilityFeatures() const
+{
+    return _portabilityFeatures;
+}
+#endif
 
 } // namespace bl

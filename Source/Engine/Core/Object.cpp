@@ -25,7 +25,7 @@ Engine& Object::GetEngine()
 
 void Object::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("Object", &Object::Create);
+    db.RegisterClass("Object", "", &Object::Create);
 }
 
 } // namespace bl

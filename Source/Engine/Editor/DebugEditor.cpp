@@ -11,14 +11,15 @@
 #include "Physics/PhysicsSystem.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Audio/AudioSystem.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
-DebugEditor::DebugEditor(Editor& editor)
-    : _editor(editor)
-    , _frameCounter(editor.GetEngine().GetFrameCounter())
+DebugEditor::DebugEditor(Engine& engine, EditorSystem& system)
+    : Editor(engine, system)
+    , _frameCounter(engine.GetFrameCounter())
 {
-    _vulkanInstanceVersion = volkGetInstanceVersion();
+    _vulkanInstanceVersion = VK_VERSION_1_3;
 }
 
 DebugEditor::~DebugEditor()
@@ -32,12 +33,11 @@ void DebugEditor::Show(bool visible)
 
 void DebugEditor::Draw(RenderData& rd)
 {
-    Engine& engine = _editor.GetEngine();
-    FrameCounter& counter = engine.GetFrameCounter();
-    GraphicsSystem& graphics = engine.GetGraphics();
-    AudioSystem* audio = engine.GetAudio();
+    FrameCounter& counter = GetEngine().GetFrameCounter();
+    GraphicsSystem& graphics = GetEngine().GetGraphics();
+    AudioSystem* audio = GetEngine().GetAudio();
     VulkanWindow* window = graphics.GetWindow();
-    FrameCounter& physFrameCounter = engine.GetPhysics().GetPhysFrameCounter();
+    FrameCounter& physFrameCounter = GetEngine().GetPhysics().GetPhysFrameCounter();
 
     if (!_open) return;
 

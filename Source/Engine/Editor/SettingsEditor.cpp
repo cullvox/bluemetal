@@ -16,8 +16,9 @@
 
 namespace bl {
 
-SettingsEditor::SettingsEditor(Engine& engine)
-    : _engine(engine)
+SettingsEditor::SettingsEditor(Engine& engine, EditorSystem& system)
+    : Editor(engine, system)
+    , _engine(engine)
     , _audio(engine.GetAudio())
     , _graphics(_engine.GetGraphics())
     , _profiler(_engine.GetProfiler())
@@ -83,11 +84,11 @@ static const char* UserFriendlyMultisampleModeName(VkSampleCountFlagBits samples
 
 void SettingsEditor::Draw(RenderData& renderData)
 {
-    if (!_show) {
+    if (!GetShown()) {
         return;
     }
 
-    ImGui::Begin("SettingsEditor", &_collapsed);
+    ImGui::Begin("Settings Editor", &_collapsed);
 
     if (ImGui::TreeNode("Editor")) {
         ImGui::Checkbox("Editor", &_enableEditor);
@@ -181,8 +182,6 @@ void SettingsEditor::Draw(RenderData& renderData)
 
         ImGui::TreePop();
     }
-
-    ImPlot::ShowDemoWindow();
 
     ImGui::End();
 

@@ -130,6 +130,7 @@ void ImGuiSystem::Init()
 
     ImGui::CreateContext();
 
+
     VkInstance inst = instance->Get();
     ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [](const char* function_name, void* vulkan_instance) { return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance*>(vulkan_instance)), function_name); }, &inst);
 
@@ -172,7 +173,11 @@ void ImGuiSystem::Init()
     ImFontConfig cfg;
     cfg.OversampleH = 3;
 
-    auto io = ImGui::GetIO();
+    auto& io = ImGui::GetIO();
+
+
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
 
     ImFont* pFont = io.Fonts->AddFontFromFileTTF("Resources/Fonts/Roboto-Regular.ttf", 18.0f);
     io.FontDefault = pFont;
@@ -181,6 +186,7 @@ void ImGuiSystem::Init()
     // ImGui_ImplVulkan_DestroyFontsTexture();
 
     ApplyStyle();
+
 }
 
 void ImGuiSystem::Unload()
@@ -207,6 +213,9 @@ void ImGuiSystem::BeginFrame()
 
     ImGui::GetIO().DisplayFramebufferScale = ImVec2 { density, density };
     ImGui::GetIO().FontGlobalScale = scale;
+
+    ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
 }
 
 void ImGuiSystem::EndFrame(VkCommandBuffer cmd)

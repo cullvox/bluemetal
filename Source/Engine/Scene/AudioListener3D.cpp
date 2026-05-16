@@ -34,7 +34,7 @@ void AudioListener3D::Update(float dt)
 
 void AudioListener3D::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("AudioListener3D", &AudioListener3D::Create);
+    db.RegisterClass("AudioListener3D", "Node3D", &AudioListener3D::Create);
 }
 
 } // namespace bl

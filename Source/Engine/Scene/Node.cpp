@@ -60,6 +60,7 @@ void Node::SetName(const std::string& name)
     // Rename in parent's children map.
     if (_parent->_childrenMap.find(name) != _parent->_childrenMap.end()) {
         Print::Error("A sibling node with the name '{}' already exists in parent node '{}'.", name, _parent->GetName());
+        return;
     }
 
     auto it = _parent->_childrenMap.find(_name);
@@ -236,8 +237,8 @@ std::vector<std::unique_ptr<Node>>& Node::GetVecChildren()
 
 void Node::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("Node", &Node::Create);
-    db.RegisterProperty("Node", std::make_unique<TStringProperty<Node>>(db, "name", &Node::SetName, &Node::GetName));
+    db.RegisterClass("Node", "Object", &Node::Create);
+    db.RegisterProperty("Node", std::make_unique<TStringProperty<Node>>(db, "name", PropertyFlags::Editor, &Node::SetName, &Node::GetName));
 
 }
 

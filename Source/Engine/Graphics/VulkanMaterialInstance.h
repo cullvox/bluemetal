@@ -215,6 +215,7 @@ private:
     uint32_t _currentFrame;
     std::map<uint32_t, BindingData> _bindings;
     std::array<PerFrameData, VulkanConfig::maxFramesInFlight> _perFrameData;
+    std::array<VkDescriptorSet, 4> _sets;
 
 };
 

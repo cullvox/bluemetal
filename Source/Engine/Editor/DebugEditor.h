@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include "Editor.h"
 
 namespace bl {
 
@@ -8,13 +8,12 @@ class Editor;
 class FrameCounter;
 class RenderData;
 
-class DebugEditor {
-    Editor& _editor;
+class DebugEditor : public Editor {
     bool _open;
     FrameCounter& _frameCounter;
     uint32_t _vulkanInstanceVersion;
 public:
-    DebugEditor(Editor& editor);
+    DebugEditor(Engine& engine, EditorSystem& system);
     ~DebugEditor();
 
     void Show(bool visible);

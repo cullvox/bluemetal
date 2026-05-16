@@ -29,9 +29,9 @@ public:
     Node3D(const Node3D&);
     virtual ~Node3D();
 
-    virtual void Update(float deltaTime);
-    virtual void PhysicsUpdate();
-    virtual void Draw(RenderData& rd);
+    virtual void Update(float deltaTime) override;
+    virtual void PhysicsUpdate() override;
+    virtual void Draw(RenderData& rd) override;
 
     void SetPosition(glm::vec3 position);
     void SetRotationEuler(glm::vec3 eulerDegrees);

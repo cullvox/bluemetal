@@ -73,7 +73,7 @@ void MultiMeshInstance3D::SetInstanceTransform(uint32_t index, const glm::mat4& 
 
 void MultiMeshInstance3D::RegisterClass(ClassDB& db)
 {
-    db.RegisterClass("MultiMeshInstance3D", &MultiMeshInstance3D::Create);
+    db.RegisterClass("MultiMeshInstance3D", "Node3D", &MultiMeshInstance3D::Create);
 }
 
 }

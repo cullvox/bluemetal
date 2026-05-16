@@ -2,6 +2,7 @@
 
 #include "Core/Object.h"
 #include <Core/Variant.h>
+#include <string_view>
 
 namespace bl {
 
@@ -38,8 +39,8 @@ public:
         }
     }
 
-    void Set(const std::string& name, const Variant& value);
-    Variant Get(const std::string& name);
+    void Set(std::string_view name, const Variant& value);
+    Variant Get(std::string_view name);
 
     void SetName(const std::string& name);
     const std::string& GetName();

@@ -1,4 +1,5 @@
 #include "ClassDB.h"
+#include <string_view>
 
 namespace bl
 {
@@ -27,7 +28,7 @@ Object* ClassDB::Instantiate(const std::string_view className)
     return _classes[index].instantiationFunc(_engine);
 }
 
-void ClassDB::RegisterClass(const std::string_view className, ObjectInstantiationFunc instantiationFunc)
+void ClassDB::RegisterClass(const std::string_view className, std::string_view parentClassName, ObjectInstantiationFunc instantiationFunc)
 {
     // Check if the class already exists.
     if (_nameToClassIndex.contains(className)) {
@@ -38,6 +39,7 @@ void ClassDB::RegisterClass(const std::string_view className, ObjectInstantiatio
     // Create the class data and begin populating.
     ClassData data;
     data.name = className;
+    data.parentClassName = parentClassName;
     data.instantiationFunc = instantiationFunc;
 
     _classes.emplace_back(std::move(data));
@@ -92,6 +94,49 @@ std::span<Property*> ClassDB::GetClassProperties(const std::string_view classNam
     ClassData& classData = _classes[index];
 
     return classData.userPropertyPointers;
+}
+
+
+std::string_view ClassDB::GetClassParent(const std::string_view className)
+{
+    // Find the class data and check if it exists.
+    auto it = _nameToClassIndex.find(className);
+
+    if (it == _nameToClassIndex.end()) {
+        Print::Error("Could get parent of an invalid class, \"{}\".", className);
+        return {};
+    }
+
+    const std::size_t index = it->second;
+    ClassData& classData = _classes[index];
+
+    return classData.parentClassName;
+}
+
+std::span<std::pair<std::string_view, int64_t>> ClassDB::GetEnumValues(std::string_view enumName)
+{
+    // Find the class data and check if it exists.
+    auto it = _nameToEnumIndex.find(enumName);
+
+    if (it == _nameToClassIndex.end()) {
+        Print::Error("Could not get enum values for an invalid enum, \"{}\".", enumName);
+        return {};
+    }
+
+    return _enums[it->second].values;
+}
+
+std::string_view ClassDB::GetEnumValueName(std::string_view enumName, int64_t value)
+{
+    // Find the class data and check if it exists.
+    auto it = _nameToEnumIndex.find(enumName);
+
+    if (it == _nameToClassIndex.end()) {
+        Print::Error("Could not get enum values for an invalid enum, \"{}\".", enumName);
+        return {};
+    }
+
+    return _enums[it->second].valueToName[value];
 }
 
 std::span<const std::string_view> ClassDB::GetClassNames() const

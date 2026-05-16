@@ -134,6 +134,8 @@ private:
     VkDescriptorSetLayout _layout;
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
     VulkanMaterialSupportFlags _flags;
+    VkDescriptorSet _emptySet;
+    uint32_t _setCount;
 };
 
 // Must be defined here because we use the material definition.

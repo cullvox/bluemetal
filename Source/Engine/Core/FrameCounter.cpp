@@ -26,10 +26,10 @@ bool FrameCounter::EndFrame()
     bool endedSecond {};
 
     if (_frameLimiterEnabled) {
-        uint64_t delayTime = (uint64_t)(1000000000/_frameLimiterFPS);
+        uint64_t delayTime = (uint64_t)(1000000000ULL/((uint64_t)_frameLimiterFPS));
         uint64_t currentTime = GetCurrentFrameTimeNS();
-        delayTime -= delayTime > currentTime ? 0 : currentTime;
-        SDL_DelayNS(delayTime);
+
+        SDL_DelayNS(delayTime > currentTime ? delayTime - currentTime : 0);
     }
 
     _endOfFrame = std::chrono::high_resolution_clock::now();

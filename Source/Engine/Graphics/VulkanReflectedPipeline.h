@@ -30,6 +30,8 @@ public:
 
     std::map<uint32_t, VulkanReflectedDescriptorSet> descriptorSetMetadata;
     std::vector<VulkanReflectedPushConstant> pushConstantMetadata;
+
+    uint32_t GetPipelineRequiredSetCount() const; 
 };
 
 } // namespace bl
