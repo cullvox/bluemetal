@@ -45,21 +45,21 @@ layout(set = 2, binding = 1) uniform sampler2D stars_texture; // : hint_black;
 layout(set = 2, binding = 2) uniform sampler2D base_noise; // : hint_black;
 
 layout(location = 0) in float inTime;
-// layout(location = 1) in vec3 inEyeDirection;
+layout(location = 1) in vec3 inEyeDirection;
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
 
 	// get skyUV to place the sun and the moon
-	vec2 skyUV = material.eyeDirection.xz / material.eyeDirection.y;
+	vec2 skyUV = inEyeDirection.xz / inEyeDirection.y;
 	
 	float base_n = texture(base_noise, (skyUV - inTime) * material.base_noise_scale).x;
 	
-	// get the middle -> abs of the material.eyeDirection to get the horizon
-	float horizon = abs((material.eyeDirection.y * material.horizon_intensity) - material.offset_horizon);
+	// get the middle -> abs of the inEyeDirection to get the horizon
+	float horizon = abs((inEyeDirection.y * material.horizon_intensity) - material.offset_horizon);
 	vec3 horizonGlow = clamp((1.0 - horizon * 5.0) * clamp(material.sunDirection.y * 10.0, 0.0, 1.0), 0.0, 1.0) * material.horizon_color_day.rgb;// 
-	vec3 horizonGlowNight = clamp((1.0 - horizon * material.dark_falloff) * clamp( - material.sunDirection.y * 10.0, 0.0, 1.0), 0.0, 1.0) * material.horizon_color_night.rgb;//
+	vec3 horizonGlowNight = clamp((1.0 - horizon * m aterial.dark_falloff) * clamp( - material.sunDirection.y * 10.0, 0.0, 1.0), 0.0, 1.0) * material.horizon_color_night.rgb;//
 	horizonGlow += horizonGlowNight;
 	
 	// horizon glow / sunset/ -rise
@@ -67,7 +67,7 @@ void main() {
 	vec3 sunsetColoured = sunset * material.sun_set.rgb;
 	
 	// sun creation
-	float sun = distance(material.eyeDirection.xyz, material.sunDirection);
+	float sun = distance(inEyeDirection.xyz, material.sunDirection);
 	float sunDisc = 1.0 - clamp(sun / material.sun_radius, 0.0, 1.0);
 	
 	// option to render flat sun
@@ -76,8 +76,8 @@ void main() {
 	}
 	
 	// moon creation
-	float moon = distance(material.eyeDirection.xyz, - material.sunDirection);
-	float crescentMoon = distance(vec3(material.eyeDirection.x + material.moon_crescent, material.eyeDirection.yz), - material.sunDirection);
+	float moon = distance(inEyeDirection.xyz, - material.sunDirection);
+	float crescentMoon = distance(vec3(inEyeDirection.x + material.moon_crescent, inEyeDirection.yz), - material.sunDirection);
 	float crescentMoonDisc = 1.0 - (crescentMoon / material.moon_radius);
 	crescentMoonDisc = clamp(crescentMoonDisc * 50.0, 0.0, 1.0);
 	float moonDisc = 1.0 - (moon / material.moon_radius);
@@ -96,9 +96,9 @@ void main() {
 	
 	//Sky Background Gradient
 	// day color gradient
-	vec3 gradientDay = mix(material.day_bottom_color.rgb, material.day_top_color.rgb, clamp(material.eyeDirection.y, 0.0, 1.0));
+	vec3 gradientDay = mix(material.day_bottom_color.rgb, material.day_top_color.rgb, clamp(inEyeDirection.y, 0.0, 1.0));
 	// night color gradient
-	vec3 gradientNight = mix(material.night_bottom_color.rgb, material.night_top_color.rgb, clamp(material.eyeDirection.y, 0.0, 1.0));
+	vec3 gradientNight = mix(material.night_bottom_color.rgb, material.night_top_color.rgb, clamp(inEyeDirection.y, 0.0, 1.0));
 	vec3 skyGradients = mix(gradientNight, gradientDay, clamp(material.sunDirection.y, 0.0, 1.0));
 	
 	vec3 sky = skyGradients + sunAndMoon + sunsetColoured + stars + horizonGlow;

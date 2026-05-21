@@ -38,6 +38,7 @@
 #include <Jolt/Physics/Collision/Shape/BoxShape.h>
 #include <Jolt/Physics/Collision/Shape/CapsuleShape.h>
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
+#include <glm/trigonometric.hpp>
 
 int main(int argc, const char** argv)
 {
@@ -109,7 +110,7 @@ int main(int argc, const char** argv)
 
         // Sun
         skyMat->SetVector4("material.sun_color", glm::vec4{1.0});
-        skyMat->SetVector3("material.sunDirection", glm::vec3{1.0f, 0.0f, 0.0f});
+        skyMat->SetVector3("material.sunDirection", glm::radians(glm::vec3{45.0f, 0.0f, 0.0f}));
         skyMat->SetScaler("material.sun_radius", 0.5f);
         skyMat->SetScaler("material.flat_sun", true);
 
@@ -298,6 +299,7 @@ int main(int argc, const char** argv)
             // skyMat->SetVector3("material.sunDirection", glm::normalize(glm::vec3{cosf(bl::Time::Current() * 0.1f), sinf(bl::Time::Current() * 0.1f), 0.0f}));
 
             glm::vec3 cameraDirection = cameraNode->GetWorldRotationEuler();
+            cameraDirection.z = 0.0f; // Remove roll for skybox calculations.
 
             bl::Print::Debug("Camera dir {}, {}, {}", cameraDirection.x, cameraDirection.y, cameraDirection.z);
             skyMat->SetVector3("material.eyeDirection", glm::radians(cameraDirection));
