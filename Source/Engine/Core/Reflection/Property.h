@@ -1,6 +1,9 @@
 #pragma once
 
+#include <fstream>
+#include <glm/ext/vector_float3.hpp>
 #include <string_view>
+#include <variant>
 #include "Core/Variant.h"
 #include "Core/Object.h"
 #include "Core/Print.h"
@@ -31,7 +34,12 @@ enum class PropertyFlags : uint8_t
     /// exported in the save process.
     /// - When a property is not marked as 'Serialize' it's contents are not saved
     /// in any way in an export or save of any kind.
-    Serialize = 1 << 2
+    Serialize = 1 << 2,
+
+    /// - When a property is marked as 'Normalize' it means that the engine will
+    /// keep the value normalized during sets. This is only used for properties 
+    /// that can be normalized such as quaternions and vectors.
+    Normalize = 1 << 3,
 };
 
 inline PropertyFlags operator|(PropertyFlags a, PropertyFlags b) { return static_cast<PropertyFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b)); }
@@ -65,7 +73,7 @@ public:
     bool HasFlag(PropertyFlags flag)    { return (_flags & flag) == flag; }
     PropertyFlags GetFlags()            { return _flags; }
 
-    virtual void Set(Object* object, const Variant& value) = 0;
+    virtual void Set(Object* object, Variant value) = 0;
     virtual Variant Get(Object* object) = 0;
 };
 
@@ -78,6 +86,10 @@ class TProperty : public Property
 {
     void (TClass::* _setter)(TValue);
     TValue (TClass::* _getter)(void);
+
+    // Handle object pointers as a special case since we want to be able to use them for any object type, but they are all stored as Object* in the variant.
+    using Type = std::conditional_t<std::is_pointer_v<TValue> && std::is_base_of_v<Object, std::remove_pointer_t<TValue>>, Object*, TValue>;
+
 public:
     constexpr TProperty(ClassDB& db, const std::string_view name, PropertyFlags flags, void (TClass::* setter)(TValue), TValue (TClass::* getter)(void))
         : Property(db, name, flags, GetVariantType<TValue>())
@@ -90,9 +102,9 @@ public:
     {
     }
 
-    virtual void Set(Object* object, const Variant& value)
+    virtual void Set(Object* object, Variant value)
     {
-        if (value.index() != VariantTypeIndex<Variant, TValue>())
+        if (value.index() != VariantTypeIndex<Variant, Type>())
         {
             Print::Error("Could not set property, ({}) invalid type on class ({}).", GetName(), object->GetClassName());
             return;
@@ -104,7 +116,33 @@ public:
             return;
         }
 
-        (static_cast<TClass*>(object)->*_setter)(std::get<TValue>(value));
+        // Perform normalization if the flag is set and the type supports it.
+        if (HasFlag(PropertyFlags::Normalize)) {
+            std::visit([&](auto&& arg) {
+                using T = std::decay_t<decltype(arg)>;
+
+                if constexpr (std::is_same_v<T, glm::quat> ||
+                              std::is_same_v<T, glm::vec2> ||
+                              std::is_same_v<T, glm::vec3> ||
+                              std::is_same_v<T, glm::vec4>) {
+                    value = glm::normalize(arg);
+                } else {
+                    Print::Error("Property ({}) has Normalize flag but does not support normalization.", GetName());
+                }
+            }, value);
+        }
+
+        if constexpr (std::is_pointer_v<TValue> && std::is_base_of_v<Object, std::remove_pointer_t<TValue>>) {
+            // If this is an object pointer, we need to cast it to the correct type before setting it.
+            Object* obj = std::get<Type>(value);
+            if (obj && !obj->IsA(TClass::GetStaticClassName())) {
+                Print::Error("Invalid object type ({}) on property setter class ({}).", obj->GetClassName(), TClass::GetStaticClassName());
+                return;
+            }
+            (static_cast<TClass*>(object)->*_setter)(static_cast<TValue>(obj));
+        } else {
+            (static_cast<TClass*>(object)->*_setter)(std::get<Type>(value));
+        }
     }
 
     virtual Variant Get(Object* object)
@@ -139,7 +177,7 @@ public:
     {
     }
 
-    virtual void Set(Object* object, const Variant& value)
+    virtual void Set(Object* object, Variant value)
     {
         if (value.index() != VariantTypeIndex<Variant, std::string>())
         {

@@ -102,6 +102,14 @@ VkDescriptorSet RenderData::GetInstanceDescriptorSet()
 
 static Profiler profiler;
 
+void RenderData::Draw(const VulkanMaterialInstance* material, uint32_t vertexCount)
+{
+    DrawCall newCall(material, nullptr);
+    newCall.offset = 0;
+    newCall.count = vertexCount;
+    _calls.push_back(newCall);
+}
+
 void RenderData::DrawInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const glm::mat4& instance)
 {
     DrawCall newCall(material, mesh);
@@ -144,7 +152,14 @@ void RenderData::WriteDrawCommands()
 
         if (mesh != call.mesh) {
             mesh = call.mesh;
-            mesh->Bind(_cmd);
+            
+            if (mesh)
+                mesh->Bind(_cmd);
+        }
+
+        if (!mesh) {
+            vkCmdDraw(_cmd, call.count, 1, 0, 0);
+            continue;
         }
 
         bool shouldInstance = call.count > 1;
@@ -160,6 +175,7 @@ void RenderData::WriteDrawCommands()
         objectPC.objectID = i;
 
         material->PushConstant(*this, 0, sizeof(ObjectPC), &objectPC);
+
         vkCmdDrawIndexed(_cmd, mesh->GetIndicesCount(), call.count, 0, 0, call.offset);
     }
 

@@ -99,6 +99,7 @@ public:
     }
 
     void RegisterClass(std::string_view className, std::string_view parentClassName, ObjectInstantiationFunc instantiationFunc);
+    void RegisterVirtualClass(std::string_view className, std::string_view parentClassName);
     void RegisterProperty(std::string_view className, std::unique_ptr<Property> property);
 
     std::span<std::pair<std::string_view, int64_t>> GetEnumValues(std::string_view enumName);

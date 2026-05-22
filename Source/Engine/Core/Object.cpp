@@ -74,6 +74,22 @@ void Object::Set(std::string_view name, const Variant& value)
     return _instanceProperties[it->second]->Set(this, value);
 }
 
+bool Object::IsA(std::string_view className)
+{
+    ClassDB& db = GetEngine().GetClassDB();
+
+    std::string_view currentClass = GetClassName();
+    while (!currentClass.empty()) {
+        if (currentClass == className) {
+            return true;
+        }
+
+        currentClass = db.GetClassParent(currentClass);
+    }
+
+    return false;
+}
+
 void Object::RegisterClass(ClassDB& db)
 {
     db.RegisterClass("Object", "", &Object::Create);

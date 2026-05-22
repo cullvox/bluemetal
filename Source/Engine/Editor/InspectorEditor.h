@@ -8,6 +8,10 @@ class InspectorEditor : public Editor {
 protected:
     void OnSelectedNodeChanged() override;
 
+    void DrawProperties(Object* object, std::span<Property*> properties);
+    void DrawObjectProperties(Object* object);
+
+
 public:
     InspectorEditor(Engine& engine, EditorSystem& system);
     ~InspectorEditor();

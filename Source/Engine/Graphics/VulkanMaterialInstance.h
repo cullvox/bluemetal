@@ -151,6 +151,9 @@ public:
      * @brief Returns the base material.
      */
     VulkanMaterial* GetBaseMaterial();
+    
+    template<typename T>
+    void GetGenericUniform(const std::string& name, T& value);
 
 protected:
     /**
@@ -175,6 +178,8 @@ protected:
      */
     template <typename T>
     void SetGenericUniform(const std::string& name, T value);
+
+
 
 private:
     friend class VulkanMaterial;

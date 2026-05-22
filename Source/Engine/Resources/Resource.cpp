@@ -1,4 +1,5 @@
 #include "Resource.h"
+#include "Core/ClassDB.h"
 #include "Core/Print.h"
 
 namespace bl {
@@ -20,6 +21,11 @@ Resource::~Resource()
 const std::filesystem::path& Resource::GetPath()
 {
     return _path;
+}
+
+void Resource::RegisterClass(ClassDB& db)
+{
+    db.RegisterVirtualClass("Resource", "Object");
 }
 
 void Resource::AddSubResource(std::shared_ptr<Resource> res)

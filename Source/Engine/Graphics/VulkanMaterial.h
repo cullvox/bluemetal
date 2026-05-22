@@ -163,4 +163,24 @@ void VulkanMaterialInstance::SetGenericUniform(const std::string& name, T value)
     SetBindingDirty(variable.GetBinding());
 }
 
+template<typename T>
+void VulkanMaterialInstance::GetGenericUniform(const std::string& name, T& value)
+{
+    const auto& uniforms = _material->GetUniforms();
+    if (!uniforms.contains(name)) {
+        Print::Error("Could not get material uniform, it does not exist!");
+        return;
+    }
+
+    const VulkanVariableBlock& variable = uniforms.at(name);
+    assert(sizeof(T) == variable.GetSize() && "Type must be the same as the uniform size!");
+
+    UniformData& uniform = std::get<UniformData>(_bindings[variable.GetBinding()]);
+
+    auto offset = variable.GetOffset();
+
+    // Offset the uniform to where the variable is located and copy from.
+    std::memcpy(&value, uniform.data.data() + offset, sizeof(T));
+}
+
 } // namespace bl

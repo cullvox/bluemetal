@@ -16,6 +16,7 @@ using Variant = std::variant<
     Object*, 
     EnumValue,
     int64_t,
+    bool,
     float, 
     double, 
     glm::vec2, 
@@ -38,8 +39,14 @@ using Variant = std::variant<
 template<typename VariantType, typename T, std::size_t index = 0>
 constexpr std::size_t VariantTypeIndex() {
     static_assert(std::variant_size_v<VariantType> > index, "Type not found in variant");
-    if constexpr (index == std::variant_size_v<VariantType>) {
-        return index;
+
+    // Support object pointers as a special case since we want to be able to use them for any object type.
+    if constexpr (std::is_same_v<std::variant_alternative_t<index, VariantType>, Object*>) {
+        if constexpr (std::is_pointer_v<T> && std::is_base_of_v<Object, std::remove_pointer_t<T>>) {
+            return index;
+        } else {
+            return VariantTypeIndex<VariantType, T, index + 1>();
+        }
     } else if constexpr (std::is_same_v<std::variant_alternative_t<index, VariantType>, T>) {
         return index;
     } else {
@@ -49,9 +56,10 @@ constexpr std::size_t VariantTypeIndex() {
 
 enum class VariantType
 {
-    eObject =           VariantTypeIndex<Variant, Object*>(),
-    eEnumeration =      VariantTypeIndex<Variant, EnumValue>(),
-    eInteger =          VariantTypeIndex<Variant, int64_t>(),
+    eObject           = VariantTypeIndex<Variant, Object*>(),
+    eEnumeration      = VariantTypeIndex<Variant, EnumValue>(),
+    eInteger          = VariantTypeIndex<Variant, int64_t>(),
+    eBoolean          = VariantTypeIndex<Variant, bool>(),
     eFloat =            VariantTypeIndex<Variant, float>(),
     eDouble =           VariantTypeIndex<Variant, double>(),
     eVector2 =          VariantTypeIndex<Variant, glm::vec2>(),

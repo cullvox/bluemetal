@@ -5,11 +5,19 @@
 
 #define OBJECT_BOILER(name, parent) \
 public: \
-    constexpr virtual std::string_view GetClassName() override { return BL_STRINGIFY(name); } \
+    virtual std::string_view GetClassName() override { return BL_STRINGIFY(name); } \
     constexpr static std::string_view GetStaticClassName() { return BL_STRINGIFY(name); } \
     constexpr static std::string_view GetParentClassName() { return BL_STRINGIFY(parent); } \
     static Object* Create(Engine& engine) { return new name(engine); } \
     virtual name* Clone() override { return new name(*this); } \
+private:
+
+#define OBJECT_BOILER_VIRTUAL(name, parent) \
+public: \
+    virtual std::string_view GetClassName() override { return BL_STRINGIFY(name); } \
+    constexpr static std::string_view GetStaticClassName() { return BL_STRINGIFY(name); } \
+    constexpr static std::string_view GetParentClassName() { return BL_STRINGIFY(parent); } \
+    static Object* Create(Engine& engine) { return nullptr; } \
 private:
 
 namespace bl
@@ -20,7 +28,7 @@ class Property;
 
 class Object {
 public:
-    constexpr virtual std::string_view GetClassName() { return "Object"; }
+    virtual std::string_view GetClassName() { return "Object"; }
     constexpr static std::string_view GetStaticClassName() { return "Object"; }
     constexpr static std::string_view GetParentClassName() { return ""; }
     static Object* Create(Engine& engine) { return new Object(engine); }
@@ -32,7 +40,7 @@ private:
     std::unordered_map<std::string_view, std::size_t> _nameToPropertyIndex;
 
 protected:
-    std::span<Property*> GetInstanceProperties();
+    
     void AddInstanceProperty(std::unique_ptr<Property> property);
 
 public:
@@ -41,6 +49,9 @@ public:
     virtual ~Object();
 
     static void RegisterClass(ClassDB& db);
+    bool IsA(std::string_view className);
+
+    std::span<Property*> GetInstanceProperties();
 
     Variant Get(std::string_view name);
     void Set(std::string_view name, const Variant& value);

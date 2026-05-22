@@ -36,7 +36,7 @@ public:
     {
     }
 
-    void Set(Object* object, const Variant& value) override
+    void Set(Object* object, Variant value) override
     {
         // Ensure that the variant is the correct type.
         if (value.index() != VariantTypeIndex<Variant, EnumValue>()) {

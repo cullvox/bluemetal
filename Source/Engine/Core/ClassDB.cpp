@@ -50,6 +50,28 @@ void ClassDB::RegisterClass(const std::string_view className, std::string_view p
     _classNames.push_back(className);
 }
 
+void ClassDB::RegisterVirtualClass(std::string_view className, std::string_view parentClassName)
+{
+    // Check if the class already exists.
+    if (_nameToClassIndex.contains(className)) {
+        Print::Error("Could not register virtual class, \"{}\", as it already exists.", className);
+        return;
+    }
+
+    // Create the class data and begin populating.
+    ClassData data;
+    data.name = className;
+    data.parentClassName = parentClassName;
+    data.instantiationFunc = nullptr;
+
+    _classes.emplace_back(std::move(data));
+
+    // Set the mapped name to the index.
+    _nameToClassIndex[className] = _classes.size() - 1;
+
+    _classNames.push_back(className);
+}
+
 void ClassDB::RegisterProperty(const std::string_view className, std::unique_ptr<Property> property)
 {
     // Find the class data and check if it exists.

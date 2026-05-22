@@ -90,6 +90,7 @@ list(APPEND Sources
   "Scene/NodeFilterIterator.cpp"
   "Scene/SceneSystem.cpp"
   "Scene/Orbit3D.cpp"
+  "Scene/Sky3D.cpp"
 
   "Social/Discord.cpp"
 

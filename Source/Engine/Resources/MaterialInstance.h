@@ -21,10 +21,16 @@ class VulkanMaterialSystem;
 /// A material instance holds its own uniform buffers and sampled images,
 /// allowing multiple objects to use the same base material with different parameters.
 class MaterialInstance : public Resource {
+    OBJECT_BOILER(MaterialInstance, Resource)
+
     Renderer* _renderer;
     std::unique_ptr<VulkanMaterialInstance> _materialInstance; // Set by either Material or is created.
 
 protected:
+    void SetMaterialProperty(std::string_view name, const Variant& value);
+    Variant GetMaterialProperty(std::string_view name);
+
+    void RegisterMaterialProperties(VulkanMaterialInstance* materialInstance);
 
 public:
     virtual VulkanMaterialInstance* GetInstance() const;
@@ -37,6 +43,9 @@ public:
     MaterialInstance(Engine& engine);
 
     MaterialInstance(Engine& engine, std::unique_ptr<VulkanMaterialInstance> instance);
+
+    MaterialInstance(MaterialInstance&&) = default;
+    MaterialInstance(const MaterialInstance&);
 
     /// @brief Loads a material instance from file.
     /// This constructor is designated for the ResourceSystem.
@@ -67,6 +76,8 @@ public:
 
     void Bind(RenderData& rd); /** @brief Bind this material for rending using it and it's data. */
     void PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* value);
+
+    static void RegisterClass(ClassDB& db);
 };
 
 }

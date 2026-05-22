@@ -82,6 +82,7 @@ public:
     VkDescriptorSet GetGlobalDescriptorSet();
     VkDescriptorSet GetInstanceDescriptorSet();
 
+    void Draw(const VulkanMaterialInstance* material, uint32_t vertexCount);
     void DrawInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const glm::mat4& instance);
     void DrawMultiInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const std::span<glm::mat4> instances);
 

@@ -30,6 +30,7 @@
 #include <Scene/Orbit3D.h>
 #include <Scene/PhysicsBody3D.h>
 #include <Social/Discord.h>
+#include <Scene/Sky3D.h>
 #include <Window/Input.h>
 #include <Window/Keyboard.h>
 #include <Window/Mouse.h>
@@ -194,6 +195,14 @@ int main(int argc, const char** argv)
 
         rootNode->AddChild(std::move(floorStaticBody));
 
+        // Add Sky3D node
+        auto skyNode = std::make_unique<bl::Sky3D>(engine);
+        skyNode->SetName("Sky");
+        skyNode->SetSkyMaterial(skyMat.get());
+        
+        rootNode->AddChild(std::move(skyNode));
+
+
         //auto flycam = std::make_unique<bl::FlyCamera3D>(engine);
         //flycam->SetName("FlyCam");
         //flycam->SetPosition({ 0.0f, 0.0f, 5.0f });
@@ -318,8 +327,8 @@ int main(int argc, const char** argv)
                 //auto extent = window->GetExtent();
 
                 // Test draw sky.
-                skyMat->Bind(rd);
-                vkCmdDraw(rd.GetCommandBuffer(), 6, 1, 0, 0);
+                // skyMat->Bind(rd);
+                // vkCmdDraw(rd.GetCommandBuffer(), 6, 1, 0, 0);
 
 
                 renderer->DrawLine(playerNode->GetWorldPosition(), {0.0f, 0.0f, 0.0f});

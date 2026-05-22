@@ -4,6 +4,7 @@
 #include "Graphics/VulkanConversions.h"
 #include "Graphics/VulkanShader.h"
 #include "Shader.h"
+#include "Core/ClassDB.h"
 
 #include "ResourceSystem.h"
 
@@ -235,6 +236,17 @@ Material::Material(Engine& engine, const std::filesystem::path& path)
 
     _material = std::make_unique<VulkanMaterial>(_graphicsSystem->GetDevice(), _renderer, info, descriptorSetLocation);
     _renderer->AddMaterial(_material.get());
+
+
+    RegisterMaterialProperties(_material.get());
+}
+
+Material::Material(const Material& copy)
+    : MaterialInstance(copy)
+    , _graphicsSystem(copy._graphicsSystem)
+    , _renderer(copy._renderer)
+{
+
 }
 
 Material::~Material()
@@ -260,6 +272,11 @@ const VulkanPipeline* Material::GetVulkanPipeline()
 VulkanMaterial* Material::GetVulkanMaterial()
 {
     return _material.get();
+}
+
+void Material::RegisterClass(ClassDB& db)
+{
+    db.RegisterClass("Material", "MaterialInstance", &Material::Create);
 }
 
 }

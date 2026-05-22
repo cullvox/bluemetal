@@ -22,6 +22,8 @@ class ResourceSystem;
  * called, the heavy data lifting will begin.
  */
 class Resource : public Object, public std::enable_shared_from_this<Resource> {
+    OBJECT_BOILER_VIRTUAL(Resource, Object)
+
     friend class ResourceSystem;
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
     std::vector<std::shared_ptr<Resource>> _subResources; /** @brief Sub-resources that are part of this resource, but managed by it. */
@@ -44,6 +46,8 @@ public:
      * @return The unique path of the resource.
      */
     const std::filesystem::path& GetPath();
+
+    static void RegisterClass(ClassDB& db);
 
     void AddSubResource(std::shared_ptr<Resource> res);
 };
