@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/MacroUtils.h"
+#include "Core/Variant.h"
 
 #define OBJECT_BOILER(name, parent) \
 public: \
@@ -15,6 +16,7 @@ namespace bl
 {
 class Engine;
 class ClassDB;
+class Property;
 
 class Object {
 public:
@@ -25,6 +27,13 @@ public:
     virtual Object* Clone() { return new Object(*this); }
 private:
     Engine& _engine;
+    std::vector<std::unique_ptr<Property>> _instanceProperties;
+    std::vector<Property*> _instancePropertiesPointers;
+    std::unordered_map<std::string_view, std::size_t> _nameToPropertyIndex;
+
+protected:
+    std::span<Property*> GetInstanceProperties();
+    void AddInstanceProperty(std::unique_ptr<Property> property);
 
 public:
     Object(Engine& engine);
@@ -32,6 +41,9 @@ public:
     virtual ~Object();
 
     static void RegisterClass(ClassDB& db);
+
+    Variant Get(std::string_view name);
+    void Set(std::string_view name, const Variant& value);
 
     Engine& GetEngine();
 };

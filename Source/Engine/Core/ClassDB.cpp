@@ -118,7 +118,7 @@ std::span<std::pair<std::string_view, int64_t>> ClassDB::GetEnumValues(std::stri
     // Find the class data and check if it exists.
     auto it = _nameToEnumIndex.find(enumName);
 
-    if (it == _nameToClassIndex.end()) {
+    if (it == _nameToEnumIndex.end()) {
         Print::Error("Could not get enum values for an invalid enum, \"{}\".", enumName);
         return {};
     }
@@ -131,7 +131,7 @@ std::string_view ClassDB::GetEnumValueName(std::string_view enumName, int64_t va
     // Find the class data and check if it exists.
     auto it = _nameToEnumIndex.find(enumName);
 
-    if (it == _nameToClassIndex.end()) {
+    if (it == _nameToEnumIndex.end()) {
         Print::Error("Could not get enum values for an invalid enum, \"{}\".", enumName);
         return {};
     }
@@ -156,6 +156,32 @@ bool ClassDB::IsEnumValid(std::string_view name, int64_t type)
     const EnumData& enumData = _enums[index];
 
     return enumData.valueToName.contains(type);
+}
+
+
+Property* ClassDB::FindPropertyInClassRecursive(std::string_view name, std::string_view property)
+{
+    std::string_view className = name;
+    while (!className.empty()) {
+        if (className == "Object") {
+            // Stop at Object, since it's the base class for all objects and we don't want to show its properties.
+            break;
+        }
+
+        auto it = _nameToClassIndex.find(className);
+        if (it == _nameToClassIndex.end()) break;
+
+        auto& classData = _classes[it->second];
+
+        auto propertyIt = classData.nameToPropertyIndex.find(property);
+        if (it != classData.nameToPropertyIndex.end()) {
+            return classData.properties[propertyIt->second].get();
+        };
+
+        className = GetClassParent(className);
+    }
+
+    return nullptr;
 }
 
 }

@@ -12,6 +12,8 @@ layout(set = 0, binding = 0) uniform GlobalUniform
 
 layout(location = 0) out float outTime;
 layout(location = 1) out vec3 outEyeDirection;
+layout(location = 2) out vec2 outViewportSize;
+layout(location = 3) out mat4 outInverseProjection;
 
 void main() {
     mat4 inverseProjection = inverse(globals.projection);
@@ -42,8 +44,13 @@ void main() {
 
     gl_Position = vec4(positions[gl_VertexIndex], 1.0, 1.0); // Z = 1.0 puts it in the background
 
+    vec4 clip = vec4(positions[gl_VertexIndex], 1.0, 1.0);
+    vec4 viewRay = inverseProjection * clip;
+    viewRay /= viewRay.w;
+
     // Calculate view direction in world space
     vec4 target = inverseProjection * vec4(uv, 1.0, 1.0);
-    outEyeDirection = mat3(inverseView) * target.xyz;
+    outEyeDirection = mat3(inverseView) * viewRay.xyz;
     outTime = globals.time;
+    outViewportSize = globals.resolution;
 }

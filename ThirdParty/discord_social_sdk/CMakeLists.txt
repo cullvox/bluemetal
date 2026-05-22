@@ -30,7 +30,7 @@ else ()
 endif ()
 
 set (ROOT_PATH "${CMAKE_CURRENT_LIST_DIR}/lib/${BUILD_TYPE}")
-set (LIB_PATH ROOT_PATH)
+set (LIB_PATH ${ROOT_PATH})
 
 if (CMAKE_SYSTEM_PROCESSOR STREQUAL "arm64")
     set (LIB_PATH "${ROOT_PATH}/arm64")

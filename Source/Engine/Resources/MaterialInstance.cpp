@@ -49,6 +49,13 @@ MaterialInstance::MaterialInstance(Engine& engine, const std::filesystem::path& 
 
     // Ensure that the material buffers get properly cleaned updated every frame.
     _renderer->AddMaterial(_materialInstance.get());
+
+    // Add properties from materials.
+    const auto& uniforms = mat.lock()->GetVulkanMaterial()->GetUniforms();
+    for (const auto& uniform : uniforms) {
+        uniform.second
+    }
+
 }
 
 MaterialInstance::~MaterialInstance()

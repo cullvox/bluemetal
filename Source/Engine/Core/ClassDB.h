@@ -108,6 +108,8 @@ public:
     std::span<const std::string_view> GetClassNames() const;
     std::span<Property*> GetClassProperties(const std::string_view name);
 
+    Property* FindPropertyInClassRecursive(std::string_view name, std::string_view property);
+
     std::string_view GetClassParent(const std::string_view className);
 
     bool IsEnumValid(const std::string_view enumType, int64_t value);
