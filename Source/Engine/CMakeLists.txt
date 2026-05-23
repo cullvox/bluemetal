@@ -56,6 +56,8 @@ list(APPEND Sources
   "ImGui/implot.cpp"
   "ImGui/implot_items.cpp"
   "ImGui/implot_demo.cpp"
+  "ImGui/ImGuizmo.cpp"
+  "ImGui/ImGradient.cpp"
   "ImGui/ImGuiSystem.cpp"
 
   "Physics/PhysicsSystem.cpp"

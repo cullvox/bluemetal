@@ -5,7 +5,9 @@
 #include "Core/ClassDB.h"
 #include "EditorSystem.h"
 #include "Engine/Engine.h"
-
+#include "ImGui/ImGuizmo.h"
+#include "Graphics/RenderData.h"
+#include "Scene/Node3D.h"
 
 namespace bl {
 
@@ -50,7 +52,7 @@ void InspectorEditor::DrawProperties(Object* object, std::span<Property*> proper
 
                 if (ImGui::BeginCombo(("##" + std::string(prop->GetName())).c_str(), current.data())) {
                     for (int i = 0; i < enumValues.size(); i++) {
-                        
+
                         const bool isSelected = (value.value == i);
                         if (ImGui::Selectable(enumValues[i].first.data(), isSelected)) {
                             current = enumValues[i].first.data();
@@ -148,9 +150,31 @@ void InspectorEditor::Draw(RenderData& rd)
         return;
     }
 
+    ImGuizmo::SetDrawlist(ImGui::GetForegroundDrawList());
     DrawObjectProperties(selectedNode);
 
-        ImGui::End();
+    if (selectedNode->IsA("Node3D")) {
+        auto node = static_cast<Node3D*>(selectedNode);
+        auto localMatrix = node->GetWorldMatrix();
+        auto projection = rd.GetProjectionMatrix();
+        projection[1][1] *= -1.0f; // Flip back from vulkans default.
+        if (ImGuizmo::Manipulate(glm::value_ptr(rd.GetViewMatrix()), glm::value_ptr(projection), ImGuizmo::ROTATE, ImGuizmo::WORLD, glm::value_ptr(localMatrix))) {
+
+            auto parent = dynamic_cast<Node3D*>(node->GetParent());
+            auto parentMatrix = parent ? parent->GetWorldMatrix() : glm::identity<glm::mat4>();
+            glm::vec3 scale;
+            glm::quat rotation;
+            glm::vec3 position;
+            glm::vec3 skew;
+            glm::vec4 perspective;
+            glm::decompose(localMatrix, scale, rotation, position, skew, perspective);
+            node->SetWorldScale(scale);
+            node->SetWorldRotation(rotation);
+            node->SetWorldPosition(position);
+        }
+    }
+
+    ImGui::End();
 }
 
 }

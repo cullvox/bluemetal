@@ -91,6 +91,7 @@ CPMAddPackage("gh:zeux/volk#1.4.350")
 CPMAddPackage("gh:gpuopen-librariesandsdks/vulkanmemoryallocator@3.3.0")
 CPMAddPackage("gh:cullvox/qoixx#addspan")
 CPMAddPackage("gh:gabime/spdlog@1.17.0")
+CPMAddPackage("gh:CedricGuillemet/ImGuizmo#1.10")
 
 #===============================================================================
 # add bluemetal compile options

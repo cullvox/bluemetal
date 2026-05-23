@@ -32,6 +32,9 @@ class RenderData
     VkDescriptorSetLayout _instanceSetLayout;
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _instanceSets;
 
+    glm::mat4 _projection;
+    glm::mat4 _view;
+
     struct DrawCall {
         DrawCall(const VulkanMaterialInstance* material, const VulkanMesh* mesh)
             : material(material)
@@ -73,6 +76,8 @@ public:
     void SetSampleCount(VkSampleCountFlagBits sampleCount);
     void SetSwapchainImageView(VkImageView swapchainImageView);
     void SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial);
+    void SetProjectionMatrix(const glm::mat4& projection);
+    void SetViewMatrix(const glm::mat4& viewMatrix);
 
     VkCommandBuffer GetCommandBuffer();
     uint32_t GetCurrentFrame();
@@ -81,6 +86,8 @@ public:
     VkImageView GetSwapchainImageView();
     VkDescriptorSet GetGlobalDescriptorSet();
     VkDescriptorSet GetInstanceDescriptorSet();
+    glm::mat4 GetProjectionMatrix();
+    glm::mat4 GetViewMatrix();
 
     void Draw(const VulkanMaterialInstance* material, uint32_t vertexCount);
     void DrawInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const glm::mat4& instance);

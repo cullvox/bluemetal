@@ -100,6 +100,26 @@ VkDescriptorSet RenderData::GetInstanceDescriptorSet()
     return _instanceSets[_currentFrame];
 }
 
+glm::mat4 RenderData::GetProjectionMatrix()
+{
+    return _projection;
+}
+
+glm::mat4 RenderData::GetViewMatrix()
+{
+    return _view;
+}
+
+void RenderData::SetProjectionMatrix(const glm::mat4& projection)
+{
+    _projection = projection;
+}
+
+void RenderData::SetViewMatrix(const glm::mat4& view)
+{
+    _view = view;
+}
+
 static Profiler profiler;
 
 void RenderData::Draw(const VulkanMaterialInstance* material, uint32_t vertexCount)

@@ -64,11 +64,13 @@ Renderer::~Renderer()
 void Renderer::SetProjection(const glm::mat4& projection)
 {
     _uboData.projection = projection;
+    _renderData.SetProjectionMatrix(projection);
 }
 
 void Renderer::SetView(const glm::mat4& view)
 {
     _uboData.view = view;
+    _renderData.SetViewMatrix(view);
 }
 
 void Renderer::CreatePerFrameSyncedData()
@@ -167,7 +169,7 @@ void Renderer::RecreateImages()
     // Create selection buffer images
     _selectionImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
     _selectionImageView = std::make_unique<VulkanImageView>(_device, _selectionImage.get(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, mapping, range);
-    
+
     if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) 
     {
         _selectionImageSampled = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false, _sampleCount);

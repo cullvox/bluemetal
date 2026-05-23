@@ -7,6 +7,7 @@
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl3.h"
 #include "ImGui/imgui_impl_vulkan.h"
+#include "ImGuizmo.h"
 
 namespace bl {
 
@@ -206,6 +207,10 @@ void ImGuiSystem::BeginFrame()
     ImGui_ImplVulkan_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
+    ImGuizmo::BeginFrame();
+
+    ImGuiIO& io = ImGui::GetIO();
+    ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
     SDL_DisplayID displayID = SDL_GetDisplayForWindow(_window->Get());
     float scale = SDL_GetDisplayContentScale(displayID);
