@@ -88,11 +88,11 @@ Variant MaterialInstance::GetMaterialProperty(std::string_view name)
     // Get the uniform block for this uniform and get it using the material instance.
     Variant value;
     switch (it->second.GetType())
-    {    
+    {
     case VulkanVariableBlockType::eScalarBool: {
-        bool v;
+        int32_t v;
         _materialInstance->GetGenericUniform(name.data(), v);
-        value = v;
+        value = static_cast<bool>(v);
         break;
     }
     case VulkanVariableBlockType::eScalarInt: {
@@ -197,7 +197,7 @@ void MaterialInstance::SetMaterialProperty(std::string_view name, const Variant&
     std::visit([&](auto&& arg) {
         using T = std::decay_t<decltype(arg)>;
         if constexpr (std::is_same_v<T, bool>) {
-            SetBool(name.data(), arg);
+            SetInteger(name.data(), static_cast<int32_t>(arg));
         } else if constexpr (std::is_same_v<T, int>) {
             SetInteger(name.data(), arg);
         } else if constexpr (std::is_same_v<T, float>) {

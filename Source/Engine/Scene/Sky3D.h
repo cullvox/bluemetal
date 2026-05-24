@@ -16,6 +16,7 @@ public:
 
     static void RegisterClass(ClassDB& db);
 
+    virtual void Update(float deltaTime) override;
     virtual void Draw(RenderData& rd) override;
 
     void SetSkyMaterial(MaterialInstance* material);

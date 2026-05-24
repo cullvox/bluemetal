@@ -51,14 +51,19 @@ static void ReflectMembers(VulkanReflectedBlock& meta, uint32_t binding, const S
                 continue;
             }
             type = VulkanVariableBlockType::eMatrix4;
-        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_BOOL) {
-            type = VulkanVariableBlockType::eScalarBool;
-        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
-            type = VulkanVariableBlockType::eScalarInt;
-        } else if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
-            type = VulkanVariableBlockType::eScalarFloat;
+        } else {
+            if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_INT) {
+                // In uniforms, boolean values can only be represented as integers, so we have to check the name for a boolean type flag instead of relying on SPIR-V reflection.
+                if (std::strlen(typeDescription->struct_member_name) > 1 && typeDescription->struct_member_name[0] == 'b' && std::isupper(typeDescription->struct_member_name[1])) {
+                    type = VulkanVariableBlockType::eScalarBool;
+                } else {
+                    type = VulkanVariableBlockType::eScalarInt;
+                }
+            }
+            if (typeDescription->type_flags & SPV_REFLECT_TYPE_FLAG_FLOAT) {
+                type = VulkanVariableBlockType::eScalarFloat;
+            }
         }
-
         std::string name = fmt::format("{}.{}", structName, blockVariable.name);
 
         meta[name]

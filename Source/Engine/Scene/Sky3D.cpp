@@ -29,6 +29,15 @@ void Sky3D::Draw(RenderData& rd)
     rd.Draw(material ? material->GetInstance() : nullptr, 6);
 }
 
+void Sky3D::Update(float deltaTime)
+{
+    Node3D::Update(deltaTime);
+
+    auto normalizedRotation = glm::normalize(GetRotationEuler());
+
+    material->SetVector3("material.sunDirection",  glm::normalize(GetRotation() * glm::vec3(0.0f, 0.0f, -1.0f)));
+}
+
 void Sky3D::SetSkyMaterial(MaterialInstance* material)
 {
     this->material = material;

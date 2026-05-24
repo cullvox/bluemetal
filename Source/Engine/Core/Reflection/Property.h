@@ -40,6 +40,11 @@ enum class PropertyFlags : uint8_t
     /// keep the value normalized during sets. This is only used for properties 
     /// that can be normalized such as quaternions and vectors.
     Normalize = 1 << 3,
+
+    /// - When a property is marked as 'Color' it means that the editor should
+    /// display a color picker for this property instead of the normal editor
+    /// for the type. This is only used for glm::vec3 and glm::vec4 properties.
+    Color = 1 << 4
 };
 
 inline PropertyFlags operator|(PropertyFlags a, PropertyFlags b) { return static_cast<PropertyFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b)); }
