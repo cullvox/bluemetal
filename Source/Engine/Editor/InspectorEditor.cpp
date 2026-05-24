@@ -91,10 +91,30 @@ void InspectorEditor::DrawProperties(Object* object, std::span<Property*> proper
                 ImGui::DragFloat2(("##" + std::string(prop->GetName())).c_str(), &value.x, 0.01f);
                 prop->Set(object, value);
             } else if constexpr (std::is_same_v<T, glm::vec4>) {
-                ImGui::DragFloat4(("##" + std::string(prop->GetName())).c_str(), &value.x, 0.01f);
+
+                bool changed = false;
+                if (prop->HasFlag(PropertyFlags::Color)) {
+
+                    std::string popupId = ("##Picker" + std::string(prop->GetName()));
+                    if (ImGui::ColorButton(("##" + std::string(prop->GetName())).c_str(), *reinterpret_cast<ImVec4*>(&value))) {
+                        ImGui::OpenPopup(popupId.c_str());
+                    }
+
+                    if (ImGui::BeginPopup(popupId.c_str())) {
+                        if (ImGui::ColorPicker4(("##ColorPicker" + std::string(prop->GetName())).c_str(), glm::value_ptr(value))) { 
+                            changed = true;
+                        }
+
+                        if (ImGui::Button("##Close")) ImGui::CloseCurrentPopup();
+                        ImGui::EndPopup();
+                    }
+                } else {
+                    changed = ImGui::DragFloat4(("##" + std::string(prop->GetName())).c_str(), &value.x, 0.01f);
+                }
+
                 prop->Set(object, value);
             } else if constexpr (std::is_same_v<T, Object*>) {
-                
+
                 // Resource objects can be edited.
                 if (value && value->IsA("Resource")) {
                     DrawObjectProperties(value);

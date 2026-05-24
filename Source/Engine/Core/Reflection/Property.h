@@ -14,10 +14,9 @@ namespace bl
 /// - Change the way a property is intended to be used or percieved.
 enum class PropertyFlags : uint8_t
 {
-    
     /// - No property flags will be set.
     None = 0,
-    
+
     /// - When a property is marked as 'Editor' it will be visible in the inspector
     /// as a potentially editable value. You can combine this flag with 'ReadOnly'
     /// to create an editor visible read only property.
@@ -50,6 +49,9 @@ enum class PropertyFlags : uint8_t
 inline PropertyFlags operator|(PropertyFlags a, PropertyFlags b) { return static_cast<PropertyFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b)); }
 inline PropertyFlags operator&(PropertyFlags a, PropertyFlags b) { return static_cast<PropertyFlags>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b)); }
 inline PropertyFlags operator~(PropertyFlags a)                  { return static_cast<PropertyFlags>(~static_cast<uint8_t>(a)); }
+
+inline PropertyFlags& operator|=(PropertyFlags& a, PropertyFlags b) { a = static_cast<PropertyFlags>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b)); return a; }
+inline PropertyFlags& operator&=(PropertyFlags& a, PropertyFlags b) { a = static_cast<PropertyFlags>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b)); return a; }
 
 /// - A member of a class to be set, changed, or viewed by various systems.
 class Property

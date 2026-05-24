@@ -158,7 +158,14 @@ void MaterialInstance::RegisterMaterialProperties(VulkanMaterialInstance* materi
         default: continue; break;
         }
 
-        AddInstanceProperty(std::make_unique<TNamedProperty<MaterialInstance>>(GetEngine().GetClassDB(), uniform.second.GetName(), type, PropertyFlags::Editor | PropertyFlags::Serialize, &MaterialInstance::SetMaterialProperty, &MaterialInstance::GetMaterialProperty));
+        // If the first character contains a 'c[UPPER]', then it's a color
+        const auto& name = uniform.first;
+        PropertyFlags flags = PropertyFlags::None;
+        if (type == VariantType::eVector4 && name.size() > 9 && name[9] == 'c' && std::isupper(name[10])) {
+            flags |= PropertyFlags::Color;
+        }
+
+        AddInstanceProperty(std::make_unique<TNamedProperty<MaterialInstance>>(GetEngine().GetClassDB(), uniform.second.GetName(), type, PropertyFlags::Editor | PropertyFlags::Serialize | flags, &MaterialInstance::SetMaterialProperty, &MaterialInstance::GetMaterialProperty));
     }
 }
 
