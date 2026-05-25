@@ -15,6 +15,7 @@ EditorSystem::EditorSystem(Engine& engine)
     , _settings(engine, *this)
     , _hierarchy(engine, *this)
     , _inspector(engine, *this)
+    , _toolbar(engine, *this)
     , _selectedNode(nullptr)
 {
 
@@ -75,6 +76,10 @@ void EditorSystem::Draw(RenderData& rd)
         ImGui::MenuItem("Inspector Window", nullptr, &showInspector);
         _inspector.Show(showInspector);
 
+        static bool showToolbar = true;
+        ImGui::MenuItem("Toolbar", nullptr, &showToolbar);
+        _toolbar.Show(showToolbar);
+
         ImGui::EndMenu();
     }
 
@@ -84,6 +89,7 @@ void EditorSystem::Draw(RenderData& rd)
     _settings.Draw(rd);
     _hierarchy.Draw(rd);
     _inspector.Draw(rd);
+    _toolbar.Draw(rd);
 }
 
 } // namespace bl

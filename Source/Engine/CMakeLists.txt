@@ -102,6 +102,7 @@ list(APPEND Sources
   "Editor/HierarchyEditor.cpp"
   "Editor/InspectorEditor.cpp"
   "Editor/EditorSystem.cpp"
+  "Editor/ToolbarEditor.cpp"
 
   "Core/ClassDB.cpp"
   "Engine/System.cpp"

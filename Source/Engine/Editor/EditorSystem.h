@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Editor/ToolbarEditor.h"
 #include "Engine/System.h"
 #include "DebugEditor.h"
 #include "SettingsEditor.h"
 #include "HierarchyEditor.h"
 #include "InspectorEditor.h"
+#include "ToolbarEditor.h"
 
 namespace bl {
 
@@ -16,6 +18,7 @@ class EditorSystem : public System {
     SettingsEditor _settings;
     HierarchyEditor _hierarchy;
     InspectorEditor _inspector;
+    ToolbarEditor _toolbar;
 
     Node* _selectedNode;
 
