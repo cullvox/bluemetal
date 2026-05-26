@@ -19,9 +19,36 @@ class VulkanImageView;
 class VulkanImage;
 class VulkanDescriptorSetAllocatorCache;
 class Node;
+class VulkanViewport;
 
 using ObjectFunction = std::function<void(RenderData& rd)>;
 using RenderFunction = std::function<void(RenderData& rd)>;
+
+struct RenderPassData {
+
+    std::vector<VkRenderingAttachmentInfo> attachments;
+    VkRenderingInfo renderingInfo;
+    VkViewport viewport;
+    VkRect2D scissor;
+    RenderPassData* nextPass;
+    VkDependencyInfo prePassDependencies;
+    VkDependencyInfo PostPassDependencies;
+};
+
+/// @brief What does a renderer not do
+///
+/// * Manage synchronization between frames of swapchains and their images.
+/// * Determine what gets drawn.
+/// * Store any image data.
+/// * Present from a swapchain.
+///
+/// What does a renderer do:
+/// * Do Render passes from render data.
+/// * Interpret render data.
+/// * Knows what types of passes/image formats are possible.
+/// 
+///
+
 
 class Renderer {
 public:
@@ -34,6 +61,8 @@ public:
     uint32_t GetNextFrameIndex(); /** @brief Returns the circular frame index from zero to GraphicsConfig::maxFramesInFlight - 1. */
     void Render(RenderFunction func, RenderFunction guiPassFunc, ObjectFunction objectFunc);
     void Render(Node* root);
+
+    void Render(VulkanViewport& viewport, RenderData& renderData);
 
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
@@ -91,6 +120,8 @@ private:
     void CreatePerFrameSyncedData();
     void DestroyPerFrameSyncedData();
 
+    // Viewports
+    std::vector<VulkanViewport>         _viewports;
 
     // Render Pass Data
     std::vector<VkImage>                _swapchainImages;

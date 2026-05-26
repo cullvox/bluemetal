@@ -690,6 +690,131 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     _currentFrame = (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
 }
 
+void Renderer::Render(VulkanViewport& viewport, RenderData& data)
+{
+
+    VkCommandBuffer cmd;
+
+    RenderPassData pass;
+
+
+
+    // Perform some pre-pass pipeline barriers
+    VkDependencyInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    info.pNext = nullptr;
+    info.dependencyFlags = 0;
+    info.imageMemoryBarrierCount = 1;
+    info.pImageMemoryBarriers = barriers.data();
+
+    vkCmdPipelineBarrier2(cmd, &info);
+
+
+
+
+        // Setup the render pass for dynamic rendering.
+    std::array clearColors = {
+        VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Clear Color
+        VkClearValue { .depthStencil = { 1.0f, 0 } }, // Clear Depth
+        VkClearValue { .color = { -1, -1, -1, -1 } }
+    };
+
+    VkRect2D renderArea = {};
+    renderArea.offset = { 0, 0 };
+    renderArea.extent = viewport.GetExtent();
+
+    std::array<VkRenderingAttachmentInfo, 2> colorAttachments = {};
+    colorAttachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    colorAttachments[0].pNext = nullptr;
+    colorAttachments[0].imageView = _swapchainImageViews[data.GetImageIndex()];
+    colorAttachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachments[0].resolveMode = VK_RESOLVE_MODE_NONE;
+    colorAttachments[0].resolveImageView = VK_NULL_HANDLE;
+    colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachments[0].clearValue = clearColors[0];
+
+    // When using a higher sample count, the image must be resolved from the sampled image.
+    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
+        colorAttachments[0].imageView = _colorImageView->Get();
+        colorAttachments[0].resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
+        colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachments[0].resolveImageView = _swapchainImageViews[imageIndex];
+    }
+
+    colorAttachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    colorAttachments[1].pNext = nullptr;
+    colorAttachments[1].imageView = _selectionImageView->Get();
+    colorAttachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachments[1].resolveMode = VK_RESOLVE_MODE_NONE;
+    colorAttachments[1].resolveImageView = VK_NULL_HANDLE;
+    colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachments[1].clearValue = VkClearValue { .color = { -1, -1, -1, -1 } };
+
+    // When using a higher sample count, the image must be resolved from the sampled image.
+    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
+        colorAttachments[1].imageView = _selectionImageSampledView->Get();
+        colorAttachments[1].resolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+        colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachments[1].resolveImageView = _selectionImageView->Get();
+    }
+
+    VkRenderingAttachmentInfo depthAttachment = {};
+    depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    depthAttachment.pNext = nullptr;
+    depthAttachment.imageView = _depthImageView->Get();
+    depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    depthAttachment.resolveMode = VK_RESOLVE_MODE_NONE;
+    depthAttachment.resolveImageView = VK_NULL_HANDLE;
+    depthAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.clearValue = clearColors[1];
+
+    VkRenderingInfo renderingInfo = {};
+    renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+    renderingInfo.pNext = nullptr;
+    renderingInfo.flags = 0;
+    renderingInfo.renderArea = renderArea;
+    renderingInfo.layerCount = 1;
+    renderingInfo.viewMask = 0;
+    renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
+    renderingInfo.pColorAttachments = colorAttachments.data();
+    renderingInfo.pDepthAttachment = &depthAttachment;
+    renderingInfo.pStencilAttachment = nullptr;
+
+    VkImageSubresourceRange range = {};
+    range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    range.baseMipLevel = 0;
+    range.levelCount = 1;
+    range.baseArrayLayer = 0;
+    range.layerCount = 1;
+
+    uint32_t barrierCount = 1;
+    std::array<VkImageMemoryBarrier2, 4> barriers = {};
+
+    // Transition the swapchain image back into a color attachment.
+    barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+    barriers[0].pNext = nullptr;
+    barriers[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    barriers[0].srcAccessMask = 0;
+    barriers[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    barriers[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    barriers[0].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    barriers[0].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barriers[0].image = _swapchainImages[imageIndex];
+    barriers[0].subresourceRange = range;
+
+
+    vkCmdBeginRendering(data.GetCommandBuffer(), )
+
+}
+
 void Renderer::CreateGlobalUniform()
 {
     std::vector<VkDescriptorSetLayoutBinding> bindings { 1 };

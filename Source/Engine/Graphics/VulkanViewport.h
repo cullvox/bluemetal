@@ -23,10 +23,6 @@ public:
 
     void SetExtent(VkExtent2D extent);
     void SetOutputTexture(VulkanRenderImage& texture);
-    void SetView(const glm::mat4& view);
-    void SetProjection(const glm::mat4& projection);
-    void Render(RenderData& rd);
-
 };
 
 

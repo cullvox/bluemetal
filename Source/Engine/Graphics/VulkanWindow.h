@@ -15,7 +15,7 @@ class VulkanInstance;
 class VulkanDevice;
 class VulkanSwapchain;
 
-class VulkanWindow final : public Window {
+class VulkanWindow : public Window {
     VulkanDevice* _device;
     VkSurfaceKHR _surface;
     std::unique_ptr<VulkanSwapchain> _swapchain;
