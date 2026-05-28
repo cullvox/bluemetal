@@ -3,6 +3,7 @@
 #include "Graphics/VulkanImage.h"
 #include "Graphics/VulkanImageView.h"
 #include <glm/ext/matrix_float4x4.hpp>
+#include <memory>
 
 namespace bl {
 
@@ -15,14 +16,14 @@ class RenderData;
 
 class VulkanViewport {
 
-    VulkanRenderImage* _renderImage;
+    std::unique_ptr<VulkanImage> _renderImage;
 
 public:
     VulkanViewport(VulkanDevice* device, Renderer* renderer, VkExtent2D extent);
     ~VulkanViewport();
 
     void SetExtent(VkExtent2D extent);
-    void SetOutputTexture(VulkanRenderImage& texture);
+    VulkanImage* GetImage();
 };
 
 

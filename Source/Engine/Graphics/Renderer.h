@@ -91,6 +91,8 @@ public:
 
     void PrepareRenderData(RenderData& rd);
 
+    VulkanImageView* GetColorImageView();
+
 
 protected:
     friend class Material;
@@ -120,9 +122,6 @@ private:
     void CreatePerFrameSyncedData();
     void DestroyPerFrameSyncedData();
 
-    // Viewports
-    std::vector<VulkanViewport>         _viewports;
-
     // Render Pass Data
     std::vector<VkImage>                _swapchainImages;
     std::vector<VkImageView>            _swapchainImageViews;
@@ -132,6 +131,8 @@ private:
     VkFormat                            _depthFormat, _positionFormat;
     std::unique_ptr<VulkanImage>        _colorImage;
     std::unique_ptr<VulkanImageView>    _colorImageView;
+    std::unique_ptr<VulkanImage>        _colorImageResolved;
+    std::unique_ptr<VulkanImageView>    _colorImageResolvedView;
     std::unique_ptr<VulkanImage>        _selectionImageSampled;
     std::unique_ptr<VulkanImageView>    _selectionImageSampledView;
     std::unique_ptr<VulkanImage>        _selectionImage;

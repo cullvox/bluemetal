@@ -11,6 +11,7 @@
 #include <Graphics/UniformData.h>
 #include <Graphics/Vertex.h>
 #include <ImGui/ImGuiSystem.h>
+#include <ImGui/imgui_impl_vulkan.h>
 #include <ImGui/implot.h>
 #include <Physics/ObjectLayers.h>
 #include <Physics/PhysicsRenderer.h>
@@ -138,7 +139,6 @@ int main(int argc, const char** argv)
         skyMat->SetScaler("material.starsIntensity", -2.829f);
         skyMat->SetScaler("material.starFalloff", 1.79f);
         skyMat->SetScaler("material.starsFadeModulation", 0.91f);
-        
         
 
         skyMat->SetSampledTexture2D("starsTexture", defaultSampler, noiseTexture);

@@ -3,24 +3,36 @@
 #include "Graphics/VulkanViewport.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_vulkan.h"
-#include <vulkan/vulkan_core.h>
+
+#include "Engine/Engine.h"
+#include "Graphics/Renderer.h"
+#include "Resources/ResourceSystem.h"
+#include "Resources/Sampler.h"
 
 namespace bl {
 
 
 ViewportEditor::ViewportEditor(Engine& engine, EditorSystem& system)
+    : Editor(engine, system)
 {
 
     // Ask the renderer to allocate a couple renderable images.
-    VulkanViewport viewport;
 
-    // Register the images with imgui.
-    auto imageViews = viewport.GetImageViews();
-    _viewportImageDescriptors.reserve(imageViews.size());
+    auto renderer = engine.GetRenderer();
+    auto defaultSampler = engine.GetResourceSystem()->Load<Sampler>("Resources/Samplers/Default.json");
 
-    for (auto imageView : imageViews)
-        _viewportImageDescriptors.push_back(ImGui_ImplVulkan_AddTexture(imageView.Get(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL));
+    auto geometryColor = renderer->GetColorImageView();
+    auto geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler.lock()->Get(), geometryColor->Get(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
+    _geometryColorDescriptor = geometryColorDescriptor;
+}
+
+ViewportEditor::~ViewportEditor()
+{
+    auto renderer = GetEngine().GetRenderer();
+    auto geometryColor = renderer->GetColorImageView();
+
+    ImGui_ImplVulkan_RemoveTexture(_geometryColorDescriptor);
 }
 
 void ViewportEditor::Draw(RenderData& rd)
@@ -30,9 +42,8 @@ void ViewportEditor::Draw(RenderData& rd)
     ImGui::Begin("Viewport", &isOpen);
 
     ImVec2 region = ImGui::GetContentRegionAvail();
-    if (region.x != )
 
-    ImGui::Image(_viewportImageDescriptors[rd.GetCurrentFrame()], )
+    ImGui::Image(_geometryColorDescriptor, region);
         
     ImGui::End();
 

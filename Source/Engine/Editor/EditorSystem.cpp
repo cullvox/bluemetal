@@ -16,6 +16,7 @@ EditorSystem::EditorSystem(Engine& engine)
     , _hierarchy(engine, *this)
     , _inspector(engine, *this)
     , _toolbar(engine, *this)
+    , _viewport(engine, *this)
     , _selectedNode(nullptr)
 {
 
@@ -90,6 +91,7 @@ void EditorSystem::Draw(RenderData& rd)
     _hierarchy.Draw(rd);
     _inspector.Draw(rd);
     _toolbar.Draw(rd);
+    _viewport.Draw(rd);
 }
 
 } // namespace bl

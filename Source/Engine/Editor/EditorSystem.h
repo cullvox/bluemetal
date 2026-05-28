@@ -7,6 +7,7 @@
 #include "HierarchyEditor.h"
 #include "InspectorEditor.h"
 #include "ToolbarEditor.h"
+#include "ViewportEditor.h"
 
 namespace bl {
 
@@ -19,6 +20,7 @@ class EditorSystem : public System {
     HierarchyEditor _hierarchy;
     InspectorEditor _inspector;
     ToolbarEditor _toolbar;
+    ViewportEditor _viewport;
 
     Node* _selectedNode;
 

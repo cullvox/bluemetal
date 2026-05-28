@@ -9,7 +9,7 @@ class VulkanViewport;
 
 class ViewportEditor : public Editor {
 
-    std::vector<VkDescriptorSet> _viewportImageDescriptors;
+    VkDescriptorSet _geometryColorDescriptor;
 
 public:
    ViewportEditor(Engine& engine, EditorSystem& system);

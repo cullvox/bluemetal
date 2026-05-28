@@ -103,6 +103,7 @@ list(APPEND Sources
   "Editor/InspectorEditor.cpp"
   "Editor/EditorSystem.cpp"
   "Editor/ToolbarEditor.cpp"
+  "Editor/ViewportEditor.cpp"
 
   "Core/ClassDB.cpp"
   "Engine/System.cpp"
