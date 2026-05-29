@@ -511,7 +511,6 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     vkCmdEndRendering(cmd);
 
     // Setup barriers for the GUI pass.
-    uint32_t barrierCount = 1;
     std::array<VkImageMemoryBarrier2, 4> barriers = {};
 
     barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -558,6 +557,8 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
         barriers[1].image = _colorImageResolved->Get();
         barriers[1].subresourceRange = range;
 
+        info.imageMemoryBarrierCount = 2;
+
         vkCmdPipelineBarrier2(cmd, &info);
         
         // Resolve the multisampled color image into the resolved color image for the GUI pass.
@@ -583,7 +584,7 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
         barriers[1].subresourceRange = range;
 
         // Transition the resolved color image to a shader read only layout for the GUI pass.
-        barriers[2].srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        barriers[2].srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
         barriers[2].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barriers[2].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
         barriers[2].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -688,7 +689,7 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     if (_queuedSelectionBuffer)
     {
         // Transition the selection image to transfer src for copying to the selection buffer.
-        auto index = _sampleCount != VK_SAMPLE_COUNT_1_BIT ? 2 : 1;
+        auto index = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? 2 : 1;
         barriers[index].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
         barriers[index].pNext = nullptr;
         barriers[index].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -702,7 +703,7 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
         barriers[index].image = _selectionImage->Get();
         barriers[index].subresourceRange = range;
 
-        info.imageMemoryBarrierCount = _sampleCount != VK_SAMPLE_COUNT_1_BIT ? 3 : 2;
+        info.imageMemoryBarrierCount = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? 3 : 2;
     }
 
     vkCmdPipelineBarrier2(cmd, &info);

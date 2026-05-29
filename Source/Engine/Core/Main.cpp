@@ -316,7 +316,6 @@ int main(int argc, const char** argv)
             glm::vec3 cameraDirection = cameraNode->GetWorldRotationEuler();
             cameraDirection.z = 0.0f; // Remove roll for skybox calculations.
 
-            bl::Print::Debug("Camera dir {}, {}, {}", cameraDirection.x, cameraDirection.y, cameraDirection.z);
             skyMat->SetVector3("material.eyeDirection", glm::radians(cameraDirection));
 
             rootNode->Update(frameCounter.GetDeltaTime());

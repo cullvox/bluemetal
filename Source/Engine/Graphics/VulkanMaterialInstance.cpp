@@ -110,7 +110,7 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
     VkDescriptorImageInfo imageInfo = {};
     imageInfo.sampler = sampler->Get();
     imageInfo.imageView = image->GetDefaultView();
-    imageInfo.imageLayout = image->GetLayout();
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
     VkWriteDescriptorSet write = {};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -181,7 +181,7 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
             VkDescriptorImageInfo imageInfo = {};
             imageInfo.sampler = uniform.sampler->Get();
             imageInfo.imageView = uniform.image->GetDefaultView();
-            imageInfo.imageLayout = uniform.image->GetLayout();
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
             VkWriteDescriptorSet write = {};
             write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
