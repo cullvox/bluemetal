@@ -1,6 +1,7 @@
 #pragma once
 
 #include <nlohmann/json.hpp>
+#include <vulkan/vulkan_core.h>
 
 #include "UniformData.h"
 #include "VulkanBuffer.h"
@@ -24,17 +25,6 @@ class VulkanViewport;
 using ObjectFunction = std::function<void(RenderData& rd)>;
 using RenderFunction = std::function<void(RenderData& rd)>;
 
-struct RenderPassData {
-
-    std::vector<VkRenderingAttachmentInfo> attachments;
-    VkRenderingInfo renderingInfo;
-    VkViewport viewport;
-    VkRect2D scissor;
-    RenderPassData* nextPass;
-    VkDependencyInfo prePassDependencies;
-    VkDependencyInfo PostPassDependencies;
-};
-
 /// @brief What does a renderer not do
 ///
 /// * Manage synchronization between frames of swapchains and their images.
@@ -46,9 +36,7 @@ struct RenderPassData {
 /// * Do Render passes from render data.
 /// * Interpret render data.
 /// * Knows what types of passes/image formats are possible.
-/// 
 ///
-
 
 class Renderer {
 public:
@@ -102,12 +90,15 @@ protected:
 
 private:
     VulkanDevice*       _device;
-    VulkanWindow*       _window;
-    VulkanSwapchain*    _swapchain;
     FrameCounter&       _frameCounter;
 
-
     // Frame Synchronization
+    struct SwapchainSync {
+        std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> imageAvailableSemaphore;
+        std::vector<VkSemaphore> renderFinishedSemaphore;
+        std::vector<VkFence> inFlightFences;
+    };
+
     struct PerFrameData {
         VkSemaphore imageAvailableSemaphore;
         VkFence inFlightFence;
@@ -117,14 +108,15 @@ private:
     RenderData                                      _renderData;
     uint32_t                                        _currentFrame = 0;
     std::array<PerFrameData, VulkanConfig::maxFramesInFlight>  _perFrame;
-    std::vector<VkSemaphore>                        _renderFinishedSemaphores;
 
     void CreatePerFrameSyncedData();
     void DestroyPerFrameSyncedData();
 
+    // Viewport Data
+    VulkanViewport* _windowViewport;
+    VulkanViewport* _editorViewport;
+
     // Render Pass Data
-    std::vector<VkImage>                _swapchainImages;
-    std::vector<VkImageView>            _swapchainImageViews;
     bool _changedSampleCount = false;
     VkSampleCountFlagBits               _sampleCount = VK_SAMPLE_COUNT_1_BIT;
     VkSampleCountFlagBits               _newSampleCount = VK_SAMPLE_COUNT_1_BIT;
@@ -153,15 +145,32 @@ private:
 
 
     // Global Uniform Buffer
-    std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache;
+    std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache; 
     GlobalUBO               _uboData;
     VkDescriptorSetLayout   _globalDescriptorLayout;
-    VulkanBufferFrameRing   _globalBuffer;
-    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalDescriptorSets;
 
+    struct UniformData {
+        GlobalUBO uboData;
+        VulkanBufferFrameRing globalBuffer;
+        std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> globalDescriptorSets;
+    };
+    
     void CreateGlobalUniform();
     void DestroyGlobalUniform();
     void UpdateGlobalUniform();
+
+    // Viewports
+    struct ViewportData {
+        VulkanViewport* viewport;
+        UniformData guboData; // Global Uniform Buffer Data
+        SwapchainSync syncData; // Swapchain Sync Information
+    };
+    
+    std::vector<ViewportData> _viewports;
+
+
+    void AddViewport(VulkanViewport* viewport);
+    void RemoveViewport(VulkanViewport* viewport);
 
 
     // Material Uniform Updates
@@ -173,6 +182,7 @@ private:
     VulkanMaterialInstance* _lineMaterial;
     VulkanMaterialInstance* _triangleMaterial;
 
+    void RenderSceneToViewport(ViewportData& vp);
 
 };
 

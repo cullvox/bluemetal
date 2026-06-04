@@ -338,7 +338,7 @@ void Renderer::Render(Node*)
 void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFunction objectFunc)
 {
     // If the window is minimized, we don't draw anything.
-    if (_window->GetMinimized())
+    if (!_windowViewport->IsReady())
         return;
 
     _renderData.SetCurrentFrame(_currentFrame);
@@ -417,7 +417,7 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
 
     VkRect2D renderArea = {};
     renderArea.offset = { 0, 0 };
-    renderArea.extent = _swapchain->GetExtent();
+    renderArea.extent = _windowViewport->GetExtent();
 
     std::array<VkRenderingAttachmentInfo, 2> colorAttachments = {};
     colorAttachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -962,7 +962,7 @@ std::vector<VkFormat> Renderer::GetColorAttachmentFormats(RenderPassType pass)
 std::vector<VkPipelineColorBlendAttachmentState> Renderer::GetColorBlendAttachmentStates(RenderPassType)
 {
 
-    return {{
+    return {{ // Color Buffer
         .blendEnable = VK_TRUE,
         .srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA,
         .dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
@@ -972,7 +972,7 @@ std::vector<VkPipelineColorBlendAttachmentState> Renderer::GetColorBlendAttachme
         .alphaBlendOp = VK_BLEND_OP_ADD,
         .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
     },
-    {
+    { // Selection Buffer
         .blendEnable = VK_FALSE,
         .colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT,
     }};

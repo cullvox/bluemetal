@@ -4,10 +4,9 @@
 #include <string>
 #include <span>
 
-#include "Engine/SDL.h"
 #include "VulkanSwapchain.h"
-#include "Window/Display.h"
 #include "Window/Window.h"
+#include "VulkanViewport.h"
 
 namespace bl {
 
@@ -15,7 +14,7 @@ class VulkanInstance;
 class VulkanDevice;
 class VulkanSwapchain;
 
-class VulkanWindow : public Window {
+class VulkanWindow : public Window, public VulkanViewport {
     VulkanDevice* _device;
     VkSurfaceKHR _surface;
     std::unique_ptr<VulkanSwapchain> _swapchain;
