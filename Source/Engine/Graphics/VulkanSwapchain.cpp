@@ -219,7 +219,7 @@ void VulkanSwapchain::ChooseExtent()
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         _extent = capabilities.currentExtent;
     } else {
-        auto extent = _window->GetExtent();
+        auto extent = _window->Window::GetExtent();
         _extent = {
             std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
             std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)

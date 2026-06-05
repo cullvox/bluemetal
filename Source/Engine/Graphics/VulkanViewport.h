@@ -18,10 +18,9 @@ class VulkanViewport {
 public:
     virtual ~VulkanViewport() = 0;
 
-    virtual void SetExtent(VkExtent2D extent) = 0;
     virtual VkExtent2D GetExtent() = 0;
-    VulkanImage* GetImage() = 0;
-    VulkanImageView* GetImageView() = 0;
+    virtual VulkanImage* GetImage() = 0;
+    virtual VulkanImageView* GetImageView() = 0;
 };
 
 } // namespace bl

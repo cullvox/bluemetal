@@ -62,10 +62,6 @@ public:
     void QueueSelectionBuffer();
     uint32_t GetSelectionValue(const glm::ivec2& position);
 
-    std::vector<VkPresentModeKHR> GetPresentModes();
-    void SetPresentMode(VkPresentModeKHR mode);
-    VkPresentModeKHR GetPresentMode() const;
-
     std::vector<VkSampleCountFlagBits> GetMultisampleCounts();
     void SetMultisampleCount(VkSampleCountFlagBits samples);
     VkSampleCountFlagBits GetMultisampleCount();
@@ -81,16 +77,16 @@ public:
 
     VulkanImageView* GetColorImageView();
 
-
-protected:
-    friend class Material;
-    friend class MaterialInstance;
     void AddMaterial(VulkanMaterialInstance* instance);
     void RemoveMaterial(VulkanMaterialInstance* instance);
+
+    void AddViewport(VulkanViewport* viewport);
+    void RemoveViewport(VulkanViewport* viewport);
 
 private:
     VulkanDevice*       _device;
     FrameCounter&       _frameCounter;
+    VulkanViewport*     _mainViewport;
 
     // Frame Synchronization
     struct SwapchainSync {
@@ -145,6 +141,8 @@ private:
 
 
     // Global Uniform Buffer
+    struct ViewportData;
+
     std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache; 
     GlobalUBO               _uboData;
     VkDescriptorSetLayout   _globalDescriptorLayout;
@@ -154,10 +152,10 @@ private:
         VulkanBufferFrameRing globalBuffer;
         std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> globalDescriptorSets;
     };
-    
-    void CreateGlobalUniform();
-    void DestroyGlobalUniform();
-    void UpdateGlobalUniform();
+
+    void CreateGlobalUniform(ViewportData& vp);
+    void DestroyGlobalUniform(ViewportData& vp);
+    void UpdateGlobalUniform(ViewportData& vp);
 
     // Viewports
     struct ViewportData {
@@ -165,12 +163,11 @@ private:
         UniformData guboData; // Global Uniform Buffer Data
         SwapchainSync syncData; // Swapchain Sync Information
     };
-    
+
     std::vector<ViewportData> _viewports;
 
 
-    void AddViewport(VulkanViewport* viewport);
-    void RemoveViewport(VulkanViewport* viewport);
+
 
 
     // Material Uniform Updates
@@ -182,7 +179,8 @@ private:
     VulkanMaterialInstance* _lineMaterial;
     VulkanMaterialInstance* _triangleMaterial;
 
-    void RenderSceneToViewport(ViewportData& vp);
+    void RenderSceneToViewport(RenderData& rd, ViewportData& vp);
+    void RenderUIToViewport(RenderFunction guiFunc, RenderData& rd, ViewportData& vp);
 
 };
 

@@ -15,10 +15,9 @@
 
 namespace bl {
 
-Renderer::Renderer(VulkanWindow* window, FrameCounter& frameCounter)
+Renderer::Renderer(VulkanViewport* mainViewport, FrameCounter& frameCounter)
     : _device(window->GetDevice())
-    , _window(window)
-    , _swapchain(window->GetSwapchain())
+    , _mainViewport(mainViewport)
     , _frameCounter(frameCounter)
     , _renderData(this)
 {
@@ -31,6 +30,8 @@ Renderer::Renderer(VulkanWindow* window, FrameCounter& frameCounter)
         if (flag & VK_SAMPLE_COUNT_2_BIT)
             _sampleCount = VK_SAMPLE_COUNT_2_BIT;
     }
+
+    AddViewport(mainViewport);
 
     try {
         _descriptorSetCache = std::make_unique<VulkanDescriptorSetAllocatorCache>(_device, 1024, VulkanDescriptorRatio::Default());
@@ -811,7 +812,7 @@ void Renderer::Render(VulkanViewport& viewport, RenderData& data)
 
 }
 
-void Renderer::CreateGlobalUniform()
+void Renderer::CreateGlobalUniform(ViewportData& vp)
 {
     std::vector<VkDescriptorSetLayoutBinding> bindings { 1 };
     bindings[0].binding = 0;
@@ -821,21 +822,21 @@ void Renderer::CreateGlobalUniform()
     bindings[0].pImmutableSamplers = nullptr;
 
     _globalDescriptorLayout = _device->AcquireDescriptorSetLayout(bindings);
-    _globalBuffer = VulkanBufferFrameRing{ _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO) };
+    vp.guboData.globalBuffer = VulkanBufferFrameRing{ _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO) };
 
     std::array<VkDescriptorBufferInfo, VulkanConfig::maxFramesInFlight> descriptorBufferInfos;
     std::array<VkWriteDescriptorSet, VulkanConfig::maxFramesInFlight> descriptorWrites;
 
     for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
     {
-        _globalDescriptorSets[i] = _descriptorSetCache->Allocate(_globalDescriptorLayout);
+        vp.guboData.globalDescriptorSets[i] = _descriptorSetCache->Allocate(_globalDescriptorLayout);
 
-        descriptorBufferInfos[i] = _globalBuffer.GetDescriptorInfo(i);
+        descriptorBufferInfos[i] = vp.guboData.globalBuffer.GetDescriptorInfo(i);
 
         descriptorWrites[i] = {
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .pNext = nullptr,
-            .dstSet = _globalDescriptorSets[i],
+            .dstSet = vp.guboData.globalDescriptorSets[i],
             .dstBinding = 0,
             .dstArrayElement = 0,
             .descriptorCount = 1,
@@ -882,22 +883,6 @@ void Renderer::AddMaterial(VulkanMaterialInstance* material)
 void Renderer::RemoveMaterial(VulkanMaterialInstance* material)
 {
     _materials.erase(material);
-}
-
-std::vector<VkPresentModeKHR> Renderer::GetPresentModes()
-{
-    return _device->GetPhysicalDevice()->GetPresentModes(_window);
-}
-
-void Renderer::SetPresentMode(VkPresentModeKHR mode)
-{
-    recreatePresentMode = mode;
-    recreateRequested = true;
-}
-
-VkPresentModeKHR Renderer::GetPresentMode() const
-{
-    return _swapchain->GetPresentMode();
 }
 
 std::vector<VkSampleCountFlagBits> Renderer::GetMultisampleCounts()
@@ -953,7 +938,7 @@ std::vector<VkFormat> Renderer::GetColorAttachmentFormats(RenderPassType pass)
 {
     std::vector<VkFormat> out;
     switch (pass) {
-        case RenderPassType::eGeometry: return { _swapchain->GetFormat(), VK_FORMAT_R32_UINT };
+        case RenderPassType::eGeometry: return { VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R32_UINT };
     }
 
     return out;
@@ -1000,17 +985,27 @@ void Renderer::UpdateMaterialUniforms()
     }
 }
 
-void Renderer::UpdateGlobalUniform()
+void Renderer::AddViewport(VulkanViewport* viewport)
+{
+    ViewportData newViewportData;
+    newViewportData.viewport = viewport;
+
+    CreateGlobalUniforms(newData);
+    CreateSyncData()
+}
+
+void Renderer::UpdateGlobalUniform(ViewportData& vp)
 {
     const auto currentTime = Time::Current();
-    const auto extent = _swapchain->GetExtent();
+    const auto extent = vp.viewport->GetExtent();
 
     _uboData.time = currentTime;
     _uboData.dt = _frameCounter.GetDeltaTime();
     _uboData.resolution = glm::vec2 { (float)extent.width, (float)extent.height };
     _uboData.mouse = {}; // TODO: mouse position to be added later.
 
-    _globalBuffer.Upload(std::as_bytes(std::span<GlobalUBO, 1>{&_uboData, 1}), _currentFrame);
+    auto& ubo = vp.guboData.globalBuffer;
+    ubo.Upload(std::as_bytes(std::span<GlobalUBO, 1>{&_uboData, 1}), _currentFrame);
 }
 
 VulkanImageView* Renderer::GetColorImageView()
@@ -1024,19 +1019,6 @@ VulkanImageView* Renderer::GetColorImageView()
 RenderData& Renderer::GetRenderData()
 {
     return _renderData;
-}
-
-void Renderer::PrepareRenderData(RenderData& rd)
-{
-
-    auto& frame = _perFrame[_currentFrame];
-
-    rd.SetCurrentFrame(_currentFrame);
-    rd.SetCommandBuffer(frame.commandBuffer);
-    rd.SetGlobalDescriptorSet(_globalDescriptorSets[_currentFrame]);
-    rd.SetSampleCount(_sampleCount);
-
-    rd.SetDebugMaterialInstance(_pointMaterial, _lineMaterial, _triangleMaterial);
 }
 
 void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial)
@@ -1061,5 +1043,185 @@ void Renderer::DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::v
     _renderData.DrawTriangle(a, b, c, thickness, color);
 }
 
+
+void Renderer::RenderSceneToViewport(RenderData& rd, ViewportData& vp)
+{
+    auto cmd = rd.GetCommandBuffer();
+
+    // Update the viewports global uniform buffer object.
+    UpdateGlobalUniform(vp);
+
+    // Setup the render pass for dynamic rendering.
+    std::array clearColors = {
+        VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Clear Color
+        VkClearValue { .depthStencil = { 1.0f, 0 } }, // Clear Depth
+        VkClearValue { .color = { -1, -1, -1, -1 } }
+    };
+
+    auto extent = vp.viewport->GetExtent();
+
+    VkRect2D renderArea = {};
+    renderArea.offset = { 0, 0 };
+    renderArea.extent = extent;
+
+    std::array<VkRenderingAttachmentInfo, 2> colorAttachments = {};
+    colorAttachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    colorAttachments[0].pNext = nullptr;
+    colorAttachments[0].imageView = vp.viewport->GetImageView()->Get();
+    colorAttachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachments[0].resolveMode = VK_RESOLVE_MODE_NONE;
+    colorAttachments[0].resolveImageView = VK_NULL_HANDLE;
+    colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachments[0].clearValue = clearColors[0];
+
+    colorAttachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    colorAttachments[1].pNext = nullptr;
+    colorAttachments[1].imageView = _selectionImageView->Get();
+    colorAttachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachments[1].resolveMode = VK_RESOLVE_MODE_NONE;
+    colorAttachments[1].resolveImageView = VK_NULL_HANDLE;
+    colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachments[1].clearValue = VkClearValue { .color = { -1, -1, -1, -1 } };
+
+    // When using a higher sample count, the image must be resolved from the sampled image.
+    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
+        colorAttachments[0].imageView = _colorImageView->Get();
+        colorAttachments[0].resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
+        colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachments[0].resolveImageView = vp.viewport->GetImageView()->Get();
+
+        colorAttachments[1].imageView = _selectionImageSampledView->Get();
+        colorAttachments[1].resolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+        colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        colorAttachments[1].resolveImageView = _selectionImageView->Get();
+    }
+
+    VkRenderingAttachmentInfo depthAttachment = {};
+    depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    depthAttachment.pNext = nullptr;
+    depthAttachment.imageView = _depthImageView->Get();
+    depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    depthAttachment.resolveMode = VK_RESOLVE_MODE_NONE;
+    depthAttachment.resolveImageView = VK_NULL_HANDLE;
+    depthAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.clearValue = clearColors[1];
+
+    VkRenderingInfo renderingInfo = {};
+    renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+    renderingInfo.pNext = nullptr;
+    renderingInfo.flags = 0;
+    renderingInfo.renderArea = renderArea;
+    renderingInfo.layerCount = 1;
+    renderingInfo.viewMask = 0;
+    renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
+    renderingInfo.pColorAttachments = colorAttachments.data();
+    renderingInfo.pDepthAttachment = &depthAttachment;
+    renderingInfo.pStencilAttachment = nullptr;
+
+    VkImageSubresourceRange range = {};
+    range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    range.baseMipLevel = 0;
+    range.levelCount = 1;
+    range.baseArrayLayer = 0;
+    range.layerCount = 1;
+
+    vkCmdBeginRendering(cmd, &renderingInfo);
+
+    // Set the viewport and scissor sizing for this viewport render.
+    VkViewport viewport;
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)extent.width;
+    viewport.height = (float)extent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewportWithCount(cmd, 1, &viewport);
+
+    VkRect2D scissor;
+    scissor.offset = { 0, 0 };
+    scissor.extent = { extent.width, extent.height };
+    vkCmdSetScissorWithCount(cmd, 1, &scissor);
+
+    // Write the scenes draw commands to the command buffer.
+    _renderData.SetGlobalDescriptorSet(vp.guboData.globalDescriptorSets[_currentFrame]);
+    _renderData.SetSampleCount(_sampleCount);
+    _renderData.WriteDrawCommands();
+
+    // End the scene geometry pass.
+    vkCmdEndRendering(cmd);
+}
+
+void Renderer::RenderUIToViewport(RenderFunction guiFunc, RenderData& rd, ViewportData& vp)
+{
+    auto cmd = rd.GetCommandBuffer();
+
+    // Setup the render pass for dynamic rendering.
+    std::array clearColors = {
+        VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Clear Color
+        VkClearValue { .depthStencil = { 1.0f, 0 } }, // Clear Depth
+        VkClearValue { .color = { -1, -1, -1, -1 } }
+    };
+
+    auto extent = vp.viewport->GetExtent();
+
+    VkRect2D renderArea = {};
+    renderArea.offset = { 0, 0 };
+    renderArea.extent = extent;
+
+    VkRenderingAttachmentInfo colorAttachment = {};
+    colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    colorAttachment.pNext = nullptr;
+    colorAttachment.imageView = vp.viewport->GetImageView()->Get();
+    colorAttachment.imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachment.resolveMode = VK_RESOLVE_MODE_NONE;
+    colorAttachment.resolveImageView = VK_NULL_HANDLE;
+    colorAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.clearValue = clearColors[0];
+
+    // Setup color attachments for the GUI pass.
+    VkRenderingInfo renderingInfo = {};
+    renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
+    renderingInfo.pNext = nullptr;
+    renderingInfo.flags = 0;
+    renderingInfo.renderArea = renderArea;
+    renderingInfo.layerCount = 1;
+    renderingInfo.viewMask = 0;
+    renderingInfo.colorAttachmentCount = 1;
+    renderingInfo.pColorAttachments = &colorAttachment;
+    renderingInfo.pDepthAttachment = nullptr;
+    renderingInfo.pStencilAttachment = nullptr;
+
+    // Begin the GUI render pass.
+    vkCmdBeginRendering(cmd, &renderingInfo);
+
+    // Set the viewport and scissor.
+    VkViewport viewport = {};
+    viewport.x = 0.0f;
+    viewport.y = 0.0f;
+    viewport.width = (float)extent.width;
+    viewport.height = (float)extent.height;
+    viewport.minDepth = 0.0f;
+    viewport.maxDepth = 1.0f;
+    vkCmdSetViewportWithCount(cmd, 1, &viewport);
+
+    VkRect2D scissor = {};
+    scissor.offset = { 0, 0 };
+    scissor.extent = { extent.width, extent.height };
+    vkCmdSetScissorWithCount(cmd, 1, &scissor);
+
+    _renderData.SetSampleCount(VK_SAMPLE_COUNT_1_BIT);
+
+    guiFunc(_renderData);
+
+    vkCmdEndRendering(cmd);
+}
 
 } // namespace bl
