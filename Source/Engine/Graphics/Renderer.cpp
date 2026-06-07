@@ -3,6 +3,7 @@
 #include "Core/Profiler.h"
 #include "Core/Time.h"
 #include "Engine/Engine.h"
+#include "Graphics/RenderData.h"
 #include "GraphicsSystem.h"
 #include "Resources/Mesh.h"
 #include "Scene/Node.h"
@@ -12,54 +13,35 @@
 #include "VulkanImageView.h"
 #include "VulkanMaterial.h"
 #include "VulkanWindow.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
-Renderer::Renderer(VulkanViewport* mainViewport, FrameCounter& frameCounter)
-    : _device(window->GetDevice())
+Renderer::Renderer(VulkanDevice* device, VulkanViewport* mainViewport, FrameCounter& frameCounter)
+    : _device(device)
     , _mainViewport(mainViewport)
     , _frameCounter(frameCounter)
     , _renderData(this)
 {
+    auto physicalDevice = _device->GetPhysicalDevice();
 
-    for (VkSampleCountFlagBits flag : GetMultisampleCounts()) {
-        if (flag & VK_SAMPLE_COUNT_8_BIT)
-            _sampleCount = VK_SAMPLE_COUNT_8_BIT;
-        if (flag & VK_SAMPLE_COUNT_4_BIT)
-            _sampleCount = VK_SAMPLE_COUNT_4_BIT;
-        if (flag & VK_SAMPLE_COUNT_2_BIT)
-            _sampleCount = VK_SAMPLE_COUNT_2_BIT;
-    }
+    _colorFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_R8G8B8A8_UNORM}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
+    _depthFormat  = physicalDevice->FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, 0);
+
+    _descriptorSetCache = std::make_unique<VulkanDescriptorSetAllocatorCache>(_device, 1024, VulkanDescriptorRatio::Default());
 
     AddViewport(mainViewport);
-
-    try {
-        _descriptorSetCache = std::make_unique<VulkanDescriptorSetAllocatorCache>(_device, 1024, VulkanDescriptorRatio::Default());
-
-        auto physicalDevice = _device->GetPhysicalDevice();
-        _depthFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, 0);
-        _positionFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_R32G32B32A32_SFLOAT }, VK_IMAGE_TILING_OPTIMAL, 0);
-
-        CreatePerFrameSyncedData();
-        RecreateImages();
-        CreateGlobalUniform();
-
-    } catch (const std::exception& e) {
-        Print::Error("Failed to initialize renderer: {}", e.what());
-        DestroyGlobalUniform();
-        DestroyImagesAndFramebuffers();
-        DestroyPerFrameSyncedData();
-        throw e;
-    }
 }
 
 Renderer::~Renderer()
 {
     _device->WaitForDevice();
 
-    DestroyGlobalUniform();
-    DestroyImagesAndFramebuffers();
-    DestroyPerFrameSyncedData();
+    for (auto& vp : _viewports) {
+        DestroyGlobalUniform(vp);
+        DestroyImages(vp);
+        DestroyPerFrameSyncData(vp);
+    }
 }
 
 void Renderer::SetProjection(const glm::mat4& projection)
@@ -74,18 +56,18 @@ void Renderer::SetView(const glm::mat4& view)
     _renderData.SetViewMatrix(view);
 }
 
-void Renderer::CreatePerFrameSyncedData()
+void Renderer::CreatePerFrameSyncData(ViewportData& vp)
 {
-    VkCommandBufferAllocateInfo allocateInfo = {};
-    allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    allocateInfo.pNext = nullptr;
-    allocateInfo.commandPool = _device->GetCommandPool();
-    allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    allocateInfo.commandBufferCount = VulkanConfig::maxFramesInFlight;
+    auto& sync = vp.syncData;
 
-    VkCommandBuffer commandBuffers[VulkanConfig::maxFramesInFlight];
-    VK_CHECK(vkAllocateCommandBuffers(_device->Get(), &allocateInfo, commandBuffers))
+    // Some viewports use swapchains and require frame synchronization.
+    if (!vp.viewport->IsSynchronized()) {
+        // This viewport probably renders to a texture, so synchronization is not required.
+        sync.requiresSync = false;
+        return;
+    }
 
+    // Build out the per-frame semaphores infos.
     VkSemaphoreCreateInfo semaphoreInfo = {};
     semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
     semaphoreInfo.pNext = nullptr;
@@ -96,49 +78,87 @@ void Renderer::CreatePerFrameSyncedData()
     fenceInfo.pNext = nullptr;
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
+    // Create the semaphores for each frame in flight.
     for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) 
     {
-        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_perFrame[i].imageAvailableSemaphore))
-        VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_perFrame[i].inFlightFence))
-        _perFrame[i].commandBuffer = commandBuffers[i];
+        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &sync.imageAvailableSemaphores[i]))
+        VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &sync.inFlightFences[i]))
     }
 
-    _renderFinishedSemaphores.resize(_swapchain->GetImageCount());
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++) 
+    // Create a render-finished semaphore for each frame in the synchronization driver.
+    auto imageCount = vp.viewport->GetSynchronizedImageCount();
+    sync.renderFinishedSemaphores.resize(imageCount);
+    for (uint32_t i = 0; i < imageCount; i++) 
     {
-        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
+        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &sync.renderFinishedSemaphores[i]))
     }
 }
 
-void Renderer::DestroyPerFrameSyncedData()
+void Renderer::CreateCommandBuffers()
 {
-    VkCommandBuffer commandBuffers[VulkanConfig::maxFramesInFlight];
+    // Build out the command buffer info.
+    VkCommandBufferAllocateInfo allocateInfo = {};
+    allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    allocateInfo.pNext = nullptr;
+    allocateInfo.commandPool = _device->GetCommandPool();
+    allocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+    allocateInfo.commandBufferCount = VulkanConfig::maxFramesInFlight;
+
+    // Allocate the per-frame in flight command buffers.
+    VK_CHECK(vkAllocateCommandBuffers(_device->Get(), &allocateInfo, _commandBuffers.data()))
+
+
+    VkFenceCreateInfo fenceInfo = {};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.pNext = nullptr;
+    fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+    // Create the fences for each frame in flight
+    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) 
+    {
+        VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_inFlightFences[i]))
+    }
+}
+
+void Renderer::DestroyPerFrameSyncData(ViewportData& vp)
+{
+    auto& sync = vp.syncData; 
+
+    // Destroy all per-frame in flight semaphores.
     for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
     {
-        vkDestroySemaphore(_device->Get(), _perFrame[i].imageAvailableSemaphore, nullptr);
-        vkDestroyFence(_device->Get(), _perFrame[i].inFlightFence, nullptr);
-        commandBuffers[i] = _perFrame[i].commandBuffer;
+        vkDestroySemaphore(_device->Get(), sync.imageAvailableSemaphores[i], nullptr);
     }
 
-    vkFreeCommandBuffers(_device->Get(), _device->GetCommandPool(), VulkanConfig::maxFramesInFlight, commandBuffers);
-
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++)
+    // Destroy all per-image render finished semaphores. 
+    for (uint32_t i = 0; i < vp.viewport->GetSynchronizedImageCount(); i++)
     {
-        vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
+        vkDestroySemaphore(_device->Get(), sync.renderFinishedSemaphores[i], nullptr);
     }
 }
 
-void Renderer::DestroyImagesAndFramebuffers()
+void Renderer::DestroyImages(ViewportData& vp)
 {
-    _colorImage.reset();
-    _depthImage.reset();
+    auto& rd = vp.renderData;
+ 
+    rd.colorImage.reset();
+    rd.colorImageView.reset();
+    rd.colorImageResolved.reset();
+    rd.colorImageResolvedView.reset();
+    rd.selectionImageSampled.reset();
+    rd.selectionImageSampledView.reset();
+    rd.selectionImage.reset();
+    rd.selectionImageView.reset();
+    rd.selectionBuffer.reset();
+    rd.depthImage.reset();
+    rd.depthImageView.reset();
 }
 
-void Renderer::DestroyGlobalUniform()
+void Renderer::DestroyGlobalUniform(ViewportData& vp)
 {
     for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
     {
-        _descriptorSetCache->Free(_globalDescriptorLayout, _globalDescriptorSets[i]);
+        _descriptorSetCache->Free(_globalDescriptorLayout, vp.guboData.globalDescriptorSets[i]);
     }
 }
 
@@ -147,45 +167,43 @@ VulkanDevice* Renderer::GetDevice() const
     return _device;
 }
 
-uint32_t Renderer::GetSwapchainImageCount()
+void Renderer::RecreateImages(ViewportData& vp)
 {
-    return _swapchain->GetImageCount();
-}
+    auto& rd = vp.renderData;
 
-void Renderer::RecreateImages()
-{
-    DestroyImagesAndFramebuffers();
+    // Destroy all the images properly before we move the new ones in.
+    DestroyImages(vp);
 
     // Construct all the image buffers for the passes.
-    auto extent = _swapchain->GetExtent();
-    auto imageExtent = VkExtent3D { extent.width, extent.height, 1 };
+    auto extent = vp.viewport->GetExtent();
+    VkExtent3D imageExtent =  { extent.width, extent.height, 1 };
 
     // Create color image
     VkComponentMapping mapping = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY };
     VkImageSubresourceRange range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
-    _colorImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, _swapchain->GetFormat(), VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, false, _sampleCount);
-    _colorImageView = std::make_unique<VulkanImageView>(_device, _colorImage.get(), VK_IMAGE_VIEW_TYPE_2D, _swapchain->GetFormat(), mapping, range);
+    rd.colorImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, _colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, false, rd.sampleCount);
+    rd.colorImageView = std::make_unique<VulkanImageView>(_device, rd.colorImage.get(), VK_IMAGE_VIEW_TYPE_2D, _colorFormat, mapping, range);
 
-    _colorImageResolved = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, _swapchain->GetFormat(), VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, false, VK_SAMPLE_COUNT_1_BIT);
-    _colorImageResolvedView = std::make_unique<VulkanImageView>(_device, _colorImageResolved.get(), VK_IMAGE_VIEW_TYPE_2D, _swapchain->GetFormat(), mapping, range);
+    rd.colorImageResolved = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, _colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT, false, VK_SAMPLE_COUNT_1_BIT);
+    rd.colorImageResolvedView = std::make_unique<VulkanImageView>(_device, rd.colorImageResolved.get(), VK_IMAGE_VIEW_TYPE_2D, _colorFormat, mapping, range);
 
     // Create selection buffer images
-    _selectionImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
-    _selectionImageView = std::make_unique<VulkanImageView>(_device, _selectionImage.get(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, mapping, range);
+    rd.selectionImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT);
+    rd.selectionImageView = std::make_unique<VulkanImageView>(_device, rd.selectionImage.get(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, mapping, range);
 
-    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) 
+    if (rd.sampleCount != VK_SAMPLE_COUNT_1_BIT) 
     {
-        _selectionImageSampled = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false, _sampleCount);
-        _selectionImageSampledView = std::make_unique<VulkanImageView>(_device, _selectionImageSampled.get(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, mapping, range);
+        rd.selectionImageSampled = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, VK_FORMAT_R32_UINT, VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, false, rd.sampleCount);
+        rd.selectionImageSampledView = std::make_unique<VulkanImageView>(_device, rd.selectionImageSampled.get(), VK_IMAGE_VIEW_TYPE_2D, VK_FORMAT_R32_UINT, mapping, range);
     }
 
-    _selectionBuffer = std::make_unique<VulkanBuffer>(_device, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_TO_CPU, extent.width * extent.height * sizeof(uint32_t), nullptr, true, VMA_ALLOCATION_CREATE_MAPPED_BIT);
+    rd.selectionBuffer = std::make_unique<VulkanBuffer>(_device, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_GPU_TO_CPU, extent.width * extent.height * sizeof(uint32_t), nullptr, true, VMA_ALLOCATION_CREATE_MAPPED_BIT);
 
     // Create depth image
-    _depthImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, _depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, false, _sampleCount);
+    rd.depthImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, imageExtent, _depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, false, rd.sampleCount);
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-    _depthImageView = std::make_unique<VulkanImageView>(_device, _depthImage.get(), VK_IMAGE_VIEW_TYPE_2D, _depthFormat, mapping, range);
+    rd.depthImageView = std::make_unique<VulkanImageView>(_device, rd.depthImage.get(), VK_IMAGE_VIEW_TYPE_2D, _depthFormat, mapping, range);
 
     // Transition depth image
     _device->ImmediateSubmit([&](VkCommandBuffer cmd){
@@ -201,7 +219,7 @@ void Renderer::RecreateImages()
         barriers[0].newLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
         barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[0].image = _depthImage->Get();
+        barriers[0].image = rd.depthImage->Get();
         barriers[0].subresourceRange = { VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1, 0, 1 };
     
         barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -214,7 +232,7 @@ void Renderer::RecreateImages()
         barriers[1].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[1].image = _colorImage->Get();
+        barriers[1].image = rd.colorImage->Get();
         barriers[1].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
         barriers[2].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -227,7 +245,7 @@ void Renderer::RecreateImages()
         barriers[2].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
         barriers[2].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barriers[2].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[2].image = _colorImageResolved->Get();
+        barriers[2].image = rd.colorImageResolved->Get();
         barriers[2].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
         barriers[3].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -240,7 +258,7 @@ void Renderer::RecreateImages()
         barriers[3].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         barriers[3].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barriers[3].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[3].image = _selectionImage->Get();
+        barriers[3].image = rd.selectionImage->Get();
         barriers[3].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
         barriers[4].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
@@ -253,7 +271,7 @@ void Renderer::RecreateImages()
         barriers[4].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         barriers[4].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barriers[4].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[4].image = _selectionImageSampled->Get();
+        barriers[4].image = rd.selectionImageSampled->Get();
         barriers[4].subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
         VkDependencyInfo info = {};
@@ -265,69 +283,6 @@ void Renderer::RecreateImages()
 
         vkCmdPipelineBarrier2(cmd, &info);
     });
-
-
-    // Create image views for swapchain images
-    _swapchainImages = _swapchain->GetImages();
-    _swapchainImageViews = _swapchain->GetImageViews();
-}
-
-VkPipelineStageFlags getPipelineStageFlags(VkImageLayout layout)
-{
-    switch (layout) {
-    case VK_IMAGE_LAYOUT_UNDEFINED:
-        return VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-    case VK_IMAGE_LAYOUT_PREINITIALIZED:
-        return VK_PIPELINE_STAGE_HOST_BIT;
-    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-        return VK_PIPELINE_STAGE_TRANSFER_BIT;
-    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-        return VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
-        return VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-    case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
-        return VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
-    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-        return VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-        return VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    case VK_IMAGE_LAYOUT_GENERAL:
-        assert(false && "Don't know how to get a meaningful VkPipelineStageFlags for VK_IMAGE_LAYOUT_GENERAL! Don't use it!");
-        return 0;
-    default:
-        assert(false);
-        return 0;
-    }
-}
-
-VkAccessFlags getAccessFlags(VkImageLayout layout)
-{
-    switch (layout) {
-    case VK_IMAGE_LAYOUT_UNDEFINED:
-    case VK_IMAGE_LAYOUT_PRESENT_SRC_KHR:
-        return 0;
-    case VK_IMAGE_LAYOUT_PREINITIALIZED:
-        return VK_ACCESS_HOST_WRITE_BIT;
-    case VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL:
-        return VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    case VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL:
-        return VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-    case VK_IMAGE_LAYOUT_FRAGMENT_SHADING_RATE_ATTACHMENT_OPTIMAL_KHR:
-        return VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
-    case VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL:
-        return VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
-        return VK_ACCESS_TRANSFER_READ_BIT;
-    case VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL:
-        return VK_ACCESS_TRANSFER_WRITE_BIT;
-    case VK_IMAGE_LAYOUT_GENERAL:
-        assert(false && "Don't know how to get a meaningful VkAccessFlags for VK_IMAGE_LAYOUT_GENERAL! Don't use it!");
-        return 0;
-    default:
-        assert(false);
-        return 0;
-    }
 }
 
 Profiler profiler;
@@ -336,60 +291,31 @@ void Renderer::Render(Node*)
 {
 }
 
+bool Renderer::ViewportData::RequiresRecreation()
+{
+    auto a = viewport->GetExtent();
+    auto b = renderData.colorImage->GetExtent();
+
+    return a.width != b.width && a.height != b.height;
+}
+
 void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFunction objectFunc)
 {
     // If the window is minimized, we don't draw anything.
-    if (!_windowViewport->IsReady())
+    if (!_mainViewport->IsActive())
         return;
 
     _renderData.SetCurrentFrame(_currentFrame);
 
-    PerFrameData& frame = _perFrame[_currentFrame];
+    // Wait for the any viewport images coming in the chain to finish.
+    VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
+    VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
 
-    // Wait for the current image up coming in the chain to finish.
-    VK_CHECK(vkWaitForFences(_device->Get(), 1, &frame.inFlightFence, VK_TRUE, UINT64_MAX))
-    VK_CHECK(vkResetFences(_device->Get(), 1, &frame.inFlightFence))
-
-    if (recreateRequested) {
-        _device->WaitForDevice(); // Wait for previous commands to complete.
-
-        // DestroyRenderPasses();
-        // CreateRenderPasses();
-        if (_changedSampleCount)
-        {
-            _sampleCount = _newSampleCount;
-            _changedSampleCount = false;
-        }
-        _swapchain->Recreate(recreatePresentMode);
-        RecreateImages();
-        recreateRequested = false;
-        _device->WaitForDevice();
-    }
-
-    // Prepare uniform buffers for the next frame.
-    UpdateMaterialUniforms();
-
-    // Compute the per frame UBO.
-    UpdateGlobalUniform();
-
-    // Swapchain must be valid.
-    if (!_swapchain->Get()) {
-        return;
-    }
-
-    // Acquire the next image in the swapchain and update all render pass
-    // images if the swapchain was recreated within the previous frame.
-    uint32_t imageIndex = 0;
-    if (_swapchain->AcquireNext(imageIndex, frame.imageAvailableSemaphore)) {
-        RecreateImages();
-        return; // skip this frame!
-    }
-
-    _renderData.SetImageIndex(imageIndex);
-
-    auto cmd = frame.commandBuffer;
+    // Reset the command buffer for this frame.
+    auto cmd = _commandBuffers[_currentFrame];
     VK_CHECK(vkResetCommandBuffer(cmd, 0))
 
+    // Begin this frames command buffer.
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.pNext = nullptr;
@@ -398,276 +324,122 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
 
     VK_CHECK(vkBeginCommandBuffer(cmd, &beginInfo))
 
-    _renderData.SetCommandBuffer(cmd);
-    _renderData.SetSampleCount(_sampleCount);
-        // Render all the frame data to the gbuffer.
-    _renderData.SetGlobalDescriptorSet(_globalDescriptorSets[_currentFrame]);
 
-    // This function doesn't know about globals or uniforms yet.
-
-    objectFunc(_renderData);
-
-    _renderData.WriteInstanceBuffer();
-
-    // Setup the render pass for dynamic rendering.
-    std::array clearColors = {
-        VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Clear Color
-        VkClearValue { .depthStencil = { 1.0f, 0 } }, // Clear Depth
-        VkClearValue { .color = { -1, -1, -1, -1 } }
-    };
-
-    VkRect2D renderArea = {};
-    renderArea.offset = { 0, 0 };
-    renderArea.extent = _windowViewport->GetExtent();
-
-    std::array<VkRenderingAttachmentInfo, 2> colorAttachments = {};
-    colorAttachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    colorAttachments[0].pNext = nullptr;
-    colorAttachments[0].imageView = _colorImageView->Get();
-    colorAttachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    colorAttachments[0].resolveMode = VK_RESOLVE_MODE_NONE;
-    colorAttachments[0].resolveImageView = VK_NULL_HANDLE;
-    colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachments[0].clearValue = clearColors[0];
-
-    colorAttachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    colorAttachments[1].pNext = nullptr;
-    colorAttachments[1].imageView = _selectionImageView->Get();
-    colorAttachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    colorAttachments[1].resolveMode = VK_RESOLVE_MODE_NONE;
-    colorAttachments[1].resolveImageView = VK_NULL_HANDLE;
-    colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachments[1].clearValue = VkClearValue { .color = { -1, -1, -1, -1 } };
-
-    // When using a higher sample count, the image must be resolved from the sampled image.
-    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
-        colorAttachments[1].imageView = _selectionImageSampledView->Get();
-        colorAttachments[1].resolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
-        colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachments[1].resolveImageView = _selectionImageView->Get();
-    }
-
-    VkRenderingAttachmentInfo depthAttachment = {};
-    depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    depthAttachment.pNext = nullptr;
-    depthAttachment.imageView = _depthImageView->Get();
-    depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-    depthAttachment.resolveMode = VK_RESOLVE_MODE_NONE;
-    depthAttachment.resolveImageView = VK_NULL_HANDLE;
-    depthAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.clearValue = clearColors[1];
-
-    VkRenderingInfo renderingInfo = {};
-    renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;
-    renderingInfo.pNext = nullptr;
-    renderingInfo.flags = 0;
-    renderingInfo.renderArea = renderArea;
-    renderingInfo.layerCount = 1;
-    renderingInfo.viewMask = 0;
-    renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
-    renderingInfo.pColorAttachments = colorAttachments.data();
-    renderingInfo.pDepthAttachment = &depthAttachment;
-    renderingInfo.pStencilAttachment = nullptr;
-
-    VkImageSubresourceRange range = {};
-    range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    range.baseMipLevel = 0;
-    range.levelCount = 1;
-    range.baseArrayLayer = 0;
-    range.layerCount = 1;
-
-    vkCmdBeginRendering(cmd, &renderingInfo);
+    // Reset the submission info.
+    _submitWaitInfos.clear();
+    _submitSignalInfos.clear();
 
     // Render all the frame data to the gbuffer.
-    _renderData.SetGlobalDescriptorSet(_globalDescriptorSets[_currentFrame]);
+    _renderData.SetCommandBuffer(cmd);
 
-    VkExtent2D extent = _swapchain->GetExtent();
+    // Prepare material uniform buffers for this frame.
+    UpdateMaterialUniforms();
 
-    VkViewport viewport;
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)extent.width;
-    viewport.height = (float)extent.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewportWithCount(cmd, 1, &viewport);
+    // Compute the object data in the render data.
+    objectFunc(_renderData);
 
-    VkRect2D scissor;
-    scissor.offset = { 0, 0 };
-    scissor.extent = { extent.width, extent.height };
-    vkCmdSetScissorWithCount(cmd, 1, &scissor);
+    // Write the instance data to the storage buffer.
+    _renderData.WriteInstanceBuffer();
 
-    _renderData.SetSampleCount(_sampleCount);
+    for (auto& viewport : _viewports) {
 
-    _renderData.WriteDrawCommands();
+        auto& sync = viewport.syncData;
+        auto& rd = viewport.renderData;
+        auto& gubo = viewport.guboData;
 
-    func(_renderData);
+        if (viewport.RequiresRecreation()) {
+            _device->WaitForDevice(); // Wait for previous commands to complete.    
 
-    vkCmdEndRendering(cmd);
+            // Sample Count Something...
 
-    // Setup barriers for the GUI pass.
-    std::array<VkImageMemoryBarrier2, 4> barriers = {};
+            // Recreate the images.
+            RecreateImages(viewport);
+            _device->WaitForDevice();
+        }
 
-    barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-    barriers[0].pNext = nullptr;
-    barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-    barriers[1].pNext = nullptr;
-    barriers[2].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-    barriers[2].pNext = nullptr;
-    barriers[3].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-    barriers[3].pNext = nullptr;
+        // Ensure the viewport is ready.
+        if (!viewport.viewport->IsActive()) {
+            return;
+        }
 
-    VkDependencyInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
-    info.pNext = nullptr;
-    info.dependencyFlags = 0;
-    info.imageMemoryBarrierCount = 1;
-    info.pImageMemoryBarriers = barriers.data();
-    
-    // Resolve the multisampled image if necessary and transition the images for the GUI pass.
-    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
-        // Transition the color attachment to transfer src for resolving.
-        barriers[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        barriers[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        barriers[0].dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        barriers[0].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-        barriers[0].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barriers[0].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[0].image = _colorImage->Get();
-        barriers[0].subresourceRange = range;
+        // Acquire the next image from a synchronized swapchain in the index.
+        if (sync.requiresSync) {
+            if (viewport.viewport->AcquireNextImage(sync.imageAvailableSemaphores[_currentFrame])) {
+                RecreateImages(viewport);
+                return; // skip this frame!
+            }
+        }
 
-        // Transition the resolved color attachment to transfer dst for resolving.
-        barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-        barriers[1].pNext = nullptr;
-        barriers[1].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        barriers[1].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        barriers[1].dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        barriers[1].dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barriers[1].oldLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        barriers[1].newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[1].image = _colorImageResolved->Get();
-        barriers[1].subresourceRange = range;
+        // Compute the per frame per viewport UBO.
+        UpdateGlobalUniform(viewport);
 
-        info.imageMemoryBarrierCount = 2;
+        _renderData.SetSampleCount(rd.sampleCount);
+        _renderData.SetGlobalDescriptorSet(gubo.globalDescriptorSets[_currentFrame]);
 
-        vkCmdPipelineBarrier2(cmd, &info);
-        
-        // Resolve the multisampled color image into the resolved color image for the GUI pass.
-        VkImageResolve resolveInfo = {};
-        resolveInfo.srcSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-        resolveInfo.srcOffset = { 0, 0, 0 };
-        resolveInfo.dstSubresource = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1 };
-        resolveInfo.dstOffset = { 0, 0, 0 };
-        resolveInfo.extent = { extent.width, extent.height, 1 };
+        // Render the scene to the viewport.
+        RenderSceneToViewport(_renderData, viewport);
 
-        vkCmdResolveImage(cmd, _colorImage->Get(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, _colorImageResolved->Get(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &resolveInfo);
-    
-        // Transition the color image back into an color input attachment for the next frame.
-        barriers[1].srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        barriers[1].srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-        barriers[1].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        barriers[1].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        barriers[1].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        barriers[1].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[1].image = _colorImage->Get();
-        barriers[1].subresourceRange = range;
+        // Every viewport with a swapchain must be on the frame sync.
+        if (viewport.syncData.requiresSync) {
+            VkSemaphoreSubmitInfo waitSemaphoreInfo = {};
+            waitSemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+            waitSemaphoreInfo.pNext = nullptr;
+            waitSemaphoreInfo.semaphore = sync.imageAvailableSemaphores[_currentFrame];
+            waitSemaphoreInfo.value = 0;
+            waitSemaphoreInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+            waitSemaphoreInfo.deviceIndex = 0;
 
-        // Transition the resolved color image to a shader read only layout for the GUI pass.
-        barriers[2].srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
-        barriers[2].srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barriers[2].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        barriers[2].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-        barriers[2].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-        barriers[2].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        barriers[2].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[2].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[2].image = _colorImageResolved->Get();
-        barriers[2].subresourceRange = range;
+            _submitWaitInfos.push_back(waitSemaphoreInfo);
 
-        info.imageMemoryBarrierCount = 3;
+            VkSemaphoreSubmitInfo signalSemaphoreInfo = {};
+            signalSemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+            signalSemaphoreInfo.pNext = nullptr;
+            signalSemaphoreInfo.semaphore = sync.renderFinishedSemaphores[viewport.viewport->GetCurrentImageIndex()];
+            signalSemaphoreInfo.value = 0;
+            signalSemaphoreInfo.stageMask = 0;
+            signalSemaphoreInfo.deviceIndex = 0;
 
-    } else { 
-        // Transition the color attachment from the previous pass as a viewport for the GUI pass.
-        barriers[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        barriers[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        barriers[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-        barriers[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-        barriers[1].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barriers[1].newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[1].image = _colorImage->Get();
-        barriers[1].subresourceRange = range;
+            _submitSignalInfos.push_back(signalSemaphoreInfo);
+        }
 
-        info.imageMemoryBarrierCount = 2;
+        if ()
     }
 
     // Setup the swapchain image for the GUI pass.
-    barriers[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    barriers[0].srcAccessMask = 0;
-    barriers[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    barriers[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barriers[0].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    barriers[0].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barriers[0].image = _swapchainImages[imageIndex];
-    barriers[0].subresourceRange = range;
 
-    vkCmdPipelineBarrier2(cmd, &info);
+    VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
+    _mainViewport->GetImage()->Transition(
+        cmd, 
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
+        VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 
+        0, 
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 
+        range);
 
-    // Setup color attachments for the GUI pass.
-    colorAttachments[0].imageView = _swapchainImageViews[imageIndex];
-    colorAttachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    colorAttachments[0].resolveMode = VK_RESOLVE_MODE_NONE;
-    colorAttachments[0].resolveImageView = VK_NULL_HANDLE;
-    colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachments[0].clearValue = clearColors[0];
+    ViewportData* mainViewportData = nullptr;
+    for (int i = 0; i < _viewports.size(); i++) {
+        if (_viewports[i].viewport == _mainViewport) {
+            mainViewportData = &_viewports[i];
+        }
+    }
 
-    renderingInfo.colorAttachmentCount = 1;
-    renderingInfo.pColorAttachments = colorAttachments.data();
-    renderingInfo.pDepthAttachment = nullptr;
+    assert(mainViewportData != nullptr);
 
-    // Begin the GUI render pass.
-    vkCmdBeginRendering(cmd, &renderingInfo);
-    vkCmdSetViewport(cmd, 0, 1, &viewport);
-    vkCmdSetScissor(cmd, 0, 1, &scissor);
-
-    _renderData.SetSampleCount(VK_SAMPLE_COUNT_1_BIT);
-    guiPassFunc(_renderData);
-
-    vkCmdEndRendering(cmd);
+    RenderUIToViewport(guiPassFunc, _renderData, *mainViewportData);
 
     // Barrier transition the swapchain image to a presentable layout.
     range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
     // Transition the swapchain image to present src for presentation.
-    barriers[0].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    barriers[0].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    barriers[0].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    barriers[0].dstAccessMask = 0;
-    barriers[0].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    barriers[0].newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barriers[0].image = _swapchainImages[imageIndex];
-    barriers[0].subresourceRange = range;
-
-    info.imageMemoryBarrierCount = 1;
+    _mainViewport->GetImage()->Transition(
+        cmd, 
+        VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
+        VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT, 
+        VK_IMAGE_LAYOUT_PRESENT_SRC_KHR, 
+        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, 
+        0, 
+        range);
 
     // Transition the color attachment (now a sampled image) back to a color attachment for the next frame.
     if (_sampleCount == VK_SAMPLE_COUNT_1_BIT) {
@@ -687,113 +459,29 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
         info.imageMemoryBarrierCount = 2;
     }
 
-    if (_queuedSelectionBuffer)
-    {
-        // Transition the selection image to transfer src for copying to the selection buffer.
-        auto index = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? 2 : 1;
-        barriers[index].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
-        barriers[index].pNext = nullptr;
-        barriers[index].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        barriers[index].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        barriers[index].dstStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        barriers[index].dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-        barriers[index].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barriers[index].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        barriers[index].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[index].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[index].image = _selectionImage->Get();
-        barriers[index].subresourceRange = range;
-
-        info.imageMemoryBarrierCount = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? 3 : 2;
-    }
-
     vkCmdPipelineBarrier2(cmd, &info);
-
-    if (_queuedSelectionBuffer)
-    {
-        // Copy the selection image to the selection buffer for reading on the CPU.
-        VkImageSubresourceLayers layers = {};
-        layers.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        layers.mipLevel = 0;
-        layers.baseArrayLayer = 0;
-        layers.layerCount = 1;
-
-        VkBufferImageCopy2 copy = {};
-        copy.sType = VK_STRUCTURE_TYPE_BUFFER_IMAGE_COPY_2;
-        copy.pNext = nullptr;
-        copy.bufferOffset = 0;
-        copy.bufferRowLength = 0;
-        copy.bufferImageHeight = 0;
-        copy.imageSubresource = layers;
-        copy.imageOffset = {};
-        copy.imageExtent = VkExtent3D{extent.width, extent.height, 1};
-
-        VkCopyImageToBufferInfo2 selectionCopy = {};
-        selectionCopy.sType = VK_STRUCTURE_TYPE_COPY_IMAGE_TO_BUFFER_INFO_2;
-        selectionCopy.pNext = nullptr;
-        selectionCopy.srcImage = _selectionImage->Get();
-        selectionCopy.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        selectionCopy.dstBuffer = _selectionBuffer->Get();
-        selectionCopy.regionCount = 1;
-        selectionCopy.pRegions = &copy;
-
-        vkCmdCopyImageToBuffer2(cmd, &selectionCopy);
-
-        // Transition the selection image back to a color attachment for the next frame.
-        barriers[0].srcStageMask = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        barriers[0].srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-        barriers[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        barriers[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        barriers[0].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-        barriers[0].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barriers[0].image = _selectionImage->Get();
-        barriers[0].subresourceRange = range;
-
-        info.imageMemoryBarrierCount = 1;
-
-        vkCmdPipelineBarrier2(cmd, &info);
-        _queuedSelectionBuffer = false;
-    }
 
     VK_CHECK(vkEndCommandBuffer(cmd))
 
     // Submit the command buffer to the graphics queue.
-    VkSemaphoreSubmitInfo waitSemaphoreInfo = {};
-    waitSemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-    waitSemaphoreInfo.pNext = nullptr;
-    waitSemaphoreInfo.semaphore = frame.imageAvailableSemaphore;
-    waitSemaphoreInfo.value = 0;
-    waitSemaphoreInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-    waitSemaphoreInfo.deviceIndex = 0;
-
     VkCommandBufferSubmitInfo commandBufferInfo = {};
     commandBufferInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
     commandBufferInfo.pNext = nullptr;
     commandBufferInfo.commandBuffer = cmd;
     commandBufferInfo.deviceMask = 0;
 
-    VkSemaphoreSubmitInfo signalSemaphoreInfo = {};
-    signalSemaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-    signalSemaphoreInfo.pNext = nullptr;
-    signalSemaphoreInfo.semaphore = _renderFinishedSemaphores[imageIndex];
-    signalSemaphoreInfo.value = 0;
-    signalSemaphoreInfo.stageMask = 0;
-    signalSemaphoreInfo.deviceIndex = 0;
-
     VkSubmitInfo2 submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2;
     submitInfo.pNext = nullptr;
     submitInfo.flags = 0;
-    submitInfo.waitSemaphoreInfoCount = 1;
-    submitInfo.pWaitSemaphoreInfos = &waitSemaphoreInfo;
+    submitInfo.waitSemaphoreInfoCount = static_cast<uint32_t>(_submitWaitInfos.size());
+    submitInfo.pWaitSemaphoreInfos = &_submitWaitInfos.data();
     submitInfo.commandBufferInfoCount = 1;
     submitInfo.pCommandBufferInfos = &commandBufferInfo;
-    submitInfo.signalSemaphoreInfoCount = 1;
-    submitInfo.pSignalSemaphoreInfos = &signalSemaphoreInfo;
+    submitInfo.signalSemaphoreInfoCount = static_cast<uint32_t>(_submitSignalInfos.size());
+    submitInfo.pSignalSemaphoreInfos = &_submitSignalInfos.data();
 
-    VK_CHECK(vkQueueSubmit2(_device->GetGraphicsQueue(), 1, &submitInfo, frame.inFlightFence))
+    VK_CHECK(vkQueueSubmit2(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
 
     std::array presentWaitSemaphores = { _renderFinishedSemaphores[imageIndex] };
     if (_swapchain->QueuePresent(imageIndex, presentWaitSemaphores)) {
@@ -802,13 +490,11 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
 
     _renderData.Reset();
 
-
     _currentFrame = (_currentFrame + 1) % VulkanConfig::maxFramesInFlight;
 }
 
 void Renderer::Render(VulkanViewport& viewport, RenderData& data)
 {
-
 
 }
 
@@ -990,8 +676,9 @@ void Renderer::AddViewport(VulkanViewport* viewport)
     ViewportData newViewportData;
     newViewportData.viewport = viewport;
 
-    CreateGlobalUniforms(newData);
-    CreateSyncData()
+    CreateGlobalUniforms(newViewportData);
+    CreatePerFrameSyncData(newViewportData);
+    RecreateImages(newViewportData);
 }
 
 void Renderer::UpdateGlobalUniform(ViewportData& vp)

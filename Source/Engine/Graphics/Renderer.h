@@ -40,7 +40,7 @@ using RenderFunction = std::function<void(RenderData& rd)>;
 
 class Renderer {
 public:
-    Renderer(VulkanWindow* window, FrameCounter& fc); /** @brief Constructor */
+    Renderer(VulkanDevice* device, VulkanViewport* window, FrameCounter& frameCounter); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
     VulkanDevice* GetDevice() const;
@@ -84,65 +84,57 @@ public:
     void RemoveViewport(VulkanViewport* viewport);
 
 private:
-    VulkanDevice*       _device;
-    FrameCounter&       _frameCounter;
-    VulkanViewport*     _mainViewport;
+    VulkanDevice*                                                   _device;
+    FrameCounter&                                                   _frameCounter;
+    VulkanViewport*                                                 _mainViewport;
+    RenderData                                                      _renderData;
+    uint32_t                                                        _currentFrame = 0;
+    std::array<VkCommandBuffer, VulkanConfig::maxFramesInFlight>    _commandBuffers;
+    VkFormat                                                        _colorFormat, _depthFormat, _positionFormat;
+    std::vector<VkFence>                                            _inFlightFences;
 
+    std::vector<VkFence> queuedSemaphores;
+
+    void CreateCommandBuffers();
+    void DestroyCommandBuffers();
+
+    // Now begins all information regarding viewports.
+    struct ViewportData; // Forward Dec
+    
     // Frame Synchronization
     struct SwapchainSync {
-        std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> imageAvailableSemaphore;
-        std::vector<VkSemaphore> renderFinishedSemaphore;
+        bool requiresSync;
+        std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> imageAvailableSemaphores;
+        std::vector<VkSemaphore> renderFinishedSemaphores;
         std::vector<VkFence> inFlightFences;
     };
 
-    struct PerFrameData {
-        VkSemaphore imageAvailableSemaphore;
-        VkFence inFlightFence;
-        VkCommandBuffer commandBuffer;
-    };
-
-    RenderData                                      _renderData;
-    uint32_t                                        _currentFrame = 0;
-    std::array<PerFrameData, VulkanConfig::maxFramesInFlight>  _perFrame;
-
-    void CreatePerFrameSyncedData();
-    void DestroyPerFrameSyncedData();
-
-    // Viewport Data
-    VulkanViewport* _windowViewport;
-    VulkanViewport* _editorViewport;
+    void CreatePerFrameSyncData(ViewportData& vp);
+    void DestroyPerFrameSyncData(ViewportData& vp);
 
     // Render Pass Data
-    bool _changedSampleCount = false;
-    VkSampleCountFlagBits               _sampleCount = VK_SAMPLE_COUNT_1_BIT;
-    VkSampleCountFlagBits               _newSampleCount = VK_SAMPLE_COUNT_1_BIT;
-    VkFormat                            _depthFormat, _positionFormat;
-    std::unique_ptr<VulkanImage>        _colorImage;
-    std::unique_ptr<VulkanImageView>    _colorImageView;
-    std::unique_ptr<VulkanImage>        _colorImageResolved;
-    std::unique_ptr<VulkanImageView>    _colorImageResolvedView;
-    std::unique_ptr<VulkanImage>        _selectionImageSampled;
-    std::unique_ptr<VulkanImageView>    _selectionImageSampledView;
-    std::unique_ptr<VulkanImage>        _selectionImage;
-    std::unique_ptr<VulkanImageView>    _selectionImageView;
-    std::unique_ptr<VulkanBuffer>       _selectionBuffer;
-    std::unique_ptr<VulkanImage>        _depthImage;
-    std::unique_ptr<VulkanImageView>    _depthImageView;
+    struct RenderPassData {
+        bool                                changedSampleCount = false;
+        VkSampleCountFlagBits               sampleCount = VK_SAMPLE_COUNT_1_BIT;
+        VkSampleCountFlagBits               newSampleCount = VK_SAMPLE_COUNT_1_BIT;
+        std::unique_ptr<VulkanImage>        colorImage;
+        std::unique_ptr<VulkanImageView>    colorImageView;
+        std::unique_ptr<VulkanImage>        colorImageResolved;
+        std::unique_ptr<VulkanImageView>    colorImageResolvedView;    
+        std::unique_ptr<VulkanImage>        selectionImageSampled;
+        std::unique_ptr<VulkanImageView>    selectionImageSampledView;
+        std::unique_ptr<VulkanImage>        selectionImage;
+        std::unique_ptr<VulkanImageView>    selectionImageView;
+        std::unique_ptr<VulkanBuffer>       selectionBuffer;
+        std::unique_ptr<VulkanImage>        depthImage;
+        std::unique_ptr<VulkanImageView>    depthImageView;
+        bool                                queuedSelectionBuffer;
+    };
 
-    bool _queuedSelectionBuffer;
-
-    bool                                                        recreateRequested = false;
-    VkPresentModeKHR                                            recreatePresentMode = VK_PRESENT_MODE_FIFO_KHR;
-
-    void DestroyImagesAndFramebuffers();
-    void RecreateImages();
-    void AcquireSampleCounts();
-    void TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageSubresourceRange range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout);
-
+    void RecreateImages(ViewportData& vp);
+    void DestroyImages(ViewportData& vp);
 
     // Global Uniform Buffer
-    struct ViewportData;
-
     std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache; 
     GlobalUBO               _uboData;
     VkDescriptorSetLayout   _globalDescriptorLayout;
@@ -153,7 +145,7 @@ private:
         std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> globalDescriptorSets;
     };
 
-    void CreateGlobalUniform(ViewportData& vp);
+    bool CreateGlobalUniform(ViewportData& vp);
     void DestroyGlobalUniform(ViewportData& vp);
     void UpdateGlobalUniform(ViewportData& vp);
 
@@ -162,12 +154,14 @@ private:
         VulkanViewport* viewport;
         UniformData guboData; // Global Uniform Buffer Data
         SwapchainSync syncData; // Swapchain Sync Information
+        RenderPassData renderData; // Images For Rendering Passes
+
+        bool RequiresRecreation();
     };
 
     std::vector<ViewportData> _viewports;
-
-
-
+    std::vector<VkSemaphoreSubmitInfo> _submitWaitInfos;
+    std::vector<VkSemaphoreSubmitInfo> _submitSignalInfos;
 
 
     // Material Uniform Updates

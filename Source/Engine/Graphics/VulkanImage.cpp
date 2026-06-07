@@ -1,8 +1,10 @@
 #include <stdexcept>
+#include <vulkan/vulkan_core.h>
 
 #include "VulkanImage.h"
 #include "Core/Print.h"
 #include "Graphics/VulkanConversions.h"
+#include "Precompiled.h"
 #include "VulkanBuffer.h"
 
 namespace bl {
@@ -19,7 +21,15 @@ VulkanImage::VulkanImage()
 {
 }
 
-VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D extent, VkFormat format, VkImageUsageFlags usage, bool generateMipmaps, VkSampleCountFlagBits samples, VkImageLayout initialLayout)
+VulkanImage::VulkanImage(
+    VulkanDevice*           device, 
+    VkImageType             type, 
+    VkExtent3D              extent, 
+    VkFormat                format, 
+    VkImageUsageFlags       usage, 
+    bool                    generateMipmaps, 
+    VkSampleCountFlagBits   samples, 
+    VkImageLayout           initialLayout)
     : _device(device)
     , _extent(extent)
     , _type(type)
@@ -29,8 +39,8 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     , _samples(samples)
     , _layout(initialLayout)
     , _defaultView(VK_NULL_HANDLE)
+    , _owned(true)
 {
-
     auto physicalDevice = _device->GetPhysicalDevice();
 
     // Ensure that the format is supported.
@@ -44,8 +54,9 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     imageFormatInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 
     auto imageFormatProperties = physicalDevice->GetImageFormatProperties(imageFormatInfo);
-    if (!imageFormatProperties.has_value())
+    if (!imageFormatProperties.has_value()) {
         throw std::runtime_error("Image format is not supported!");
+    }
 
     auto graphicsFamilyIndex = _device->GetGraphicsFamilyIndex();
 
@@ -86,6 +97,29 @@ VulkanImage::VulkanImage(VulkanDevice* device, VkImageType type, VkExtent3D exte
     _defaultView = CreateView(_usage & VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT, _mipLevels);
 }
 
+VulkanImage::VulkanImage(
+    VulkanDevice*           device, 
+    VkImage                 image, 
+    VkImageType             type, 
+    VkExtent3D              extent, 
+    VkFormat                format,
+    VkImageUsageFlags       usage, 
+    VkSampleCountFlagBits   samples,
+    VkImageLayout           layout)
+    : _device(device)
+    , _extent(extent)
+    , _type(type)
+    , _format(format)
+    , _usage(usage)
+    , _mipLevels(1)
+    , _samples(samples)
+    , _layout(layout)
+    , _image(image)
+    , _defaultView(VK_NULL_HANDLE)
+    , _owned(false)
+{
+}
+
 VulkanImage::VulkanImage(VulkanImage&& rhs)
 {
     this->operator=(std::move(rhs));
@@ -93,7 +127,7 @@ VulkanImage::VulkanImage(VulkanImage&& rhs)
 
 VulkanImage::~VulkanImage()
 {
-    if (!_device)
+    if (!_device || !_owned)
         return;
 
     for (auto view : _views) {
@@ -115,6 +149,7 @@ VulkanImage& VulkanImage::operator=(VulkanImage&& rhs)
     _views = rhs._views;
     _allocation = rhs._allocation;
     _defaultView = rhs._defaultView;
+    _owned = rhs._owned;
 
     rhs._device = {};
     rhs._type = {};
@@ -125,6 +160,7 @@ VulkanImage& VulkanImage::operator=(VulkanImage&& rhs)
     rhs._views = {};
     rhs._allocation = {};
     rhs._defaultView = {};
+    rhs._owned = {};
 
     return *this;
 }
@@ -295,12 +331,21 @@ void VulkanImage::Transition(VkImageLayout layout)
     });
 }
 
-void VulkanImage::Transition(VkCommandBuffer cmd, VkPipelineStageFlags srcStageFlags, VkPipelineStageFlags dstStageFlags, VkImageLayout newLayout, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, const VkImageSubresourceRange& subresourceRange)
+void VulkanImage::Transition(
+    VkCommandBuffer                 cmd, 
+    VkPipelineStageFlags            srcStageFlags, 
+    VkPipelineStageFlags            dstStageFlags, 
+    VkImageLayout                   newLayout,
+    VkAccessFlags                   srcAccessMask, 
+    VkAccessFlags                   dstAccessMask, 
+    const VkImageSubresourceRange&  subresourceRange)
 {
-    VkImageMemoryBarrier barrier = {};
+    VkImageMemoryBarrier2 barrier = {};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.pNext = nullptr;
+    barrier.srcStageMask = srcStageFlags;
     barrier.srcAccessMask = srcAccessMask;
+    barrier.dstStageMask = dstStageFlags;
     barrier.dstAccessMask = dstAccessMask;
     barrier.oldLayout = _layout;
     barrier.newLayout = newLayout;
@@ -309,7 +354,19 @@ void VulkanImage::Transition(VkCommandBuffer cmd, VkPipelineStageFlags srcStageF
     barrier.image = _image;
     barrier.subresourceRange = subresourceRange;
 
-    vkCmdPipelineBarrier(cmd, srcStageFlags, dstStageFlags, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+    VkDependencyInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+    info.pNext = nullptr;
+    info.dependencyFlags = 0;
+    info.memoryBarrierCount = 0;
+    info.pMemoryBarriers = nullptr;
+    info.bufferMemoryBarrierCount = 0;
+    info.pBufferMemoryBarriers = nullptr;
+    info.imageMemoryBarrierCount = 1;
+    info.pImageMemoryBarriers = &barrier;
+
+    vkCmdPipelineBarrier2(cmd, &info);
+
     _layout = newLayout;
 }
 

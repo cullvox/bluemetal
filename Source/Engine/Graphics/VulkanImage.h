@@ -21,6 +21,7 @@ class VulkanImage {
     VkImageView _defaultView;
     std::vector<VkImageView> _views;
     VmaAllocation _allocation;
+    bool _owned = true;
 
     void GenerateMipmaps();
 
@@ -38,14 +39,32 @@ public:
     /// @param generateMipmaps Enable mipmap generation.
     /// @param initialLayout The layout the image is initially.
     VulkanImage(
-        VulkanDevice* device,
-        VkImageType type,
-        VkExtent3D extent,
-        VkFormat format,
-        VkImageUsageFlags usage,
-        bool generateMipmaps = false,
-        VkSampleCountFlagBits samples = VK_SAMPLE_COUNT_1_BIT,
-        VkImageLayout initialLayout = VK_IMAGE_LAYOUT_UNDEFINED);
+        VulkanDevice*           device,
+        VkImageType             type,
+        VkExtent3D              extent,
+        VkFormat                format,
+        VkImageUsageFlags       usage,
+        bool                    generateMipmaps = false,
+        VkSampleCountFlagBits   samples = VK_SAMPLE_COUNT_1_BIT,
+        VkImageLayout           initialLayout = VK_IMAGE_LAYOUT_UNDEFINED);
+
+    /// @brief Non-Owning Image Constructor
+    /// @param device Device to contruct the image from.
+    /// @param image Non-owned image handle.
+    /// @param type Type of image to create.
+    /// @param extent The extent in pixels of the image.
+    /// @param format The format for pixel storage and data representation.
+    /// @param usage What the image is used for in api.
+    /// @param samples Sample count of the image created.
+    VulkanImage(
+        VulkanDevice*           device, 
+        VkImage                 image, 
+        VkImageType             type, 
+        VkExtent3D              extent, 
+        VkFormat                format, 
+        VkImageUsageFlags       usage, 
+        VkSampleCountFlagBits   samples,
+        VkImageLayout           layout);
 
     /// @brief Move Constructor
     /// @param image The other image to move it's data into this new object.
