@@ -36,6 +36,7 @@ list(APPEND Sources
   "Graphics/VulkanMaterialInstance.cpp"
   "Graphics/VulkanMesh.cpp"
   "Graphics/RenderData.cpp"
+  "Graphics/Viewport.cpp"
   "Graphics/Renderer.cpp"
   "Graphics/GraphicsSystem.cpp"
 

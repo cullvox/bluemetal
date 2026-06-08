@@ -5,10 +5,11 @@
 namespace bl {
 
 FrameCounter::FrameCounter(int maxFramesCounted)
-    : _maximumHeldFramesPerSecond(maxFramesCounted)
+    :_maximumHeldFramesPerSecond(maxFramesCounted)
     , _frameLimiterEnabled(false)
     , _frameLimiterFPS(144)
 {
+    _startOfClock = std::chrono::high_resolution_clock::now();
 }
 
 FrameCounter::~FrameCounter()
@@ -69,7 +70,7 @@ bool FrameCounter::EndFrame()
 
     using sec = std::chrono::seconds;
     using durf = std::chrono::duration<float>;
-    
+
     durf duration = _endOfFrame - _startOfFrame;
 
     _delta = duration.count();
@@ -149,6 +150,11 @@ float FrameCounter::GetAverageMillisecondsPerFrame(uint32_t frames)
 float FrameCounter::GetDeltaTime() const
 {
     return _delta;
+}
+
+float FrameCounter::GetBeginFrameTime() const
+{
+    return std::chrono::duration<float>(_startOfFrame - _startOfClock).count();
 }
 
 uint64_t FrameCounter::GetCurrentFrameTimeNS() const

@@ -19,6 +19,7 @@ public:
     float GetMillisecondsPerFrame();
     float GetAverageMillisecondsPerFrame(uint32_t frames);
     float GetDeltaTime() const;
+    float GetBeginFrameTime() const; // Time BeginFrame() was called.
     uint64_t GetCurrentFrameTimeNS() const;
     void SetFrameLimiterEnabled(bool enabled);
     void SetFrameLimiterFPS(uint32_t fpsLimit);
@@ -28,6 +29,7 @@ private:
 
     uint64_t _frameCount = 0;
     uint32_t _numFramesInSecond = 0;
+    time_point _startOfClock;
     time_point _startOfFrame;
     time_point _endOfFrame;
     time_point _lastSecond;

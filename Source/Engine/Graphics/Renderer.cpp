@@ -406,7 +406,6 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     }
 
     // Setup the swapchain image for the GUI pass.
-
     VkImageSubresourceRange range = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1};
     _mainViewport->GetImage()->Transition(
         cmd, 
@@ -475,17 +474,20 @@ void Renderer::Render(RenderFunction func, RenderFunction guiPassFunc,  ObjectFu
     submitInfo.pNext = nullptr;
     submitInfo.flags = 0;
     submitInfo.waitSemaphoreInfoCount = static_cast<uint32_t>(_submitWaitInfos.size());
-    submitInfo.pWaitSemaphoreInfos = &_submitWaitInfos.data();
+    submitInfo.pWaitSemaphoreInfos = _submitWaitInfos.data();
     submitInfo.commandBufferInfoCount = 1;
     submitInfo.pCommandBufferInfos = &commandBufferInfo;
     submitInfo.signalSemaphoreInfoCount = static_cast<uint32_t>(_submitSignalInfos.size());
-    submitInfo.pSignalSemaphoreInfos = &_submitSignalInfos.data();
+    submitInfo.pSignalSemaphoreInfos = _submitSignalInfos.data();
 
     VK_CHECK(vkQueueSubmit2(_device->GetGraphicsQueue(), 1, &submitInfo, _inFlightFences[_currentFrame]))
 
-    std::array presentWaitSemaphores = { _renderFinishedSemaphores[imageIndex] };
-    if (_swapchain->QueuePresent(imageIndex, presentWaitSemaphores)) {
-        RecreateImages();
+    for (auto& vp : _viewports) {
+        if (vp.syncData.requiresSync) {
+            if (vp.viewport->Present(vp.syncData.renderFinishedSemaphores[vp.viewport->GetCurrentImageIndex()])) {
+                RecreateImages(vp);
+            }
+        }
     }
 
     _renderData.Reset();
@@ -534,27 +536,27 @@ void Renderer::CreateGlobalUniform(ViewportData& vp)
     vkUpdateDescriptorSets(_device->Get(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
-void Renderer::TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageSubresourceRange range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout)
-{
-    VkImageMemoryBarrier barrier = {};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-    barrier.pNext = nullptr;
-    barrier.srcAccessMask = srcAccessMask;
-    barrier.dstAccessMask = dstAccessMask;
-    barrier.oldLayout = oldLayout;
-    barrier.newLayout = newLayout;
-    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-    barrier.image = image;
-    barrier.subresourceRange = range;
+// void Renderer::TransitionImageLayout(VkCommandBuffer cmd, VkImage image, VkImageSubresourceRange range, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkImageLayout oldLayout, VkImageLayout newLayout)
+// {
+//     VkImageMemoryBarrier barrier = {};
+//     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+//     barrier.pNext = nullptr;
+//     barrier.srcAccessMask = srcAccessMask;
+//     barrier.dstAccessMask = dstAccessMask;
+//     barrier.oldLayout = oldLayout;
+//     barrier.newLayout = newLayout;
+//     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+//     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+//     barrier.image = image;
+//     barrier.subresourceRange = range;
 
-    vkCmdPipelineBarrier(cmd, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-}
+//     vkCmdPipelineBarrier(cmd, srcStageMask, dstStageMask, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+// }
 
-void Renderer::QueueSelectionBuffer()
-{
-    _queuedSelectionBuffer = true;
-}
+// void Renderer::QueueSelectionBuffer(ViewportData& vp)
+// {
+//     vp.renderData.queuedSelectionBuffer = true;
+// }
 
 uint32_t Renderer::GetSelectionValue(const glm::ivec2&)
 {
@@ -664,6 +666,11 @@ VkFormat Renderer::GetStencilAttachmentFormat(RenderPassType pass)
     }
 }
 
+VulkanDescriptorSetAllocatorCache* Renderer::GetDescriptorSetAllocatorCache()
+{
+    return _descriptorSetCache.get();
+}
+
 void Renderer::UpdateMaterialUniforms()
 {
     for (auto instance : _materials) {
@@ -676,7 +683,7 @@ void Renderer::AddViewport(VulkanViewport* viewport)
     ViewportData newViewportData;
     newViewportData.viewport = viewport;
 
-    CreateGlobalUniforms(newViewportData);
+    CreateGlobalUniform(newViewportData);
     CreatePerFrameSyncData(newViewportData);
     RecreateImages(newViewportData);
 }
@@ -708,6 +715,16 @@ RenderData& Renderer::GetRenderData()
     return _renderData;
 }
 
+float Renderer::GetCurrentFrameTime()
+{
+    return _frameCounter.GetBeginFrameTime();
+}
+
+float Renderer::GetCurrentFrameDeltaTime()
+{
+    return _frameCounter.GetDeltaTime();
+}
+
 void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial)
 {
     _pointMaterial = pointMaterial;
@@ -734,6 +751,8 @@ void Renderer::DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::v
 void Renderer::RenderSceneToViewport(RenderData& rd, ViewportData& vp)
 {
     auto cmd = rd.GetCommandBuffer();
+
+    auto& renderData = vp.renderData;
 
     // Update the viewports global uniform buffer object.
     UpdateGlobalUniform(vp);
@@ -765,7 +784,7 @@ void Renderer::RenderSceneToViewport(RenderData& rd, ViewportData& vp)
 
     colorAttachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     colorAttachments[1].pNext = nullptr;
-    colorAttachments[1].imageView = _selectionImageView->Get();
+    colorAttachments[1].imageView = renderData.selectionImageView->Get();
     colorAttachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     colorAttachments[1].resolveMode = VK_RESOLVE_MODE_NONE;
     colorAttachments[1].resolveImageView = VK_NULL_HANDLE;
@@ -775,22 +794,22 @@ void Renderer::RenderSceneToViewport(RenderData& rd, ViewportData& vp)
     colorAttachments[1].clearValue = VkClearValue { .color = { -1, -1, -1, -1 } };
 
     // When using a higher sample count, the image must be resolved from the sampled image.
-    if (_sampleCount != VK_SAMPLE_COUNT_1_BIT) {
-        colorAttachments[0].imageView = _colorImageView->Get();
+    if (renderData.sampleCount != VK_SAMPLE_COUNT_1_BIT) {
+        colorAttachments[0].imageView = renderData.colorImageView->Get();
         colorAttachments[0].resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
         colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         colorAttachments[0].resolveImageView = vp.viewport->GetImageView()->Get();
 
-        colorAttachments[1].imageView = _selectionImageSampledView->Get();
+        colorAttachments[1].imageView = renderData.selectionImageSampledView->Get();
         colorAttachments[1].resolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
         colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachments[1].resolveImageView = _selectionImageView->Get();
+        colorAttachments[1].resolveImageView = renderData.selectionImageView->Get();
     }
 
     VkRenderingAttachmentInfo depthAttachment = {};
     depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     depthAttachment.pNext = nullptr;
-    depthAttachment.imageView = _depthImageView->Get();
+    depthAttachment.imageView = renderData.depthImageView->Get();
     depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
     depthAttachment.resolveMode = VK_RESOLVE_MODE_NONE;
     depthAttachment.resolveImageView = VK_NULL_HANDLE;
@@ -837,7 +856,7 @@ void Renderer::RenderSceneToViewport(RenderData& rd, ViewportData& vp)
 
     // Write the scenes draw commands to the command buffer.
     _renderData.SetGlobalDescriptorSet(vp.guboData.globalDescriptorSets[_currentFrame]);
-    _renderData.SetSampleCount(_sampleCount);
+    _renderData.SetSampleCount(renderData.sampleCount);
     _renderData.WriteDrawCommands();
 
     // End the scene geometry pass.

@@ -38,6 +38,7 @@ using RenderFunction = std::function<void(RenderData& rd)>;
 /// * Knows what types of passes/image formats are possible.
 ///
 
+
 class Renderer {
 public:
     Renderer(VulkanDevice* device, VulkanViewport* window, FrameCounter& frameCounter); /** @brief Constructor */
@@ -59,8 +60,8 @@ public:
     void DrawLine(const glm::vec3& a, const glm::vec3& b, float thickness = 1.0f, Color color = Color::Violet());
     void DrawTriangle(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c, float thickness = 1.0f, Color color = Color::Violet());
 
-    void QueueSelectionBuffer();
-    uint32_t GetSelectionValue(const glm::ivec2& position);
+    //void QueueSelectionBuffer(ViewportData& vp);
+    //uint32_t GetSelectionValue(const glm::ivec2& position);
 
     std::vector<VkSampleCountFlagBits> GetMultisampleCounts();
     void SetMultisampleCount(VkSampleCountFlagBits samples);
@@ -71,7 +72,15 @@ public:
     VkFormat GetDepthAttachmentFormat(RenderPassType pass);
     VkFormat GetStencilAttachmentFormat(RenderPassType pass);
 
+    VulkanDescriptorSetAllocatorCache* GetDescriptorSetAllocatorCache();
+
     RenderData& GetRenderData();
+
+    float GetCurrentFrameTime(); // In seconds, the current time of this rendered frame.
+    float GetCurrentFrameDeltaTime(); // In seconds, the time between frames.
+
+    // Depending on if the renderer is running on an HDR format.
+    VkFormat GetViewportColorFormat();
 
     void PrepareRenderData(RenderData& rd);
 
@@ -97,17 +106,6 @@ private:
 
     void CreateCommandBuffers();
     void DestroyCommandBuffers();
-
-    // Now begins all information regarding viewports.
-    struct ViewportData; // Forward Dec
-    
-    // Frame Synchronization
-    struct SwapchainSync {
-        bool requiresSync;
-        std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> imageAvailableSemaphores;
-        std::vector<VkSemaphore> renderFinishedSemaphores;
-        std::vector<VkFence> inFlightFences;
-    };
 
     void CreatePerFrameSyncData(ViewportData& vp);
     void DestroyPerFrameSyncData(ViewportData& vp);
@@ -145,7 +143,7 @@ private:
         std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> globalDescriptorSets;
     };
 
-    bool CreateGlobalUniform(ViewportData& vp);
+    void CreateGlobalUniform(ViewportData& vp);
     void DestroyGlobalUniform(ViewportData& vp);
     void UpdateGlobalUniform(ViewportData& vp);
 
@@ -175,6 +173,13 @@ private:
 
     void RenderSceneToViewport(RenderData& rd, ViewportData& vp);
     void RenderUIToViewport(RenderFunction guiFunc, RenderData& rd, ViewportData& vp);
+
+    class RenderNode {
+        RenderNode* next;
+        ViewportData* renderPort;
+
+        std::vector<ViewportData*> viewportDependencies;
+    };
 
 };
 
