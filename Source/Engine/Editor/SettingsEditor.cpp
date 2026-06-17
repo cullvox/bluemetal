@@ -28,7 +28,7 @@ SettingsEditor::SettingsEditor(Engine& engine, EditorSystem& system)
     , _frameCounter(_engine.GetFrameCounter())
 {
     _presentModes = _graphics.GetPhysicalDevice()->GetPresentModes(_graphics.GetWindow());
-    _multisampleModes = _renderer->GetMultisampleCounts();
+    // _multisampleModes = _renderer->GetMultisampleCounts();
 }
 
 SettingsEditor::~SettingsEditor()
@@ -82,7 +82,7 @@ static const char* UserFriendlyMultisampleModeName(VkSampleCountFlagBits samples
     }
 }
 
-void SettingsEditor::Draw(RenderData& renderData)
+void SettingsEditor::Draw(RenderData& rd)
 {
     if (!GetShown()) {
         return;
@@ -98,22 +98,23 @@ void SettingsEditor::Draw(RenderData& renderData)
     if (ImGui::TreeNode("Renderer")) {
 
         ImGui::SeparatorText("Present Mode");
-        for (std::size_t i = 0; i < _presentModes.size(); i++) {
-            if (ImGui::RadioButton(UserFriendlyPresentModeName(_presentModes[i]), _presentModes[i] == _renderer->GetPresentMode())) {
-                _renderer->SetPresentMode(_presentModes[i]);
-            }
-            ImGui::HelpMarker(UserFriendlyPresentModeDescription(_presentModes[i]));
-        }
+        //for (std::size_t i = 0; i < _presentModes.size(); i++) {
+        //    if (ImGui::RadioButton(UserFriendlyPresentModeName(_presentModes[i]), _presentModes[i] == rd.GetViewport())) 
+        //    {
+        //        _renderer->SetPresentMode(_presentModes[i]);
+        //    }
+        //    ImGui::HelpMarker(UserFriendlyPresentModeDescription(_presentModes[i]));
+        //}
 
         ImGui::SeparatorText("Multisample Anti-aliasing (MSAA)");
 
-        for (std::size_t i = 0; i < _multisampleModes.size(); i++) {
-            if (ImGui::RadioButton(UserFriendlyMultisampleModeName(_multisampleModes[i]), _multisampleModes[i] == _renderer->GetMultisampleCount())) {
-                _renderer->SetMultisampleCount(_multisampleModes[i]);
-            }
-            if (i != _multisampleModes.size() - 1)
-                ImGui::SameLine();
-        }
+        // for (std::size_t i = 0; i < _multisampleModes.size(); i++) {
+        //     if (ImGui::RadioButton(UserFriendlyMultisampleModeName(_multisampleModes[i]), _multisampleModes[i] == _renderer->GetMultisampleCount())) {
+        //         _renderer->SetMultisampleCount(_multisampleModes[i]);
+        //     }
+        //     if (i != _multisampleModes.size() - 1)
+        //         ImGui::SameLine();
+        // }
 
         ImGui::HelpMarker("Reduces jagged edges by averaging samples together. Looks good, may cause performance reduction.");
 

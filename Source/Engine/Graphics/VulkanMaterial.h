@@ -130,7 +130,6 @@ private:
     std::unique_ptr<VulkanPipeline> _pipeline;
     UniformMap _uniforms;
     SamplerMap _samplers;
-    uint32_t _swapchainImageCount;
     VkDescriptorSetLayout _layout;
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
     VulkanMaterialSupportFlags _flags;

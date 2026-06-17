@@ -1,11 +1,8 @@
-#include <stdexcept>
-#include <vulkan/vulkan_core.h>
-
 #include "VulkanImage.h"
-#include "Core/Print.h"
-#include "Graphics/VulkanConversions.h"
+#include "VulkanPhysicalDevice.h"
 #include "Precompiled.h"
 #include "VulkanBuffer.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -341,7 +338,7 @@ void VulkanImage::Transition(
     const VkImageSubresourceRange&  subresourceRange)
 {
     VkImageMemoryBarrier2 barrier = {};
-    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+    barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
     barrier.pNext = nullptr;
     barrier.srcStageMask = srcStageFlags;
     barrier.srcAccessMask = srcAccessMask;

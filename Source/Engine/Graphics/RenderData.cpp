@@ -120,6 +120,26 @@ void RenderData::SetViewMatrix(const glm::mat4& view)
     _view = view;
 }
 
+void RenderData::SetCurrentFrameTime(float frameTime)
+{
+    _frameTime = frameTime;
+}
+
+void RenderData::SetDeltaFrameTime(float deltaFrameTime)
+{
+    _deltaFrameTime = deltaFrameTime;
+}
+
+void RenderData::AddRenderWaitSemaphore(const VkSemaphoreSubmitInfo& semaphoreInfo)
+{
+    _waitSemaphores.push_back(semaphoreInfo);
+}
+
+void RenderData::AddRenderSignalSemaphore(const VkSemaphoreSubmitInfo& semaphoreInfo)
+{
+    _signalSemaphores.push_back(semaphoreInfo);
+}
+
 static Profiler profiler;
 
 void RenderData::Draw(const VulkanMaterialInstance* material, uint32_t vertexCount)
@@ -212,6 +232,31 @@ VkSampleCountFlagBits RenderData::GetSampleCount()
     return _sampleCount;
 }
 
+Viewport* RenderData::GetViewport()
+{
+    return _viewport;
+}
+
+float RenderData::GetCurrentFrameTime()
+{
+    return _frameTime;
+}
+
+float RenderData::GetDeltaFrameTime()
+{
+    return _deltaFrameTime;
+}
+
+const std::vector<VkSemaphoreSubmitInfo>& RenderData::GetRenderWaitSemaphores()
+{
+    return _waitSemaphores;
+}
+
+const std::vector<VkSemaphoreSubmitInfo>& RenderData::GetRenderSignalSemaphores()
+{
+    return _signalSemaphores;
+}
+
 void RenderData::Reset()
 {
     _calls.clear();
@@ -222,6 +267,9 @@ void RenderData::Reset()
     _lines.clear();
     _triangles.clear();
     _debugVertices.clear();
+
+    _waitSemaphores.clear();
+    _signalSemaphores.clear();
 }
 
 void RenderData::DrawPoint(const glm::vec3& point, float size, Color color)

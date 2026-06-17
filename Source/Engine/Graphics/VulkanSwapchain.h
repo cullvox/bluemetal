@@ -1,13 +1,12 @@
 #pragma once
 
-#include <optional>
-#include <vector>
-#include <array>
-
 #include "VulkanDevice.h"
 #include "Window/Window.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
+
+class VulkanWindow;
 
 /// @brief Swap present images for rendering multiple frames at a time.
 class VulkanSwapchain {
@@ -49,6 +48,7 @@ private:
     VkSwapchainKHR _swapchain;
     std::vector<VkImage> _swapImages;
     std::vector<VkImageView> _swapImageViews;
+    VkImageUsageFlags _imageUsageFlags;
     bool _isMailboxSupported;
     bool _isImmediateSupported;
 
@@ -108,6 +108,9 @@ public:
      */
     VkSurfaceFormatKHR GetSurfaceFormat() const;
 
+
+    VkImageUsageFlags GetImageUsageFlags() const;
+
     /**
      * @brief Returns the images that are being swapped in the swapchain.
      * @return A vector of VkImage handles representing the swapchain images.
@@ -134,7 +137,7 @@ public:
     void Recreate(std::optional<VkPresentModeKHR> presentMode = {}, std::optional<VkSurfaceFormatKHR> surfaceFormat = {});
     bool AcquireNext(uint32_t& imageIndex, VkSemaphore imageAvailableSemaphore);
     void QueueSubmit(VkCommandBuffer cmd, VkPipelineStageFlags waitDstStageMask);
-    bool QueuePresent(uint32_t imageIndex, std::span<VkSemaphore> waitSemaphores); /** Presents the image at GetImageIndex() to the screen. */
+    bool QueuePresent(uint32_t imageIndex, VkSemaphore waitSemaphores); /** Presents the image at GetImageIndex() to the screen. */
     void Destroy();
 };
 

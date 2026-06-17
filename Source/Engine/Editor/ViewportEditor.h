@@ -10,10 +10,11 @@ class VulkanViewport;
 class ViewportEditor : public Editor {
 
     VkDescriptorSet _geometryColorDescriptor;
+    std::unique_ptr<Viewport> _viewport;
 
 public:
-   ViewportEditor(Engine& engine, EditorSystem& system);
-    ~ViewportEditor();
+   ViewportEditor(Engine& engine, EditorSystem& system); 
+   ~ViewportEditor();
 
     virtual void Draw(RenderData& rd);
 

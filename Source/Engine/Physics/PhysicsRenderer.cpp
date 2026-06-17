@@ -121,7 +121,7 @@ void PhysicsRenderer::SetCameraPosition(glm::vec3 position)
 
 void PhysicsRenderer::WriteInstances()
 {
-    _renderer->PrepareRenderData(_rd);
+    //_renderer->PrepareRenderData(_rd);
     _rd.WriteInstanceBuffer();
 }
 
@@ -129,7 +129,7 @@ void PhysicsRenderer::RecordCommands()
 {
     if (!_enable) return;
 
-    _renderer->PrepareRenderData(_rd);
+    //_renderer->PrepareRenderData(_rd);
     _rd.WriteInstanceBuffer();
     vkCmdSetLineWidth(_rd.GetCommandBuffer(), 2.0f);
     _rd.WriteDrawCommands();

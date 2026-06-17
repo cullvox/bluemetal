@@ -1,0 +1,1784 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<FinalDraft DocumentType="Script" Template="No" Version="5">
+
+  <Content>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="3/8" Page="1" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. GARDEN - DAY </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A person kneels in the garden. He curates his garden and the plants within it.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>SUPER: SIXTEEN WEEKS AGO</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m exactly two dozen years and seventeen weeks old. I enjoy gardening, and making things. However this was 16 weeks ago. That was back when I had a regulated nervous system.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="1" Page="1" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="DAN">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="IAN">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="KIMBERLY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="NICK">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="SHELLY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="UNKNOWN PERSON">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. Work - Day</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>SUPER: NOW</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A series of people walk past each greeting him with mostly the same variations.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Shelly.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>SHELLY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hey Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Kimberly.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>KIMBERLY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Ian.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>IAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Yo Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello- um hey, could you-</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>UNKNOWN PERSON</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>It’s Dan. I hired you.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Dan gestures. An awkward moment passes.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Dan intends for Lucky to continue the morning greeting.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Oh, right. Hello Dan.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Um- Hello Nick.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>NiCK</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>It’s Nile, but close enough.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>They probably don’t like my performance this quarter, it’s only been sixteen weeks, but that’s enough to make an impression.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="1 2/8" Page="2" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="DAN">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="NILE">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. MEETING - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Lucky, you’ve clearly made </Text>
+      <Text Style="Italic">an </Text>
+      <Text>impression.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>How’s my performance been?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>We don’t like your performance this quarter either.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Is there-</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Before you ask if there’s anything you can do better. Firstly your spread sheets require a bit of reordering, sometimes it’s difficult to understand the concepts you’re trying to get across. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He pulls out an example of a graph an points.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Dan</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Here, time is always on the bottom of the graph. </Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Is there anything else.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Multiple people walk in and sit down next to Dan, the room is much more unbalanced. The room seems to expand.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Yes actually, we’d like it if you could talk to some of your coworkers. Firstly let’s do another example of your greeting from earlier. Not only did you forget my name, but you also got Nile’s name wrong.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I apologize for mistaking your name Nile.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Nile</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m feeling a little less dissatisfaction than earlier. Your erratic behavior brings a unique presence to my day.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Thank you.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>NILE</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I believe that Dan also has a comment.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Yes. Lucky, you forgot my name this morning.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="1 1/8" Page="3" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="BULLY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="FRIEND 2">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="MOLINA">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. HOME - NIGHT </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Lucky sits on the couch. It’s a mess by his standards, he has a unique way of keeping messes together. Towers of empty cans perfectly stacked. Wrappers perfectly collapsed piled on another. Boxes perfectly broken down.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I sometimes sit on my couch, my home is a complete mess now too. The time required to do the things that I must do is dwindling by the day since I have no peace anymore. </Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Lucky takes a breath.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>When I was a kid people used to say things about me.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>BEGIN MONTAGE</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>All characters in this montage are voiced by Lucky’s VO.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MOLINA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You have an incredible proficiency Lucky, I wouldn’t be surprised if an esteemed university made you a poster child.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>FRIEND 2</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>However so clever</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>however still small</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>you’ll grow bright</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I know you’ll get tall.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>She did have a way with words. She went insane in prison, then had a myocardial infarction from the pills they gave her.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>BULLY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>However so beaten</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>However so raw </Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Red and mangled to pulp</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Your smarts may be many</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Your strength is dwindling
+I don’t think you’ll last long</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m pretty sure he had a crush on me.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>BULLY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Uh- no I-</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>END MONTAGE</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="6/8" Page="4" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. HOME - NIGHT</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>And now here I sit, my exhaustion is incredible and imperceptible.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Lucky gets up from his seat and walks over to the window. He sees himself gardening?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Sometimes I think about that moment sixteen weeks ago when I was sitting in my garden. There was a lot less to think about and a lot less to do. That was when I was emotionally regulated.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He takes a breath.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I look forward to the possibility of having that capability in the future. When I could just... be.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He looks down and takes another breath. The kitchen sink is just under the window.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.o.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>How could I forget my dishes.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>One fork, one spoon, one plate, one sponge.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He cleans them all precisely.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I think I need to talk to someone.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="1 4/8" Page="5" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="THERAPIST">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. Therapist - day</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Nice to meet you Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Wish I could say the same.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What brings you here?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Sixteen weeks ago I started a new job. From then on things have gotten significantly more complicated in my life. I no longer have the energy to do the things I once loved to do. Everyday I sit in solipsist sequences of mental torture. I gaze at that garden every day with immense tire and desire.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Sounds like you’ve been going through a lot lately. Sixteen weeks is surely enough time to make an impression.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>That’s what I’ve been thinking. They’ve made it clear that that don’t like my work. My </Text>
+      <Text AdornmentStyle="-1">spreadshee</Text>
+      <Text>-</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>That’s not what I mean. I mean that the job made an impression on </Text>
+      <Text Style="Italic">you</Text>
+      <Text>. </Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>So you’re saying that things have changed. I’ve changed.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Yes, and what else do you see?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I have to keep going, I see a lot more work in my future.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Agreed, chances are you’re going to need to put more work into your everyday life because you wish to affect change.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>That annoys me, I’m discontinuing this session. I shouldn’t need to put more work in. I’m already tired.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>That’s exactly how it starts.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m decidedly against that line of thinking. Have a good day.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Enjoy your day too.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I will not.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>They shake hands and Lucky leaves.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="7/8" Page="6" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="MOLINA">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. FRIENDS house - dusk</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Lucky and Molina have a beer, a root beer.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Molina</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>So you just up and left?</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Molina is an expert in radio communication, it’s given him strange skills at communicating with other people too. He’s also sort of a genius.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>That’s exactly what I did.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MOLINA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>So what’s the plan?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Continue my thinking process.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MOLINA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>How often would you say your thoughts are about work?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Every day for multiple hours.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MOLINA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Is it stifling?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Yes.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MOLINA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Perhaps you should think about the fact that you’re thinking too much about work.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Fascinating, maybe I’ll try that.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="3/8" Page="7" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. DARK ROOM - MORNING</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Lucky lays on the ground convulsing. So deep in thought that he can’t move or think about anything else, his eyes spiral forever inward on the thoughts about thoughts about thoughts.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He mumbles to himself about the inner workings of how he’s thinking about himself thinking about working. Impossible fractional multitudinous thinking.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>His watch alarms him to the time of day. The watch clearly says “WORK!”.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>WORK! GOD DAMNIT.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="1/8" Page="7" Title="">
+        <SceneArcBeats/>
+      </SceneProperties>
+      <Text>INT. WORK - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Lucky is dressed well enough, but his face is dark and eyes sunken in. Clearly in distress.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="4/8" Page="8" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="DAN">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="IAN">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="KIMBERLY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="SHELLY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. Work - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A series of people walk past each greeting him with mostly the same variations.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello uh-</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>SHELLY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hey- Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>They see him in his state. Some don’t respond.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Shells.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>KIMBERLY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>It’s- Kimberly.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Ian.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>IAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Yo Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You look terrible.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="1 4/8" Page="8" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="THERAPIST">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. TheRAPIST OFFICE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I feel terrible, worse than when we last talked about putting more work in. I thought a lot about work and my thoughts about work. It didn’t work. Is this just A NATURAL BYPRODUCT OF THE MODERN WORLD?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You’re a natural byproduct of the modern world. The work is the product. You should stop.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Stop what?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Thinking about work.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>There are so many more things to think about. How am I supposed to fix things if I can’t think about these things.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Here’s what I suggest, let go.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Of what?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>The stipulations, the thinking, the process, surrender to the universe. Please, continue to do great things, but your overthinking isn’t required for you to be incredible.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Surrender? Like give up?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>No. Just stop.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>It’s taking a lot of work to not discontinue this conversation.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>It’s worth it to stay in this discussion, challenge is where you thrive.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You’re right.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Using time for needless thinking takes away time for you to commit to action.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>What kinds of actions.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Thinking is an action, and it takes up slots of thought process. </Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I think I understand now. Thank you doctor.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>THERAPIST</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>See you next week?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Maybe.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="6/8" Page="10" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="MOLINA">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. MOLINA’S HOUSE - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MoLINA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>So the doc told you to surrender to the universe?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>I’m not sure I entirely understand what that means.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MOLINA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Well, I’m also a master of communication. So from what I can decipher, the doctors really trying to tell you to relax, in words that you can understand.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Relax? How can I?</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MOLINA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>The things that you think matter, don’t need to matter as much, especially if it’s causing you so much pain.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Okay. I think I understand.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>MOLINA</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Just go outside, tend to your garden, thinking about work after hours will only slow you down.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="6/8" Page="10" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="DAN">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="IAN">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="KIMBERLY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+          <CharacterArcBeat Name="SHELLY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>INT. WORK - DAY</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>A series of people walk past each greeting him with mostly the same variations.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Shelly.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>SHELLY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hey Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Kimberly.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>KIMBERLY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Ian.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>IAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Yo Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Hello Dan.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>Dan</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>You look good. It’s nice to see you Lucky.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>Seeing you doesn’t bring me as much pleasure as you announce. I’m here to help and make money.</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>DAN</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>The honesty is appreciated. I’ll talk to you later.</Text>
+    </Paragraph>
+    <Paragraph Type="Scene Heading">
+      <SceneProperties Length="2/8" Page="11" Title="">
+        <SceneArcBeats>
+          <CharacterArcBeat Name="LUCKY">
+            <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+          </CharacterArcBeat>
+        </SceneArcBeats>
+      </SceneProperties>
+      <Text>EXT. GARDEN - AFternoon</Text>
+    </Paragraph>
+    <Paragraph Type="Character">
+      <Text>LUCKY (V.O.)</Text>
+    </Paragraph>
+    <Paragraph Type="Dialogue">
+      <Text>The garden is nice when I can sit within it.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>Lucky takes a breath.</Text>
+    </Paragraph>
+    <Paragraph Type="Action">
+      <Text>He looks up. Things are starting to look up.</Text>
+    </Paragraph>
+  </Content>
+
+  <Watermarking Opacity="70" Position="Diagonal Descending">
+    <DynamicContent>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="0.00" RightIndent="1.39" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    </DynamicContent>
+    <Distribution>
+      <Name></Name>
+    </Distribution>
+    <WatermarkImage Height="144"></WatermarkImage>
+  </Watermarking>
+
+  <HeaderAndFooter FooterFirstPage="Yes" FooterVisible="No" HeaderFirstPage="No" HeaderVisible="Yes" StartingPage="1">
+    <Header>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="-1.00" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">	</Text>
+        <DynamicLabel AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="" Type="Collated Revisions"/>
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">	</Text>
+        <DynamicLabel AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="" Type="Page #"/>
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">.</Text>
+        <Tabstops>
+          <Tabstop Position="4.50" Type="Center"/>
+          <Tabstop Position="7.25" Type="Right"/>
+        </Tabstops>
+      </Paragraph>
+    </Header>
+    <Footer>
+      <Paragraph Alignment="Right" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="-1.25" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""> </Text>
+      </Paragraph>
+    </Footer>
+  </HeaderAndFooter>
+
+  <SpellCheckIgnoreLists>
+    <IgnoredRanges/>
+    <IgnoredWords/>
+  </SpellCheckIgnoreLists>
+
+  <PageLayout BackgroundColor="#FFFFFFFFFFFF" BottomMargin="72" BreakDialogueAndActionAtSentences="Yes" DocumentLeading="Normal" FooterMargin="36" ForegroundColor="#000000000000" HeaderMargin="36" InvisiblesColor="#808080808080" TopMargin="72" UsesSmartQuotes="Yes">
+    <PageSize Height="11.00" Width="8.50"/>
+    <AutoCastList AddParentheses="Yes" AutomaticallyGenerate="Yes" CastListElement="Cast List"/>
+  </PageLayout>
+
+  <WindowState Height="1020" Left="0" Mode="Normal" Top="0" Width="1680"/>
+
+  <TextState Scaling="100" Selection="2609,2609" ShowInvisibles="No"/>
+
+  <ElementSettings Type="General">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="General" ReturnKey="General" Shortcut="0" WinShortcut="0"/>
+    <Outline CanHide="No" Level="1"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Scene Heading">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="24" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Scene Heading" ReturnKey="Action" Shortcut="1" WinShortcut="1"/>
+    <Outline CanHide="No" Level="2"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Action">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Action" ReturnKey="Action" Shortcut="2" WinShortcut="2"/>
+    <Outline CanHide="No" Level="1"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Character">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="3.50" RightIndent="7.25" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Character" ReturnKey="Dialogue" Shortcut="3" WinShortcut="3"/>
+    <Outline CanHide="No" Level="1"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Parenthetical">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <ParagraphSpec Alignment="Left" FirstIndent="-0.10" Leading="Regular" LeftIndent="3.00" RightIndent="5.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Parenthetical" ReturnKey="Dialogue" Shortcut="4" WinShortcut="4"/>
+    <Outline CanHide="No" Level="1"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Dialogue">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="2.50" RightIndent="6.00" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Dialogue" ReturnKey="Action" Shortcut="5" WinShortcut="5"/>
+    <Outline CanHide="No" Level="1"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Transition">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Right" FirstIndent="0.00" Leading="Regular" LeftIndent="5.50" RightIndent="7.10" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Transition" ReturnKey="Scene Heading" Shortcut="6" WinShortcut="6"/>
+    <Outline CanHide="No" Level="1"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Shot">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Scene Heading" ReturnKey="Action" Shortcut="7" WinShortcut="7"/>
+    <Outline CanHide="No" Level="1"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Cast List">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="AllCaps"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Action" ReturnKey="Action" Shortcut="8" WinShortcut="8"/>
+    <Outline CanHide="No" Level="1"/>
+  </ElementSettings>
+
+  <ElementSettings Type="New Act">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Bold+Underline+AllCaps"/>
+    <ParagraphSpec Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="Yes"/>
+    <Behavior PaginateAs="Scene Heading" ReturnKey="Scene Heading" Shortcut="9" WinShortcut="9"/>
+    <Outline CanHide="No" Level="4"/>
+  </ElementSettings>
+
+  <ElementSettings Type="End of Act">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Bold+Underline+AllCaps"/>
+    <ParagraphSpec Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="24" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="Character" ReturnKey="New Act" Shortcut="Ctrl+9" WinShortcut="Shift+9"/>
+    <Outline CanHide="No" Level="4"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Outline Body">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#87878F8FE0E0" Font="Courier Final Draft" RevisionID="0" Size="10" Style="Italic+HiddenText"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="General" ReturnKey="Outline Body" Shortcut="Ctrl+0" WinShortcut="Shift+0"/>
+    <Outline CanHide="Yes" Level="0"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Outline 1">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#87878F8FE0E0" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Bold+Italic+HiddenText"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="General" ReturnKey="Outline Body" Shortcut="Ctrl+1" WinShortcut="Shift+1"/>
+    <Outline CanHide="Yes" Level="4"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Outline 2">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#87878F8FE0E0" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Bold+Italic+HiddenText"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.38" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="General" ReturnKey="Outline Body" Shortcut="Ctrl+2" WinShortcut="Shift+2"/>
+    <Outline CanHide="Yes" Level="3"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Outline 3">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#87878F8FE0E0" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Bold+Italic+HiddenText"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.50" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="General" ReturnKey="Outline Body" Shortcut="Ctrl+3" WinShortcut="Shift+3"/>
+    <Outline CanHide="Yes" Level="2"/>
+  </ElementSettings>
+
+  <ElementSettings Type="Outline 4">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#87878F8FE0E0" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Bold+Italic+HiddenText"/>
+    <ParagraphSpec Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.62" RightIndent="7.50" SpaceBefore="12" Spacing="1" StartsNewPage="No"/>
+    <Behavior PaginateAs="General" ReturnKey="Outline Body" Shortcut="Ctrl+4" WinShortcut="Shift+4"/>
+    <Outline CanHide="Yes" Level="1"/>
+  </ElementSettings>
+
+  <TitlePage>
+    <HeaderAndFooter FooterFirstPage="Yes" FooterVisible="No" HeaderFirstPage="No" HeaderVisible="Yes" StartingPage="1">
+      <Header>
+        <Paragraph Alignment="Right" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="-1.25" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+          <DynamicLabel AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="" Type="Page #"/>
+          <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">.</Text>
+        </Paragraph>
+      </Header>
+      <Footer>
+        <Paragraph Alignment="Right" FirstIndent="0.00" Leading="Regular" LeftIndent="1.25" RightIndent="-1.25" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      </Footer>
+    </HeaderAndFooter>
+    <Content>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="Underline+AllCaps">A NATural byproduct of the modern world</Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Written by</Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">Caden Miller</Text>
+      </Paragraph>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Center" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Left" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No"/>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="-1" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">me@cadenmiller</Text>
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">.dev</Text>
+      </Paragraph>
+      <Paragraph Alignment="Full" FirstIndent="0.00" Leading="Regular" LeftIndent="1.00" RightIndent="7.50" SpaceBefore="0" Spacing="1" StartsNewPage="No">
+        <Text AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">@</Text>
+        <Text AdornmentStyle="-1" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style="">cullvox</Text>
+      </Paragraph>
+    </Content>
+    <TextState Scaling="100" Selection="109,109" ShowInvisibles="No"/>
+  </TitlePage>
+
+  <SmartType>
+    <Characters>
+      <Character>LUCKY</Character>
+      <Character>JOH</Character>
+      <Character>SHELLY</Character>
+      <Character>KIMBERLY</Character>
+      <Character>IAN</Character>
+      <Character>UNKNOWN PERSON</Character>
+      <Character>DAN</Character>
+      <Character>NiCK</Character>
+      <Character>Nile</Character>
+      <Character>FRIEND</Character>
+      <Character>FRIEND 2</Character>
+      <Character>BULLY</Character>
+      <Character>THERAPIST</Character>
+      <Character>Molina</Character>
+    </Characters>
+    <Extensions>
+      <Extension>(V.O.)</Extension>
+      <Extension>(O.S.)</Extension>
+      <Extension>(O.C.)</Extension>
+      <Extension>(CONT'D)</Extension>
+      <Extension>(SUBTITLE)</Extension>
+      <Extension>(TEXT)</Extension>
+      <Extension>(VO</Extension>
+    </Extensions>
+    <SceneIntros Separator=". ">
+      <SceneIntro>INT</SceneIntro>
+      <SceneIntro>EXT</SceneIntro>
+      <SceneIntro>I/E</SceneIntro>
+    </SceneIntros>
+    <Locations>
+      <Location>LUCKY</Location>
+      <Location>DAY</Location>
+      <Location>MEETING</Location>
+      <Location>HOME</Location>
+      <Location>THERAPIST</Location>
+      <Location>FRIENDS HOUSE</Location>
+      <Location>DARK ROOM</Location>
+      <Location>THERAPIST OFFICE</Location>
+      <Location>WORK</Location>
+      <Location>MOLINA'S HOUSE</Location>
+      <Location>GARDEN</Location>
+    </Locations>
+    <TimesOfDay Separator=" - ">
+      <TimeOfDay>DAY</TimeOfDay>
+      <TimeOfDay>NIGHT</TimeOfDay>
+      <TimeOfDay>AFTERNOON</TimeOfDay>
+      <TimeOfDay>MORNING</TimeOfDay>
+      <TimeOfDay>EVENING</TimeOfDay>
+      <TimeOfDay>LATER</TimeOfDay>
+      <TimeOfDay>MOMENTS LATER</TimeOfDay>
+      <TimeOfDay>CONTINUOUS</TimeOfDay>
+      <TimeOfDay>THE NEXT DAY</TimeOfDay>
+      <TimeOfDay>MAGIC HOUR</TimeOfDay>
+      <TimeOfDay>DAWN</TimeOfDay>
+      <TimeOfDay>DUSK</TimeOfDay>
+      <TimeOfDay>SAME</TimeOfDay>
+      <TimeOfDay>SAME TIME</TimeOfDay>
+      <TimeOfDay>CUBICAL</TimeOfDay>
+      <TimeOfDay>NIGHT </TimeOfDay>
+      <TimeOfDay>AFTERNOON </TimeOfDay>
+    </TimesOfDay>
+    <Transitions>
+      <Transition>CUT TO:</Transition>
+      <Transition>FADE IN:</Transition>
+      <Transition>FADE OUT.</Transition>
+      <Transition>FADE TO:</Transition>
+      <Transition>DISSOLVE TO:</Transition>
+      <Transition>BACK TO:</Transition>
+      <Transition>MATCH CUT TO:</Transition>
+      <Transition>JUMP CUT TO:</Transition>
+      <Transition>FADE TO BLACK.</Transition>
+      <Transition>SMASH CUT TO:</Transition>
+      <Transition>CUT TO BLACK.</Transition>
+      <Transition>TIME CUT:</Transition>
+    </Transitions>
+  </SmartType>
+
+  <MoresAndContinueds>
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+    <DialogueBreaks AutomaticCharacterContinueds="Yes" BottomOfPage="Yes" DialogueBottom="(MORE)" DialogueTop="(CONT'D)" TopOfNext="Yes"/>
+    <SceneBreaks ContinuedNumber="No" SceneBottom="(CONTINUED)" SceneBottomOfPage="No" SceneTop="CONTINUED:" SceneTopOfNext="No"/>
+  </MoresAndContinueds>
+
+  <LockedPages/>
+
+  <Revisions ActiveSet="1" Location="7.75" RevisionMode="No" RevisionsShown="Active" ShowPageColor="No">
+    <Revision Color="#000000000000" FullRevision="No" ID="1" Mark="*" Name="Blue Rev. (mm/dd/yy)" PageColor="#C6C6EDEDFEFE" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="2" Mark="*" Name="Pink Rev. (mm/dd/yy)" PageColor="#FDFDCCCCD4D4" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="3" Mark="*" Name="Yellow Rev. (mm/dd/yy)" PageColor="#FDFDFFFFABAB" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="4" Mark="*" Name="Green Rev. (mm/dd/yy)" PageColor="#D1D1FEFED0D0" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="5" Mark="*" Name="Goldenrod Rev. (mm/dd/yy)" PageColor="#FAFACDCD3939" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="6" Mark="*" Name="Buff Rev. (mm/dd/yy)" PageColor="#FCFCEDED9D9D" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="7" Mark="*" Name="Salmon Rev. (mm/dd/yy)" PageColor="#F8F8AEAE8E8E" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="8" Mark="*" Name="Cherry Rev. (mm/dd/yy)" PageColor="#FBFBA4A4B4B4" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="9" Mark="*" Name="Tan Rev. (mm/dd/yy)" PageColor="#FDFDF1F1C7C7" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="10" Mark="*" Name="2nd White Rev. (mm/dd/yy)" PageColor="#FFFFFFFFFFFF" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="11" Mark="*" Name="2nd Blue Rev. (mm/dd/yy)" PageColor="#C6C6EDEDFEFE" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="12" Mark="*" Name="2nd Pink Rev. (mm/dd/yy)" PageColor="#FDFDCCCCD4D4" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="13" Mark="*" Name="2nd Yellow Rev. (mm/dd/yy)" PageColor="#FDFDFFFFABAB" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="14" Mark="*" Name="2nd Green Rev. (mm/dd/yy)" PageColor="#D1D1FEFED0D0" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="15" Mark="*" Name="2nd Goldenrod Rev. (mm/dd/yy)" PageColor="#FAFACDCD3939" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="16" Mark="*" Name="2nd Buff Rev. (mm/dd/yy)" PageColor="#FCFCEDED9D9D" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="17" Mark="*" Name="2nd Salmon Rev. (mm/dd/yy)" PageColor="#F8F8AEAE8E8E" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="18" Mark="*" Name="2nd Cherry Rev. (mm/dd/yy)" PageColor="#FBFBA4A4B4B4" Style=""/>
+    <Revision Color="#000000000000" FullRevision="No" ID="19" Mark="*" Name="2nd Tan Rev. (mm/dd/yy)" PageColor="#FDFDF1F1C7C7" Style=""/>
+  </Revisions>
+
+  <SplitState ActivePanel="1" CardsAcross="2" ShowAction="Yes" ShowSceneTitle="Yes" ShowSummary="Yes" SplitMode="None" SplitterPosition="0">
+    <ScriptPanel DisplayMode="Page">
+      <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Arial" RevisionID="0" Size="12" Style=""/>
+    </ScriptPanel>
+  </SplitState>
+
+  <Macros>
+    <Macro Element="Scene Heading" Name="INT" Shortcut="Ctrl+Alt+1" Text="INT. " Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="EXT" Shortcut="Ctrl+Alt+2" Text="EXT. " Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="I/E" Shortcut="Ctrl+Alt+3" Text="I/E " Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="DAY" Shortcut="Ctrl+Alt+4" Text=" - DAY" Transition="Action">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="NIGHT" Shortcut="Ctrl+Alt+5" Text=" - NIGHT" Transition="Action">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="SUNRISE" Shortcut="Ctrl+Alt+6" Text=" - SUNRISE" Transition="Action">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Scene Heading" Name="MAGIC" Shortcut="Ctrl+Alt+7" Text=" - MAGIC" Transition="Action">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Parenthetical" Name="CONT" Shortcut="Ctrl+Alt+8" Text="continuing" Transition="Dialogue">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Parenthetical" Name="INTER" Shortcut="Ctrl+Alt+9" Text="interrupting" Transition="Dialogue">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="None" Name="" Shortcut="Ctrl+Alt+0" Text="" Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="CUTTO" Shortcut="Ctrl+Shift+Alt+1" Text="CUT TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Action" Name="FADEIN" Shortcut="Ctrl+Shift+Alt+2" Text="FADE IN:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="FADEOUT" Shortcut="Ctrl+Shift+Alt+3" Text="FADE OUT." Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="FADETO" Shortcut="Ctrl+Shift+Alt+4" Text="FADE TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="DISSLV" Shortcut="Ctrl+Shift+Alt+5" Text="DISSOLVE TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="BACKTO" Shortcut="Ctrl+Shift+Alt+6" Text="BACK TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="MATCHCUT" Shortcut="Ctrl+Shift+Alt+7" Text="MATCH CUT TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="JUMPCUT" Shortcut="Ctrl+Shift+Alt+8" Text="JUMP CUT TO:" Transition="Scene Heading">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="Transition" Name="FBLACK" Shortcut="Ctrl+Shift+Alt+9" Text="FADE TO BLACK." Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+    <Macro Element="None" Name="" Shortcut="E" Text="" Transition="None">
+      <Alias Confirm="No" MatchCase="No" SmartReplace="Yes" Text="" WordOnly="No">
+        <ActivateIn Element="General"/>
+        <ActivateIn Element="Scene Heading"/>
+        <ActivateIn Element="Action"/>
+        <ActivateIn Element="Character"/>
+        <ActivateIn Element="Parenthetical"/>
+        <ActivateIn Element="Dialogue"/>
+        <ActivateIn Element="Transition"/>
+        <ActivateIn Element="Shot"/>
+      </Alias>
+    </Macro>
+  </Macros>
+
+  <Actors>
+    <Actor MacVoice="" Name="Man 1" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Man 2" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Woman 1" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Woman 2" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Boy 1" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Boy 2" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Girl 1" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Girl 2" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Old Man" Pitch="Normal" Speed="Medium" WinVoice=""/>
+    <Actor MacVoice="" Name="Old Woman" Pitch="Normal" Speed="Medium" WinVoice=""/>
+  </Actors>
+
+  <Cast>
+    <Narrator Actor="Man 1">
+      <Element Type="Character"/>
+      <Element Type="Dialogue"/>
+    </Narrator>
+    <Member Actor="Man 1" Character="LUCKY"/>
+    <Member Actor="Man 1" Character="JOH"/>
+    <Member Actor="Man 1" Character="SHELLY"/>
+    <Member Actor="Man 1" Character="KIMBERLY"/>
+    <Member Actor="Man 1" Character="IAN"/>
+    <Member Actor="Man 1" Character="UNKNOWN PERSON"/>
+    <Member Actor="Man 1" Character="DAN"/>
+    <Member Actor="Man 1" Character="NiCK"/>
+    <Member Actor="Man 1" Character="Nile"/>
+    <Member Actor="Man 1" Character="FRIEND"/>
+    <Member Actor="Man 1" Character="FRIEND 2"/>
+    <Member Actor="Man 1" Character="BULLY"/>
+    <Member Actor="Man 1" Character="THERAPIST"/>
+    <Member Actor="Man 1" Character="Molina"/>
+  </Cast>
+
+  <SceneNumberOptions LeftLocation="0.75" NumberScheme="1A" RightLocation="7.38" ShowNumbersOnLeft="Yes" ShowNumbersOnRight="Yes">
+    <FontSpec AdornmentStyle="0" Background="#FFFFFFFFFFFF" Color="#000000000000" Font="Courier Final Draft" RevisionID="0" Size="12" Style=""/>
+  </SceneNumberOptions>
+
+  <CastList SortOption="Alphabetical">
+    <CustomOrder/>
+  </CastList>
+
+  <CharacterHighlighting>
+    <Character Color="#FFFFFFFFFFFF" Name="BULLY" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="DAN" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="FRIEND 2" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="IAN" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="KIMBERLY" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="LUCKY" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="MOLINA" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="NICK" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="NILE" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="SHELLY" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="THERAPIST" Visible="No"/>
+    <Character Color="#FFFFFFFFFFFF" Name="UNKNOWN PERSON" Visible="No"/>
+  </CharacterHighlighting>
+
+  <SceneNavigatorPreferences>
+    <TableColumnSettings IsSortAscending="Yes" SortColumn="Order" TableIdentifier="NavDynScenes">
+      <Column Width="54">Order</Column>
+      <Column Width="48">Page</Column>
+      <Column Width="102">Title</Column>
+      <Column Width="50">Color</Column>
+      <Column Width="46">Intro</Column>
+      <Column Width="173">Location</Column>
+      <Column Width="98">Time</Column>
+      <Column Width="70">Scene #</Column>
+      <Column Width="58">Length</Column>
+    </TableColumnSettings>
+  </SceneNavigatorPreferences>
+
+  <TagsNavigatorPreferences IsSortAscending="Yes" SortColumn="Order">
+    <Column Width="50">Page</Column>
+    <Column Width="64">Scene #</Column>
+    <Column Width="50">Intro</Column>
+    <Column Width="260">Location</Column>
+    <Column Width="90">Time</Column>
+    <Column Width="60">Length</Column>
+    <Column UserType="CategoryColumnType" Width="360">Synopsis</Column>
+    <Column UserType="CategoryColumnType" Width="360">Cast Members</Column>
+    <Column Width="360">Tags</Column>
+    <Column Width="54">Order</Column>
+  </TagsNavigatorPreferences>
+
+  <AltCollection/>
+
+  <TargetScriptLength>120</TargetScriptLength>
+
+  <ListItems/>
+
+  <DisplayBoards>
+    <DisplayBoard Height="10000" Id="ea5ac6af-4926-415c-897c-51bfeff25831" ScrollOrigin="0,0" Type="Beat" Width="24000" ZoomLevel="100.000"/>
+    <DisplayBoard Height="75" Id="f54e428f-4469-484b-8c9d-7dba54866258" ScrollOrigin="0,0" Type="StoryMap" Width="26226" ZoomLevel="1311.282"/>
+  </DisplayBoards>
+
+  <Writers/>
+
+  <WriterMarkup State="Off"/>
+
+  <TagData>
+    <TagCategories>
+      <TagCategory Color="#00003600B700" Id="01fc9642-84ff-4366-b37c-a3068dee57e8" Name="Cast Members" Number="2" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="028a4e2b-b507-4d09-88ab-90e3edae9071" Name="Background Actors" Number="3" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="0377dbe6-77a3-41af-bda8-86eb2468fdbf" Name="Stunts" Number="4" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="04721a56-f54b-49c8-80ad-d53887d6b851" Name="Vehicles" Number="5" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="05c556eb-6bc1-4a3a-b09f-f8b5ba1b6afa" Name="Props" Number="6" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="069e18b8-2109-4f3d-94e7-d802027a60a8" Name="Special Effects" Number="8" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="0726fa85-1e65-4ab8-87de-bf21d09b01f0" Name="Wardrobe" Number="9" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="08ae1eef-32ce-415f-9a9b-0982d2453ec4" Name="Makeup/Hair" Number="10" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="09cb0d1c-ce01-4f22-bb64-b5f2e6c491c6" Name="Animals" Number="11" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="0ae40617-cc7c-48e6-ae2b-5aaecc09986f" Name="Animal Wrangler" Number="12" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="0b0b44c9-aa4b-4c40-88b1-d94472ad7a26" Name="Music" Number="13" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="0ce7d308-096d-4603-8fe8-349f72cd89ff" Name="Sound" Number="15" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="0debb71b-5743-4c53-80cc-e17e841ce645" Name="Set Dressing" Number="17" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="0e7a8fc5-5441-4bad-a9bf-5ddd3fe51c69" Name="Greenery" Number="18" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="0ff5cda4-4d43-4cfe-940f-91380c46fdad" Name="Special Equipment" Number="19" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="109d0eaa-0334-4823-ac0c-b44d3f209dc4" Name="Security" Number="20" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="1179a4b1-70ee-4011-b4a2-809a0af09e92" Name="Additional Labor" Number="21" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="12ab0932-e3b9-4b4a-bcd0-3da1b4e61d5e" Name="Visual Effects" Number="23" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="135cc9d1-c4d5-4d00-83d9-571f584ea9cd" Name="Mechanical Effects" Number="24" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="15b6f4fd-4e74-4ad8-9971-b239d88c2997" Name="Notes" Number="26" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="216f33fd-fc42-4269-be01-b05b18f815a0" Name="Comments" Number="31" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="47b02ff1-5161-4137-b736-f36eebba7643" Name="Camera" Number="7" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="63c140da-ef2b-491a-b416-b46f461abb89" Name="Script Day" Number="27" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="70877d87-30ef-45b6-be46-c6fa94b83a71" Name="Sequence" Number="29" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="849f1ebf-5507-4f33-bff6-3a5b4d73be14" Name="Unit" Number="28" Style="Bold"/>
+      <TagCategory Color="#000000000000" Id="8e5e75c2-713b-47df-a75f-f12648b98ded" Name="Synopsis" Number="1" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="c5e89e4d-f83e-4c28-950c-92a63f1b5f26" Name="Location" Number="30" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="c86eae40-3b01-41c3-a7de-6859e6ec971d" Name="Art Department" Number="16" Style="Bold"/>
+      <TagCategory Color="#94AA11150000" Id="ce04f547-f7ee-40c9-ab66-d95a0c98034e" Name="Miscellaneous" Number="25" Style="Bold"/>
+    </TagCategories>
+  </TagData>
+
+  <Characters>
+    <TableColumnSettings IsSortAscending="Yes" SortColumn="" TableIdentifier="NavDynCharacters">
+      <Column Width="150">Character</Column>
+      <Column Width="114">Speaking Scenes</Column>
+      <Column UserType="TraitColumnType" Width="50">Role</Column>
+      <Column UserType="TraitColumnType" Width="63">Gender</Column>
+      <Column UserType="TraitColumnType" Width="70">Ethnicity</Column>
+      <Column UserType="TraitColumnType" Width="83">Orientation</Column>
+      <Column UserType="TraitColumnType" Width="73">Disability</Column>
+      <Column UserType="TraitColumnType" Width="50">Age</Column>
+      <Column UserType="TraitColumnType" Width="85">Occupation</Column>
+    </TableColumnSettings>
+    <CharacterTraitData>
+      <Traits>
+        <Trait ID="ebe44c35-fd80-4bc4-8117-2b806e604a94" Name="Age" Type="text"/>
+        <Trait ID="3c1c04e2-48dc-4b04-8643-89d1cd9ca137" Name="Disability" Type="text"/>
+        <Trait ID="f4076594-524d-4733-ac6b-e4dde6690d68" Name="Ethnicity" Type="text"/>
+        <Trait ID="db64dbfc-6458-4884-a413-86503cdf4965" Name="Gender" Type="text"/>
+        <Trait ID="07f4dbfe-2591-4b03-818f-67f98b5294b1" Name="Occupation" Type="text"/>
+        <Trait ID="43d5358c-f271-4cf6-80b8-832450963c11" Name="Orientation" Type="text"/>
+        <Trait ID="8fac4d6f-1056-47d5-b312-882aba8fa7a6" Name="Role" Type="text"/>
+      </Traits>
+      <Holders/>
+    </CharacterTraitData>
+    <ChartOptions Identifier="InclusivityAnalysis">
+      <FilterSets>
+        <FilterSet Default="Yes">
+          <Filter Index="1" Name="Trait" Value="">
+            <Match></Match>
+          </Filter>
+          <Filter Index="0" Name="Trait" Value="Role">
+            <Match></Match>
+          </Filter>
+          <Filter Index="0" Name="Count" Value="MIN">
+            <Match>1</Match>
+          </Filter>
+        </FilterSet>
+        <FilterSet>
+          <Filter Index="1" Name="Trait" Value="">
+            <Match></Match>
+          </Filter>
+          <Filter Index="0" Name="Trait" Value="">
+            <Match></Match>
+          </Filter>
+          <Filter Index="0" Name="Count" Value="MIN">
+            <Match>1</Match>
+          </Filter>
+        </FilterSet>
+      </FilterSets>
+    </ChartOptions>
+  </Characters>
+
+  <ScriptNotes/>
+
+  <Images/>
+
+  <Outlines Hidden="No"/>
+
+</FinalDraft>

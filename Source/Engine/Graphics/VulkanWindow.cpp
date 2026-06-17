@@ -1,4 +1,6 @@
 #include "VulkanWindow.h"
+#include "VulkanInstance.h"
+#include "Viewport.h"
 
 namespace bl {
 
@@ -11,6 +13,7 @@ VulkanWindow::VulkanWindow(VulkanDevice* device, const std::string& title, Rect2
     }
 
     _swapchain = std::make_unique<VulkanSwapchain>(_device, this);
+    _viewport = std::make_unique<Viewport>(_device, _swapchain.get());
 }
 
 VulkanWindow::~VulkanWindow()
@@ -32,6 +35,11 @@ VkSurfaceKHR VulkanWindow::GetSurface()
 VulkanSwapchain* VulkanWindow::GetSwapchain()
 {
     return _swapchain.get();
+}
+
+Viewport* VulkanWindow::GetViewport()
+{
+    return _viewport.get();
 }
 
 std::span<const char*> VulkanWindow::GetVulkanExtensions()

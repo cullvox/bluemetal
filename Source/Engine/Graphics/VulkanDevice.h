@@ -1,12 +1,12 @@
 #pragma once
 
-#include "Vulkan.h"
-#include "VulkanDescriptorSetLayoutCache.h"
-#include "VulkanInstance.h"
-#include "VulkanPhysicalDevice.h"
-#include "VulkanPipelineLayoutCache.h"
-
 namespace bl {
+
+class VulkanInstance;
+class VulkanPhysicalDevice;
+class VulkanDescriptorSetLayoutCache;
+class VulkanPipelineLayoutCache;
+class VulkanDescriptorSetAllocatorCache;
 
 /**
  * @class VulkanDevice
@@ -22,6 +22,7 @@ class VulkanDevice {
     VmaAllocator _allocator;
     std::unique_ptr<VulkanDescriptorSetLayoutCache> _descriptorSetLayoutCache;
     std::unique_ptr<VulkanPipelineLayoutCache> _pipelineLayoutCache;
+    std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache;
     VkDescriptorSet _emptySet;
 
     std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
@@ -150,6 +151,11 @@ public:
      * @return The VkPipelineLayout handle.
      */
     VkPipelineLayout AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges);
+
+
+    VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout);
+
+    void FreeDescriptorSet(VkDescriptorSet set, VkDescriptorSetLayout layout);
 
     /**
      * @brief Calculates the dynamic alignment for a uniform buffer.

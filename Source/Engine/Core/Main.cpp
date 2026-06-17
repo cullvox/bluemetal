@@ -1,3 +1,4 @@
+#include "Graphics/VulkanWindow.h"
 #include <Audio/AudioSystem.h>
 #include <Core/ClassDB.h>
 #include <Core/FrameCounter.h>
@@ -34,6 +35,7 @@
 #include <Scene/Sky3D.h>
 #include <Window/Input.h>
 #include <Window/Keyboard.h>
+#include <Graphics/VulkanWindow.h>
 #include <Window/Mouse.h>
 #include <Editor/EditorSystem.h>
 
@@ -236,8 +238,8 @@ int main(int argc, const char** argv)
         auto cameraNode = orbiter->GetChild("FollowCam")->As<bl::Camera3D>();
 
         bl::FrameCounter& frameCounter = engine.GetFrameCounter();
-        auto presentModes = renderer->GetPresentModes();
-        auto multisampleModes = renderer->GetMultisampleCounts();
+        auto presentModes = std::vector<VkPresentModeKHR>{};//renderer->GetPresentModes();
+        //auto multisampleModes = renderer->GetMultisampleCounts();
 
         ImPlot::CreateContext();
 
@@ -269,6 +271,8 @@ int main(int argc, const char** argv)
 
         auto& classDB = engine.GetClassDB();
         auto classNames = classDB.GetClassNames();
+
+        auto viewport = static_cast<bl::VulkanWindow*>(window)->GetViewport();
 
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
@@ -321,20 +325,11 @@ int main(int argc, const char** argv)
             rootNode->Update(frameCounter.GetDeltaTime());
             profiler.EndProfile("Update");
 
-            renderer->SetView(cameraNode->GetViewMatrix());
-            renderer->SetProjection(cameraNode->GetProjectionMatrix());
+            viewport->SetView(cameraNode->GetViewMatrix());
+            viewport->SetProjection(cameraNode->GetProjectionMatrix());
 
             auto objectFunc = [&](bl::RenderData& rd) {
                 rootNode->Draw(rd);
-            };
-
-            auto renderFunc = [&](bl::RenderData& rd){
-                //auto extent = window->GetExtent();
-
-                // Test draw sky.
-                // skyMat->Bind(rd);
-                // vkCmdDraw(rd.GetCommandBuffer(), 6, 1, 0, 0);
-
 
                 renderer->DrawLine(playerNode->GetWorldPosition(), {0.0f, 0.0f, 0.0f});
                 if (physUpdate)
@@ -354,8 +349,11 @@ int main(int argc, const char** argv)
                 imgui->EndFrame(rd.GetCommandBuffer());
             };
 
+            renderer->SetObjectFunction(objectFunc);
+            renderer->SetGUIFunction(imguiFunc);
+
             profiler.StartProfile("Render");
-            renderer->Render(renderFunc, imguiFunc, objectFunc);
+            renderer->RenderFrame();
             profiler.EndProfile("Render");
 
 

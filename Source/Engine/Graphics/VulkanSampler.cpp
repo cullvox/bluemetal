@@ -1,5 +1,6 @@
 #include "VulkanSampler.h"
 #include "Core/Hash.h"
+#include "VulkanPhysicalDevice.h"
 
 namespace bl {
 

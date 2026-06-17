@@ -1,6 +1,7 @@
 #include "ImGui/ImGuiSystem.h"
 #include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
+#include "Graphics/VulkanInstance.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/VulkanConversions.h"
 #include "Graphics/VulkanWindow.h"

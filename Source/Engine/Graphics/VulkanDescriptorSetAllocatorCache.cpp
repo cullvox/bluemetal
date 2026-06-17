@@ -1,5 +1,6 @@
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanDevice.h"
+#include "Vulkan.h"
 
 namespace bl {
 

@@ -11,7 +11,8 @@
 #include "Physics/PhysicsSystem.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Audio/AudioSystem.h"
-#include <vulkan/vulkan_core.h>
+#include "Graphics/VulkanPhysicalDevice.h"
+#include "Graphics/VulkanInstance.h"
 
 namespace bl {
 

@@ -2,7 +2,7 @@
 #include <vulkan/vulkan_core.h>
 
 #include "VulkanSwapchain.h"
-#include "Core/Hash.h"
+#include "VulkanPhysicalDevice.h"
 #include "Core/Print.h"
 #include "VulkanConfig.h"
 #include "VulkanDevice.h"
@@ -13,8 +13,9 @@ namespace bl {
 static inline constexpr VkFormat defaultPresentFormat = VK_FORMAT_R8G8B8A8_SRGB; /** @brief Default format to look for. */
 static inline constexpr VkColorSpaceKHR defaultPresentColorspace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; /** @brief Default color space to look for. */
 static inline constexpr std::array<VkSurfaceFormatKHR, 3> defaultSurfaceFormats = {
-    VkSurfaceFormatKHR { VK_FORMAT_B8G8R8A8_SRGB, VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT}, // MacBook Format
-    VkSurfaceFormatKHR { VK_FORMAT_R8G8B8A8_SRGB, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR }, // Standard Format
+    VkSurfaceFormatKHR { VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT},
+    VkSurfaceFormatKHR { VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT}, // MacBook Format
+    VkSurfaceFormatKHR { VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR }, // Standard Format
 };
 
 static inline constexpr VkPresentModeKHR defaultPresentMode = VK_PRESENT_MODE_MAILBOX_KHR; /** @brief Desired present mode to use in swapchain. Will use present mode FIFO if this is unavailable.*/
@@ -88,6 +89,11 @@ bool VulkanSwapchain::GetImmediateSupported() const
     return _isImmediateSupported;
 }
 
+VkImageUsageFlags VulkanSwapchain::GetImageUsageFlags() const
+{
+    return _imageUsageFlags;
+}
+
 bool VulkanSwapchain::AcquireNext(uint32_t& imageIndex, VkSemaphore imageAvailableSemaphore)
 {
     VkResult result = vkAcquireNextImageKHR(_device->Get(), _swapchain, UINT32_MAX, imageAvailableSemaphore, VK_NULL_HANDLE, &imageIndex);
@@ -108,13 +114,13 @@ bool VulkanSwapchain::AcquireNext(uint32_t& imageIndex, VkSemaphore imageAvailab
     return recreate;
 }
 
-bool VulkanSwapchain::QueuePresent(uint32_t imageIndex, std::span<VkSemaphore> waitSemaphores)
+bool VulkanSwapchain::QueuePresent(uint32_t imageIndex, VkSemaphore waitSemaphores)
 {
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
     presentInfo.pNext = nullptr;
-    presentInfo.waitSemaphoreCount = static_cast<uint32_t>(waitSemaphores.size());
-    presentInfo.pWaitSemaphores = waitSemaphores.data();
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = &waitSemaphores;
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = &_swapchain;
     presentInfo.pImageIndices = &imageIndex;
@@ -309,6 +315,7 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     auto format = surfaceFormat.value_or(_surfaceFormat);
     auto present = presentMode.value_or(_presentMode);
     auto oldSwapchain = _swapchain;
+    _imageUsageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
     VkSwapchainCreateInfoKHR createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -320,7 +327,7 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     createInfo.imageColorSpace = format.colorSpace;
     createInfo.imageExtent = _extent;
     createInfo.imageArrayLayers = 1;
-    createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    createInfo.imageUsage = _imageUsageFlags;
     createInfo.imageSharingMode = imageSharingMode;
     createInfo.queueFamilyIndexCount = (uint32_t)queueFamilyIndices.size();
     createInfo.pQueueFamilyIndices = queueFamilyIndices.data();

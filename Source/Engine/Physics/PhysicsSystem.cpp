@@ -10,6 +10,7 @@
 #include "PhysicsRenderer.h"
 #include "BroadPhaseLayerImpl.h"
 #include "Scene/PhysicsBody3D.h"
+#include "Core/Print.h"
 
 namespace bl {
 

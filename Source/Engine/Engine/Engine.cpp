@@ -6,6 +6,7 @@
 #include "Core/Object.h"
 #include "Core/Print.h"
 #include "Core/Profiler.h"
+#include "Core/Version.h"
 #include "Editor/EditorSystem.h"
 #include "Engine/Engine.h"
 #include "Engine/SDL.h"
@@ -36,8 +37,8 @@
 #include "Scene/SceneExporter.h"
 #include "Scene/SceneSystem.h"
 #include "Scene/SceneSystem.h"
-#include "Scene/Sky3D.h"
 #include "Scene/SkinnedMeshInstance3D.h"
+#include "Scene/Sky3D.h"
 #include "Social/Discord.h"
 #include "Window/Input.h"
 

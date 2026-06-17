@@ -8,7 +8,6 @@ namespace bl {
 
 VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const VulkanPipelineStateInfo& state, int32_t materialSet)
     : VulkanMaterialInstance(device)
-    , _swapchainImageCount(renderer->GetSwapchainImageCount())
     , _descriptorSetCache(device, 1024, VulkanDescriptorRatio::Default())
     , _flags(VulkanMaterialSupportFlags::eNone)
 {

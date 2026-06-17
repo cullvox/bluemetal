@@ -2,9 +2,9 @@
 #include "VulkanDevice.h"
 #include "VulkanShader.h"
 #include "Renderer.h"
-
+#include "VulkanPhysicalDevice.h"
 #include "Core/Print.h"
-#include <cstddef>
+#include <bit>
 #include <vulkan/vulkan_core.h>
 
 namespace bl {
@@ -182,21 +182,22 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
     rendering.depthAttachmentFormat = renderer->GetDepthAttachmentFormat(state.pass);
     rendering.stencilAttachmentFormat = renderer->GetStencilAttachmentFormat(state.pass);
 
-    std::vector<VkSampleCountFlagBits> multisampleCounts = renderer->GetMultisampleCounts();
+    auto multisampleCounts = _device->GetPhysicalDevice()->GetSupportedFramebufferSampleCounts();
 
     std::vector<VkPipelineMultisampleStateCreateInfo> multisampleStates;
     std::vector<VkGraphicsPipelineCreateInfo> pipelineCreateInfos;
 
-    multisampleStates.reserve(multisampleCounts.size());
-    pipelineCreateInfos.reserve(multisampleCounts.size());
+    int maxSampleCount = std::bit_width(multisampleCounts);
+    multisampleStates.reserve(maxSampleCount);
+    pipelineCreateInfos.reserve(maxSampleCount);
 
-    for (uint32_t i = 0; i < multisampleCounts.size(); i++)
+    for (uint32_t i = 0; i < maxSampleCount; i++)
     {
         VkPipelineMultisampleStateCreateInfo multisampleState = {};
         multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
         multisampleState.pNext = nullptr;
         multisampleState.flags = 0;
-        multisampleState.rasterizationSamples = multisampleCounts[i];
+        multisampleState.rasterizationSamples = static_cast<VkSampleCountFlagBits>(1 << i);
         multisampleState.sampleShadingEnable = state.multisampleState.sampleShadingEnable;
         multisampleState.minSampleShading = state.multisampleState.minSampleShading;
         multisampleState.pSampleMask = nullptr;
@@ -232,9 +233,9 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
     std::vector<VkPipeline> pipelines(pipelineCreateInfos.size());
     VK_CHECK(vkCreateGraphicsPipelines(_device->Get(), VK_NULL_HANDLE, static_cast<uint32_t>(pipelineCreateInfos.size()), pipelineCreateInfos.data(), nullptr, pipelines.data()))
 
-    for (std::size_t i = 0; i < multisampleCounts.size(); i++)
+    for (std::size_t i = 0; i < maxSampleCount; i++)
     {
-        _pipelines[multisampleCounts[i]] = pipelines[i];
+        _pipelines[1 << i] = pipelines[i];
     }
 
 }

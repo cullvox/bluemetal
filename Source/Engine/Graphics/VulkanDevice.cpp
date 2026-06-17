@@ -1,5 +1,7 @@
 #include "VulkanDevice.h"
 #include "Core/Print.h"
+#include "VulkanPhysicalDevice.h"
+#include "VulkanInstance.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineLayoutCache.h"
@@ -53,6 +55,8 @@ VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physi
     CreateCommandPool();
     CreateAllocator();
     CreateCaches();
+
+    volkLoadDevice(_device);
 }
 
 VulkanDevice::~VulkanDevice()
@@ -184,6 +188,16 @@ VkDescriptorSetLayout VulkanDevice::AcquireDescriptorSetLayout(std::span<VkDescr
 VkPipelineLayout VulkanDevice::AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges)
 {
     return _pipelineLayoutCache->Acquire(layouts, ranges);
+}
+
+VkDescriptorSet VulkanDevice::AllocateDescriptorSet(VkDescriptorSetLayout layout)
+{
+    return _descriptorSetCache->Allocate(layout);
+}
+
+void VulkanDevice::FreeDescriptorSet(VkDescriptorSet set, VkDescriptorSetLayout layout)
+{
+    _descriptorSetCache->Free(layout, set);
 }
 
 std::vector<const char*> VulkanDevice::GetValidationLayers()
@@ -377,6 +391,7 @@ void VulkanDevice::CreateCaches()
 {
     _descriptorSetLayoutCache = std::make_unique<VulkanDescriptorSetLayoutCache>(this);
     _pipelineLayoutCache = std::make_unique<VulkanPipelineLayoutCache>(this);
+    _descriptorSetCache = std::make_unique<VulkanDescriptorSetAllocatorCache>(this, 1024, VulkanDescriptorRatio::Default());
 }
 
 std::size_t VulkanDevice::GetDynamicAlignment(std::size_t uboSize)

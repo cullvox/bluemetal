@@ -1,6 +1,7 @@
 #include "VulkanImageView.h"
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -31,6 +32,7 @@ VulkanImageView::VulkanImageView(VulkanImageView&& from)
 
 VulkanImageView::~VulkanImageView()
 {
+    if (!_device || !_imageView) return;
     vkDestroyImageView(_device->Get(), _imageView, nullptr);
 }
 

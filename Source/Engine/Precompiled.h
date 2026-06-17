@@ -32,6 +32,7 @@
 #include <volk.h>
 
 // SDL
+#define SDL_
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 

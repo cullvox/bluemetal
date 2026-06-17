@@ -4,6 +4,7 @@
 #include "VulkanBufferFrameRing.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "Vertex.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl
 {
@@ -13,9 +14,11 @@ class Renderer;
 class VulkanDevice;
 class VulkanMaterialInstance;
 class VulkanMesh;
+class Viewport;
 
 class RenderData
 {
+    Viewport* _viewport;
     VkCommandBuffer _cmd;
     uint32_t _currentFrame;
     uint32_t _imageIndex;
@@ -24,6 +27,9 @@ class RenderData
     VkImageView _swapchainImageView;
     uint32_t _nodeID;
 
+    float _frameTime;
+    float _deltaFrameTime;
+
     std::vector<glm::mat4> _tempInstances;
     std::vector<uint32_t> _instanceToCallMap;
     std::vector<glm::mat4> _instances;
@@ -31,6 +37,9 @@ class RenderData
     VulkanDescriptorSetAllocatorCache _descriptorCache;
     VkDescriptorSetLayout _instanceSetLayout;
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _instanceSets;
+
+    std::vector<VkSemaphoreSubmitInfo> _waitSemaphores; // The semaphores we're waiting on before rendering begins.
+    std::vector<VkSemaphoreSubmitInfo> _signalSemaphores; // The semaphores we signal when rendering finishes.
 
     glm::mat4 _projection;
     glm::mat4 _view;
@@ -78,6 +87,10 @@ public:
     void SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial);
     void SetProjectionMatrix(const glm::mat4& projection);
     void SetViewMatrix(const glm::mat4& viewMatrix);
+    void SetCurrentFrameTime(float frameTime);
+    void SetDeltaFrameTime(float deltaFrameTime);
+    void AddRenderWaitSemaphore(const VkSemaphoreSubmitInfo& info);
+    void AddRenderSignalSemaphore(const VkSemaphoreSubmitInfo& info);
 
     VkCommandBuffer GetCommandBuffer();
     uint32_t GetCurrentFrame();
@@ -88,6 +101,11 @@ public:
     VkDescriptorSet GetInstanceDescriptorSet();
     glm::mat4 GetProjectionMatrix();
     glm::mat4 GetViewMatrix();
+    Viewport* GetViewport();
+    float GetCurrentFrameTime();
+    float GetDeltaFrameTime();
+    const std::vector<VkSemaphoreSubmitInfo>& GetRenderWaitSemaphores();
+    const std::vector<VkSemaphoreSubmitInfo>& GetRenderSignalSemaphores();
 
     void Draw(const VulkanMaterialInstance* material, uint32_t vertexCount);
     void DrawInstance(Node* node, const VulkanMaterialInstance* material, const VulkanMesh* mesh, const glm::mat4& instance);
