@@ -19,11 +19,16 @@ VulkanDescriptorSetAllocatorCache::VulkanDescriptorSetAllocatorCache(const Vulka
 VulkanDescriptorSetAllocatorCache::~VulkanDescriptorSetAllocatorCache()
 {
     for (auto pool : _freePools)
+    {
         vkDestroyDescriptorPool(_device->Get(), pool, nullptr);
+    }
+    
     for (auto pool : _usedPools)
+    {
         vkDestroyDescriptorPool(_device->Get(), pool, nullptr);
+    }
 }
-
+ 
 VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayout layout)
 {
 

@@ -18,6 +18,7 @@ VulkanWindow::VulkanWindow(VulkanDevice* device, const std::string& title, Rect2
 
 VulkanWindow::~VulkanWindow()
 {
+    _viewport.reset();
     _swapchain.reset();
     vkDestroySurfaceKHR(_device->GetInstance()->Get(), _surface, nullptr);
 }

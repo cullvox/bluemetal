@@ -102,7 +102,11 @@ public:
     ViewportRenderFlags GetRenderFlags() const;
 
     void UpdateUniform(RenderData& rd);
+    void PrepareForFrame(RenderData& rd);
+    void PrepareEndFrame();
+
     bool Bind(RenderData& rd); // Returns false if the viewport isn't ready.
+    void TransitionPreRender(RenderData& rd);
     void TransitionPostRender(RenderData& rd);
     void TransitionPrePresent(RenderData& rd);
     void QueuePresent(RenderData& rd);

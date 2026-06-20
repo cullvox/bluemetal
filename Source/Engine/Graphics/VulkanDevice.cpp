@@ -61,8 +61,10 @@ VulkanDevice::VulkanDevice(VulkanInstance* instance, VulkanPhysicalDevice* physi
 
 VulkanDevice::~VulkanDevice()
 {
+    // Free these before the device is destroyed.
     _pipelineLayoutCache.reset();
     _descriptorSetLayoutCache.reset();
+    _descriptorSetCache.reset();
 
     vmaDestroyAllocator(_allocator);
     vkDestroyCommandPool(_device, _commandPool, nullptr);

@@ -29,15 +29,6 @@ private:
     /// @brief Returns true if swapchain images could be obtained.
     void ObtainImages();
 
-    /// @brief Creates image views for frame buffers.
-    void CreateImageViews();
-
-    /// @brief Destroys all the swapchain's image views.
-    void DestroyImageViews();
-
-    void CreateSyncObjects();
-    void DestroySyncObjects();
-
     VulkanDevice* _device;
     VulkanPhysicalDevice* _physicalDevice;
     VulkanWindow* _window;
@@ -47,7 +38,6 @@ private:
     VkExtent2D _extent;
     VkSwapchainKHR _swapchain;
     std::vector<VkImage> _swapImages;
-    std::vector<VkImageView> _swapImageViews;
     VkImageUsageFlags _imageUsageFlags;
     bool _isMailboxSupported;
     bool _isImmediateSupported;
@@ -116,12 +106,6 @@ public:
      * @return A vector of VkImage handles representing the swapchain images.
      */
     std::vector<VkImage> GetImages() const;
-
-    /**
-     * @brief Returns the image views of the swapchain images.
-     * @return A vector of VkImageView handles for the swapchain images.
-     */
-    std::vector<VkImageView> GetImageViews() const;
 
     /**
      * @brief Returns the swapchain object.

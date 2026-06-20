@@ -1,5 +1,6 @@
 #include "Core/Print.h"
 
+#include "Graphics/Viewport.h"
 #include "VulkanDevice.h"
 #include "VulkanInstance.h"
 #include "VulkanShader.h"
@@ -44,6 +45,9 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
 
     _device->WaitForDevice();
     _window = std::make_unique<VulkanWindow>(_device.get(), "Maginvox", Rect2D { {}, displays[0].GetDesktopMode().extent }, false);
+
+    _window->GetViewport()->SetRenderFlags(_window->GetViewport()->GetRenderFlags() | ViewportRenderFlags::eImGui);
+
     _renderer = std::make_unique<Renderer>(_device.get(), _window->GetViewport(), engine.GetFrameCounter());
 }
 

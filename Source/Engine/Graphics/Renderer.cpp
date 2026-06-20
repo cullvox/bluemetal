@@ -118,8 +118,17 @@ void Renderer::RenderFrame()
 
     for (auto& viewport : _viewports)
     {
+        viewport->PrepareForFrame(_renderData);
+    }
+
+    for (auto& viewport : _viewports)
+    {
+        viewport->TransitionPreRender(_renderData);
+
         // Render the scene to the viewport.
         RenderSceneToViewport(_renderData, *viewport);
+
+        viewport->TransitionPostRender(_renderData);
     }
 
     // Transition viewports for possible present.
@@ -359,7 +368,6 @@ void Renderer::RenderSceneToViewport(RenderData& rd, Viewport& vp)
     range.layerCount = 1;
 
     vkCmdBeginRendering(cmd, &renderingInfo);
-
 
     // Update the viewports global uniform buffer object.
     vp.UpdateUniform(rd);

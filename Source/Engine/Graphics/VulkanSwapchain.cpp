@@ -35,7 +35,6 @@ VulkanSwapchain::VulkanSwapchain(
 
 VulkanSwapchain::~VulkanSwapchain()
 {
-    DestroyImageViews();
     vkDestroySwapchainKHR(_device->Get(), _swapchain, nullptr);
 }
 
@@ -72,11 +71,6 @@ VkSurfaceFormatKHR VulkanSwapchain::GetSurfaceFormat() const
 std::vector<VkImage> VulkanSwapchain::GetImages() const
 {
     return _swapImages;
-}
-
-std::vector<VkImageView> VulkanSwapchain::GetImageViews() const
-{
-    return _swapImageViews;
 }
 
 bool VulkanSwapchain::GetMailboxSupported() const
@@ -240,46 +234,6 @@ void VulkanSwapchain::ObtainImages()
     VK_CHECK(vkGetSwapchainImagesKHR(_device->Get(), _swapchain, &_imageCount, _swapImages.data()))
 }
 
-void VulkanSwapchain::CreateImageViews()
-{
-    _swapImageViews.resize(_imageCount);
-
-    for (uint32_t i = 0; i < _imageCount; i++) {
-        VkComponentMapping componentMapping = {};
-        componentMapping.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-        componentMapping.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-        componentMapping.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-        componentMapping.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-
-        VkImageSubresourceRange subresourceRange = {};
-        subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        subresourceRange.baseMipLevel = 0;
-        subresourceRange.levelCount = 1;
-        subresourceRange.baseArrayLayer = 0;
-        subresourceRange.layerCount = 1;
-
-        VkImageViewCreateInfo imageViewInfo = {};
-        imageViewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-        imageViewInfo.pNext = nullptr;
-        imageViewInfo.flags = 0;
-        imageViewInfo.image = _swapImages[i];
-        imageViewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-        imageViewInfo.format = _surfaceFormat.format;
-        imageViewInfo.components = componentMapping;
-        imageViewInfo.subresourceRange = subresourceRange;
-
-        VK_CHECK(vkCreateImageView(_device->Get(), &imageViewInfo, nullptr, &_swapImageViews[i]))
-    }
-}
-
-void VulkanSwapchain::DestroyImageViews()
-{
-    for (VkImageView iv : _swapImageViews)
-        vkDestroyImageView(_device->Get(), iv, nullptr);
-
-    _swapImageViews.clear();
-}
-
 void VulkanSwapchain::Destroy()
 {
 }
@@ -289,7 +243,6 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     // Since recreating the swapchain is a big operation, just wait for any processes to sync.
     _device->WaitForDevice();
 
-    DestroyImageViews(); // Image views will be recreated later.
     ChooseImageCount();
     ChooseExtent();
 
@@ -347,7 +300,6 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     }
 
     ObtainImages();
-    CreateImageViews();
 }
 
 } // namespace bl

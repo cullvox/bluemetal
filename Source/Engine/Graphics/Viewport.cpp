@@ -166,8 +166,8 @@ void Viewport::RecreateImages()
 
         for (int i = 0; i < _swapchain->GetImageCount(); i++)
         {
-            _swapchainImages[i] = VulkanImage{_device, swapImages[i], VK_IMAGE_TYPE_2D, VkExtent3D{swapExtent.width, swapExtent.height, 1}, _swapchain->GetFormat(), _swapchain->GetImageUsageFlags(), VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_UNDEFINED};
-            _swapchainImageViews[i] = VulkanImageView(_device, &_swapchainImages[i], VK_IMAGE_VIEW_TYPE_2D, _swapchain->GetFormat(), VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY}, VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+            _swapchainImages.emplace_back(_device, swapImages[i], VK_IMAGE_TYPE_2D, VkExtent3D{swapExtent.width, swapExtent.height, 1}, _swapchain->GetFormat(), _swapchain->GetImageUsageFlags(), VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_UNDEFINED);
+            _swapchainImageViews.emplace_back(_device, &_swapchainImages[i], VK_IMAGE_VIEW_TYPE_2D, _swapchain->GetFormat(), VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY}, VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
         }
     }
 
@@ -190,7 +190,7 @@ void Viewport::RecreateImages()
 
         _colorImageResolved->Transition(
             cmd,
-            0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             0, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
             { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
@@ -279,24 +279,51 @@ bool operator!=(const VkExtent2D& a, const VkExtent2D& b)
     return !(a == b);
 }
 
+void Viewport::PrepareForFrame(RenderData& rd)
+{
+    if (_swapchain)
+    {
+        if (_swapchain)
+        {
+            if (_swapchain->AcquireNext(_imageIndex, _imageAvailableSemaphores[rd.GetCurrentFrame()]))
+            {
+                _imagesDirty = true;
+            }
+        }
+
+        if (_swapchain && _swapchain->GetExtent() != _extent)
+        {
+            _imagesDirty = true;
+        }
+
+        // When we're just rendering to a gpu texture there's no need for any
+        // semaphores for sync, so we don't use any when it's just a render texture.
+
+        // Add the swapchain image's wait semaphore and render finished semaphore.
+        VkSemaphoreSubmitInfo waitInfo = {};
+        waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
+        waitInfo.pNext = nullptr;
+        waitInfo.semaphore = _imageAvailableSemaphores[rd.GetCurrentFrame()];
+        waitInfo.value = 0;
+        waitInfo.stageMask = 0;
+        waitInfo.deviceIndex = 0;
+        rd.AddRenderWaitSemaphore(waitInfo);
+
+        waitInfo.semaphore = _renderFinishedSemaphores[_imageIndex];
+        waitInfo.value = 0;
+        waitInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
+        waitInfo.deviceIndex = 0;
+        rd.AddRenderSignalSemaphore(waitInfo);
+    }
+}
+
+
+
 bool Viewport::Bind(RenderData& rd)
 {
     auto cmd = rd.GetCommandBuffer();
 
     auto extent = GetExtent();
-
-    if (_swapchain) 
-    {
-        if (_swapchain->AcquireNext(_imageIndex, _imageAvailableSemaphores[rd.GetCurrentFrame()]))
-        {
-            _imagesDirty = true;
-        }
-    }
-
-    if (_swapchain && _swapchain->GetExtent() != _extent)
-    {
-        _imagesDirty = true;
-    }
 
     if (_imagesDirty) {
         RecreateImages();
@@ -325,91 +352,111 @@ bool Viewport::Bind(RenderData& rd)
     rd.SetGlobalDescriptorSet(_globalDescriptorSets[rd.GetCurrentFrame()]);
     rd.SetSampleCount(_sampleCount);
 
-    // When we're just rendering to a gpu texture there's no need for any
-    // semaphores for sync, so we don't use any when it's just a render texture.
-    if (!_swapchain) 
-    {
-        return true;
-    }
-
-    // Add the swapchain image's wait semaphore and render finished semaphore.
-    VkSemaphoreSubmitInfo waitInfo = {};
-    waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-    waitInfo.pNext = nullptr;
-    waitInfo.semaphore = _imageAvailableSemaphores[rd.GetCurrentFrame()];
-    waitInfo.value = 0;
-    waitInfo.stageMask = 0;
-    waitInfo.deviceIndex = 0;
-    rd.AddRenderWaitSemaphore(waitInfo);
-
-    waitInfo.semaphore = _renderFinishedSemaphores[_imageIndex];
-    waitInfo.value = 0;
-    waitInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-    waitInfo.deviceIndex = 0;
-    rd.AddRenderSignalSemaphore(waitInfo);
-
     return true;
 }
 
-void Viewport::TransitionPostRender(RenderData& rd)
+void Viewport::TransitionPreRender(RenderData& rd)
 {
+    auto cmd = rd.GetCommandBuffer();
 
-    // Only transition the color image if it's going to be sampled later.
-    if (!HasFlag(_renderFlags, ViewportRenderFlags::eSampled))
+    // Transition images
+    if (_swapchain && _sampleCount == VK_SAMPLE_COUNT_1_BIT)
     {
-        return;   
+        _swapchainImages[_imageIndex].Transition(
+            cmd,
+            0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
     }
-
-    if (_sampleCount == VK_SAMPLE_COUNT_1_BIT) {
-
-        if (_swapchain) {
-            _swapchainImages[rd.GetImageIndex()].Transition(
-                rd.GetCommandBuffer(), 
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
-                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                VK_ACCESS_SHADER_READ_BIT,
-                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-        }
-        else
-        {
-            _colorImage->Transition(
-                rd.GetCommandBuffer(), 
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
-                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                VK_ACCESS_SHADER_READ_BIT,
-                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-        }
-    }
-    else 
+    else if (_swapchain && _sampleCount != VK_SAMPLE_COUNT_1_BIT)
     {
-
-        if (_swapchain) {
-            _swapchainImages[rd.GetImageIndex()].Transition(
-                rd.GetCommandBuffer(), 
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
-                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                VK_ACCESS_SHADER_READ_BIT,
-                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-        } else {
-            _colorImageResolved->Transition(
-                rd.GetCommandBuffer(), 
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
-                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                VK_ACCESS_SHADER_READ_BIT,
-                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-        }
+        _swapchainImages[_imageIndex].Transition(
+            cmd,
+            0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+    }
+    else if (!_swapchain && _sampleCount == VK_SAMPLE_COUNT_1_BIT)
+    {
+        _colorImage->Transition(
+            cmd,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+    } 
+    else if (!_swapchain && _sampleCount != VK_SAMPLE_COUNT_1_BIT)
+    {
+        _colorImageResolved->Transition(
+            cmd,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
     }
 }
 
-void Viewport::TransitionPrePresent(RenderData& rd)
+//void Viewport::TransitionPreRender(RenderData& rd)
+//{
+//
+//    // Only transition the color image if it's going to be sampled later.
+//    if (!HasFlag(_renderFlags, ViewportRenderFlags::eSampled))
+//    {
+//        return;
+//    }
+//
+//    if (_sampleCount == VK_SAMPLE_COUNT_1_BIT) {
+//
+//        if (_swapchain) {
+//            _swapchainImages[rd.GetImageIndex()].Transition(
+//                rd.GetCommandBuffer(), 
+//                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
+//                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+//                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+//                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+//                VK_ACCESS_SHADER_READ_BIT,
+//                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+//        }
+//        else
+//        {
+//            _colorImage->Transition(
+//                rd.GetCommandBuffer(), 
+//                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
+//                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+//                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+//                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+//                VK_ACCESS_SHADER_READ_BIT,
+//                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+//        }
+//    }
+//    else 
+//    {
+//
+//        if (_swapchain) {
+//            _swapchainImages[rd.GetImageIndex()].Transition(
+//                rd.GetCommandBuffer(), 
+//                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
+//                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+//                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+//                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+//                VK_ACCESS_SHADER_READ_BIT,
+//                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+//        } else {
+//            _colorImageResolved->Transition(
+//                rd.GetCommandBuffer(), 
+//                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
+//                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+//                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+//                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+//                VK_ACCESS_SHADER_READ_BIT,
+//                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+//        }
+//    }
+//}
+
+void Viewport::TransitionPostRender(RenderData& rd)
 {
     // If sampled and swapchain, transition the color image to sampled -> present
     // If sampled and no swapchain, transition back into a color attachment.
@@ -418,6 +465,7 @@ void Viewport::TransitionPrePresent(RenderData& rd)
 
     if (_swapchain)
     {
+
         if (HasFlag(_renderFlags, ViewportRenderFlags::eSampled)) {
 
             // This image was probably sampled, so it's sampled -> present.
