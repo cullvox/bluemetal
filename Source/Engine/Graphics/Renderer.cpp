@@ -24,10 +24,11 @@ Renderer::Renderer(VulkanDevice* device, Viewport* mainViewport, FrameCounter& f
     , _renderData(this)
 {
 
-    // Determine the renderer image formats. 
+    // Determine the renderer image formats.
     auto physicalDevice = _device->GetPhysicalDevice();
 
-    _colorFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_R16G16B16A16_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT);
+    _colorFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+    _colorFormatHDR = physicalDevice->FindSupportedFormat({VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
     _depthFormat  = physicalDevice->FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, 0);
     _selectionFormat = _device->GetPhysicalDevice()->FindSupportedFormat({VK_FORMAT_R32_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 
@@ -41,7 +42,7 @@ Renderer::Renderer(VulkanDevice* device, Viewport* mainViewport, FrameCounter& f
     fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
     // Create semaphores for each frame in flight.
-    _inFlightFences.reserve(VulkanConfig::maxFramesInFlight);
+    _inFlightFences.resize(VulkanConfig::maxFramesInFlight);
     for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) 
     {
         VK_CHECK(vkCreateFence(_device->Get(), &fenceInfo, nullptr, &_inFlightFences[i]))
@@ -78,6 +79,13 @@ VulkanDevice* Renderer::GetDevice() const
 }
 
 Profiler profiler;
+
+void Renderer::ChooseFormats()
+{
+
+
+
+}
 
 void Renderer::RenderFrame()
 {
@@ -134,7 +142,7 @@ void Renderer::RenderFrame()
     // Transition viewports for possible present.
     for (auto& viewport : _viewports)
     {
-        viewport->TransitionPrePresent(_renderData);
+        //viewport->TransitionPrePresent(_renderData);
     }
 
     VK_CHECK(vkEndCommandBuffer(cmd))
@@ -424,9 +432,6 @@ void Renderer::RenderSceneToViewport(RenderData& rd, Viewport& vp)
 
         vkCmdEndRendering(cmd);
     }
-
-    // Viewports which are flagged as eSample must be transitioned to a sampled image.
-    vp.TransitionPostRender(rd);
 }
 
 void Renderer::SetGUIFunction(RenderFunction func)

@@ -126,13 +126,13 @@ Viewport::~Viewport()
 
 void Viewport::RecreateImages()
 {
+
+    // Determine a format that works best for all systems.
+
+
     // Create color image
     VkComponentMapping mapping = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY };
     VkImageSubresourceRange range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
-
-    auto colorFormat = _device->GetPhysicalDevice()->FindSupportedFormat({VK_FORMAT_R16G16B16A16_SFLOAT, VK_FORMAT_R8G8B8A8_UNORM}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_2_SAMPLED_IMAGE_BIT);
-    auto depthFormat = _device->GetPhysicalDevice()->FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
-    auto selectionFormat = _device->GetPhysicalDevice()->FindSupportedFormat({VK_FORMAT_R32_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 
     VkExtent3D extent3d = { _extent.width, _extent.height, 1 };
 
@@ -342,10 +342,10 @@ bool Viewport::Bind(RenderData& rd)
  
     // Setup the vulkan scissor.
     // We have to convert from normalized scissor dimensions to pixels.
-    _scissor.offset.x = static_cast<int32_t>((1.0f - _scissorLeft) * static_cast<float>(extent.width));
-    _scissor.offset.y = static_cast<int32_t>((1.0f - _scissorTop) * static_cast<float>(extent.height));
-    _scissor.extent.width = static_cast<int32_t>(_scissorRight * static_cast<float>(extent.width));
-    _scissor.extent.height = static_cast<int32_t>(_scissorBottom * static_cast<float>(extent.height));
+    _scissor.offset.x = static_cast<int32_t>(_scissorLeft * static_cast<float>(extent.width));
+    _scissor.offset.y = static_cast<int32_t>(_scissorTop * static_cast<float>(extent.height));
+    _scissor.extent.width = static_cast<int32_t>((1.0f - _scissorRight) * static_cast<float>(extent.width));
+    _scissor.extent.height = static_cast<int32_t>((1.0f - _scissorBottom) * static_cast<float>(extent.height));
     vkCmdSetScissor(cmd, 0, 1, &_scissor);
 
     // Set the current sample count and descriptor set.
@@ -512,7 +512,6 @@ void Viewport::TransitionPostRender(RenderData& rd)
             // Idk how this condition would exist, what would it's purpose be?
             throw std::runtime_error("Invalid viewport pre present transition operation.");
         }
-    
     }
 }
 

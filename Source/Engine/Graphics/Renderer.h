@@ -90,7 +90,7 @@ private:
     RenderData                                                      _renderData;
     uint32_t                                                        _currentFrame = 0;
     std::array<VkCommandBuffer, VulkanConfig::maxFramesInFlight>    _commandBuffers;
-    VkFormat                                                        _colorFormat, _depthFormat, _selectionFormat;
+    VkFormat                                                        _colorFormat, _colorFormatHDR, _depthFormat, _selectionFormat;
     std::vector<VkFence>                                            _inFlightFences;
     std::unique_ptr<VulkanDescriptorSetAllocatorCache>              _descriptorSetCache;
 

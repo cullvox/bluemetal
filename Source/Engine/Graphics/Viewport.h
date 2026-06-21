@@ -59,7 +59,7 @@ class Viewport {
     VulkanBufferFrameRing _globalBuffer;
     VkDescriptorSetLayout _globalDescriptorSetLayout;
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalDescriptorSets;
-    
+
     VulkanSwapchain* _swapchain; // Can be nullptr if not being used.
     std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> _imageAvailableSemaphores;
     std::vector<VkSemaphore> _renderFinishedSemaphores;
@@ -67,15 +67,16 @@ class Viewport {
     std::vector<VulkanImage> _swapchainImages;
     std::vector<VulkanImageView> _swapchainImageViews;
     uint32_t _imageIndex;
-    
+
     VkSampleCountFlagBits _sampleCount;
     VkExtent2D _extent;
     VkRect2D _scissor;
-    float _scissorTop, _scissorBottom, _scissorLeft, _scissorRight;
+    float _scissorTop = 0.0f, _scissorBottom = 0.0f, _scissorLeft = 0.0f, _scissorRight = 0.0f;
 
     ViewportRenderFlags _renderFlags;
 
-    VkBool32 _imagesDirty = VK_TRUE; // Determines if images need to be recreated at the beginning of a frame. 
+    VkBool32 _imagesDirty = VK_TRUE; // Determines if images need to be recreated at the beginning of a frame.
+    VkBool32 _preferHDR = VK_TRUE;
     void RecreateImages();
 
 
@@ -90,6 +91,7 @@ public:
     void SetScissor(float top = 0.0f, float bottom = 0.0f, float left = 0.0f, float right = 0.0f); // Sets the scissor as normalized coordinates starting from point to the opposite in a line across the frame.
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
+    void SetPreferHDR(bool useHDR);
 
     VkExtent2D GetExtent() const;
     VkImageView GetColorImageView();
