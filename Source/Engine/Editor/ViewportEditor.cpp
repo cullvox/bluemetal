@@ -24,7 +24,7 @@ ViewportEditor::ViewportEditor(Engine& engine, EditorSystem& system)
     auto renderer = engine.GetRenderer();
     auto defaultSampler = engine.GetResourceSystem()->Load<Sampler>("Resources/Samplers/Default.json");
 
-    _viewport = std::make_unique<Viewport>(engine.GetGraphics().GetDevice(), VkExtent2D{1, 1});
+    _viewport = std::make_unique<Viewport>(engine.GetGraphics().GetRenderer(), VkExtent2D{1, 1});
     auto geometryColor = _viewport->GetColorResolveImageView();
     auto geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler.lock()->Get(), geometryColor, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 

@@ -4,7 +4,6 @@
 #include "Window/Keyboard.h"
 #include "Window/Mouse.h"
 #include "Graphics/GraphicsSystem.h"
-#include "Graphics/VulkanWindow.h"
 #include "Core/ClassDB.h"
 
 namespace bl {
@@ -22,7 +21,7 @@ void FlyCamera3D::Update(float dt)
 {
     auto& keyboard = GetEngine().GetInput()->GetKeyboard();
     auto& mouse = GetEngine().GetInput()->GetMouse();
-    auto window = GetEngine().GetGraphics().GetWindow();
+    auto window = GetEngine().GetWindow();
 
     glm::vec3 position = GetPosition();
 

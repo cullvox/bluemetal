@@ -1,11 +1,13 @@
 #include "Core/Print.h"
 
+#include "Core/Version.h"
 #include "Graphics/Viewport.h"
+#include "Graphics/WindowViewport.h"
 #include "VulkanDevice.h"
 #include "VulkanInstance.h"
 #include "VulkanShader.h"
-#include "VulkanWindow.h"
 #include "Renderer.h"
+#include "WindowViewport.h"
 
 #include "Resources/Mesh.h"
 #include "Resources/Material.h"
@@ -37,18 +39,24 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     rs->AddSystemType<Mesh>(this);
     rs->AddSystemType<Model>(this);
 
-    _vulkanInstance = std::make_unique<VulkanInstance>(bl::Version { bl::VersionRelease::eAlpha, 0, 1, 7 }, "bluemetal", true);
+    _vulkanInstance = std::make_unique<VulkanInstance>(engineVersion, "bluemetal", true);
     _physicalDevice = _vulkanInstance->ChoosePhysicalDevice();
     _device = std::make_unique<VulkanDevice>(_vulkanInstance.get(), _physicalDevice);
 
     auto displays = Display::GetDisplays();
 
     _device->WaitForDevice();
-    _window = std::make_unique<VulkanWindow>(_device.get(), "Maginvox", Rect2D { {}, displays[0].GetDesktopMode().extent }, false);
 
-    _window->GetViewport()->SetRenderFlags(_window->GetViewport()->GetRenderFlags() | ViewportRenderFlags::eImGui);
+    // Create the renderer.
+    _renderer = std::make_unique<Renderer>(_device.get(), engine.GetFrameCounter());
+    
+    // Create the default window/surface's viewport.
+    _windowViewport = std::make_unique<WindowViewport>(_renderer.get(), engine.GetWindow());
+    
+    // Enable ImGui rendering on the default viewport.
+    _windowViewport->SetRenderFlags(_windowViewport->GetRenderFlags() | ViewportRenderFlags::eImGui);
 
-    _renderer = std::make_unique<Renderer>(_device.get(), _window->GetViewport(), engine.GetFrameCounter());
+    _renderer->AddViewport(_windowViewport.get());
 }
 
 GraphicsSystem::~GraphicsSystem()
@@ -93,14 +101,14 @@ VulkanDevice* GraphicsSystem::GetDevice()
     return _device.get();
 }
 
-VulkanWindow* GraphicsSystem::GetWindow()
-{
-    return _window.get();
-}
-
 Renderer* GraphicsSystem::GetRenderer() 
 {
     return _renderer.get(); 
+}
+
+WindowViewport* GraphicsSystem::GetViewport()
+{
+    return _windowViewport.get();
 }
 
 } // namespace bl

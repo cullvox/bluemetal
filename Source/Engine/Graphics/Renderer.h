@@ -42,7 +42,7 @@ using RenderFunction = std::function<void(RenderData& rd)>;
 
 class Renderer {
 public:
-    Renderer(VulkanDevice* device, Viewport* window, FrameCounter& frameCounter); /** @brief Constructor */
+    Renderer(VulkanDevice* device, FrameCounter& frameCounter); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
     VulkanDevice* GetDevice() const;
@@ -72,6 +72,8 @@ public:
 
     // Depending on if the renderer is running on an HDR format.
     VkFormat GetViewportColorFormat();
+    VkFormat GetViewportDepthFormat();
+    VkFormat GetViewportSelectionFormat();
 
     void PrepareRenderData(RenderData& rd);
 
@@ -93,6 +95,7 @@ private:
     VkFormat                                                        _colorFormat, _colorFormatHDR, _depthFormat, _selectionFormat;
     std::vector<VkFence>                                            _inFlightFences;
     std::unique_ptr<VulkanDescriptorSetAllocatorCache>              _descriptorSetCache;
+    std::vector<VkSurfaceFormatKHR>                                 _surfaceFormats;
 
     std::vector<RenderPass> _renderPasses;
 

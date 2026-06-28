@@ -3,6 +3,7 @@
 #include "Engine/System.h"
 #include "Engine/SDL.h"
 #include "Graphics/Renderer.h"
+#include "Graphics/Viewport.h"
 #include "Graphics/Vulkan.h"
 #include "Window/Window.h"
 
@@ -13,9 +14,10 @@ namespace bl {
 
 class Engine;
 class GraphicsSystem;
+class WindowViewport;
 
 class ImGuiSystem : public System {
-    VulkanWindow* _window;
+    WindowViewport* _window;
     Renderer* _renderer;
     VkDescriptorPool _descriptorPool;
 
@@ -24,7 +26,7 @@ class ImGuiSystem : public System {
     void Unload();
 
 public:
-    ImGuiSystem(Engine& engine, VulkanWindow* window, Renderer* renderer);
+    ImGuiSystem(Engine& engine, WindowViewport* window, Renderer* renderer);
     ~ImGuiSystem();
 
     virtual std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path) override;

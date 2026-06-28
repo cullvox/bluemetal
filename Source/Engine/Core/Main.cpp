@@ -1,4 +1,3 @@
-#include "Graphics/VulkanWindow.h"
 #include <Audio/AudioSystem.h>
 #include <Core/ClassDB.h>
 #include <Core/FrameCounter.h>
@@ -33,9 +32,9 @@
 #include <Scene/PhysicsBody3D.h>
 #include <Social/Discord.h>
 #include <Scene/Sky3D.h>
+#include <Graphics/WindowViewport.h>
 #include <Window/Input.h>
 #include <Window/Keyboard.h>
-#include <Graphics/VulkanWindow.h>
 #include <Window/Mouse.h>
 #include <Editor/EditorSystem.h>
 
@@ -272,7 +271,7 @@ int main(int argc, const char** argv)
         auto& classDB = engine.GetClassDB();
         auto classNames = classDB.GetClassNames();
 
-        auto viewport = static_cast<bl::VulkanWindow*>(window)->GetViewport();
+        auto viewport = graphics.GetViewport();
 
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
@@ -324,6 +323,7 @@ int main(int argc, const char** argv)
 
             rootNode->Update(frameCounter.GetDeltaTime());
             profiler.EndProfile("Update");
+
 
             viewport->SetView(cameraNode->GetViewMatrix());
             viewport->SetProjection(cameraNode->GetProjectionMatrix());

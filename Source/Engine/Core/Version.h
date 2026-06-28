@@ -68,7 +68,7 @@ struct Version {
     }
 };
 
-const Version engineVersion(VersionRelease::eAlpha, 0, 1, 0);
+const Version engineVersion(VersionRelease::eAlpha, 0, 2, 0);
 const std::string engineName = "Bluemetal Engine";
 
 } // namespace bl

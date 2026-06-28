@@ -24,14 +24,14 @@ private:
     void ChoosePresentMode();
 
     /// @brief Returns true if an extent was found.
-    void ChooseExtent();
+    void ChooseExtent(VkExtent2D suggestedExtent);
 
     /// @brief Returns true if swapchain images could be obtained.
     void ObtainImages();
 
     VulkanDevice* _device;
     VulkanPhysicalDevice* _physicalDevice;
-    VulkanWindow* _window;
+    VkSurfaceKHR _surface;
     uint32_t _imageCount;
     VkSurfaceFormatKHR _surfaceFormat;
     VkPresentModeKHR _presentMode;
@@ -59,7 +59,7 @@ public:
      * @param device The Vulkan device to use.
      * @param window The Vulkan window to create the swapchain for.
      */
-    VulkanSwapchain(VulkanDevice* device, VulkanWindow* window);
+    VulkanSwapchain(VulkanDevice* device, VkSurfaceKHR surface);
 
     /**
      * @brief Destructor for VulkanSwapchain.
@@ -118,7 +118,7 @@ public:
 
     void SetSurfaceFormat(VkSurfaceFormatKHR format);
     void SetPresentMode(VkPresentModeKHR mode);
-    void Recreate(std::optional<VkPresentModeKHR> presentMode = {}, std::optional<VkSurfaceFormatKHR> surfaceFormat = {});
+    void Recreate(VkExtent2D suggestedExtent, std::optional<VkPresentModeKHR> presentMode = {}, std::optional<VkSurfaceFormatKHR> surfaceFormat = {});
     bool AcquireNext(uint32_t& imageIndex, VkSemaphore imageAvailableSemaphore);
     void QueueSubmit(VkCommandBuffer cmd, VkPipelineStageFlags waitDstStageMask);
     bool QueuePresent(uint32_t imageIndex, VkSemaphore waitSemaphores); /** Presents the image at GetImageIndex() to the screen. */

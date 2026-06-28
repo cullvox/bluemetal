@@ -4,7 +4,6 @@
 #include "Scene/Node.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/Renderer.h"
-#include "Graphics/VulkanWindow.h"
 #include "ImGui/imgui.h"
 
 namespace bl {
@@ -47,7 +46,7 @@ void EditorSystem::Draw(RenderData& rd)
     if (ImGui::BeginMenu("File")) {
 
         if (ImGui::MenuItem("Exit")) {
-            GetEngine().GetGraphics().GetWindow()->RequestClose();
+            // GetEngine().GetGraphics().GetWindow()->RequestClose();
         }
 
         if (ImGui::MenuItem("Save Scene")) {

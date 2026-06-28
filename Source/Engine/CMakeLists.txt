@@ -12,7 +12,7 @@ list(APPEND Sources
   # Audio
   "Audio/AudioSystem.cpp"
 
-  "Graphics/VulkanWindow.cpp"
+  "Graphics/WindowViewport.cpp"
   "Graphics/VulkanConversions.cpp"
   "Graphics/VulkanInstance.cpp"
   "Graphics/VulkanPhysicalDevice.cpp"

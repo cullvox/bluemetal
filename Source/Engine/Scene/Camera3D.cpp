@@ -66,7 +66,7 @@ float Camera3D::GetFOV()
 
 const glm::mat4& Camera3D::GetProjectionMatrix()
 {
-    Extent2D extent = GetEngine().GetWindow()->GetExtent();
+    VkExtent2D extent = GetEngine().GetWindow()->GetExtent();
     float width = static_cast<float>(extent.width);
     float height = static_cast<float>(extent.height);
     float aspect = width / height;

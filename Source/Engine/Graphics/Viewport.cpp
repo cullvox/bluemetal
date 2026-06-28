@@ -18,14 +18,14 @@
 
 namespace bl {
 
-Viewport::Viewport(VulkanDevice* device, VkExtent2D extent)
-    : _device(device)
-    , _swapchain(nullptr)
-    , _imageAvailableSemaphores({})
-    , _renderFinishedSemaphores({})
+Viewport::Viewport(Renderer* renderer)
+    : _device(renderer->GetDevice())
+    , _renderer(renderer)
     , _sampleCount(VK_SAMPLE_COUNT_1_BIT)
-    , _extent(extent)
+    , _extent({0, 0})
 {
+    // Create the global uniform viewport buffer.
+    _globalBuffer = VulkanBufferFrameRing{ _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO) };
 
     // Create the viewport descriptor sets to bind later.
     std::vector<VkDescriptorSetLayoutBinding> bindings { 1 };
@@ -36,7 +36,6 @@ Viewport::Viewport(VulkanDevice* device, VkExtent2D extent)
     bindings[0].pImmutableSamplers = nullptr;
 
     _globalDescriptorSetLayout = _device->AcquireDescriptorSetLayout(bindings);
-    _globalBuffer = VulkanBufferFrameRing{ _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO) };
 
     std::array<VkDescriptorBufferInfo, VulkanConfig::maxFramesInFlight> descriptorBufferInfos;
     std::array<VkWriteDescriptorSet, VulkanConfig::maxFramesInFlight> descriptorWrites;
@@ -60,42 +59,16 @@ Viewport::Viewport(VulkanDevice* device, VkExtent2D extent)
     }
 
     vkUpdateDescriptorSets(_device->Get(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
-
-    // Create the viewport images.
-    RecreateImages();
-
-    // Create the ImGui context for this viewport.
-    //_context = ImGui::CreateContext();
-
 }
 
-Viewport::Viewport(VulkanDevice* device, VulkanSwapchain* swapchain)
-    : Viewport(device, swapchain->GetExtent())
+Viewport::Viewport(Renderer* renderer, VkExtent2D extent)
+    : Viewport(renderer)
 {
-    _swapchain = swapchain;
-    
-    // Build out the per-frame semaphores infos.
-    VkSemaphoreCreateInfo semaphoreInfo = {};
-    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-    semaphoreInfo.pNext = nullptr;
-    semaphoreInfo.flags = 0;
-
-    // Create the semaphores for each frame in flight.
-    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) 
-    {
-        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_imageAvailableSemaphores[i]))
-    }
-
-    // Create a render-finished semaphore for each frame in the synchronization driver.
-    uint32_t imageCount = _swapchain->GetImageCount();
-    _renderFinishedSemaphores.resize(imageCount);
-    for (uint32_t i = 0; i < imageCount; i++)
-    {
-        VK_CHECK(vkCreateSemaphore(_device->Get(), &semaphoreInfo, nullptr, &_renderFinishedSemaphores[i]))
-    }
-
+    // Set size and create the viewports images.
+    SetSize(extent);
     RecreateImages();
 }
+
 
 Viewport::~Viewport()
 {
@@ -104,37 +77,18 @@ Viewport::~Viewport()
     {
         _device->FreeDescriptorSet(_globalDescriptorSets[i], _globalDescriptorSetLayout);
     }
-
-    // If not using a swapchain, no semaphores are used and do not need to be freed.
-    if (!_swapchain)
-    {
-        return;
-    }
-
-    // Destroy all per-frame in flight semaphores.
-    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
-    {
-        vkDestroySemaphore(_device->Get(), _imageAvailableSemaphores[i], nullptr);
-    }
-
-    // Destroy all per-image render finished semaphores. 
-    for (uint32_t i = 0; i < _swapchain->GetImageCount(); i++)
-    {
-        vkDestroySemaphore(_device->Get(), _renderFinishedSemaphores[i], nullptr);
-    }
 }
 
 void Viewport::RecreateImages()
 {
-
-    // Determine a format that works best for all systems.
-
 
     // Create color image
     VkComponentMapping mapping = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY };
     VkImageSubresourceRange range = { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 };
 
     VkExtent3D extent3d = { _extent.width, _extent.height, 1 };
+
+    VkFormat colorFormat = _renderer->GetViewportColorFormat(), selectionFormat = _renderer->GetViewportSelectionFormat(), depthFormat = _renderer->GetViewportDepthFormat();
 
     _colorImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, extent3d, colorFormat, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT, false, _sampleCount);
     _colorImageView = std::make_unique<VulkanImageView>(_device, _colorImage.get(), VK_IMAGE_VIEW_TYPE_2D, colorFormat, mapping, range);
@@ -155,21 +109,6 @@ void Viewport::RecreateImages()
     _depthImage = std::make_unique<VulkanImage>(_device, VK_IMAGE_TYPE_2D, extent3d, depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, false, _sampleCount);
     range.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
     _depthImageView = std::make_unique<VulkanImageView>(_device, _depthImage.get(), VK_IMAGE_VIEW_TYPE_2D, depthFormat, mapping, range);
-
-    if (_swapchain) {
-        
-        _swapchainImages.reserve(_swapchain->GetImageCount());
-        _swapchainImageViews.reserve(_swapchain->GetImageCount());
-
-        auto swapImages = _swapchain->GetImages();
-        auto swapExtent = _swapchain->GetExtent();
-
-        for (int i = 0; i < _swapchain->GetImageCount(); i++)
-        {
-            _swapchainImages.emplace_back(_device, swapImages[i], VK_IMAGE_TYPE_2D, VkExtent3D{swapExtent.width, swapExtent.height, 1}, _swapchain->GetFormat(), _swapchain->GetImageUsageFlags(), VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_UNDEFINED);
-            _swapchainImageViews.emplace_back(_device, &_swapchainImages[i], VK_IMAGE_VIEW_TYPE_2D, _swapchain->GetFormat(), VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY}, VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-        }
-    }
 
     // Transition depth image
     _device->ImmediateSubmit([&](VkCommandBuffer cmd){
@@ -209,19 +148,6 @@ void Viewport::RecreateImages()
             0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
             { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
-        if (_swapchain)
-        {
-            // Transition all the swapchain images to color attachments.
-            for (auto& image : _swapchainImages)
-            {
-                image.Transition(
-                    cmd, 
-                    0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                    0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                    VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-            }
-        }
     });
 
 
@@ -269,55 +195,9 @@ void Viewport::UpdateUniform(RenderData& rd)
     _globalBuffer.Upload(std::as_bytes(std::span<GlobalUBO, 1>{&uboData, 1}), rd.GetCurrentFrame());
 }
 
-bool operator==(const VkExtent2D& a, const VkExtent2D& b)
-{
-    return a.width == b.width && a.height == b.height;
-}
-
-bool operator!=(const VkExtent2D& a, const VkExtent2D& b)
-{
-    return !(a == b);
-}
-
 void Viewport::PrepareForFrame(RenderData& rd)
 {
-    if (_swapchain)
-    {
-        if (_swapchain)
-        {
-            if (_swapchain->AcquireNext(_imageIndex, _imageAvailableSemaphores[rd.GetCurrentFrame()]))
-            {
-                _imagesDirty = true;
-            }
-        }
-
-        if (_swapchain && _swapchain->GetExtent() != _extent)
-        {
-            _imagesDirty = true;
-        }
-
-        // When we're just rendering to a gpu texture there's no need for any
-        // semaphores for sync, so we don't use any when it's just a render texture.
-
-        // Add the swapchain image's wait semaphore and render finished semaphore.
-        VkSemaphoreSubmitInfo waitInfo = {};
-        waitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-        waitInfo.pNext = nullptr;
-        waitInfo.semaphore = _imageAvailableSemaphores[rd.GetCurrentFrame()];
-        waitInfo.value = 0;
-        waitInfo.stageMask = 0;
-        waitInfo.deviceIndex = 0;
-        rd.AddRenderWaitSemaphore(waitInfo);
-
-        waitInfo.semaphore = _renderFinishedSemaphores[_imageIndex];
-        waitInfo.value = 0;
-        waitInfo.stageMask = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
-        waitInfo.deviceIndex = 0;
-        rd.AddRenderSignalSemaphore(waitInfo);
-    }
 }
-
-
 
 bool Viewport::Bind(RenderData& rd)
 {
@@ -360,34 +240,18 @@ void Viewport::TransitionPreRender(RenderData& rd)
     auto cmd = rd.GetCommandBuffer();
 
     // Transition images
-    if (_swapchain && _sampleCount == VK_SAMPLE_COUNT_1_BIT)
-    {
-        _swapchainImages[_imageIndex].Transition(
-            cmd,
-            0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-    }
-    else if (_swapchain && _sampleCount != VK_SAMPLE_COUNT_1_BIT)
-    {
-        _swapchainImages[_imageIndex].Transition(
-            cmd,
-            0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-            {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-    }
-    else if (!_swapchain && _sampleCount == VK_SAMPLE_COUNT_1_BIT)
+    if (_sampleCount == VK_SAMPLE_COUNT_1_BIT)
     {
         _colorImage->Transition(
             cmd,
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_ACCESS_SHADER_READ_BIT, 
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
             {VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-    } 
-    else if (!_swapchain && _sampleCount != VK_SAMPLE_COUNT_1_BIT)
+    }
+    else
     {
         _colorImageResolved->Transition(
             cmd,
@@ -398,135 +262,41 @@ void Viewport::TransitionPreRender(RenderData& rd)
     }
 }
 
-//void Viewport::TransitionPreRender(RenderData& rd)
-//{
-//
-//    // Only transition the color image if it's going to be sampled later.
-//    if (!HasFlag(_renderFlags, ViewportRenderFlags::eSampled))
-//    {
-//        return;
-//    }
-//
-//    if (_sampleCount == VK_SAMPLE_COUNT_1_BIT) {
-//
-//        if (_swapchain) {
-//            _swapchainImages[rd.GetImageIndex()].Transition(
-//                rd.GetCommandBuffer(), 
-//                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
-//                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-//                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-//                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-//                VK_ACCESS_SHADER_READ_BIT,
-//                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-//        }
-//        else
-//        {
-//            _colorImage->Transition(
-//                rd.GetCommandBuffer(), 
-//                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
-//                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-//                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-//                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-//                VK_ACCESS_SHADER_READ_BIT,
-//                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-//        }
-//    }
-//    else 
-//    {
-//
-//        if (_swapchain) {
-//            _swapchainImages[rd.GetImageIndex()].Transition(
-//                rd.GetCommandBuffer(), 
-//                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
-//                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-//                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-//                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-//                VK_ACCESS_SHADER_READ_BIT,
-//                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-//        } else {
-//            _colorImageResolved->Transition(
-//                rd.GetCommandBuffer(), 
-//                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
-//                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-//                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-//                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-//                VK_ACCESS_SHADER_READ_BIT,
-//                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-//        }
-//    }
-//}
-
 void Viewport::TransitionPostRender(RenderData& rd)
 {
-    // If sampled and swapchain, transition the color image to sampled -> present
+    // If sampled and swapchain, transition the color image to sampled -> present.
     // If sampled and no swapchain, transition back into a color attachment.
     // If not sampled and swapchain, transition the color attachment to present.
     // If not sampled and no swapchain, do nothing?
 
-    if (_swapchain)
+
+    if (_sampleCount == VK_SAMPLE_COUNT_1_BIT)
     {
-
-        if (HasFlag(_renderFlags, ViewportRenderFlags::eSampled)) {
-
-            // This image was probably sampled, so it's sampled -> present.
-            _swapchainImages[rd.GetImageIndex()].Transition(
-                rd.GetCommandBuffer(), 
-                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                VK_ACCESS_SHADER_READ_BIT,
-                0,
-                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-        }
-        else
-        {
-            // Image is not being sampled, so it's color attachment -> present.
-            _swapchainImages[rd.GetImageIndex()].Transition(
-                rd.GetCommandBuffer(), 
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 
-                VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-                VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                0,
-                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-        }
+        // Transition the color attachment into a sampled image
+        _colorImage->Transition(
+            rd.GetCommandBuffer(),
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+            VK_ACCESS_SHADER_READ_BIT,
+            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
     }
-    else 
+    else
     {
-        // No swapchain.
 
-        if (HasFlag(_renderFlags, ViewportRenderFlags::eSampled))
-        {
-            // Has no swapchain, and was sampled, so it's sampled -> color attachment.
-            _colorImage->Transition(
-                rd.GetCommandBuffer(),
-                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                VK_ACCESS_SHADER_READ_BIT,
-                VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-        }
-        else
-        {
-            // Idk how this condition would exist, what would it's purpose be?
-            throw std::runtime_error("Invalid viewport pre present transition operation.");
-        }
-    }
-}
+        // Transition the resolve image from TRANSFER_DST, to SAMPLED_IMAGE.
+        _colorImageResolved->Transition(
+            rd.GetCommandBuffer(),
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_ACCESS_TRANSFER_WRITE_BIT,
+            VK_ACCESS_SHADER_READ_BIT,
+            VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
 
-void Viewport::QueuePresent(RenderData& rd)
-{
-    // If we're not using a swapchain, there is nothing to present.
-    if (!_swapchain) 
-    {
-        return;
-    }
-
-    if (_swapchain->QueuePresent(_imageIndex, _renderFinishedSemaphores[_imageIndex])) 
-    {
-        SetSize(_swapchain->GetExtent());
-        RecreateImages();
+        // Idk how this condition would exist, what would it's purpose be?
+        throw std::runtime_error("Invalid viewport pre present transition operation.");
     }
 }
 
@@ -537,42 +307,12 @@ VkExtent2D Viewport::GetExtent() const
 
 VkImageView Viewport::GetColorImageView()
 {
-    if (_swapchain && _sampleCount == VK_SAMPLE_COUNT_1_BIT)
-    {
-        return _swapchainImageViews[_imageIndex].Get();
-    }
-    else if (_swapchain && _sampleCount != VK_SAMPLE_COUNT_1_BIT)
-    {
-        return _colorImageResolvedView->Get();
-    }
-    else if (!_swapchain && _sampleCount == VK_SAMPLE_COUNT_1_BIT)
-    {
-        return _colorImageView->Get();
-    }
-    else if (!_swapchain && _sampleCount != VK_SAMPLE_COUNT_1_BIT)
-    {
-        return _colorImageView->Get();
-    }
+    return _colorImageView->Get();
 }
 
 VkImageView Viewport::GetColorResolveImageView()
 {
-    if (_swapchain && _sampleCount == VK_SAMPLE_COUNT_1_BIT)
-    {
-        return _swapchainImageViews[_imageIndex].Get();
-    }
-    else if (_swapchain && _sampleCount != VK_SAMPLE_COUNT_1_BIT)
-    {
-        return _colorImageResolvedView->Get();
-    }
-    else if (!_swapchain && _sampleCount == VK_SAMPLE_COUNT_1_BIT)
-    {
-        return _colorImageView->Get();
-    }
-    else if (!_swapchain && _sampleCount != VK_SAMPLE_COUNT_1_BIT)
-    {
-        return _colorImageResolvedView->Get();
-    }
+    return _colorImageResolvedView->Get();
 }
 
 VkImageView Viewport::GetSelectionImageView()
@@ -595,20 +335,70 @@ VkSampleCountFlagBits Viewport::GetSampleCount()
     return _sampleCount;
 }
 
-VkPresentModeKHR Viewport::GetPresentMode()
-{
-    if (!_swapchain) return VK_PRESENT_MODE_FIFO_KHR;
-    return _swapchain->GetPresentMode();
-}
-
 ViewportRenderFlags Viewport::GetRenderFlags() const
 {
     return _renderFlags;
+}
+
+void Viewport::GetColorRenderingAttachments(std::vector<VkRenderingAttachmentInfo>& attachments)
+{
+    attachments.resize(2);
+
+    attachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    attachments[0].pNext = nullptr;
+    attachments[0].imageView = _colorImageView->Get();
+    attachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments[0].resolveMode = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_RESOLVE_MODE_NONE : VK_RESOLVE_MODE_AVERAGE_BIT;
+    attachments[0].resolveImageView = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_NULL_HANDLE : _colorImageResolvedView->Get();
+    attachments[0].resolveImageLayout = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_UNDEFINED : _colorImageResolved->GetLayout();
+    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[0].clearValue = VkClearValue{VkClearColorValue{0.98f, 0.98f, 0.98f, 1.0f}};
+
+    attachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    attachments[1].pNext = nullptr;
+    attachments[1].imageView = _selectionImageView->Get();
+    attachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments[1].resolveMode = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_RESOLVE_MODE_NONE : VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+    attachments[1].resolveImageView = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_NULL_HANDLE : _selectionImageResolvedView->Get();
+    attachments[1].resolveImageLayout = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_UNDEFINED : _selectionImageResolved->GetLayout();
+    attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[1].clearValue = VkClearValue {VkClearColorValue{ -1, -1, -1, -1 }};
+
+}
+
+void Viewport::GetDepthRenderingAttachment(VkRenderingAttachmentInfo& attachment)
+{
+    attachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    attachment.pNext = nullptr;
+    attachment.imageView = _depthImageView->Get();
+    attachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
+    attachment.resolveMode = VK_RESOLVE_MODE_NONE;
+    attachment.resolveImageView = VK_NULL_HANDLE;
+    attachment.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    attachment.clearValue = VkClearValue{.depthStencil = {1.0f, 0}};
 }
 
 void Viewport::SetRenderFlags(ViewportRenderFlags flags)
 {
     _renderFlags = flags;
 }
+
+void Viewport::QueuePresent(RenderData& rd)
+{
+}
+
+void Viewport::PrepareEndFrame()
+{
+}
+
+void Viewport::TransitionPrePresent(RenderData& rd)
+{
+}
+
+
 
 }

@@ -1,10 +1,10 @@
 #include "ImGui/ImGuiSystem.h"
 #include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
+#include "Graphics/Viewport.h"
 #include "Graphics/VulkanInstance.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/VulkanConversions.h"
-#include "Graphics/VulkanWindow.h"
 #include "ImGui/imgui.h"
 #include "ImGui/imgui_impl_sdl3.h"
 #include "ImGui/imgui_impl_vulkan.h"
@@ -12,7 +12,7 @@
 
 namespace bl {
 
-ImGuiSystem::ImGuiSystem(Engine& engine, VulkanWindow* window, Renderer* renderer)
+ImGuiSystem::ImGuiSystem(Engine& engine, WindowViewport* window, Renderer* renderer)
     : System(engine)
     , _window(window)
     , _renderer(renderer)
@@ -136,7 +136,7 @@ void ImGuiSystem::Init()
     VkInstance inst = instance->Get();
     ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [](const char* function_name, void* vulkan_instance) { return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance*>(vulkan_instance)), function_name); }, &inst);
 
-    ImGui_ImplSDL3_InitForVulkan(window->Get());
+    ImGui_ImplSDL3_InitForVulkan(GetEngine().GetWindow()->Get());
 
     auto colorFormats = _renderer->GetColorAttachmentFormats(RenderPassType::eGeometry);
 
@@ -213,9 +213,9 @@ void ImGuiSystem::BeginFrame()
     ImGuiIO& io = ImGui::GetIO();
     ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
-    SDL_DisplayID displayID = SDL_GetDisplayForWindow(_window->Get());
+    SDL_DisplayID displayID = SDL_GetDisplayForWindow(GetEngine().GetWindow()->Get());
     float scale = SDL_GetDisplayContentScale(displayID);
-    float density = SDL_GetWindowPixelDensity(_window->Get());
+    float density = SDL_GetWindowPixelDensity(GetEngine().GetWindow()->Get());
 
     ImGui::GetIO().DisplayFramebufferScale = ImVec2 { density, density };
     ImGui::GetIO().FontGlobalScale = scale;

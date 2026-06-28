@@ -6,7 +6,6 @@
 #include "Core/Print.h"
 #include "VulkanConfig.h"
 #include "VulkanDevice.h"
-#include "VulkanWindow.h"
 
 namespace bl {
 
@@ -22,15 +21,15 @@ static inline constexpr VkPresentModeKHR defaultPresentMode = VK_PRESENT_MODE_MA
 
 VulkanSwapchain::VulkanSwapchain(
     VulkanDevice* device,
-    VulkanWindow* window)
+    VkSurfaceKHR surface)
     : _device(device)
     , _physicalDevice(_device->GetPhysicalDevice())
-    , _window(window)
+    , _surface(surface)
     , _imageCount(0)
     , _swapchain(VK_NULL_HANDLE)
 {
     EnsureSurfaceSupported();
-    Recreate();
+    Recreate({0, 0});
 }
 
 VulkanSwapchain::~VulkanSwapchain()
@@ -98,7 +97,7 @@ bool VulkanSwapchain::AcquireNext(uint32_t& imageIndex, VkSemaphore imageAvailab
     case VK_SUCCESS:
         break; // The swapchain does not need to be recreated.
     case VK_ERROR_OUT_OF_DATE_KHR:
-        Recreate();
+        Recreate({0, 0});
         recreate = true;
         break;
     default:
@@ -124,7 +123,7 @@ bool VulkanSwapchain::QueuePresent(uint32_t imageIndex, VkSemaphore waitSemaphor
 
     bool recreated = false;
     if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
-        Recreate(); // Next frame _wasRecreated will be reset.
+        Recreate({0, 0}); // Next frame _wasRecreated will be reset.
         recreated = true;
     } else if (result != VK_SUCCESS) {
         throw std::runtime_error("Could not queue Vulkan present!");
@@ -136,7 +135,7 @@ bool VulkanSwapchain::QueuePresent(uint32_t imageIndex, VkSemaphore waitSemaphor
 void VulkanSwapchain::EnsureSurfaceSupported()
 {
     VkBool32 supported = false;
-    VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->Get(), _device->GetPresentFamilyIndex(), _window->GetSurface(), &supported))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceSupportKHR(_physicalDevice->Get(), _device->GetPresentFamilyIndex(), _surface, &supported))
 
     if (!supported) {
         throw std::runtime_error("Could not ensure Vulkan surface support on physical device!");
@@ -146,7 +145,7 @@ void VulkanSwapchain::EnsureSurfaceSupported()
 void VulkanSwapchain::ChooseImageCount()
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
-    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->Get(), _window->GetSurface(), &capabilities))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->Get(), _surface, &capabilities))
 
     if (capabilities.maxImageCount == 0) {
         // When the max image count is zero the driver doesn't care how many swapchain images we use.
@@ -165,7 +164,7 @@ void VulkanSwapchain::ChooseImageCount()
 void VulkanSwapchain::ChooseFormat()
 {
     // Get the surface formats from the physical device.
-    std::vector<VkSurfaceFormatKHR> formats = _physicalDevice->GetSurfaceFormats(_window);
+    std::vector<VkSurfaceFormatKHR> formats = _physicalDevice->GetSurfaceFormats(_surface);
 
     // Look for the desired surface format.
     for (int i = 0; i < defaultSurfaceFormats.size(); i++) {
@@ -193,7 +192,7 @@ void VulkanSwapchain::ChooseFormat()
 void VulkanSwapchain::ChoosePresentMode()
 {
     // Obtain the present modes from the physical device.
-    std::vector<VkPresentModeKHR> modes = _physicalDevice->GetPresentModes(_window);
+    std::vector<VkPresentModeKHR> modes = _physicalDevice->GetPresentModes(_surface);
 
     // Find the quick supported checks.
     _isMailboxSupported = std::find(modes.begin(), modes.end(), VK_PRESENT_MODE_MAILBOX_KHR) != modes.end();
@@ -210,19 +209,19 @@ void VulkanSwapchain::ChoosePresentMode()
     _presentMode = VK_PRESENT_MODE_FIFO_KHR;
 }
 
-void VulkanSwapchain::ChooseExtent()
+void VulkanSwapchain::ChooseExtent(VkExtent2D suggestedExtent)
 {
     VkSurfaceCapabilitiesKHR capabilities = {};
 
-    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->Get(), _window->GetSurface(), &capabilities))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_physicalDevice->Get(), _surface, &capabilities))
 
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         _extent = capabilities.currentExtent;
     } else {
-        auto extent = _window->Window::GetExtent();
+        auto extent = suggestedExtent;
         _extent = {
-            std::clamp(extent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
-            std::clamp(extent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
+            std::clamp(suggestedExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
+            std::clamp(suggestedExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)
         };
     }
 }
@@ -238,13 +237,13 @@ void VulkanSwapchain::Destroy()
 {
 }
 
-void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std::optional<VkSurfaceFormatKHR> surfaceFormat)
+void VulkanSwapchain::Recreate(VkExtent2D suggestedExtent, std::optional<VkPresentModeKHR> presentMode, std::optional<VkSurfaceFormatKHR> surfaceFormat)
 {
     // Since recreating the swapchain is a big operation, just wait for any processes to sync.
     _device->WaitForDevice();
 
     ChooseImageCount();
-    ChooseExtent();
+    ChooseExtent(suggestedExtent);
 
     if (_extent.width == 0 || _extent.height == 0) {
         throw std::runtime_error("Cannot create a swapchain at an invalid extent!");
@@ -274,7 +273,7 @@ void VulkanSwapchain::Recreate(std::optional<VkPresentModeKHR> presentMode, std:
     createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
     createInfo.pNext = nullptr;
     createInfo.flags = 0;
-    createInfo.surface = _window->GetSurface();
+    createInfo.surface = _surface;
     createInfo.minImageCount = _imageCount;
     createInfo.imageFormat = format.format;
     createInfo.imageColorSpace = format.colorSpace;

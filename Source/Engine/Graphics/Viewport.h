@@ -48,7 +48,16 @@ static inline bool HasFlag(ViewportRenderFlags value, ViewportRenderFlags flag)
 
 // Viewports manage their own frames and render images. They are responsible for presenting to the swapchain, but not for managing synchronization or determining what gets drawn.
 class Viewport {
+protected:
     VulkanDevice* _device;
+    Renderer* _renderer;
+
+    ViewportRenderFlags _renderFlags;
+    VkSampleCountFlagBits _sampleCount;
+    VkExtent2D _extent;
+    VkRect2D _scissor;
+    float _scissorTop = 0.0f, _scissorBottom = 0.0f, _scissorLeft = 0.0f, _scissorRight = 0.0f;
+
     std::unique_ptr<VulkanImage> _colorImage, _colorImageResolved, 
         _selectionImage, _selectionImageResolved, _depthImage;
     std::unique_ptr<VulkanImageView> _colorImageView, _colorImageResolvedView, 
@@ -60,29 +69,17 @@ class Viewport {
     VkDescriptorSetLayout _globalDescriptorSetLayout;
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalDescriptorSets;
 
-    VulkanSwapchain* _swapchain; // Can be nullptr if not being used.
-    std::array<VkSemaphore, VulkanConfig::maxFramesInFlight> _imageAvailableSemaphores;
-    std::vector<VkSemaphore> _renderFinishedSemaphores;
-    std::vector<VkSemaphoreWaitInfo> _waitForSemaphores;
-    std::vector<VulkanImage> _swapchainImages;
-    std::vector<VulkanImageView> _swapchainImageViews;
-    uint32_t _imageIndex;
-
-    VkSampleCountFlagBits _sampleCount;
-    VkExtent2D _extent;
-    VkRect2D _scissor;
-    float _scissorTop = 0.0f, _scissorBottom = 0.0f, _scissorLeft = 0.0f, _scissorRight = 0.0f;
-
-    ViewportRenderFlags _renderFlags;
-
     VkBool32 _imagesDirty = VK_TRUE; // Determines if images need to be recreated at the beginning of a frame.
-    VkBool32 _preferHDR = VK_TRUE;
-    void RecreateImages();
 
+    std::vector<VkRenderingAttachmentInfo> _colorAttachments;
+    VkRenderingAttachmentInfo _depthAttachment;
+
+    virtual void RecreateImages();
 
 public:
-    Viewport(VulkanDevice* device, VkExtent2D extent); // Creates the viewport and its images.
-    Viewport(VulkanDevice* device, VulkanSwapchain* swapchain); // Creates the viewport using images from a swapchain.
+    Viewport(Renderer* renderer); // Does not create images until Recreate is called.
+    Viewport(Renderer* renderer, VkExtent2D extent); // Creates the viewport and its images.
+    Viewport(Renderer* renderer, VulkanSwapchain* swapchain); // Creates the viewport using images from a swapchain.
     ~Viewport();
 
     void SetSize(VkExtent2D extent); // Size of the images rendered.
@@ -91,7 +88,6 @@ public:
     void SetScissor(float top = 0.0f, float bottom = 0.0f, float left = 0.0f, float right = 0.0f); // Sets the scissor as normalized coordinates starting from point to the opposite in a line across the frame.
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
-    void SetPreferHDR(bool useHDR);
 
     VkExtent2D GetExtent() const;
     VkImageView GetColorImageView();
@@ -103,15 +99,18 @@ public:
     VkPresentModeKHR GetPresentMode();
     ViewportRenderFlags GetRenderFlags() const;
 
-    void UpdateUniform(RenderData& rd);
-    void PrepareForFrame(RenderData& rd);
-    void PrepareEndFrame();
+    virtual void GetColorRenderingAttachments(std::vector<VkRenderingAttachmentInfo>& attachments);
+    virtual void GetDepthRenderingAttachment(VkRenderingAttachmentInfo& attachment);
 
-    bool Bind(RenderData& rd); // Returns false if the viewport isn't ready.
-    void TransitionPreRender(RenderData& rd);
-    void TransitionPostRender(RenderData& rd);
-    void TransitionPrePresent(RenderData& rd);
-    void QueuePresent(RenderData& rd);
+    void UpdateUniform(RenderData& rd);
+    virtual void PrepareForFrame(RenderData& rd);
+    virtual void PrepareEndFrame();
+
+    virtual bool Bind(RenderData& rd); // Returns false if the viewport isn't ready.
+    virtual void TransitionPreRender(RenderData& rd);
+    virtual void TransitionPostRender(RenderData& rd);
+    virtual void TransitionPrePresent(RenderData& rd);
+    virtual void QueuePresent(RenderData& rd);
 };
 
 } // namespace bl

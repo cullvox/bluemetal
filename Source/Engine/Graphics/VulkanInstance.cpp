@@ -1,7 +1,6 @@
 #include "VulkanInstance.h"
 #include "Core/Print.h"
 #include "VulkanPhysicalDevice.h"
-#include "VulkanWindow.h"
 #include "VulkanConfig.h"
 
 namespace bl {
@@ -73,7 +72,11 @@ std::vector<const char*> VulkanInstance::GetExtensions()
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
     // Add the SDL surface extensions to the list of extensions.
-    auto surfaceExtensions = VulkanWindow::GetVulkanExtensions();
+
+    uint32_t surfaceExtensionsCount = 0;
+    const char* const* pSurfaceExtensions = SDL_Vulkan_GetInstanceExtensions(&surfaceExtensionsCount);
+    std::vector<const char*> surfaceExtensions { pSurfaceExtensions, pSurfaceExtensions + surfaceExtensionsCount };
+
     extensions.insert(extensions.end(), surfaceExtensions.begin(), surfaceExtensions.end());
 
     // Get all the current vulkan instance extensions.

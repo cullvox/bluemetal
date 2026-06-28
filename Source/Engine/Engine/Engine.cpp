@@ -14,7 +14,6 @@
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/VulkanMaterialInstance.h"
-#include "Graphics/VulkanWindow.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Physics/PhysicsSystem.h"
 #include "Resources/Material.h"
@@ -108,9 +107,10 @@ Engine::Engine(int argc, const char** argv)
     _resourceManager = std::make_unique<ResourceSystem>(*this);
     _audio = std::make_unique<AudioSystem>(*this);
     _counter = std::make_unique<FrameCounter>();
+    _window = std::make_unique<Window>("Maginvox", Rect2D{{0, 0}, {1920, 1080}}, false);
     _graphics = std::make_unique<GraphicsSystem>(*this);
     _input = std::make_unique<InputSystem>(*this);
-    _imgui = std::make_unique<ImGuiSystem>(*this, _graphics->GetWindow(), _graphics->GetRenderer());
+    _imgui = std::make_unique<ImGuiSystem>(*this, _graphics->GetViewport(), _graphics->GetRenderer());
     _physics = std::make_unique<PhysicsSystem>(*this);
     _scenes = std::make_unique<SceneSystem>(*this);
     _editorSystem = std::make_unique<EditorSystem>(*this);
@@ -166,7 +166,7 @@ ImGuiSystem* Engine::GetImGui()
 
 Window* Engine::GetWindow()
 {
-    return _graphics->GetWindow();
+    return _window.get();
 }
 
 Renderer* Engine::GetRenderer()

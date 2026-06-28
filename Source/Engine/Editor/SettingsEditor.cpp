@@ -27,7 +27,7 @@ SettingsEditor::SettingsEditor(Engine& engine, EditorSystem& system)
     , _physicsRenderer(engine.GetPhysics().GetPhysicsRenderer())
     , _frameCounter(_engine.GetFrameCounter())
 {
-    _presentModes = _graphics.GetPhysicalDevice()->GetPresentModes(_graphics.GetWindow());
+    //_presentModes = _graphics.GetPhysicalDevice()->GetPresentModes(_graphics->GetViewport());
     // _multisampleModes = _renderer->GetMultisampleCounts();
 }
 

@@ -13,13 +13,13 @@ class Renderer;
 class ResourceSystem;
 class ImGuiSystem;
 class Material;
-class VulkanWindow;
+class WindowViewport;
 
 class GraphicsSystem : public System {
     std::unique_ptr<VulkanInstance> _vulkanInstance;
     std::unique_ptr<VulkanDevice> _device;
     VulkanPhysicalDevice* _physicalDevice;
-    std::unique_ptr<VulkanWindow> _window;
+    std::unique_ptr<WindowViewport> _windowViewport;
     std::unique_ptr<Renderer> _renderer;
     std::unique_ptr<ImGuiSystem> _imgui;
     Ref<Material> _pointMaterial;
@@ -36,7 +36,7 @@ public:
     VulkanInstance* GetInstance();
     VulkanPhysicalDevice* GetPhysicalDevice();
     VulkanDevice* GetDevice();
-    VulkanWindow* GetWindow();
+    WindowViewport* GetViewport();
     Renderer* GetRenderer();
 };
 

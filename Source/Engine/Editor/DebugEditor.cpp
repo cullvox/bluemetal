@@ -7,7 +7,6 @@
 #include "Graphics/GraphicsSystem.h"
 #include "Graphics/VulkanConversions.h"
 #include "Graphics/RenderData.h"
-#include "Graphics/VulkanWindow.h"
 #include "Physics/PhysicsSystem.h"
 #include "ImGui/ImGuiSystem.h"
 #include "Audio/AudioSystem.h"
@@ -37,7 +36,7 @@ void DebugEditor::Draw(RenderData& rd)
     FrameCounter& counter = GetEngine().GetFrameCounter();
     GraphicsSystem& graphics = GetEngine().GetGraphics();
     AudioSystem* audio = GetEngine().GetAudio();
-    VulkanWindow* window = graphics.GetWindow();
+    Window* window = GetEngine().GetWindow();
     FrameCounter& physFrameCounter = GetEngine().GetPhysics().GetPhysFrameCounter();
 
     if (!_open) return;
@@ -79,9 +78,9 @@ void DebugEditor::Draw(RenderData& rd)
     ImGui::Text("MS/F: %.2f", counter.GetMillisecondsPerFrame());
     ImGui::Text("Average F/S (Over 10 Seconds): %.1f", counter.GetAverageFramesPerSecond(10));
     ImGui::Text("Average MS/F (Over 144 Frames): %.2f", counter.GetAverageMillisecondsPerFrame(144));
-    ImGui::Text("Present Mode: %s", bl::ToString(window->GetSwapchain()->GetPresentMode()).data());
-    ImGui::Text("Surface Format: %s", bl::ToString(window->GetSwapchain()->GetSurfaceFormat().format).data());
-    ImGui::Text("Surface Color Space: %s", bl::ToString(window->GetSwapchain()->GetSurfaceFormat().colorSpace).data());
+    // ImGui::Text("Present Mode: %s", bl::ToString(window->GetSwapchain()->GetPresentMode()).data());
+    // ImGui::Text("Surface Format: %s", bl::ToString(window->GetSwapchain()->GetSurfaceFormat().format).data());
+    // ImGui::Text("Surface Color Space: %s", bl::ToString(window->GetSwapchain()->GetSurfaceFormat().colorSpace).data());
 
     ImGui::Text("Phys F/S: %d", physFrameCounter.GetFramesPerSecond());
 
@@ -112,12 +111,12 @@ void DebugEditor::Draw(RenderData& rd)
                 ImGui::SameLine();
                 ImGui::TextColored({ 0.2f, 0.8f, 0.4f, 1.0f }, "%s", deviceType);
 
-                if (ImGui::TreeNode("Present Modes")) {
-                    for (VkPresentModeKHR mode : physicalDevice->GetPresentModes(window))
-                        ImGui::Text("%s", bl::ToString(mode).data());
+                // if (ImGui::TreeNode("Present Modes")) {
+                //     for (VkPresentModeKHR mode : physicalDevice->GetPresentModes(window))
+                //         ImGui::Text("%s", bl::ToString(mode).data());
 
-                    ImGui::TreePop();
-                }
+                //     ImGui::TreePop();
+                // }
 
                 ImGui::TreePop();
             }

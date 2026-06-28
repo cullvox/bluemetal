@@ -27,7 +27,7 @@ public:
 
     Rect2D GetRect(); /** @brief Returns the window rect in monitor space. */
     SDL_Window* Get() const; /** @brief Returns the underlying window handle. */
-    Extent2D GetExtent() const; /** @brief Returns a Vulkan usable extent for swapchain. */
+    VkExtent2D GetExtent() const; /** @brief Returns a Vulkan usable extent for swapchain. */
     VideoMode GetCurrentVideoMode() const; /** @brief Returns the current video mode. */
     void SetTitle(const std::string& title); /** @brief Changes the title displayed on the top of a windowed window. */
     void SetVideoMode(const VideoMode& mode); /** @brief Changes the windows dimensions and video mode. */

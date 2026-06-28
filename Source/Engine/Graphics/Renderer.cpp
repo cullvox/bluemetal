@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 #include "Graphics/RenderData.h"
 #include "GraphicsSystem.h"
+#include "Precompiled.h"
 #include "Scene/Node.h"
 #include "UniformData.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
@@ -13,19 +14,43 @@
 #include "VulkanMaterial.h"
 #include "Viewport.h"
 #include "VulkanPhysicalDevice.h"
+#include "VulkanInstance.h"
+#include <SDL3/SDL_video.h>
 #include <vulkan/vulkan_core.h>
 
 namespace bl {
 
-Renderer::Renderer(VulkanDevice* device, Viewport* mainViewport, FrameCounter& frameCounter)
+Renderer::Renderer(VulkanDevice* device, FrameCounter& frameCounter)
     : _device(device)
-    , _mainViewport(mainViewport)
     , _frameCounter(frameCounter)
     , _renderData(this)
 {
 
     // Determine the renderer image formats.
     auto physicalDevice = _device->GetPhysicalDevice();
+
+    // Create a dummy window to get the acceptable surface formats.
+    SDL_Window* tempWindow = SDL_CreateWindow("", 0, 0, SDL_WINDOW_VULKAN);
+    if (!tempWindow)
+    {
+        throw std::runtime_error("Could not create a temporary window to get surface formats.");
+    }
+
+    // Create a vulkan surface used to query for surface formats.
+    VkSurfaceKHR tempSurface = VK_NULL_HANDLE;
+    if (!SDL_Vulkan_CreateSurface(tempWindow, _device->GetInstance()->Get(), nullptr, &tempSurface))
+    {
+        SDL_DestroyWindow(tempWindow);
+        throw std::runtime_error("Could not create a temporary vulkan surface to get surface formats.");
+    }
+
+    // Query surface formats.
+    _surfaceFormats = _device->GetPhysicalDevice()->GetSurfaceFormats(tempSurface);
+
+    // Destroy temporary resources for surface format query.
+    vkDestroySurfaceKHR(_device->GetInstance()->Get(), tempSurface, nullptr);
+    SDL_DestroyWindow(tempWindow);
+
 
     _colorFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
     _colorFormatHDR = physicalDevice->FindSupportedFormat({VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
@@ -59,7 +84,6 @@ Renderer::Renderer(VulkanDevice* device, Viewport* mainViewport, FrameCounter& f
     // Allocate the per-frame in flight command buffers.
     VK_CHECK(vkAllocateCommandBuffers(_device->Get(), &allocateInfo, _commandBuffers.data()))
 
-    AddViewport(mainViewport);
 }
 
 Renderer::~Renderer()
@@ -79,13 +103,6 @@ VulkanDevice* Renderer::GetDevice() const
 }
 
 Profiler profiler;
-
-void Renderer::ChooseFormats()
-{
-
-
-
-}
 
 void Renderer::RenderFrame()
 {
@@ -234,6 +251,21 @@ VkFormat Renderer::GetStencilAttachmentFormat(RenderPassType pass)
     }
 }
 
+VkFormat Renderer::GetViewportColorFormat()
+{
+    return _colorFormat;
+}
+
+VkFormat Renderer::GetViewportDepthFormat()
+{
+    return _depthFormat;
+}
+
+VkFormat Renderer::GetViewportSelectionFormat()
+{
+    return _selectionFormat;
+}
+
 VulkanDescriptorSetAllocatorCache* Renderer::GetDescriptorSetAllocatorCache()
 {
     return _descriptorSetCache.get();
@@ -308,53 +340,11 @@ void Renderer::RenderSceneToViewport(RenderData& rd, Viewport& vp)
     renderArea.offset = { 0, 0 };
     renderArea.extent = extent;
 
-    std::array<VkRenderingAttachmentInfo, 2> colorAttachments = {};
-    colorAttachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    colorAttachments[0].pNext = nullptr;
-    colorAttachments[0].imageView = vp.GetColorImageView();
-    colorAttachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    colorAttachments[0].resolveMode = VK_RESOLVE_MODE_NONE;
-    colorAttachments[0].resolveImageView = VK_NULL_HANDLE;
-    colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachments[0].clearValue = clearColors[0];
-
-    colorAttachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    colorAttachments[1].pNext = nullptr;
-    colorAttachments[1].imageView = vp.GetSelectionImageView();
-    colorAttachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    colorAttachments[1].resolveMode = VK_RESOLVE_MODE_NONE;
-    colorAttachments[1].resolveImageView = VK_NULL_HANDLE;
-    colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    colorAttachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    colorAttachments[1].clearValue = VkClearValue { .color = { -1, -1, -1, -1 } };
-
-    // When using a higher sample count, the image must be resolved from the sampled image.
-    if (vp.GetSampleCount() != VK_SAMPLE_COUNT_1_BIT) {
-        colorAttachments[0].imageView = vp.GetColorImageView();
-        colorAttachments[0].resolveMode = VK_RESOLVE_MODE_AVERAGE_BIT;
-        colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachments[0].resolveImageView = vp.GetColorResolveImageView();
-
-        colorAttachments[1].imageView = vp.GetSelectionImageView();
-        colorAttachments[1].resolveMode = VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
-        colorAttachments[1].resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachments[1].resolveImageView = vp.GetSelectionResolveImageView();
-    }
-
-    VkRenderingAttachmentInfo depthAttachment = {};
-    depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
-    depthAttachment.pNext = nullptr;
-    depthAttachment.imageView = vp.GetDepthImageView();
-    depthAttachment.imageLayout = VK_IMAGE_LAYOUT_DEPTH_ATTACHMENT_OPTIMAL;
-    depthAttachment.resolveMode = VK_RESOLVE_MODE_NONE;
-    depthAttachment.resolveImageView = VK_NULL_HANDLE;
-    depthAttachment.resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.clearValue = clearColors[1];
+    std::vector<VkRenderingAttachmentInfo> colorAttachments;
+    vp.GetColorRenderingAttachments(colorAttachments);
+    
+    VkRenderingAttachmentInfo depthAttachment;
+    vp.GetDepthRenderingAttachment(depthAttachment);
 
     VkRenderingInfo renderingInfo = {};
     renderingInfo.sType = VK_STRUCTURE_TYPE_RENDERING_INFO;

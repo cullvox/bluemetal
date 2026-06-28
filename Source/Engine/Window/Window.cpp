@@ -3,6 +3,7 @@
 
 #include <SDL3/SDL_vulkan.h>
 #include <cstddef>
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -65,12 +66,12 @@ SDL_Window* Window::Get() const
     return _window;
 }
 
-Extent2D Window::GetExtent() const
+VkExtent2D Window::GetExtent() const
 {
     int w = 0, h = 0;
     SDL_GetWindowSizeInPixels(_window, &w, &h);
 
-    return Extent2D { (uint32_t)w, (uint32_t)h };
+    return { (uint32_t)w, (uint32_t)h };
 }
 
 bool Window::GetCloseRequested() const

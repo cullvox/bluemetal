@@ -1,8 +1,7 @@
 #include "VulkanPhysicalDevice.h"
 #include "Core/Print.h"
-#include "VulkanWindow.h"
+#include "Vulkan.h"
 #include <vulkan/vulkan_beta.h>
-#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -68,16 +67,16 @@ VkPhysicalDeviceType VulkanPhysicalDevice::GetType() const
     return _properties.deviceType;
 }
 
-const std::vector<VkPresentModeKHR>& VulkanPhysicalDevice::GetPresentModes(VulkanWindow* window)
+const std::vector<VkPresentModeKHR>& VulkanPhysicalDevice::GetPresentModes(VkSurfaceKHR surface)
 {
     if (!_presentModes.empty())
         return _presentModes;
 
     uint32_t presentModeCount = 0;
 
-    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window->GetSurface(), &presentModeCount, nullptr))
+    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, surface, &presentModeCount, nullptr))
     _presentModes.resize(presentModeCount);
-    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, window->GetSurface(), &presentModeCount, _presentModes.data()))
+    VK_CHECK(vkGetPhysicalDeviceSurfacePresentModesKHR(_physicalDevice, surface, &presentModeCount, _presentModes.data()))
 
     std::erase_if(_presentModes, [](VkPresentModeKHR mode){
         return  mode != VK_PRESENT_MODE_IMMEDIATE_KHR &&
@@ -89,16 +88,16 @@ const std::vector<VkPresentModeKHR>& VulkanPhysicalDevice::GetPresentModes(Vulka
     return _presentModes;
 }
 
-const std::vector<VkSurfaceFormatKHR>& VulkanPhysicalDevice::GetSurfaceFormats(VulkanWindow* window)
+const std::vector<VkSurfaceFormatKHR>& VulkanPhysicalDevice::GetSurfaceFormats(VkSurfaceKHR surface)
 {
     if (!_surfaceFormats.empty())
         return _surfaceFormats;
 
     uint32_t formatCount = 0;
 
-    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->GetSurface(), &formatCount, nullptr))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, surface, &formatCount, nullptr))
     _surfaceFormats.resize(formatCount);
-    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, window->GetSurface(), &formatCount, _surfaceFormats.data()))
+    VK_CHECK(vkGetPhysicalDeviceSurfaceFormatsKHR(_physicalDevice, surface, &formatCount, _surfaceFormats.data()))
 
     return _surfaceFormats;
 }

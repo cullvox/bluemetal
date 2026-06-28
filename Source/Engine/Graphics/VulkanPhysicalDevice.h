@@ -47,11 +47,11 @@ public:
 
     /// @brief GetPresentModes
     /// @returns Available present modes when using this device.
-    const std::vector<VkPresentModeKHR>& GetPresentModes(VulkanWindow* window);
+    const std::vector<VkPresentModeKHR>& GetPresentModes(VkSurfaceKHR surface);
 
     /// @brief GetSurfaceFormats
     /// @returns Available surface formats when using this device.
-    const std::vector<VkSurfaceFormatKHR>& GetSurfaceFormats(VulkanWindow* window);
+    const std::vector<VkSurfaceFormatKHR>& GetSurfaceFormats(VkSurfaceKHR surface);
 
     std::optional<VkImageFormatProperties2> GetImageFormatProperties(const VkPhysicalDeviceImageFormatInfo2& info);
 
