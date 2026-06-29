@@ -272,4 +272,53 @@ void WindowViewport::TransitionPrePresent(RenderData& rd)
 
 }
 
+void WindowViewport::GetColorRenderingAttachments(std::vector<VkRenderingAttachmentInfo>& attachments)
+{
+    attachments.resize(2);
+
+    attachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    attachments[0].pNext = nullptr;
+    attachments[0].imageView = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? _swapchainImageViews[_imageIndex].Get() : _colorImageView->Get();
+    attachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments[0].resolveMode = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_RESOLVE_MODE_NONE : VK_RESOLVE_MODE_AVERAGE_BIT;
+    attachments[0].resolveImageView = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_NULL_HANDLE : _swapchainImageViews[_imageIndex].Get();
+    attachments[0].resolveImageLayout = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_UNDEFINED : _swapchainImages[_imageIndex].GetLayout();
+    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[0].clearValue = VkClearValue{VkClearColorValue{0.98f, 0.98f, 0.98f, 1.0f}};
+
+    attachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    attachments[1].pNext = nullptr;
+    attachments[1].imageView = _selectionImageView->Get();
+    attachments[1].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments[1].resolveMode = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_RESOLVE_MODE_NONE : VK_RESOLVE_MODE_SAMPLE_ZERO_BIT;
+    attachments[1].resolveImageView = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_NULL_HANDLE : _selectionImageResolvedView->Get();
+    attachments[1].resolveImageLayout = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_UNDEFINED : _selectionImageResolved->GetLayout();
+    attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+    attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[1].clearValue = VkClearValue {VkClearColorValue{ -1, -1, -1, -1 }};
+}
+
+void WindowViewport::FillColorRenderingAttachmentsForUI(std::vector<VkRenderingAttachmentInfo>& attachments)
+{
+    attachments.resize(1);
+
+    attachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    attachments[0].pNext = nullptr;
+    attachments[0].imageView = _swapchainImageViews[_imageIndex].Get();
+    attachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments[0].resolveMode = VK_RESOLVE_MODE_NONE;
+    attachments[0].resolveImageView = VK_NULL_HANDLE;
+    attachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[0].clearValue = VkClearValue{VkClearColorValue{0.98f, 0.98f, 0.98f, 1.0f}};
+
+}
+
+VkImageView WindowViewport::GetRenderedImageView()
+{
+    return _swapchainImageViews[_imageIndex].Get();
+}
+
 } // namespace bl

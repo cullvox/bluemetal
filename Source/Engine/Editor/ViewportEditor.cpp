@@ -25,8 +25,12 @@ ViewportEditor::ViewportEditor(Engine& engine, EditorSystem& system)
     auto defaultSampler = engine.GetResourceSystem()->Load<Sampler>("Resources/Samplers/Default.json");
 
     _viewport = std::make_unique<Viewport>(engine.GetGraphics().GetRenderer(), VkExtent2D{1, 1});
-    auto geometryColor = _viewport->GetColorResolveImageView();
+    auto geometryColor = _viewport->GetRenderedImageView();
     auto geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler.lock()->Get(), geometryColor, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+    _viewport->onViewportResized.AddRaw(this, &ViewportEditor::OnViewportResized);
+
+    renderer->AddViewport(_viewport.get());
 
     _geometryColorDescriptor = geometryColorDescriptor;
 }
@@ -34,18 +38,40 @@ ViewportEditor::ViewportEditor(Engine& engine, EditorSystem& system)
 ViewportEditor::~ViewportEditor()
 {
     auto renderer = GetEngine().GetRenderer();
-    auto geometryColor = _viewport->GetColorResolveImageView();
+    auto geometryColor = _viewport->GetRenderedImageView();
 
     ImGui_ImplVulkan_RemoveTexture(_geometryColorDescriptor);
 }
 
+void ViewportEditor::OnViewportResized(Viewport* viewport)
+{
+    auto newView = _viewport->GetRenderedImageView();
+
+    if (_geometryColorDescriptor != VK_NULL_HANDLE)
+    {
+        ImGui_ImplVulkan_RemoveTexture(_geometryColorDescriptor);
+    }
+
+    auto defaultSampler = GetEngine().GetResourceSystem()->Load<Sampler>("Resources/Samplers/Default.json");
+    _geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler.lock()->Get(), newView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+}
+
 void ViewportEditor::Draw(RenderData& rd)
 {
+    VkExtent2D extent = _viewport->GetExtent();
+
+    glm::mat4 view = glm::identity<glm::mat4>();
+    view = glm::translate(view, {0, 2.5, -10});
+
+    glm::mat4 projection = glm::perspective(glm::radians(75.0f), static_cast<float>(extent.width) / static_cast<float>(extent.height), 0.01f, 1000.0f);
+    projection[1][1] *= -1.0f;
+
+    _viewport->SetView(view);
+    _viewport->SetProjection(projection);
 
     bool isOpen = GetShown();
     ImGui::Begin("Viewport", &isOpen);
 
-    VkExtent2D extent = _viewport->GetExtent();
     ImVec2 region = ImGui::GetContentRegionAvail();
     if (region.x != extent.width || region.y != extent.height)
     {

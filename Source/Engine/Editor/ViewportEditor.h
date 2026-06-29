@@ -12,6 +12,8 @@ class ViewportEditor : public Editor {
     VkDescriptorSet _geometryColorDescriptor;
     std::unique_ptr<Viewport> _viewport;
 
+    void OnViewportResized(Viewport* viewport);
+
 public:
    ViewportEditor(Engine& engine, EditorSystem& system); 
    ~ViewportEditor();

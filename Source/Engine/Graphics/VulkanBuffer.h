@@ -1,10 +1,11 @@
 #pragma once
 
+#include "VulkanResource.h"
 #include "VulkanDevice.h"
 
 namespace bl {
 
-class VulkanBuffer {
+class VulkanBuffer : public VulkanResource {
     VulkanDevice* _device;
     VkBufferUsageFlags _usage;
     VmaMemoryUsage _memoryUsage;

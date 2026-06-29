@@ -148,6 +148,11 @@ void Renderer::RenderFrame()
 
     for (auto& viewport : _viewports)
     {
+        if (!viewport->Ready())
+        {
+            continue;
+        }
+
         viewport->TransitionPreRender(_renderData);
 
         // Render the scene to the viewport.
@@ -159,7 +164,7 @@ void Renderer::RenderFrame()
     // Transition viewports for possible present.
     for (auto& viewport : _viewports)
     {
-        //viewport->TransitionPrePresent(_renderData);
+        viewport->TransitionPrePresent(_renderData);
     }
 
     VK_CHECK(vkEndCommandBuffer(cmd))
@@ -394,21 +399,14 @@ void Renderer::RenderSceneToViewport(RenderData& rd, Viewport& vp)
     // Render geometry if it's required.
     if (HasFlag(vp.GetRenderFlags(), ViewportRenderFlags::eImGui))
     {
-        colorAttachments[0].imageView = vp.GetColorResolveImageView();
-        colorAttachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-        colorAttachments[0].resolveMode = VK_RESOLVE_MODE_NONE;
-        colorAttachments[0].resolveImageView = VK_NULL_HANDLE;
-        colorAttachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-        colorAttachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        colorAttachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        colorAttachments[0].clearValue = clearColors[0];
+        vp.FillColorRenderingAttachmentsForUI(colorAttachments);
 
         // Setup color attachments for the GUI pass.
         renderingInfo.renderArea = renderArea;
         renderingInfo.layerCount = 1;
         renderingInfo.viewMask = 0;
-        renderingInfo.colorAttachmentCount = 1;
-        renderingInfo.pColorAttachments = &colorAttachments[0];
+        renderingInfo.colorAttachmentCount = static_cast<uint32_t>(colorAttachments.size());
+        renderingInfo.pColorAttachments = colorAttachments.data();
         renderingInfo.pDepthAttachment = nullptr;
         renderingInfo.pStencilAttachment = nullptr;
 

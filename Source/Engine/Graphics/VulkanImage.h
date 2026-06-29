@@ -2,13 +2,15 @@
 
 #include "Vulkan.h"
 #include "VulkanDevice.h"
+#include "VulkanResource.h"
 
 namespace bl {
 
 class VulkanDevice;
 
 /// @brief Creates a graphics image on the physical device.
-class VulkanImage {
+class VulkanImage : public VulkanResource
+{
     VulkanDevice* _device;
     VkExtent3D _extent;
     VkImageType _type;

@@ -44,9 +44,13 @@ public:
     virtual void TransitionPrePresent(RenderData& rd) override;
     virtual void QueuePresent(RenderData& rd) override;
 
+    virtual VkImageView GetRenderedImageView() override;
+
     virtual VkImageView GetColorRenderImageView();
     virtual VkImageView GetColorRenderResolveImageView();
 
+    virtual void GetColorRenderingAttachments(std::vector<VkRenderingAttachmentInfo>& attachments) override;
+    virtual void FillColorRenderingAttachmentsForUI(std::vector<VkRenderingAttachmentInfo>& attachments) override;
 };
 
 } // namespace bl

@@ -19,6 +19,7 @@ class VulkanSwapchain;
 class VulkanMaterialInstance;
 class VulkanImageView;
 class VulkanImage;
+class VulkanResource;
 class VulkanDescriptorSetAllocatorCache;
 class Node;
 class Viewport;
@@ -114,6 +115,8 @@ private:
     VulkanMaterialInstance* _pointMaterial;
     VulkanMaterialInstance* _lineMaterial;
     VulkanMaterialInstance* _triangleMaterial;
+
+    std::array<std::vector<VulkanResource*>, VulkanConfig::maxFramesInFlight> _deletionQueues;
 
     RenderFunction _guiFunc;
     ObjectFunction _objectFunc;

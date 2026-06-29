@@ -8,6 +8,7 @@ list(APPEND Sources
   "Core/Print.cpp"
   "Core/Logger.cpp"
   "Core/Object.cpp"
+  "Core/Delegates.cpp"
   
   # Audio
   "Audio/AudioSystem.cpp"

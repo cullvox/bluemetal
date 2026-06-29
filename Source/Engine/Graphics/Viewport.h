@@ -7,9 +7,7 @@
 #include "ImGui/ImGuiSystem.h"
 #include "ImGui/imgui_internal.h"
 #include "VulkanBufferFrameRing.h"
-#include <glm/ext/matrix_float4x4.hpp>
-#include <memory>
-#include <vulkan/vulkan_core.h>
+#include "Core/Delegates.h"
 
 namespace bl {
 
@@ -102,15 +100,22 @@ public:
     virtual void GetColorRenderingAttachments(std::vector<VkRenderingAttachmentInfo>& attachments);
     virtual void GetDepthRenderingAttachment(VkRenderingAttachmentInfo& attachment);
 
+    virtual void FillColorRenderingAttachmentsForUI(std::vector<VkRenderingAttachmentInfo>& attachments);
+
     void UpdateUniform(RenderData& rd);
     virtual void PrepareForFrame(RenderData& rd);
     virtual void PrepareEndFrame();
 
+    virtual bool Ready(); // Returns false if an image needs to be recreated.
     virtual bool Bind(RenderData& rd); // Returns false if the viewport isn't ready.
     virtual void TransitionPreRender(RenderData& rd);
     virtual void TransitionPostRender(RenderData& rd);
     virtual void TransitionPrePresent(RenderData& rd);
     virtual void QueuePresent(RenderData& rd);
+
+    MulticastDelegate<Viewport*> onViewportResized;
+
+    virtual VkImageView GetRenderedImageView();
 };
 
 } // namespace bl

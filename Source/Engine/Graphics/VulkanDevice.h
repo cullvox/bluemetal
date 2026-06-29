@@ -1,5 +1,7 @@
 #pragma once
 
+#include "VulkanResource.h"
+
 namespace bl {
 
 class VulkanInstance;
@@ -12,7 +14,7 @@ class VulkanDescriptorSetAllocatorCache;
  * @class VulkanDevice
  * @brief Represents a Vulkan device used for rendering.
  */
-class VulkanDevice {
+class VulkanDevice : public VulkanResource {
     VulkanInstance* _instance;
     VulkanPhysicalDevice* _physicalDevice;
     uint32_t _graphicsFamilyIndex, _presentFamilyIndex;

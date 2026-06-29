@@ -122,18 +122,18 @@ void Viewport::RecreateImages()
 
         _colorImage->Transition(
             cmd,
-            0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            0, VK_ACCESS_SHADER_READ_BIT,
             { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
 
         _colorImageResolved->Transition(
             cmd,
-            0, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-            0, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT,
+            0, VK_PIPELINE_STAGE_TRANSFER_BIT,
+            VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+            0, VK_ACCESS_TRANSFER_WRITE_BIT,
             { VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1 });
-        
+
         _selectionImage->Transition(
             cmd, 
             0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
@@ -150,9 +150,9 @@ void Viewport::RecreateImages()
 
     });
 
-
-
     _imagesDirty = false;
+
+    onViewportResized.Broadcast(this);
 }
 
 void Viewport::SetSize(VkExtent2D extent)
@@ -199,6 +199,17 @@ void Viewport::PrepareForFrame(RenderData& rd)
 {
 }
 
+bool Viewport::Ready()
+{
+    if (_imagesDirty)
+    {
+        RecreateImages();
+        return false;
+    }
+
+    return true;
+}
+
 bool Viewport::Bind(RenderData& rd)
 {
     auto cmd = rd.GetCommandBuffer();
@@ -242,6 +253,9 @@ void Viewport::TransitionPreRender(RenderData& rd)
     // Transition images
     if (_sampleCount == VK_SAMPLE_COUNT_1_BIT)
     {
+        //if (_colorImage->GetLayout() == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+        //    return;
+
         _colorImage->Transition(
             cmd,
             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 
@@ -275,11 +289,11 @@ void Viewport::TransitionPostRender(RenderData& rd)
         // Transition the color attachment into a sampled image
         _colorImage->Transition(
             rd.GetCommandBuffer(),
-            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-            VK_ACCESS_SHADER_READ_BIT,
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
             VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+            VK_ACCESS_SHADER_READ_BIT,
             VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
     }
     else
@@ -382,6 +396,24 @@ void Viewport::GetDepthRenderingAttachment(VkRenderingAttachmentInfo& attachment
     attachment.clearValue = VkClearValue{.depthStencil = {1.0f, 0}};
 }
 
+
+void Viewport::FillColorRenderingAttachmentsForUI(std::vector<VkRenderingAttachmentInfo>& attachments)
+{
+    attachments.resize(1);
+
+    attachments[0].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
+    attachments[0].pNext = nullptr;
+    attachments[0].imageView = _colorImageView->Get();
+    attachments[0].imageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    attachments[0].resolveMode = VK_RESOLVE_MODE_NONE;
+    attachments[0].resolveImageView = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? _colorImageView->Get() : _colorImageResolvedView->Get();
+    attachments[0].resolveImageLayout = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? _colorImage->GetLayout() : _colorImageResolved->GetLayout();
+    attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    attachments[0].clearValue = VkClearValue{VkClearColorValue{0.98f, 0.98f, 0.98f, 1.0f}};
+
+}
+
 void Viewport::SetRenderFlags(ViewportRenderFlags flags)
 {
     _renderFlags = flags;
@@ -399,6 +431,10 @@ void Viewport::TransitionPrePresent(RenderData& rd)
 {
 }
 
+VkImageView Viewport::GetRenderedImageView()
+{
+    return _sampleCount == VK_SAMPLE_COUNT_1_BIT ? _colorImageView->Get() : _colorImageResolvedView->Get();
+}
 
 
 }
