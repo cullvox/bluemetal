@@ -44,8 +44,8 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
         auto& globalSet = sets[0];
         auto& binding = globalSet[0];
         if (binding.IsBlock() &&
-            binding.GetName() == "globals" &&
-            binding.GetSize() == sizeof(GlobalUBO)) {
+            binding.GetName() == "viewport" &&
+            binding.GetSize() == sizeof(ViewportUBO)) {
             _flags |= VulkanMaterialSupportFlags::eGlobalBuffer;
         }
     }

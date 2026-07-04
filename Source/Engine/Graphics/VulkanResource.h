@@ -5,7 +5,8 @@ namespace bl
 
 class VulkanResource
 {
-    virtual ~VulkanResource() = 0;
+public:
+    virtual ~VulkanResource() = default;
 };
 
 }

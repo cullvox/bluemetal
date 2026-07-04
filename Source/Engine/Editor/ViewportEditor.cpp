@@ -6,6 +6,7 @@
 
 #include "Engine/Engine.h"
 #include "Graphics/Renderer.h"
+#include "ImGui/imgui_internal.h"
 #include "Resources/ResourceSystem.h"
 #include "Resources/Sampler.h"
 #include "Graphics/Viewport.h"
@@ -73,9 +74,11 @@ void ViewportEditor::Draw(RenderData& rd)
     ImGui::Begin("Viewport", &isOpen);
 
     ImVec2 region = ImGui::GetContentRegionAvail();
+    float scale = ImGui::GetWindowDpiScale(); 
+
     if (region.x != extent.width || region.y != extent.height)
     {
-        _viewport->SetSize({static_cast<uint32_t>(region.x), static_cast<uint32_t>(region.y)});
+        _viewport->SetSize({static_cast<uint32_t>(region.x * scale), static_cast<uint32_t>(region.y * scale)});
     }
 
     ImGui::Image(_geometryColorDescriptor, region);

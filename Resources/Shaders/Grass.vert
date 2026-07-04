@@ -1,27 +1,12 @@
 #version 460
 
+#include "Viewport.glsl"
+#include "Instances.glsl"
+
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec3 inTangent;
 layout(location = 3) in vec2 inUV;
-
-layout(set = 0, binding = 0) uniform GlobalUniform
-{
-    mat4 view;
-    mat4 projection;
-    vec2 resolution;
-    vec2 mouse;
-    float time;
-    float dt;
-} globals;
-
-struct InstanceData {
-    mat4 instance;
-};
-
-layout(std140, set = 1, binding = 0) readonly buffer InstanceBuffer {
-    InstanceData instances[];
-} instanceBuffer;
 
 layout(std140, set = 2, binding = 0) uniform MaterialUniform
 {
@@ -81,7 +66,7 @@ void main() {
     //wind
     vec4 instancePosition = instance.instance[3];
     vec2 windPosition = instancePosition.xz * material.windParams.z; // materialWindParams.z = windScale
-    windPosition -= globals.time * material.windDirection.xy * material.windParams.x; // material.windParams.x = windSpeed
+    windPosition -= viewport.time * material.windDirection.xy * material.windParams.x; // material.windParams.x = windSpeed
     outCurrentWindBend = texture(windNoiseTexture, windPosition).x;
     outCurrentWindBend *= material.windParams.y; // windParams.y = windSway
     outCurrentWindBend *= outBottomToTop * 2.0;
@@ -113,6 +98,6 @@ void main() {
     // material.clumping.y = minGrassScale, material.clumping.z = maxGrassScale
     vertex *= mix(material.clumping.y, material.clumping.z, outPatchFactor);
 
-    gl_Position = globals.projection * globals.view * instance.instance * vec4(vertex, 1.0);
+    gl_Position = viewport.projection * viewport.view * instance.instance * vec4(vertex, 1.0);
     outColorSmall = material.colorSmall.xyz;
 }

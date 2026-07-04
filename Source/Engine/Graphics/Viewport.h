@@ -4,10 +4,9 @@
 #include "Graphics/VulkanImage.h"
 #include "Graphics/VulkanImageView.h"
 #include "Graphics/VulkanConfig.h"
-#include "ImGui/ImGuiSystem.h"
-#include "ImGui/imgui_internal.h"
 #include "VulkanBufferFrameRing.h"
 #include "Core/Delegates.h"
+#include "UniformData.h"
 
 namespace bl {
 
@@ -19,6 +18,7 @@ class VulkanRenderImage;
 class RenderData;
 class RenderPass;
 class VulkanSwapchain;
+class RendererViewportData;
 
 enum class ViewportRenderFlags : uint32_t {
     eNone = 0x0000, // No render?
@@ -62,7 +62,7 @@ protected:
         _selectionImageView, _selectionImageResolvedView, _depthImageView;
     std::unique_ptr<VulkanBuffer> _selectionBuffer;
 
-    glm::mat4 _projection, _view;
+    ViewportUBO _uboData = {};
     VulkanBufferFrameRing _globalBuffer;
     VkDescriptorSetLayout _globalDescriptorSetLayout;
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalDescriptorSets;
@@ -71,6 +71,7 @@ protected:
 
     std::vector<VkRenderingAttachmentInfo> _colorAttachments;
     VkRenderingAttachmentInfo _depthAttachment;
+    RendererViewportData* data;
 
     virtual void RecreateImages();
 
@@ -86,6 +87,7 @@ public:
     void SetScissor(float top = 0.0f, float bottom = 0.0f, float left = 0.0f, float right = 0.0f); // Sets the scissor as normalized coordinates starting from point to the opposite in a line across the frame.
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
+    void SetRendererData(RendererViewportData* data);
 
     VkExtent2D GetExtent() const;
     VkImageView GetColorImageView();
@@ -102,7 +104,7 @@ public:
 
     virtual void FillColorRenderingAttachmentsForUI(std::vector<VkRenderingAttachmentInfo>& attachments);
 
-    void UpdateUniform(RenderData& rd);
+    virtual void UpdateUniform(RenderData& rd);
     virtual void PrepareForFrame(RenderData& rd);
     virtual void PrepareEndFrame();
 

@@ -1,6 +1,9 @@
 // Shader Code origin from here: https://www.patreon.com/posts/making-stylized-27402644 by MinionsArt
 #version 460
 
+#include "Viewport.glsl"
+#include "Conversions.glsl"
+
 layout (set = 2, binding = 0) uniform MaterialUniform {
 
     // Horizon
@@ -124,4 +127,7 @@ void main() {
 	vec3 sky = skyGradients + sunAndMoon + sunsetColoured + stars + horizonGlow;
 	
 	outColor = vec4(sky, 1.0);
+	outColor = ConvertColorSpace(viewport.colorSpace, outColor);
+
+
 }

@@ -25,7 +25,7 @@ Viewport::Viewport(Renderer* renderer)
     , _extent({0, 0})
 {
     // Create the global uniform viewport buffer.
-    _globalBuffer = VulkanBufferFrameRing{ _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::GlobalUBO) };
+    _globalBuffer = VulkanBufferFrameRing{ _device, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, sizeof(bl::ViewportUBO) };
 
     // Create the viewport descriptor sets to bind later.
     std::vector<VkDescriptorSetLayoutBinding> bindings { 1 };
@@ -171,12 +171,12 @@ void Viewport::SetScissor(float top, float bottom, float left, float right)
 
 void Viewport::SetProjection(const glm::mat4& projection)
 {
-    _projection = projection;
+    _uboData.projection = projection;
 }
 
 void Viewport::SetView(const glm::mat4& view)
 {
-    _view = view;
+    _uboData.view = view;
 }
 
 void Viewport::UpdateUniform(RenderData& rd)
@@ -184,15 +184,13 @@ void Viewport::UpdateUniform(RenderData& rd)
     // Update the viewport uniform buffer.
     const VkExtent3D extent = _colorImage->GetExtent();
 
-    GlobalUBO uboData = {};
+    ViewportUBO uboData = {};
     uboData.time = rd.GetCurrentFrameTime();
     uboData.dt = rd.GetDeltaFrameTime();
     uboData.resolution = glm::vec2 { (float)extent.width, (float)extent.height };
     uboData.mouse = {}; // TODO: mouse position to be added later.
-    uboData.projection = _projection;
-    uboData.view = _view;
 
-    _globalBuffer.Upload(std::as_bytes(std::span<GlobalUBO, 1>{&uboData, 1}), rd.GetCurrentFrame());
+    _globalBuffer.Upload(std::as_bytes(std::span<ViewportUBO, 1>{&uboData, 1}), rd.GetCurrentFrame());
 }
 
 void Viewport::PrepareForFrame(RenderData& rd)

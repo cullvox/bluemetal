@@ -1,5 +1,10 @@
 #version 450
 
+#include "Viewport.glsl"
+#include "Instances.glsl"
+#include "DrawConstants.glsl"
+#include "Conversions.glsl"
+
 layout(location=0) in vec3 inNormal;
 layout(location=1) in float inBottomToTop;
 layout(location=2) in float inPatchFactor;
@@ -11,23 +16,14 @@ layout(location=6) in float inSpecularFactor;
 layout(location=0) out vec4 outColor;
 layout(location=1) out uint outSelector;
 
-struct InstanceData {
-    mat4 instance;
-};
-
-layout(push_constant) uniform DrawConstants
-{
-    InstanceData objectInstance;
-    ivec4 useInstanceBuffer;
-    uint objectID;
-} drawConstants;
-
 void main() {
     float AO = (inBottomToTop - inCurrentWindBend * 0.3); // * windAOEffect;
     // AO_LIGHT_AFFECT = 1.0;
     outColor = vec4(0.6, 0.7, 0.3, 1.0);
     outColor *= AO;
     outColor.a = 1.0;
+
+    outColor = ConvertColorSpace(viewport.colorSpace, outColor);
 
     outSelector = 200;
     // BACKLIGHT = vec3(backLightColor);

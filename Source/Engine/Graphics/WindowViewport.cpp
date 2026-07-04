@@ -321,4 +321,22 @@ VkImageView WindowViewport::GetRenderedImageView()
     return _swapchainImageViews[_imageIndex].Get();
 }
 
+void WindowViewport::UpdateUniform(RenderData& rd)
+{
+    switch (_swapchain->GetSurfaceFormat().colorSpace)
+    {
+        case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR:
+            _uboData.bConvertGamma = 1;
+            break;
+        case VK_COLOR_SPACE_DCI_P3_NONLINEAR_EXT:
+            _uboData.bConvertGamma = 2;
+            break;
+        default:
+            _uboData.bConvertGamma = 0;
+            break;
+    }
+
+    Viewport::UpdateUniform(rd);
+}
+
 } // namespace bl

@@ -1,5 +1,10 @@
 #version 450
 
+#include "Viewport.glsl"
+#include "Conversions.glsl"
+#include "Instances.glsl"
+#include "DrawConstants.glsl"
+
 layout(location=0) in vec3 inPosition;
 layout(location=1) in vec2 inTextureCoordinates;
 layout(location=2) in vec3 inNormal;
@@ -15,16 +20,6 @@ layout(set=2, binding=0) uniform MaterialUniform
 
 layout(set=2, binding=1) uniform sampler2D inAlbedo;
 
-struct InstanceData {
-    mat4 instance;
-};
-
-layout(push_constant) uniform Constants
-{
-    InstanceData objectInstance;
-    ivec4 useInstanceBuffer;
-    uint objectID;
-} object;
 
 const float sharpness = 1.0;
 
@@ -52,7 +47,7 @@ vec4 triplanarTexture(sampler2D tex, vec3 worldPos, vec3 normal, float scale)
 
 void main() 
 {
-    outSelector = object.objectID;
+    outSelector = draw.objectID;
 
     if (material.useTriplanar) {
         vec3 N = normalize(inNormal);
@@ -62,5 +57,6 @@ void main()
     }
 
     outColor = texture(inAlbedo, inTextureCoordinates);
-    
+
+    outColor = ConvertColorSpace(viewport.colorSpace, outColor);
 }

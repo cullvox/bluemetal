@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Math/Math.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
-struct GlobalUBO // Slot 0, Binding 0
+struct ViewportUBO // Slot 0, Binding 0
 {
     alignas(16) glm::mat4 view;
     alignas(16) glm::mat4 projection;
@@ -12,6 +13,7 @@ struct GlobalUBO // Slot 0, Binding 0
     alignas(8) glm::vec2 mouse;
     alignas(4) float time;
     alignas(4) float dt;
+    VkBool32 bConvertGamma;
 };
 
 struct InstanceData

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VulkanResource.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 

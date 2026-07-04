@@ -43,6 +43,7 @@ public:
     virtual void TransitionPostRender(RenderData& rd) override;
     virtual void TransitionPrePresent(RenderData& rd) override;
     virtual void QueuePresent(RenderData& rd) override;
+    virtual void UpdateUniform(RenderData& rd) override;
 
     virtual VkImageView GetRenderedImageView() override;
 

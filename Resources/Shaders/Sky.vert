@@ -1,14 +1,6 @@
 #version 460
 
-layout(set = 0, binding = 0) uniform GlobalUniform
-{
-    mat4 view;
-    mat4 projection;
-    vec2 resolution;
-    vec2 mouse;
-    float time;
-    float dt;
-} globals;
+#include "Viewport.glsl"
 
 layout(location = 0) out float outTime;
 layout(location = 1) out vec3 outEyeDirection;
@@ -16,8 +8,8 @@ layout(location = 2) out vec2 outViewportSize;
 layout(location = 3) out mat4 outInverseProjection;
 
 void main() {
-    mat4 inverseProjection = inverse(globals.projection);
-    mat4 inverseView = inverse(globals.view);
+    mat4 inverseProjection = inverse(viewport.projection);
+    mat4 inverseView = inverse(viewport.view);
     
     // Generates a full-screen triangle (-1 to 1)
     // 6 indices define 2 triangles forming a full-screen quad [-1, 1]
@@ -51,6 +43,6 @@ void main() {
     // Calculate view direction in world space
     vec4 target = inverseProjection * vec4(uv, 1.0, 1.0);
     outEyeDirection = mat3(inverseView) * viewRay.xyz;
-    outTime = globals.time;
-    outViewportSize = globals.resolution;
+    outTime = viewport.time;
+    outViewportSize = viewport.resolution;
 }
