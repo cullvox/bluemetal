@@ -32,7 +32,7 @@ Viewport::Viewport(Renderer* renderer)
     bindings[0].binding = 0;
     bindings[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     bindings[0].descriptorCount = 1;
-    bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+    bindings[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
     bindings[0].pImmutableSamplers = nullptr;
 
     _globalDescriptorSetLayout = _device->AcquireDescriptorSetLayout(bindings);
@@ -184,13 +184,12 @@ void Viewport::UpdateUniform(RenderData& rd)
     // Update the viewport uniform buffer.
     const VkExtent3D extent = _colorImage->GetExtent();
 
-    ViewportUBO uboData = {};
-    uboData.time = rd.GetCurrentFrameTime();
-    uboData.dt = rd.GetDeltaFrameTime();
-    uboData.resolution = glm::vec2 { (float)extent.width, (float)extent.height };
-    uboData.mouse = {}; // TODO: mouse position to be added later.
+    _uboData.time = rd.GetCurrentFrameTime();
+    _uboData.dt = rd.GetDeltaFrameTime();
+    _uboData.resolution = glm::vec2 { (float)extent.width, (float)extent.height };
+    _uboData.mouse = {}; // TODO: mouse position to be added later.
 
-    _globalBuffer.Upload(std::as_bytes(std::span<ViewportUBO, 1>{&uboData, 1}), rd.GetCurrentFrame());
+    _globalBuffer.Upload(std::as_bytes(std::span<ViewportUBO, 1>{&_uboData, 1}), rd.GetCurrentFrame());
 }
 
 void Viewport::PrepareForFrame(RenderData& rd)

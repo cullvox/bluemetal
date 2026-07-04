@@ -2,7 +2,6 @@
 
 #include "Viewport.glsl"
 #include "Conversions.glsl"
-#include "Instances.glsl"
 #include "DrawConstants.glsl"
 
 layout(location=0) in vec3 inPosition;
@@ -53,10 +52,10 @@ void main()
         vec3 N = normalize(inNormal);
         vec4 col = triplanarTexture(inAlbedo, inPosition, N, 0.1);
         outColor = col;
-        return;
     }
-
-    outColor = texture(inAlbedo, inTextureCoordinates);
+    else {
+        outColor = texture(inAlbedo, inTextureCoordinates);
+    }
 
     outColor = ConvertColorSpace(viewport.colorSpace, outColor);
 }

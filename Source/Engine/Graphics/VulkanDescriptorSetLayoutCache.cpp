@@ -6,6 +6,9 @@ namespace bl {
 
 bool VulkanDescriptorLayoutCacheData::operator==(const VulkanDescriptorLayoutCacheData& rhs) const
 {
+    if (bindings.size() != rhs.bindings.size())
+        return false;
+
     for (uint32_t i = 0; i < bindings.size(); i++) {
         const auto& b = bindings[i];
         const auto& rb = rhs.bindings[i];

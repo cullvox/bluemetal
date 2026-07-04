@@ -1,13 +1,17 @@
 
 // Converts a linear RGB color (range [0.0, 1.0]) to Display P3 gamma space
-vec4 LinearToDisplayP3(vec4 linear) {
-    // Exact Display P3 / sRGB piecewise transfer function
-    bvec3 cutoff = lessThan(linear.rgb, vec3(0.0031308));
+vec4 LinearToDisplayP3(vec4 linearRGB) {
+    vec4 nonlinearRGB;
 
-    vec3 higher = pow(linear.rgb * 1.055, vec3(1.0 / 2.4)) - 0.055;
-    vec3 lower = linear.rgb * 12.92;
+    for (int i = 0; i < 3; i++) {
+        if (linearRGB[i] <= 0.0031308) {
+            nonlinearRGB[i] = 12.92 * linearRGB[i];
+        } else {
+            nonlinearRGB[i] = 1.055 * pow(linearRGB[i], 1.0 / 2.4) - 0.055;
+        }
+    }
 
-    return vec4(mix(higher, lower, cutoff), linear.a);
+    return nonlinearRGB;
 }
 
 // Converts a color from sRGB gamma to linear light gamma
