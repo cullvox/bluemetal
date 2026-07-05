@@ -1,5 +1,6 @@
 #pragma once
 
+#include "VulkanResource.h"
 #include "Vulkan.h"
 
 namespace bl {
@@ -7,7 +8,7 @@ namespace bl {
 class VulkanDevice;
 class VulkanImage;
 
-class VulkanImageView {
+class VulkanImageView : public VulkanResource {
     VulkanDevice* _device;
     VkImageView _imageView;
 public:

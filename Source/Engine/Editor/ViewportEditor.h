@@ -12,7 +12,10 @@ class ViewportEditor : public Editor {
     VkDescriptorSet _geometryColorDescriptor;
     std::unique_ptr<Viewport> _viewport;
 
-    void OnViewportResized(Viewport* viewport);
+    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _viewportDescriptorDeleter;
+
+    void OnPreViewportResized(Viewport* viewport);
+    void OnPostViewportResized(Viewport* viewport);
 
 public:
    ViewportEditor(Engine& engine, EditorSystem& system); 

@@ -11,6 +11,7 @@
 #include "Resources/Sampler.h"
 #include "Graphics/Viewport.h"
 #include "Graphics/GraphicsSystem.h"
+#include "Window/Window.h"
 #include <vulkan/vulkan_core.h>
 
 namespace bl {
@@ -29,7 +30,9 @@ ViewportEditor::ViewportEditor(Engine& engine, EditorSystem& system)
     auto geometryColor = _viewport->GetRenderedImageView();
     auto geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler.lock()->Get(), geometryColor, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-    _viewport->onViewportResized.AddRaw(this, &ViewportEditor::OnViewportResized);
+
+    _viewport->onPreViewportResized.AddRaw(this, &ViewportEditor::OnPreViewportResized);
+    _viewport->onPostViewportResized.AddRaw(this, &ViewportEditor::OnPostViewportResized);
 
     renderer->AddViewport(_viewport.get());
 
@@ -44,14 +47,18 @@ ViewportEditor::~ViewportEditor()
     ImGui_ImplVulkan_RemoveTexture(_geometryColorDescriptor);
 }
 
-void ViewportEditor::OnViewportResized(Viewport* viewport)
+void ViewportEditor::OnPreViewportResized(Viewport* viewport)
+{
+    // Add this descriptor to the deleter queue for this frame.
+    _viewportDescriptorDeleter[GetEngine().GetRenderer()->GetRenderData().GetCurrentFrame()] = _geometryColorDescriptor;
+}
+
+void ViewportEditor::OnPostViewportResized(Viewport* viewport)
 {
     auto newView = _viewport->GetRenderedImageView();
 
-    if (_geometryColorDescriptor != VK_NULL_HANDLE)
-    {
-        ImGui_ImplVulkan_RemoveTexture(_geometryColorDescriptor);
-    }
+    // Add this descriptor to the deleter queue for this frame.
+    _viewportDescriptorDeleter[GetEngine().GetRenderer()->GetRenderData().GetCurrentFrame()] = _geometryColorDescriptor;
 
     auto defaultSampler = GetEngine().GetResourceSystem()->Load<Sampler>("Resources/Samplers/Default.json");
     _geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler.lock()->Get(), newView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -59,6 +66,13 @@ void ViewportEditor::OnViewportResized(Viewport* viewport)
 
 void ViewportEditor::Draw(RenderData& rd)
 {
+    // Clear the deleter for this frame.
+    if (_viewportDescriptorDeleter[rd.GetCurrentFrame()] != VK_NULL_HANDLE)
+    {
+        ImGui_ImplVulkan_RemoveTexture(_viewportDescriptorDeleter[rd.GetCurrentFrame()]);
+        _viewportDescriptorDeleter[rd.GetCurrentFrame()] = VK_NULL_HANDLE;
+    }
+
     VkExtent2D extent = _viewport->GetExtent();
 
     glm::mat4 view = glm::identity<glm::mat4>();
@@ -76,9 +90,11 @@ void ViewportEditor::Draw(RenderData& rd)
     ImVec2 region = ImGui::GetContentRegionAvail();
     float scale = ImGui::GetWindowDpiScale(); 
 
-    if (region.x != extent.width || region.y != extent.height)
+    float density = SDL_GetWindowPixelDensity(GetEngine().GetWindow()->Get());
+
+    if (region.x * density != extent.width || region.y * density != extent.height)
     {
-        _viewport->SetSize({static_cast<uint32_t>(region.x * scale), static_cast<uint32_t>(region.y * scale)});
+        _viewport->SetSize({static_cast<uint32_t>(region.x * density), static_cast<uint32_t>(region.y * density)});
     }
 
     ImGui::Image(_geometryColorDescriptor, region);

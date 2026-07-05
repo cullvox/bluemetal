@@ -13,7 +13,9 @@ static inline constexpr VkFormat defaultPresentFormat = VK_FORMAT_R8G8B8A8_SRGB;
 static inline constexpr VkColorSpaceKHR defaultPresentColorspace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR; /** @brief Default color space to look for. */
 static inline constexpr std::array<VkSurfaceFormatKHR, 2> defaultSurfaceFormats = {
     // VkSurfaceFormatKHR { VK_FORMAT_R16G16B16A16_SFLOAT, VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT},
-    VkSurfaceFormatKHR { VK_FORMAT_A2B10G10R10_UNORM_PACK32, VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT}, // MacBook Format
+    VkSurfaceFormatKHR { VK_FORMAT_B8G8R8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR }, // Standard Format
+    //VkSurfaceFormatKHR { VK_FORMAT_R16G16B16A16_UNORM, VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT},
+    //VkSurfaceFormatKHR { VK_FORMAT_A2B10G10R10_UNORM_PACK32, VK_COLOR_SPACE_DISPLAY_P3_NONLINEAR_EXT}, // MacBook Format
     VkSurfaceFormatKHR { VK_FORMAT_R8G8B8A8_UNORM, VK_COLOR_SPACE_SRGB_NONLINEAR_KHR }, // Standard Format
 };
 

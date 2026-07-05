@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VulkanDevice.h"
+#include "VulkanDescriptorSet.h"
 
 namespace bl {
 
@@ -49,7 +50,7 @@ public:
     ~VulkanDescriptorSetAllocatorCache();
 
     /// @brief Allocates/retrieves a descriptor set created with this layout.
-    VkDescriptorSet Allocate(VkDescriptorSetLayout layout);
+    std::unique_ptr<VulkanDescriptorSet> Allocate(VkDescriptorSetLayout layout);
 
     /// @brief Frees the descriptor set back into the cache.
     void Free(VkDescriptorSetLayout layout, VkDescriptorSet set);

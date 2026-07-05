@@ -38,7 +38,7 @@ RenderData::RenderData(Renderer* renderer)
         descriptorWrites[i] = {
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .pNext = nullptr,
-            .dstSet = _instanceSets[i],
+            .dstSet = _instanceSets[i]->Get(),
             .dstBinding = 0,
             .dstArrayElement = 0,
             .descriptorCount = 1,
@@ -97,7 +97,7 @@ VkDescriptorSet RenderData::GetGlobalDescriptorSet()
 
 VkDescriptorSet RenderData::GetInstanceDescriptorSet()
 {
-    return _instanceSets[_currentFrame];
+    return _instanceSets[_currentFrame]->Get();
 }
 
 glm::mat4 RenderData::GetProjectionMatrix()

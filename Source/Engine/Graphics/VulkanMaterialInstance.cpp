@@ -69,24 +69,24 @@ void VulkanMaterialInstance::Bind(RenderData& rd) const
     VkPipelineLayout pipelineLayout = _material->_pipeline->GetPipelineLayout();
 
     auto& frame = _perFrameData[_currentFrame];
-    auto materialSet = frame.set;
+    auto& materialSet = frame.set;
 
-    std::array<VkDescriptorSet, 4> descriptorSets { globalSet, instanceSet, materialSet };
+    std::array<VkDescriptorSet, 4> descriptorSets { globalSet, instanceSet, materialSet->Get() };
 
     auto support = _material->GetSupportFlags();
     std::span<VkDescriptorSet> sets = descriptorSets;
 
     // If any of the buffers aren't used, bind an empty set to ensure that the pipeline doesn't read from a random set.
     if ((support & VulkanMaterialSupportFlags::eGlobalBuffer) == VulkanMaterialSupportFlags::eNone) {
-        descriptorSets[0] = _material->_emptySet;
+        descriptorSets[0] = _material->_emptySet->Get();
     }
 
     if ((support & VulkanMaterialSupportFlags::eInstanceBuffer) == VulkanMaterialSupportFlags::eNone) {
-        descriptorSets[1] = _material->_emptySet;
+        descriptorSets[1] = _material->_emptySet->Get();
     }
 
     if ((support & VulkanMaterialSupportFlags::eMaterialBuffer) != VulkanMaterialSupportFlags::eMaterialBuffer) {
-        descriptorSets[2] = _material->_emptySet;
+        descriptorSets[2] = _material->_emptySet->Get();
     }
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
@@ -115,7 +115,7 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
     VkWriteDescriptorSet write = {};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write.pNext = nullptr;
-    write.dstSet = _perFrameData[_currentFrame].set; /* Since this is getting added to the queue, every descriptor set will be updated later. */
+    write.dstSet = _perFrameData[_currentFrame].set->Get(); /* Since this is getting added to the queue, every descriptor set will be updated later. */
     write.dstBinding = binding;
     write.dstArrayElement = 0;
     write.descriptorCount = 1;
@@ -186,7 +186,7 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
             VkWriteDescriptorSet write = {};
             write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             write.pNext = nullptr;
-            write.dstSet = _perFrameData[currentFrame].set; /* Since this is getting added to the queue, every descriptor set will be updated later. */
+            write.dstSet = _perFrameData[currentFrame].set->Get();
             write.dstBinding = i;
             write.dstArrayElement = 0;
             write.descriptorCount = 1;
@@ -258,7 +258,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
                 bufferInfos.push_back(std::get<UniformData>(variant).buffer.GetDescriptorInfo(i));
 
                 write.pBufferInfo = &bufferInfos.back();
-                write.dstSet = _perFrameData[i].set;
+                write.dstSet = _perFrameData[i].set->Get();
                 writes.push_back(write);
             }
             break;

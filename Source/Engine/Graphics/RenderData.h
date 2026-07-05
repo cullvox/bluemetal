@@ -36,7 +36,7 @@ class RenderData
     VulkanBufferFrameRing _instanceBuffer;
     VulkanDescriptorSetAllocatorCache _descriptorCache;
     VkDescriptorSetLayout _instanceSetLayout;
-    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _instanceSets;
+    std::array<std::unique_ptr<VulkanDescriptorSet>, VulkanConfig::maxFramesInFlight> _instanceSets;
 
     std::vector<VkSemaphoreSubmitInfo> _waitSemaphores; // The semaphores we're waiting on before rendering begins.
     std::vector<VkSemaphoreSubmitInfo> _signalSemaphores; // The semaphores we signal when rendering finishes.

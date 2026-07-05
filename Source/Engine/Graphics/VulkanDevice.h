@@ -10,6 +10,7 @@ class VulkanPhysicalDevice;
 class VulkanDescriptorSetLayoutCache;
 class VulkanPipelineLayoutCache;
 class VulkanDescriptorSetAllocatorCache;
+class VulkanDescriptorSet;
 
 /**
  * @class VulkanDevice
@@ -26,7 +27,7 @@ class VulkanDevice : public VulkanResource {
     std::unique_ptr<VulkanDescriptorSetLayoutCache> _descriptorSetLayoutCache;
     std::unique_ptr<VulkanPipelineLayoutCache> _pipelineLayoutCache;
     std::unique_ptr<VulkanDescriptorSetAllocatorCache> _descriptorSetCache;
-    VkDescriptorSet _emptySet;
+    std::unique_ptr<VulkanDescriptorSet> _emptySet;
 
     std::vector<const char*> GetValidationLayers(); /** @brief Gets the device validation layers required to created the device. */
     std::vector<const char*> GetExtensions(); /** @brief Gets the device's extensions required for the engine. */
@@ -156,7 +157,7 @@ public:
     VkPipelineLayout AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges);
 
 
-    VkDescriptorSet AllocateDescriptorSet(VkDescriptorSetLayout layout);
+    std::unique_ptr<VulkanDescriptorSet> AllocateDescriptorSet(VkDescriptorSetLayout layout);
 
     void FreeDescriptorSet(VkDescriptorSet set, VkDescriptorSetLayout layout);
 

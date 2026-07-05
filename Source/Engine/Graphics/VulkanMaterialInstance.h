@@ -194,7 +194,7 @@ private:
      * a descriptor set while it's bound.
      */
     struct PerFrameData {
-        VkDescriptorSet set;
+        std::unique_ptr<VulkanDescriptorSet> set;
         std::unordered_map<int, VulkanBuffer> buffer;
         std::bitset<32> dirty; /// @brief If a binding is dirty it must be updated somehow.
     };

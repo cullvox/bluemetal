@@ -81,6 +81,8 @@ public:
     void AddMaterial(VulkanMaterialInstance* instance);
     void RemoveMaterial(VulkanMaterialInstance* instance);
 
+    void AddToDeletionQueue(std::unique_ptr<VulkanResource> resource); // Adds a resource to the deletion queue for the current frame. It will be deleted after the frame is finished rendering.
+
     void AddViewport(Viewport* viewport);
     void RemoveViewport(Viewport* viewport);
 
@@ -116,7 +118,7 @@ private:
     VulkanMaterialInstance* _lineMaterial;
     VulkanMaterialInstance* _triangleMaterial;
 
-    std::array<std::vector<VulkanResource*>, VulkanConfig::maxFramesInFlight> _deletionQueues;
+    std::array<std::vector<std::unique_ptr<VulkanResource>>, VulkanConfig::maxFramesInFlight> _deletionQueues;
 
     RenderFunction _guiFunc;
     ObjectFunction _objectFunc;

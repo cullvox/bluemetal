@@ -32,6 +32,7 @@ list(APPEND Sources
   "Graphics/VulkanPipelineLayoutCache.cpp"
   "Graphics/VulkanPipeline.cpp"
   "Graphics/VulkanDescriptorSetAllocatorCache.cpp"
+  "Graphics/VulkanDescriptorSet.cpp"
   "Graphics/VulkanSwapchain.cpp"
   "Graphics/VulkanMaterial.cpp"
   "Graphics/VulkanMaterialInstance.cpp"

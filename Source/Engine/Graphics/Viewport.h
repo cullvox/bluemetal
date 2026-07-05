@@ -65,7 +65,7 @@ protected:
     ViewportUBO _uboData = {};
     VulkanBufferFrameRing _globalBuffer;
     VkDescriptorSetLayout _globalDescriptorSetLayout;
-    std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _globalDescriptorSets;
+    std::array<std::unique_ptr<VulkanDescriptorSet>, VulkanConfig::maxFramesInFlight> _globalDescriptorSets;
 
     VkBool32 _imagesDirty = VK_TRUE; // Determines if images need to be recreated at the beginning of a frame.
 
@@ -115,7 +115,8 @@ public:
     virtual void TransitionPrePresent(RenderData& rd);
     virtual void QueuePresent(RenderData& rd);
 
-    MulticastDelegate<Viewport*> onViewportResized;
+    MulticastDelegate<Viewport*> onPreViewportResized;
+    MulticastDelegate<Viewport*> onPostViewportResized;
 
     virtual VkImageView GetRenderedImageView();
 };

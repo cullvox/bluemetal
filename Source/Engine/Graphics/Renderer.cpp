@@ -52,7 +52,7 @@ Renderer::Renderer(VulkanDevice* device, FrameCounter& frameCounter)
     SDL_DestroyWindow(tempWindow);
 
 
-    _colorFormat = physicalDevice->FindSupportedFormat({VK_FORMAT_R8G8B8A8_UNORM}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
+    _colorFormat = physicalDevice->FindSupportedFormat({ VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM, VK_FORMAT_B8G8R8A8_UNORM }, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
     _colorFormatHDR = physicalDevice->FindSupportedFormat({VK_FORMAT_R32G32B32A32_SFLOAT, VK_FORMAT_R16G16B16A16_SFLOAT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
     _depthFormat  = physicalDevice->FindSupportedFormat({ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT }, VK_IMAGE_TILING_OPTIMAL, 0);
     _selectionFormat = _device->GetPhysicalDevice()->FindSupportedFormat({VK_FORMAT_R32_UINT}, VK_IMAGE_TILING_OPTIMAL, VK_FORMAT_FEATURE_COLOR_ATTACHMENT_BIT | VK_FORMAT_FEATURE_TRANSFER_SRC_BIT | VK_FORMAT_FEATURE_TRANSFER_DST_BIT | VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
@@ -107,6 +107,13 @@ Profiler profiler;
 void Renderer::RenderFrame()
 {
     _renderData.SetCurrentFrame(_currentFrame);
+
+    // Apply the deleter queue for this frame.
+    for (auto& resource : _deletionQueues[_currentFrame])
+    {
+        resource.reset();
+        _deletionQueues[_currentFrame].clear();
+    }
 
     // Wait for the any viewport images coming in the chain to finish.
     VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
@@ -211,6 +218,11 @@ void Renderer::AddMaterial(VulkanMaterialInstance* material)
 void Renderer::RemoveMaterial(VulkanMaterialInstance* material)
 {
     _materials.erase(material);
+}
+
+void Renderer::AddToDeletionQueue(std::unique_ptr<VulkanResource> resource)
+{
+    _deletionQueues[_currentFrame].push_back(std::move(resource));
 }
 
 std::vector<VkFormat> Renderer::GetColorAttachmentFormats(RenderPassType pass)

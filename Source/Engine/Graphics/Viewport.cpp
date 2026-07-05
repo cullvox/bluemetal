@@ -49,7 +49,7 @@ Viewport::Viewport(Renderer* renderer)
         descriptorWrites[i] = {
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .pNext = nullptr,
-            .dstSet = _globalDescriptorSets[i],
+            .dstSet = _globalDescriptorSets[i]->Get(),
             .dstBinding = 0,
             .dstArrayElement = 0,
             .descriptorCount = 1,
@@ -72,15 +72,28 @@ Viewport::Viewport(Renderer* renderer, VkExtent2D extent)
 
 Viewport::~Viewport()
 {
-    // Free the viewport global descriptor sets.
-    for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
-    {
-        _device->FreeDescriptorSet(_globalDescriptorSets[i], _globalDescriptorSetLayout);
-    }
 }
 
 void Viewport::RecreateImages()
 {
+    onPreViewportResized.Broadcast(this);
+
+    if (_colorImage && _colorImageResolved && _selectionImage && _selectionImageResolved && _depthImage)
+    {
+        // Add images to the deleter queue.
+        _renderer->AddToDeletionQueue(std::move(_colorImageView));
+        _renderer->AddToDeletionQueue(std::move(_colorImage));
+        _renderer->AddToDeletionQueue(std::move(_colorImageResolvedView));
+        _renderer->AddToDeletionQueue(std::move(_colorImageResolved));
+
+        _renderer->AddToDeletionQueue(std::move(_selectionImageView));
+        _renderer->AddToDeletionQueue(std::move(_selectionImage));
+        _renderer->AddToDeletionQueue(std::move(_selectionImageResolvedView));
+        _renderer->AddToDeletionQueue(std::move(_selectionImageResolved));
+
+        _renderer->AddToDeletionQueue(std::move(_depthImageView));
+        _renderer->AddToDeletionQueue(std::move(_depthImage));
+    }
 
     // Create color image
     VkComponentMapping mapping = { VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY };
@@ -152,7 +165,7 @@ void Viewport::RecreateImages()
 
     _imagesDirty = false;
 
-    onViewportResized.Broadcast(this);
+    onPostViewportResized.Broadcast(this);
 }
 
 void Viewport::SetSize(VkExtent2D extent)
@@ -237,7 +250,7 @@ bool Viewport::Bind(RenderData& rd)
     vkCmdSetScissor(cmd, 0, 1, &_scissor);
 
     // Set the current sample count and descriptor set.
-    rd.SetGlobalDescriptorSet(_globalDescriptorSets[rd.GetCurrentFrame()]);
+    rd.SetGlobalDescriptorSet(_globalDescriptorSets[rd.GetCurrentFrame()]->Get());
     rd.SetSampleCount(_sampleCount);
 
     return true;

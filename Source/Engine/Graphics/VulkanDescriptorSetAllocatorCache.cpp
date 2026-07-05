@@ -29,7 +29,7 @@ VulkanDescriptorSetAllocatorCache::~VulkanDescriptorSetAllocatorCache()
     }
 }
  
-VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayout layout)
+std::unique_ptr<VulkanDescriptorSet> VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayout layout)
 {
 
     // Check if there is already a free set from the same layout.
@@ -45,7 +45,7 @@ VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayou
             freeSets.erase(set);
 
             // The descriptor set is no longer considered free, return it.
-            return set;
+            return std::make_unique<VulkanDescriptorSet>(this, layout, set);
         }
     }
 
@@ -77,7 +77,7 @@ VkDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayou
 
     _freePools.push_back(pool);
 
-    return set;
+    return std::make_unique<VulkanDescriptorSet>(this, layout, set);
 }
 
 void VulkanDescriptorSetAllocatorCache::Free(VkDescriptorSetLayout layout, VkDescriptorSet set)

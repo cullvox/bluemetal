@@ -192,7 +192,7 @@ VkPipelineLayout VulkanDevice::AcquirePipelineLayout(const std::span<VkDescripto
     return _pipelineLayoutCache->Acquire(layouts, ranges);
 }
 
-VkDescriptorSet VulkanDevice::AllocateDescriptorSet(VkDescriptorSetLayout layout)
+std::unique_ptr<VulkanDescriptorSet> VulkanDevice::AllocateDescriptorSet(VkDescriptorSetLayout layout)
 {
     return _descriptorSetCache->Allocate(layout);
 }
