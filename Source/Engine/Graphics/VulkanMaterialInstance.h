@@ -48,7 +48,7 @@ public:
      * This constructor initializes the material instance with the given device and material.
      * Only the material should call this constructor.
      */
-    VulkanMaterialInstance(VulkanDevice* device, VulkanMaterial* material);
+    VulkanMaterialInstance(VulkanDevice* device, std::shared_ptr<VulkanMaterial> material);
 
     /**
      * @brief Destroy the material instance.

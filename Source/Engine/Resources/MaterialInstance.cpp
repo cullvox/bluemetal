@@ -56,6 +56,7 @@ MaterialInstance::MaterialInstance(Engine& engine, const std::filesystem::path& 
     _renderer->AddMaterial(_materialInstance.get());
 
     RegisterMaterialProperties(_materialInstance.get());
+
 }
 
 MaterialInstance::MaterialInstance(const MaterialInstance&)
@@ -172,7 +173,7 @@ void MaterialInstance::RegisterMaterialProperties(VulkanMaterialInstance* materi
 void MaterialInstance::SetMaterialProperty(std::string_view name, const Variant& value)
 {
     // Make sure the uniform exists in the material, and then set it using the material instance.
-    const auto& uniforms = _materialInstance->GetBaseMaterial()->GetUniforms();
+    const auto& uniforms = GetInstance()->GetBaseMaterial()->GetUniforms();
     auto it = uniforms.find(std::string{name});
     if (it == uniforms.end()) {
         Print::Error("Could not set material uniform, it does not exist!");
@@ -182,7 +183,7 @@ void MaterialInstance::SetMaterialProperty(std::string_view name, const Variant&
     // Make sure the types are the same.
     VariantType type = VariantType::eInteger;
     switch (it->second.GetType())
-    {        
+    {
     case VulkanVariableBlockType::eScalarBool: type = VariantType::eBoolean; break;
     case VulkanVariableBlockType::eScalarInt: type = VariantType::eInteger; break;
     case VulkanVariableBlockType::eScalarFloat: type = VariantType::eFloat; break;

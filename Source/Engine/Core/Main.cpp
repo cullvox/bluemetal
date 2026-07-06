@@ -140,10 +140,11 @@ int main(int argc, const char** argv)
         skyMat->SetScaler("material.starsIntensity", -2.829f);
         skyMat->SetScaler("material.starFalloff", 1.79f);
         skyMat->SetScaler("material.starsFadeModulation", 0.91f);
-        
 
         skyMat->SetSampledTexture2D("starsTexture", defaultSampler, noiseTexture);
         skyMat->SetSampledTexture2D("baseNoiseTexture", defaultSampler, noiseTexture);
+
+        resourceMgr->Add("Materials/SkyInstance.mat", skyMat);
 
         physicsRenderer->SetMaterial(physDebugFlatMaterial.lock()->GetVulkanMaterial());
 
@@ -158,6 +159,8 @@ int main(int argc, const char** argv)
         grassMaterial->SetVector4("material.windParams", {0.008f, 1.1f, 0.01f, 1.0f});
         grassMaterial->SetVector4("material.windDirection", {0.3f, 0.3f, 0.0f, 0.0f});
         grassMaterial->SetVector4("material.playerParams", {10.0f, -4.0f, 10.0f, 0.6f});
+
+        resourceMgr->Add("Materials/GrassInstance.mat", grassMaterial);
 
         auto multimesh = std::make_unique<bl::MultiMeshInstance3D>(engine);
         multimesh->SetName("GrassMultiMesh");

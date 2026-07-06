@@ -239,6 +239,69 @@ Material::Material(Engine& engine, const std::filesystem::path& path)
 
 
     RegisterMaterialProperties(_material.get());
+
+
+    // Load each material property from the 
+    if (json.contains("properties")
+     && json["properties"].is_object())
+    {
+        const auto& properties = json["properties"];
+
+        for (auto&& [name, value] : properties.items())
+        {
+            if (value.is_number_integer()) { Set(name, value.get<int64_t>()); }
+            else if (value.is_number_float()) { Set(name, value.get<float>()); }
+            else if (value.is_boolean()) { Set(name, value.get<bool>()); }
+            else if (value.is_array()) {
+
+                if (value.size() < 2) {
+                    Print::Error("Invalid vector/array size in material property.");
+                    continue;
+                }
+
+
+                if (!value[0].is_number_float() || !value[1].is_number_float()) {
+                    Print::Error("Invalid vector/array type in element.");
+                    continue;
+                }
+
+                float x = value[0].get<float>();
+                float y = value[1].get<float>();
+
+                if (value.size() == 2) {
+                    glm::vec2 v2 = {x, y};
+                    Set(name, v2);
+                } else if (value.size() >= 3) {
+                    if (!value[2].is_number_float()) {
+                        Print::Error("Invalid vector/array type in element.");
+                        continue;
+                    }
+
+                    float z = value[2].get<float>();
+
+                    if (value.size() == 3) {
+                        glm::vec3 v3 = {x, y, z};
+                        Set(name, v3);
+                    } else if (value.size() == 4) {
+                        if (!value[3].is_number_float()) {
+                            Print::Error("Invalid vector/array type in element.");
+                            continue;
+                        }
+
+                        float w = value[3].get<float>();
+
+                        glm::vec4 v4 = {x, y, z, w};
+                        Set(name, v4);
+                    } else {
+                        if (value.size() > 4) {
+                            Print::Error("Invalid vector/array size in material property.");
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 Material::Material(const Material& copy)

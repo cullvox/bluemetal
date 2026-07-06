@@ -10,7 +10,6 @@ class VulkanDescriptorSetAllocatorCache;
 
 class VulkanDescriptorSet : public VulkanResource
 {
-    VulkanDevice* _device;
     VulkanDescriptorSetAllocatorCache* _cache;
     VkDescriptorSet _set;
     VkDescriptorSetLayout _layout;

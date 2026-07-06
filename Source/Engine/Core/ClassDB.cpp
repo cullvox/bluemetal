@@ -196,7 +196,7 @@ Property* ClassDB::FindPropertyInClassRecursive(std::string_view name, std::stri
         auto& classData = _classes[it->second];
 
         auto propertyIt = classData.nameToPropertyIndex.find(property);
-        if (it != classData.nameToPropertyIndex.end()) {
+        if (propertyIt != classData.nameToPropertyIndex.end()) {
             return classData.properties[propertyIt->second].get();
         };
 

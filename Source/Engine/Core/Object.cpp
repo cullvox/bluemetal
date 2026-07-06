@@ -67,7 +67,7 @@ void Object::Set(std::string_view name, const Variant& value)
     // Look through the instance properties.
     auto it = _nameToPropertyIndex.find(name);
     if (it == _nameToPropertyIndex.end()) {
-        Print::Error("Invalid property name to set from object.");
+        Print::Error("Invalid property name ({}) to set on object.", name);
         return;
     }
 

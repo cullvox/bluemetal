@@ -24,6 +24,7 @@ class MaterialInstance : public Resource {
     OBJECT_BOILER(MaterialInstance, Resource)
 
     Renderer* _renderer;
+    std::shared_ptr<Material> _base;
     std::unique_ptr<VulkanMaterialInstance> _materialInstance; // Set by either Material or is created.
 
 protected:

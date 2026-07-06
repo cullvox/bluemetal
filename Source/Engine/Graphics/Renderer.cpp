@@ -109,11 +109,7 @@ void Renderer::RenderFrame()
     _renderData.SetCurrentFrame(_currentFrame);
 
     // Apply the deleter queue for this frame.
-    for (auto& resource : _deletionQueues[_currentFrame])
-    {
-        resource.reset();
-        _deletionQueues[_currentFrame].clear();
-    }
+    _deletionQueues[_currentFrame].clear();
 
     // Wait for the any viewport images coming in the chain to finish.
     VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))

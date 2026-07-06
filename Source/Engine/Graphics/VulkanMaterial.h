@@ -130,9 +130,9 @@ private:
     std::unique_ptr<VulkanPipeline> _pipeline;
     UniformMap _uniforms;
     SamplerMap _samplers;
+    VulkanDescriptorSetAllocatorCache _descriptorSetCache;
     std::unique_ptr<VulkanDescriptorSet> _emptySet;
     VkDescriptorSetLayout _layout;
-    VulkanDescriptorSetAllocatorCache _descriptorSetCache;
     VulkanMaterialSupportFlags _flags;
     uint32_t _setCount;
 };
