@@ -28,6 +28,10 @@ void Resource::RegisterClass(ClassDB& db)
     db.RegisterVirtualClass("Resource", "Object");
 }
 
+void Resource::Release()
+{
+}
+
 void Resource::AddSubResource(std::shared_ptr<Resource> res)
 {
     _subResources.push_back(res);

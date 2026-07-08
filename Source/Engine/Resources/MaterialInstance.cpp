@@ -71,6 +71,14 @@ MaterialInstance::~MaterialInstance()
         _renderer->RemoveMaterial(_materialInstance.get());
 }
 
+void MaterialInstance::Release()
+{
+    if (_materialInstance)
+        _renderer->RemoveMaterial(_materialInstance.get());
+
+    _materialInstance.reset();
+}
+
 VulkanMaterialInstance* MaterialInstance::GetInstance() const
 {
     return _materialInstance.get();

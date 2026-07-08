@@ -17,7 +17,7 @@ public: \
     virtual std::string_view GetClassName() override { return BL_STRINGIFY(name); } \
     constexpr static std::string_view GetStaticClassName() { return BL_STRINGIFY(name); } \
     constexpr static std::string_view GetParentClassName() { return BL_STRINGIFY(parent); } \
-    static Object* Create(Engine& engine) { return nullptr; } \
+    static Object* Create(Engine& engine) { (void)engine; return nullptr; } \
 private:
 
 namespace bl

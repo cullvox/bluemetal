@@ -367,7 +367,7 @@ int main(int argc, const char** argv)
 
         graphics.GetDevice()->WaitForDevice();
 
-        resourceMgr->UnloadAll();
+        resourceMgr->ReleaseAll();
 
     } catch (std::exception& e) {
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Exception Error", e.what(), nullptr);

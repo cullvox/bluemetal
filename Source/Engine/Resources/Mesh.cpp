@@ -17,6 +17,11 @@ Mesh::~Mesh()
 {
 }
 
+void Mesh::Release()
+{
+    _mesh.reset();
+}
+
 void Mesh::Upload(std::span<const std::byte> vertices, std::span<uint32_t> indices)
 {
     _mesh = std::make_unique<VulkanMesh>(_system->GetDevice(), vertices, indices);

@@ -22,6 +22,7 @@ class Material : public MaterialInstance {
     GraphicsSystem* _graphicsSystem;
     Renderer* _renderer;
     std::unique_ptr<VulkanMaterial> _material;
+    std::list<std::weak_ptr<MaterialInstance>> _instances;
 
 protected:
     virtual VulkanMaterialInstance* GetInstance() const override;
@@ -44,6 +45,8 @@ public:
 
     /// @brief Destructor
     virtual ~Material();
+
+    virtual void Release() override;
 
     /// @brief Gets the Vulkan material used by this material.
     VulkanMaterial* GetVulkanMaterial();

@@ -52,8 +52,9 @@ public:
     /// This constructor is designated for the ResourceSystem.
     MaterialInstance(Engine& engine, const std::filesystem::path& path);
 
-    /// @brief Destructor
     virtual ~MaterialInstance();
+
+    virtual void Release() override;
 
     /// @brief Sets a boolean uniform in the material instance.
     /// @param name Name of the uniform to set.

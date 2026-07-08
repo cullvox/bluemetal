@@ -10,7 +10,7 @@ ResourceSystem::ResourceSystem(Engine& engine)
 
 ResourceSystem::~ResourceSystem()
 {
-    UnloadAll();
+    ReleaseAll();
 }
 
 std::shared_ptr<Resource> ResourceSystem::ConstructResource(std::size_t, const std::filesystem::path&)
@@ -22,10 +22,10 @@ void ResourceSystem::UnloadUnreferenced()
 {
 }
 
-void ResourceSystem::UnloadAll()
+void ResourceSystem::ReleaseAll()
 {
     for (auto& [name, resource] : _resources)
-        resource.reset();
+        resource->Release();
 }
 
 } // namespace bl

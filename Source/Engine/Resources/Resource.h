@@ -41,6 +41,9 @@ public:
      */
     virtual ~Resource() = 0;
 
+    /// Release any resource that might need to be released before the engine shuts down.
+    virtual void Release();
+
     /**
      * @brief Returns the unique path of this resource.
      * @return The unique path of the resource.

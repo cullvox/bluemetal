@@ -17,6 +17,8 @@ public:
     Mesh(Engine& engine, const std::filesystem::path& path);
     ~Mesh();
 
+    virtual void Release() override;
+
     template <typename T>
     void Upload(std::span<T> vertices, std::span<uint32_t> indices)
     {

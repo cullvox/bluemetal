@@ -317,6 +317,18 @@ Material::~Material()
     _renderer->RemoveMaterial(_material.get());
 }
 
+void Material::Release()
+{
+    // Material instances must be released before this material they depend on can be.
+    for (auto& instance : _instances) {
+        if (auto value = instance.lock()) {
+            value->Release();
+        }
+    }
+
+    _material.reset();
+}
+
 VulkanMaterialInstance* Material::GetInstance() const
 {
     return _material.get();
@@ -324,7 +336,9 @@ VulkanMaterialInstance* Material::GetInstance() const
 
 std::shared_ptr<MaterialInstance> Material::CreateInstance()
 {
-    return std::make_shared<MaterialInstance>(GetEngine(), std::move(_material->CreateInstance()));
+    auto instance = std::make_shared<MaterialInstance>(GetEngine(), std::move(_material->CreateInstance()));
+    _instances.push_back(instance);
+    return instance;
 }
 
 const VulkanPipeline* Material::GetVulkanPipeline()

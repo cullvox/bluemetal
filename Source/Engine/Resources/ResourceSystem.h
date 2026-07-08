@@ -32,7 +32,7 @@ public:
     template <typename T>
     Ref<T> AddSubResource(Ref<Resource> parent); /** @brief Adds a sub-resource to a parent resource. */
     void UnloadUnreferenced(); /** @brief Cleans up memory by unloading resources that aren't currently needed. Abides by a ResourceLoadOp. */
-    void UnloadAll(); /** @brief Forcibly unloads all resources. */
+    void ReleaseAll(); /** @brief Forcibly unloads all resources. */
     template <typename T>
     System* GetSystemType();
 };
