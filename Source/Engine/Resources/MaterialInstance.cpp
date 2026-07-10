@@ -50,7 +50,7 @@ MaterialInstance::MaterialInstance(Engine& engine, const std::filesystem::path& 
 
     auto resourceSystem = engine.GetResourceSystem();
     auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
-    _materialInstance = std::unique_ptr<VulkanMaterialInstance>(mat.lock()->GetVulkanMaterial()->CreateInstance());
+    _materialInstance = mat.lock()->GetVulkanMaterial()->CreateInstance();
 
     // Ensure that the material buffers get properly cleaned updated every frame.
     _renderer->AddMaterial(_materialInstance.get());

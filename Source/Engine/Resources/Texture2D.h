@@ -37,6 +37,8 @@ public:
     Texture2D(Engine& engine, const std::span<const std::byte> pixels, TextureFormat format, Extent2D extent);
 
     ~Texture2D() = default;
+
+    virtual void Release() override;
 };
 
 } // namespace bl

@@ -23,6 +23,8 @@ VulkanMaterialInstance::VulkanMaterialInstance(VulkanDevice* device, VulkanMater
 
 VulkanMaterialInstance::~VulkanMaterialInstance()
 {
+    FreeSets();
+    std::erase( GetBaseMaterial()->_instances, this);
 }
 
 void VulkanMaterialInstance::SetBool(const std::string& name, bool value)
@@ -62,14 +64,20 @@ void VulkanMaterialInstance::SetMatrix(const std::string& name, glm::mat4 value)
 
 void VulkanMaterialInstance::Bind(RenderData& rd) const
 {
+
     VkCommandBuffer cmd = rd.GetCommandBuffer();
     VkDescriptorSet globalSet = rd.GetGlobalDescriptorSet();
     VkDescriptorSet instanceSet = rd.GetInstanceDescriptorSet();
     VkPipeline pipeline = _material->_pipeline->GetPipeline(rd.GetSampleCount());
     VkPipelineLayout pipelineLayout = _material->_pipeline->GetPipelineLayout();
 
+    
     auto& frame = _perFrameData[_currentFrame];
     auto& materialSet = frame.set;
+    
+    if (!frame.set) {
+        throw std::runtime_error("Cannot bind a material instance who's parent material was destroyed.");
+    }
 
     std::array<VkDescriptorSet, 4> descriptorSets { globalSet, instanceSet, materialSet->Get() };
 
@@ -99,6 +107,10 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
     if (!samplers.contains(name)) {
         Print::Error("VulkanMaterial does not contain sampler \"{}\"!", name);
         return;
+    }
+
+    if (!_perFrameData[_currentFrame].set) {
+        throw std::runtime_error("Cannot set a sampled image to a material instance who's parent material was destroyed.");
     }
 
     uint32_t binding = samplers.at(name);
@@ -155,6 +167,10 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
     }
 
     PerFrameData& currentFrameData = _perFrameData[currentFrame];
+
+    if (!currentFrameData.set) {
+        throw std::runtime_error("Cannot update a material instance who's parent material is already destroyed.");
+    }
 
     // If any previous frames changed their data this frame is dirty and must
     // preform a descriptor copy to this frame.
@@ -281,6 +297,13 @@ void VulkanMaterialInstance::SetBindingDirty(uint32_t binding)
     _perFrameData[_currentFrame].dirty[binding] = false; /* This current frame is now the current data and is no longer dirty. */
     for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++) {
         _perFrameData[i].dirty[binding] = true;
+    }
+}
+
+void VulkanMaterialInstance::FreeSets()
+{
+    for (auto& data : _perFrameData) {
+        data.set.reset();
     }
 }
 

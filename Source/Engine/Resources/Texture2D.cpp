@@ -166,4 +166,9 @@ Texture2D::Texture2D(Engine& engine, const std::span<const std::byte> pixels, Te
     assert(_image->GetLayout() == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
+void Texture2D::Release()
+{
+    _image.reset();
+}
+
 } // namespace bl

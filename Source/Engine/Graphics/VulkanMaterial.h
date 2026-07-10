@@ -128,6 +128,7 @@ private:
     friend class VulkanMaterialInstance;
 
     std::unique_ptr<VulkanPipeline> _pipeline;
+    std::vector<VulkanMaterialInstance*> _instances;
     UniformMap _uniforms;
     SamplerMap _samplers;
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;

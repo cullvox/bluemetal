@@ -26,6 +26,8 @@ void ResourceSystem::ReleaseAll()
 {
     for (auto& [name, resource] : _resources)
         resource->Release();
+
+    _resources.clear();
 }
 
 } // namespace bl

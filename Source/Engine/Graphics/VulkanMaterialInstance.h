@@ -222,6 +222,8 @@ private:
     std::array<PerFrameData, VulkanConfig::maxFramesInFlight> _perFrameData;
     std::array<VkDescriptorSet, 4> _sets;
 
+    void FreeSets(); /// Frees all descriptor sets back into the descriptor set pool.
+
 };
 
 }

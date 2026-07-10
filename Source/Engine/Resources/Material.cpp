@@ -3,10 +3,12 @@
 #include "Graphics/Renderer.h"
 #include "Graphics/VulkanConversions.h"
 #include "Graphics/VulkanShader.h"
+#include "Resources/MaterialInstance.h"
 #include "Shader.h"
 #include "Core/ClassDB.h"
 
 #include "ResourceSystem.h"
+#include <memory>
 
 namespace bl {
 
@@ -237,9 +239,7 @@ Material::Material(Engine& engine, const std::filesystem::path& path)
     _material = std::make_unique<VulkanMaterial>(_graphicsSystem->GetDevice(), _renderer, info, descriptorSetLocation);
     _renderer->AddMaterial(_material.get());
 
-
     RegisterMaterialProperties(_material.get());
-
 
     // Load each material property from the 
     if (json.contains("properties")
@@ -326,6 +326,8 @@ void Material::Release()
         }
     }
 
+    MaterialInstance::Release();
+
     _material.reset();
 }
 
@@ -336,7 +338,7 @@ VulkanMaterialInstance* Material::GetInstance() const
 
 std::shared_ptr<MaterialInstance> Material::CreateInstance()
 {
-    auto instance = std::make_shared<MaterialInstance>(GetEngine(), std::move(_material->CreateInstance()));
+    auto instance = std::make_shared<MaterialInstance>(GetEngine(), _material->CreateInstance());
     _instances.push_back(instance);
     return instance;
 }

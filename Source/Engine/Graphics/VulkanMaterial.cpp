@@ -3,6 +3,7 @@
 #include "VulkanBuffer.h"
 #include "UniformData.h"
 #include "Renderer.h"
+#include <memory>
 
 namespace bl {
 
@@ -103,10 +104,18 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
             break;
         }
     }
+
+    _instances.push_back(this);
 }
 
 VulkanMaterial::~VulkanMaterial()
 {
+    // Destroy all descriptor set data, the remaining instances will not be bindable.
+    // Binding them will cause an exception even if their pointers remain available.
+
+    for (auto instance : _instances) {
+        instance->FreeSets();
+    }
 }
 
 VulkanMaterialSupportFlags VulkanMaterial::GetSupportFlags() const
@@ -117,6 +126,7 @@ VulkanMaterialSupportFlags VulkanMaterial::GetSupportFlags() const
 std::unique_ptr<VulkanMaterialInstance> VulkanMaterial::CreateInstance()
 {
     auto instance = std::make_unique<VulkanMaterialInstance>(_device, this);
+    _instances.push_back(instance.get());
     return instance;
 }
 

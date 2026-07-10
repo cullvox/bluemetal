@@ -7,6 +7,17 @@
 #include "VulkanPipelineLayoutCache.h"
 #include "VulkanConfig.h"
 
+
+#define VMA_DEBUG_LOG(format, ...) do { \
+    printf(format, ##__VA_ARGS__); \
+    printf("\n"); \
+} while(false)
+
+// Route leak reports to printf
+#define VMA_LEAK_LOG_FORMAT(format, ...) do { \
+    std::printf("[VMA LEAK] " format "\n", ##__VA_ARGS__); \
+} while(false)
+
 // VMA has a lot of warnings on a lot of different platforms.
 // Disable warnings from vk_me_alloc.h warnings on platforms.
 

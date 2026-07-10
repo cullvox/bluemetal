@@ -24,6 +24,7 @@
 #include <variant>
 #include <vector>
 #include <vector>
+#include <list>
 
 // Vulkan
 #define VK_ENABLE_BETA_EXTENSIONS
