@@ -18,7 +18,7 @@ class WindowViewport : public Viewport
 {
     Renderer* _renderer;
     Window* _window;
-    
+
     std::unique_ptr<VulkanSwapchain> _swapchain;
     VkSurfaceKHR _surface;
 

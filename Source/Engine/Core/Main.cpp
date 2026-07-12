@@ -103,48 +103,9 @@ int main(int argc, const char** argv)
         auto physDebugFlatMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/PhysicsDebugFlat.mat");
         auto skyMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Sky.mat");
 
-        auto skyMat = skyMaterial.lock()->CreateInstance();
-        skyMat->SetScaler("material.offsetHorizon", 0.0f);
+        skyMaterial.lock()->SetSampledTexture2D("starsTexture", defaultSampler, noiseTexture);
+        skyMaterial.lock()->SetSampledTexture2D("baseNoiseTexture", defaultSampler, noiseTexture);
 
-        skyMat->SetScaler("material.horizonIntensity", -3.3f);
-        skyMat->SetVector4("material.sunSet", { 1.0f, 0.8f, 1.0f, 1.0f });
-        skyMat->SetVector4("material.horizonColorDay", { 0.0f, 0.8f, 1.0f, 1.0f });
-        skyMat->SetVector4("material.horizonColorNight", { 0.0f, 0.8f, 1.0f, 1.0f });
-
-        // Sun
-        skyMat->SetVector4("material.cSun", glm::vec4{1.0});
-        skyMat->SetVector3("material.sunDirection", glm::radians(glm::vec3{45.0f, 0.0f, 0.0f}));
-        skyMat->SetScaler("material.sunRadius", 0.5f);
-        skyMat->SetScaler("material.bFlatSun", true);
-
-        // Moon
-        skyMat->SetVector4("material.cMoon", glm::vec4{1.0f});
-        skyMat->SetScaler("material.moonRadius", 0.15f);
-        skyMat->SetScaler("material.moonCrescent", -0.3f);
-        skyMat->SetScaler("material.darkFalloff", 4.0f);
-
-        // Day Background Colors
-        skyMat->SetVector4("material.cDayBottom", {0.4f, 1.0f, 1.0f, 1.0f});
-        skyMat->SetVector4("material.cDayTop", {0.0f, 0.8f, 1.0f, 1.0f});
-
-        // Night Background Colors
-        skyMat->SetVector4("material.cNightBottom", {0.0f, 0.0f, 0.2f, 1.0f});
-        skyMat->SetVector4("material.cNightTop", {0.0f, 0.0f, 0.0f, 1.0f});
-
-        // stars
-        skyMat->SetScaler("material.baseNoiseScale", 0.2f);
-        skyMat->SetScaler("material.starsSpeed", 0.3f);
-        skyMat->SetScaler("material.starsCutoff", 0.08f);
-        skyMat->SetVector4("material.cStarsSky", {0.0f, 0.2f, 0.1f, 1.0f});
-        skyMat->SetScaler("material.offsetStars", 0.083f);
-        skyMat->SetScaler("material.starsIntensity", -2.829f);
-        skyMat->SetScaler("material.starFalloff", 1.79f);
-        skyMat->SetScaler("material.starsFadeModulation", 0.91f);
-
-        skyMat->SetSampledTexture2D("starsTexture", defaultSampler, noiseTexture);
-        skyMat->SetSampledTexture2D("baseNoiseTexture", defaultSampler, noiseTexture);
-
-        resourceMgr->Add("Materials/SkyInstance.mat", skyMat);
 
         physicsRenderer->SetMaterial(physDebugFlatMaterial.lock()->GetVulkanMaterial());
 
@@ -208,7 +169,7 @@ int main(int argc, const char** argv)
         // Add Sky3D node
         auto skyNode = std::make_unique<bl::Sky3D>(engine);
         skyNode->SetName("Sky");
-        skyNode->SetSkyMaterial(skyMat.get());
+        skyNode->SetSkyMaterial(skyMaterial.lock().get());
         
         rootNode->AddChild(std::move(skyNode));
 
@@ -322,7 +283,7 @@ int main(int argc, const char** argv)
             glm::vec3 cameraDirection = cameraNode->GetWorldRotationEuler();
             cameraDirection.z = 0.0f; // Remove roll for skybox calculations.
 
-            skyMat->SetVector3("material.eyeDirection", glm::radians(cameraDirection));
+            skyMaterial.lock()->SetVector3("material.eyeDirection", glm::radians(cameraDirection));
 
             rootNode->Update(frameCounter.GetDeltaTime());
             profiler.EndProfile("Update");

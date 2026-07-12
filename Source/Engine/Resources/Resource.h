@@ -4,11 +4,25 @@
 
 #include "Core/Object.h"
 #include "Core/ReferenceCounted.h"
+#include "ResourceID.h"
 
 namespace bl {
 
 class System;
 class ResourceSystem;
+
+enum class ResourceState {
+
+    /** @brief The resource is in a prepared state where it can be used for operations. */
+    eReady,
+
+    /** @brief The resource has been released and can no longer be used for operations. */
+    eReleased,
+
+    /** @brief The resource is prepared for operations, may contain data that wasn't originally
+                within the resource file. Can be potentially saved to file. */
+    eReadyUnsaved
+};
 
 /**
  * @class Resource
@@ -41,8 +55,27 @@ public:
      */
     virtual ~Resource() = 0;
 
-    /// Release any resource that might need to be released before the engine shuts down.
+    /**
+     * @brief Release any resource that might need to be released before the engine shuts down.
+     */
     virtual void Release();
+
+    /**
+     * @brief Save resources back to their file if they've been changed.
+     */
+    virtual void Save();
+
+    /**
+     * @brief Returns the current state of the resource.
+     *      Resources are not always prepared for operations so checking
+     *      the state is required every now and then.
+     */
+    ResourceState GetState() const;
+
+    /**
+     * @brief Returns true if the resource is ready to be used.
+     */
+    bool IsReady() const { auto state = GetState(); return state == ResourceState::eReady || state == ResourceState::eReadyUnsaved; }
 
     /**
      * @brief Returns the unique path of this resource.
