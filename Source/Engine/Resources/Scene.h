@@ -18,7 +18,27 @@ public:
     ~Scene();
 
     const std::vector<std::string>& GetResourceManifest();
+
+    /**
+     * @brief Packs the a node tree back into this resource.
+     */
+    void Pack(std::unique_ptr<Node> tree);
+
+    /**
+     * @brief Instantiates the node tree using the scene data from file.
+     *
+     * - Loads resources from file. (subresources are not being implemented yet)
+     * - Builds out the node tree.
+     *
+     */
     std::unique_ptr<Node> Instantiate();
+
+
+    /**
+     * @brief Saves the packed node tree to the scene file.
+     */
+    virtual void Save();
+
 };
 
 }
