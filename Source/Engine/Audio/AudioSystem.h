@@ -16,15 +16,16 @@ class AudioSystem : public System {
     FMOD::ChannelGroup* _masterGroup;
     FMOD::ChannelGroup* _musicGroup;
 
-public:
-    AudioSystem(Engine& engine);
+
+    AudioSystem();
     AudioSystem(const AudioSystem&) = delete;
     AudioSystem(AudioSystem&&) = delete;
     ~AudioSystem();
     AudioSystem& operator=(const AudioSystem&) = delete;
     AudioSystem& operator=(AudioSystem&&) = delete;
 
-    std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path) override;
+public:
+    static AudioSystem* Get();
 
     void SetBusVolume(AudioBus bus, float volume);
     FMOD::ChannelGroup* GetBusChannelGroup(AudioBus bus);

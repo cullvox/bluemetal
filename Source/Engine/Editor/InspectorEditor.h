@@ -13,7 +13,7 @@ protected:
 
 
 public:
-    InspectorEditor(Engine& engine, EditorSystem& system);
+    InspectorEditor();
     ~InspectorEditor();
 
     void Draw(bl::RenderData& rd) override;

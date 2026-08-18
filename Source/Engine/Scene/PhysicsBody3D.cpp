@@ -12,8 +12,8 @@
 
 namespace bl {
 
-PhysicsBody3D::PhysicsBody3D(Engine& engine)
-    : Node3D(engine)
+PhysicsBody3D::PhysicsBody3D()
+    : Node3D()
 {
     _currPosition = {};
     _currRotation = {};
@@ -31,7 +31,7 @@ PhysicsBody3D::PhysicsBody3D(const PhysicsBody3D& rhs)
 PhysicsBody3D::~PhysicsBody3D()
 {
     if (!_bodyId.IsInvalid()) {
-        auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+        auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
         bodyInterface.RemoveBody(_bodyId);
         bodyInterface.DestroyBody(_bodyId);
     }
@@ -61,7 +61,7 @@ void PhysicsBody3D::Update(float deltaTime)
 {
     Node3D::Update(deltaTime);
 
-    float alpha = GetEngine().GetPhysics().GetPhysicsInterpolationFraction();
+    float alpha = PhysicsSystem::Get()->GetPhysicsInterpolationFraction();
 
     bool interp = true;
 
@@ -83,7 +83,7 @@ void PhysicsBody3D::PhysicsUpdate()
     Node3D::PhysicsUpdate();
 
     // Update the body's transform to match the node's transform
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
 
     JPH::Vec3 positionVec{};
     JPH::Quat rotationQuat{};
@@ -101,40 +101,40 @@ void PhysicsBody3D::PhysicsUpdate()
 
 glm::vec3 PhysicsBody3D::GetVelocity()
 {
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
     JPH::Vec3 velocity = bodyInterface.GetLinearVelocity(_bodyId);
     return glm::vec3(velocity.GetX(), velocity.GetY(), velocity.GetZ());
 }
 
 void PhysicsBody3D::SetVelocity(const glm::vec3& velocity)
 {
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
     bodyInterface.SetLinearVelocity(_bodyId, JPH::Vec3(velocity.x, velocity.y, velocity.z));
 }
 
 void PhysicsBody3D::ApplyImpulse(const glm::vec3& impulse)
 {
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
     bodyInterface.AddImpulse(_bodyId, JPH::Vec3(impulse.x, impulse.y, impulse.z));
 }
 
 void PhysicsBody3D::ApplyForce(const glm::vec3& force)
 {
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
     bodyInterface.AddForce(_bodyId, JPH::Vec3(force.x, force.y, force.z));
 }
 
 void PhysicsBody3D::SetFriction(float friction)
 {
     _friction = friction;
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
     bodyInterface.SetFriction(_bodyId, friction);
 }
 
 void PhysicsBody3D::SetMass(float mass)
 {
     _mass = mass;
-    JPH::BodyLockWrite lock(GetEngine().GetPhysics().GetJolt().GetBodyLockInterface(), _bodyId);
+    JPH::BodyLockWrite lock(PhysicsSystem::Get()->GetJolt().GetBodyLockInterface(), _bodyId);
     if (lock.Succeeded()) {
         JPH::Body& body = lock.GetBody();
         body.GetMotionProperties()->ScaleToMass(mass);
@@ -144,13 +144,13 @@ void PhysicsBody3D::SetMass(float mass)
 void PhysicsBody3D::SetRestitution(float restitution)
 {
     _restitution = restitution;
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
     bodyInterface.SetRestitution(_bodyId, restitution);
 }
 
 void PhysicsBody3D::ResetBody()
 {
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
 
     glm::vec3 position = GetPosition();
     glm::quat rotation = GetRotation();
@@ -174,7 +174,7 @@ void PhysicsBody3D::ResetBody()
 
 void PhysicsBody3D::SetObjectLayer(JPH::ObjectLayer objectLayer)
 {
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
     bodyInterface.SetObjectLayer(_bodyId, objectLayer);
 }
 
@@ -190,7 +190,7 @@ void PhysicsBody3D::SetShape(JPH::Shape* shape)
         return;
     }
 
-    auto& bodyInterface = GetEngine().GetPhysics().GetJolt().GetBodyInterface();
+    auto& bodyInterface = PhysicsSystem::Get()->GetJolt().GetBodyInterface();
     bodyInterface.SetShape(_bodyId, shape, false, JPH::EActivation::Activate);
 }
 
@@ -199,7 +199,7 @@ void PhysicsBody3D::SetDOF(
     bool allowTranslationX, bool allowTranslationY, bool allowTranslationZ,
     bool allowRotationX, bool allowRotationY, bool allowRotationZ)
 {
-    auto& jolt = GetEngine().GetPhysics().GetJolt();
+    auto& jolt = PhysicsSystem::Get()->GetJolt();
 
     JPH::BodyLockWrite lock(jolt.GetBodyLockInterface(), _bodyId);
     if (lock.Succeeded()) // body_id may no longer be valid
@@ -237,9 +237,10 @@ void PhysicsBody3D::SetDOF(
     }
 }
 
-void PhysicsBody3D::RegisterClass(ClassDB& db)
+void PhysicsBody3D::RegisterClass()
 {
-    db.RegisterClass("PhysicsBody3D", "Node3D", &PhysicsBody3D::Create);
+    auto db = ClassDB::Get();
+    db->RegisterClass("PhysicsBody3D", "Node3D", &PhysicsBody3D::Create);
 }
 
 } // namespace bl

@@ -7,20 +7,20 @@
 #include "Graphics/VulkanReflectedBlock.h"
 #include "Core/Reflection/NamedProperty.h"
 #include "Core/ClassDB.h"
+#include "Resources/Resource.h"
 
 namespace bl {
 
-MaterialInstance::MaterialInstance(Engine& engine)
-    : Resource(engine, "")
-    , _renderer(engine.GetGraphics().GetRenderer())
+MaterialInstance::MaterialInstance()
+    : Resource()
     , _materialInstance(nullptr)
 {
     // Empty constructor for creating material instances from a base material.
 }
 
-MaterialInstance::MaterialInstance(Engine& engine, std::unique_ptr<VulkanMaterialInstance> instance)
-    : Resource(engine, "")
-    , _renderer(engine.GetGraphics().GetRenderer())
+MaterialInstance::MaterialInstance(std::unique_ptr<VulkanMaterialInstance> instance)
+    : Resource("")
+    , _renderer(GraphicsSystem::Get()->GetRenderer())
     , _materialInstance(std::move(instance))
 {
     // Since the material instance now owns this, it's responsible
@@ -30,9 +30,9 @@ MaterialInstance::MaterialInstance(Engine& engine, std::unique_ptr<VulkanMateria
     RegisterMaterialProperties(_materialInstance.get());
 }
 
-MaterialInstance::MaterialInstance(Engine& engine, const std::filesystem::path& path)
-    : Resource(engine, path)
-    , _renderer(engine.GetGraphics().GetRenderer())
+MaterialInstance::MaterialInstance(const std::filesystem::path& path)
+    : Resource(path)
+    , _renderer(GraphicsSystem::Get()->GetRenderer())
     , _materialInstance(nullptr)
 {
     std::ifstream file { path };
@@ -48,7 +48,7 @@ MaterialInstance::MaterialInstance(Engine& engine, const std::filesystem::path& 
         throw std::runtime_error("Could not parse material JSON file.");
     }
 
-    auto resourceSystem = engine.GetResourceSystem();
+    auto resourceSystem = ResourceSystem::Get();
     auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
     _materialInstance = mat.lock()->GetVulkanMaterial()->CreateInstance();
 
@@ -60,7 +60,7 @@ MaterialInstance::MaterialInstance(Engine& engine, const std::filesystem::path& 
 }
 
 MaterialInstance::MaterialInstance(const MaterialInstance&)
-    : Resource(GetEngine(), "")
+    : Resource("")
 {
     // TODO: Implement copy constructor to properly copy the material instance and its properties.
 }
@@ -73,6 +73,8 @@ MaterialInstance::~MaterialInstance()
 
 void MaterialInstance::Release()
 {
+    Resource::Release();
+
     if (_materialInstance)
         _renderer->RemoveMaterial(_materialInstance.get());
 
@@ -174,7 +176,7 @@ void MaterialInstance::RegisterMaterialProperties(VulkanMaterialInstance* materi
             flags |= PropertyFlags::Color;
         }
 
-        AddInstanceProperty(std::make_unique<TNamedProperty<MaterialInstance>>(GetEngine().GetClassDB(), uniform.second.GetName(), type, PropertyFlags::Editor | PropertyFlags::Serialize | flags, &MaterialInstance::SetMaterialProperty, &MaterialInstance::GetMaterialProperty));
+        AddInstanceProperty(std::make_unique<TNamedProperty<MaterialInstance>>(uniform.second.GetName(), type, PropertyFlags::Editor | PropertyFlags::Serialize | flags, &MaterialInstance::SetMaterialProperty, &MaterialInstance::GetMaterialProperty));
     }
 }
 
@@ -282,9 +284,10 @@ void MaterialInstance::PushConstant(RenderData& rd, uint32_t offset, uint32_t si
     GetInstance()->PushConstant(rd, offset, size, value);
 }
 
-void MaterialInstance::RegisterClass(ClassDB& db)
+void MaterialInstance::RegisterClass()
 {
-    db.RegisterClass("MaterialInstance", "Resource", &MaterialInstance::Create);
+    auto db = ClassDB::Get();
+    db->RegisterClass("MaterialInstance", "Resource", &MaterialInstance::Create);
 }
 
 } // namespace bl

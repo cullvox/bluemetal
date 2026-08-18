@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Object.h"
 #include "Graphics/VulkanSampler.h"
 #include "Resource.h"
 
@@ -14,6 +15,8 @@ class ResourceSystem;
  * @brief A texture sampler resource.
  */
 class Sampler : public Resource {
+    OBJECT_BOILER(Sampler, Resource)
+
     VulkanDevice* _device;
     VkFilter _magFilter;
     VkFilter _minFilter;
@@ -33,8 +36,16 @@ class Sampler : public Resource {
     void RecreateSampler();
 
 public:
-    Sampler(Engine& engine, const std::filesystem::path& path);
+    Sampler();
+    Sampler(const Sampler& copy);
     virtual ~Sampler() = default;
+
+    static void RegisterClass();
+
+    virtual void Load() override;
+    virtual void Release() override;
+
+    Sampler& operator=(const Sampler& copy);
 
     VkSampler Get() const;
     VulkanSampler* GetSampler() const;

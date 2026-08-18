@@ -1,0 +1,5 @@
+{
+    "class": "Shader",
+    "path": "Resources/Shaders/Default.frag.spv",
+    "stage": "Fragment"
+}

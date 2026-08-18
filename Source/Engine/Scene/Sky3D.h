@@ -11,10 +11,10 @@ class Sky3D : public Node3D {
     MaterialInstance* material;
 
 public:
-    Sky3D(Engine& engine);
+    Sky3D();
     ~Sky3D();
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 
     virtual void Update(float deltaTime) override;
     virtual void Draw(RenderData& rd) override;

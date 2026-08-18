@@ -23,41 +23,41 @@ class Profiler;
 
 class Engine {
     std::unique_ptr<FrameCounter> _counter;
-    std::unique_ptr<ResourceSystem> _resourceManager;
-    std::unique_ptr<GraphicsSystem> _graphics;
-    std::unique_ptr<ImGuiSystem> _imgui;
-    std::unique_ptr<AudioSystem> _audio;
-    std::unique_ptr<InputSystem> _input;
     std::unique_ptr<Window> _window;
-    std::unique_ptr<Renderer> _renderer;
-    std::unique_ptr<PhysicsSystem> _physics;
-    std::unique_ptr<SceneSystem> _scenes;
-    std::unique_ptr<EditorSystem> _editorSystem;
-    std::unique_ptr<DiscordSystem> _discord;
     std::unique_ptr<EngineVars> _vars;
-    std::unique_ptr<ClassDB> _classDB;
 
     void RegisterClasses();
 
-public:
-    Engine(int argc, const char** argv);
+    Engine();
     ~Engine();
 
-    EngineVars& GetVars();
-    FrameCounter& GetFrameCounter();
+public:
+    static Engine* Get();
+
+    /** @brief Sets the command line arguments in the engine, sets engine variables.   */
+    void SetArguments(int argc, const char** argv);
+
+    /** @brief Initializes the engine once, prepare all configuration before this. */
+    void Initialize();
+
+    /** @brief Halts engine processing and destroys all engine systems. */
+    void Shutdown();
+
+    EngineVars* GetVars();
+    FrameCounter* GetFrameCounter();
     ResourceSystem* GetResourceSystem();
-    GraphicsSystem& GetGraphics();
+    GraphicsSystem* GetGraphics();
     InputSystem* GetInput();
     ImGuiSystem* GetImGui();
     AudioSystem* GetAudio();
     Window* GetWindow();
     Renderer* GetRenderer();
-    PhysicsSystem& GetPhysics();
+    PhysicsSystem* GetPhysics();
     SceneSystem* GetSceneSystem();
-    EditorSystem& GetEditorSystem();
-    DiscordSystem& GetDiscord();
-    ClassDB& GetClassDB();
-    Profiler& GetProfiler();
+    EditorSystem* GetEditorSystem();
+    DiscordSystem* GetDiscord();
+    ClassDB* GetClassDB();
+    Profiler* GetProfiler();
 };
 
 } // namespace bl

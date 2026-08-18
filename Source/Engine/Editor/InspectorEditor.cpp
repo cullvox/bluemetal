@@ -8,11 +8,12 @@
 #include "ImGui/ImGuizmo.h"
 #include "Graphics/RenderData.h"
 #include "Scene/Node3D.h"
+#include "Core/Reflection/Property.h"
 
 namespace bl {
 
-InspectorEditor::InspectorEditor(Engine& engine, EditorSystem& system)
-    : Editor(engine, system)
+InspectorEditor::InspectorEditor()
+    : Editor()
 {
 }
 
@@ -47,8 +48,8 @@ void InspectorEditor::DrawProperties(Object* object, std::span<Property*> proper
             using T = std::decay_t<decltype(value)>;
 
             if constexpr (std::is_same_v<T, EnumValue>) {
-                auto current = GetEngine().GetClassDB().GetEnumValueName(value.enumName, value.value);
-                auto enumValues = GetEngine().GetClassDB().GetEnumValues(value.enumName);
+                auto current = ClassDB::Get()->GetEnumValueName(value.type, value.value);
+                auto enumValues = ClassDB::Get()->GetEnumValues(value.type);
 
                 if (ImGui::BeginCombo(("##" + std::string(prop->GetName())).c_str(), current.data())) {
                     for (int i = 0; i < enumValues.size(); i++) {
@@ -56,7 +57,7 @@ void InspectorEditor::DrawProperties(Object* object, std::span<Property*> proper
                         const bool isSelected = (value.value == i);
                         if (ImGui::Selectable(enumValues[i].first.data(), isSelected)) {
                             current = enumValues[i].first.data();
-                            prop->Set(object, EnumValue{value.enumName, enumValues[i].second});
+                            prop->Set(object, EnumValue{value.type, enumValues[i].second});
                         }
 
                         if (isSelected)
@@ -150,11 +151,11 @@ void InspectorEditor::DrawObjectProperties(Object* object)
 
 
 
-        auto properties =  GetEngine().GetClassDB().GetClassProperties(className);
+        auto properties =  ClassDB::Get()->GetClassProperties(className);
 
         DrawProperties(object, properties);
 
-        className = GetEngine().GetClassDB().GetClassParent(className);
+        className = ClassDB::Get()->GetClassParent(className);
     }
 }
 

@@ -1,34 +1,52 @@
 #include "Material.h"
 #include "Engine/Engine.h"
+#include "Graphics/GraphicsSystem.h"
 #include "Graphics/Renderer.h"
 #include "Graphics/VulkanConversions.h"
 #include "Graphics/VulkanShader.h"
 #include "Resources/MaterialInstance.h"
 #include "Shader.h"
 #include "Core/ClassDB.h"
+#include "Resources/ResourceSystem.h"
 
 #include "ResourceSystem.h"
 #include <memory>
 
 namespace bl {
 
-Material::Material(Engine& engine, const std::filesystem::path& path)
-    : MaterialInstance(engine)
-    , _graphicsSystem(&engine.GetGraphics())
-    , _renderer(_graphicsSystem->GetRenderer())
+Material::Material()
+    : MaterialInstance()
 {
-    std::ifstream materialFile { path };
-    if (!materialFile.is_open()) {
-        throw std::runtime_error("Could not open material JSON file.");
-    }
+}
 
+Material::Material(const std::filesystem::path& path)
+    : MaterialInstance()
+    , _renderer(GraphicsSystem::Get()->GetRenderer())
+{
+   
+}
+
+Material::Material(const Material& copy)
+    : MaterialInstance(copy)
+    , _renderer(copy._renderer)
+{
+}
+
+Material::~Material()
+{
+    _renderer->RemoveMaterial(_material.get());
+}
+
+void Material::Load()
+{
+
+    _renderer = GraphicsSystem::Get()->GetRenderer();
     std::string vertexPath, fragmentPath;
-    nlohmann::json json;
     VulkanPipelineStateInfo info;
     int32_t descriptorSetLocation = 2;
+    const nlohmann::json& json = GetJson();
 
     try {
-        json = nlohmann::json::parse(materialFile);
 
         std::string renderPass = json.value("renderPass", "geometry");
 
@@ -48,7 +66,7 @@ Material::Material(Engine& engine, const std::filesystem::path& path)
         fragmentPath = json["shaders"]["fragment"];
 
         if (json.contains("vertexState") && json["vertexState"].is_object()) {
-            nlohmann::json& state = json["vertexState"];
+            const nlohmann::json& state = json["vertexState"];
 
             auto vertex = state.value("vertex", "Default");
             if (vertex == "Default") {
@@ -78,7 +96,7 @@ Material::Material(Engine& engine, const std::filesystem::path& path)
         }
 
         if (json.contains("rasterizerState") && json["rasterizerState"].is_object()) {
-            nlohmann::json& state = json["rasterizerState"];
+            const nlohmann::json& state = json["rasterizerState"];
             info.rasterizerState.depthClampEnable = state.value("depthClampEnable", false);
             info.rasterizerState.rasterizerDiscardEnable = state.value("rasterizerDiscardEnable", false);
             std::string polygonMode = state.value("polygonMode", "VK_POLYGON_MODE_FILL");
@@ -227,16 +245,16 @@ Material::Material(Engine& engine, const std::filesystem::path& path)
             }
         }
 
-        auto resourceSystem = engine.GetResourceSystem();
-        auto vertexShader = resourceSystem->Load<Shader>(vertexPath);
-        auto fragmentShader = resourceSystem->Load<Shader>(fragmentPath);
+        auto rs = ResourceSystem::Get();
+        auto vertexShader = rs->Load<Shader>(vertexPath);
+        auto fragmentShader = rs->Load<Shader>(fragmentPath);
         info.stages.shaders = std::vector<VulkanShader*> { vertexShader.lock()->Get(), fragmentShader.lock()->Get() };
     } catch (const nlohmann::json::exception& e) {
         Print::Error("Could not parse material JSON file. Error: {}", e.what());
         return;
     }
 
-    _material = std::make_unique<VulkanMaterial>(_graphicsSystem->GetDevice(), _renderer, info, descriptorSetLocation);
+    _material = std::make_unique<VulkanMaterial>(GraphicsSystem::Get()->GetDevice(), _renderer, info, descriptorSetLocation);
     _renderer->AddMaterial(_material.get());
 
     RegisterMaterialProperties(_material.get());
@@ -304,19 +322,6 @@ Material::Material(Engine& engine, const std::filesystem::path& path)
     }
 }
 
-Material::Material(const Material& copy)
-    : MaterialInstance(copy)
-    , _graphicsSystem(copy._graphicsSystem)
-    , _renderer(copy._renderer)
-{
-
-}
-
-Material::~Material()
-{
-    _renderer->RemoveMaterial(_material.get());
-}
-
 void Material::Release()
 {
     // Material instances must be released before this material they depend on can be.
@@ -338,7 +343,7 @@ VulkanMaterialInstance* Material::GetInstance() const
 
 std::shared_ptr<MaterialInstance> Material::CreateInstance()
 {
-    auto instance = std::make_shared<MaterialInstance>(GetEngine(), _material->CreateInstance());
+    auto instance = std::make_shared<MaterialInstance>(_material->CreateInstance());
     _instances.push_back(instance);
     return instance;
 }
@@ -353,9 +358,10 @@ VulkanMaterial* Material::GetVulkanMaterial()
     return _material.get();
 }
 
-void Material::RegisterClass(ClassDB& db)
+void Material::RegisterClass()
 {
-    db.RegisterClass("Material", "MaterialInstance", &Material::Create);
+    auto db = ClassDB::Get();
+    db->RegisterClass("Material", "MaterialInstance", &Material::Create);
 }
 
 }

@@ -1,0 +1,5 @@
+{
+    "class": "Shader",
+    "path": "Resources/Shaders/Sky.frag.spv",
+    "stage": "Fragment"
+}

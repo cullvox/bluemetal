@@ -1,9 +1,5 @@
 #pragma once
 
-#include <fstream>
-#include <glm/ext/vector_float3.hpp>
-#include <string_view>
-#include <variant>
 #include "Core/Variant.h"
 #include "Core/Object.h"
 #include "Core/Print.h"
@@ -56,21 +52,17 @@ inline PropertyFlags& operator&=(PropertyFlags& a, PropertyFlags b) { a = static
 /// - A member of a class to be set, changed, or viewed by various systems.
 class Property
 {
-    ClassDB& _db;
     std::string_view _name;
     PropertyFlags _flags;
     VariantType _type;
 
 protected:
-    Property(ClassDB& db, std::string_view name, PropertyFlags flags, VariantType type)
-        : _db(db)
-        , _name(name)
+    Property(std::string_view name, PropertyFlags flags, VariantType type)
+        : _name(name)
         , _flags(flags)
         , _type(type)
     {
     }
-
-    ClassDB& GetClassDB() { return _db; }
 
 public:
     virtual ~Property() = default;
@@ -98,8 +90,8 @@ class TProperty : public Property
     using Type = std::conditional_t<std::is_pointer_v<TValue> && std::is_base_of_v<Object, std::remove_pointer_t<TValue>>, Object*, TValue>;
 
 public:
-    constexpr TProperty(ClassDB& db, const std::string_view name, PropertyFlags flags, void (TClass::* setter)(TValue), TValue (TClass::* getter)(void))
-        : Property(db, name, flags, GetVariantType<TValue>())
+    constexpr TProperty(const std::string_view name, PropertyFlags flags, void (TClass::* setter)(TValue), TValue (TClass::* getter)(void))
+        : Property(name, flags, GetVariantType<TValue>())
         , _setter(setter)
         , _getter(getter)
     {
@@ -173,8 +165,8 @@ class TStringProperty : public Property
     SetterType _setter;
     GetterType _getter;
 public:
-    constexpr TStringProperty(ClassDB& db, const std::string_view name, PropertyFlags flags, SetterType setter, GetterType getter)
-        : Property(db, name, flags, GetVariantType<std::string>())
+    constexpr TStringProperty(const std::string_view name, PropertyFlags flags, SetterType setter, GetterType getter)
+        : Property(name, flags, GetVariantType<std::string>())
         , _setter(setter)
         , _getter(getter)
     {

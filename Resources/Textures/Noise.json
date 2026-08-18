@@ -1,4 +1,5 @@
 {
+    "class": "NoiseTexture2D",
     "width": 512,
     "height": 512,
     "xOffset": 20,

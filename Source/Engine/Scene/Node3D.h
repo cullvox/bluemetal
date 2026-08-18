@@ -25,7 +25,7 @@ class Node3D : public Node {
     void UpdateMatrix();
 
 public:
-    Node3D(Engine& engine);
+    Node3D();
     Node3D(const Node3D&);
     virtual ~Node3D();
 
@@ -53,7 +53,7 @@ public:
     glm::vec3 GetWorldScale();
     const glm::mat4& GetWorldMatrix();
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 } // namespace bl

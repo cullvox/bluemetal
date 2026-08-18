@@ -1,0 +1,15 @@
+{
+    "class": "Material",
+    "renderPass": "geometry",
+    "shaders": {
+        "vertex": "Resources/Shaders/Default.vert.json",
+        "fragment": "Resources/Shaders/Default.frag.json"
+    },
+    "state": {
+        "inputBindings": {
+        }
+    },
+    "properties": {
+        "inAlbedo": ""
+    }
+}

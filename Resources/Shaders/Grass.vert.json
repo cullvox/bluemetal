@@ -1,0 +1,5 @@
+{
+    "class": "Shader",
+    "path": "Resources/Shaders/Grass.vert.spv",
+    "stage": "Vertex"
+}

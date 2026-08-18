@@ -16,16 +16,8 @@
 
 namespace bl {
 
-SettingsEditor::SettingsEditor(Engine& engine, EditorSystem& system)
-    : Editor(engine, system)
-    , _engine(engine)
-    , _audio(engine.GetAudio())
-    , _graphics(_engine.GetGraphics())
-    , _profiler(_engine.GetProfiler())
-    , _physics(engine.GetPhysics())
-    , _renderer(engine.GetRenderer())
-    , _physicsRenderer(engine.GetPhysics().GetPhysicsRenderer())
-    , _frameCounter(_engine.GetFrameCounter())
+SettingsEditor::SettingsEditor()
+    : Editor()
 {
     //_presentModes = _graphics.GetPhysicalDevice()->GetPresentModes(_graphics->GetViewport());
     // _multisampleModes = _renderer->GetMultisampleCounts();
@@ -121,53 +113,59 @@ void SettingsEditor::Draw(RenderData& rd)
         ImGui::TreePop();
     }
 
+    auto as = AudioSystem::Get();
+
     if (ImGui::TreeNode("Audio")) {
         static float masterBusVolume = 1.0f;
         if (ImGui::SliderFloat("MASTER", &masterBusVolume, 0.0f, 1.0f))
         {
-            _audio->SetBusVolume(AudioBus::eMaster, masterBusVolume);
+            as->SetBusVolume(AudioBus::eMaster, masterBusVolume);
         }
 
         ImGui::TreePop();
     }
+
+    auto ps = PhysicsSystem::Get();
+    auto physicsRenderer = ps->GetPhysicsRenderer();
 
     if (ImGui::TreeNode("Physics")) {
         static bool enablePhysDebugRenderer = false;
         ImGui::Checkbox("Enable Physics Debug", &enablePhysDebugRenderer);
         ImGui::HelpMarker("You may notice stuttered debug lines, caused by the physics rate not aligning with the frame. This is normal, linear interpolation smooths the movement of physics of objects.");
-        _physicsRenderer->SetEnable(enablePhysDebugRenderer);
+        physicsRenderer->SetEnable(enablePhysDebugRenderer);
 
         ImGui::TreePop();
     }
 
     if (ImGui::TreeNode("Profiler")) {
+        auto counter = GetEngine()->GetFrameCounter();
+        auto profiler = GetEngine()->GetProfiler();
 
-
-        bool enableProfiling = _profiler.IsProfilingEnabled();
+        bool enableProfiling = profiler->IsProfilingEnabled();
         ImGui::Checkbox("Enable Profiling", &enableProfiling);
-        _profiler.EnableProfiling(enableProfiling);
+        profiler->EnableProfiling(enableProfiling);
 
         static bool enableFrameLimiter = false;
         static int frameLimitMax = 144;
         if (ImGui::Checkbox("Enable FPS Limiter", &enableFrameLimiter)) {
-            _frameCounter.SetFrameLimiterEnabled(enableFrameLimiter);
+            counter->SetFrameLimiterEnabled(enableFrameLimiter);
         }
 
         if (ImGui::SliderInt("Set FPS", &frameLimitMax, 1, 256)) {
-            _frameCounter.SetFrameLimiterFPS(frameLimitMax);
+            counter->SetFrameLimiterFPS(frameLimitMax);
         }
 
-        ImGui::Text("Frame Time: %.2f ms", _frameCounter.GetDeltaTime() * 1000.0f);
+        ImGui::Text("Frame Time: %.2f ms", counter->GetDeltaTime() * 1000.0f);
 
-        ImGui::Text("Phys Frac: %.4f", _physics.GetPhysicsInterpolationFraction());
+        ImGui::Text("Phys Frac: %.4f", ps->GetPhysicsInterpolationFraction());
 
         // Plot a frame pie chart of the profiler data
         static std::vector<float> values;
         static std::vector<const char*> labels;
 
         if (enableProfiling) {
-            _profiler.GetProfileTimes(values);
-            _profiler.GetProfileNames(labels);
+            profiler->GetProfileTimes(values);
+            profiler->GetProfileNames(labels);
         } else {
             values.clear();
             labels.clear();

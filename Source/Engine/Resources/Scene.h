@@ -10,19 +10,27 @@ namespace bl
 class Scene : public Resource 
 {
     std::vector<std::string> _resources;
-    nlohmann::json _heirarchyData;
+    nlohmann::json _data;
 
 public:
-    Scene(Engine& engine); // Empty scene
-    Scene(Engine& engine, const std::filesystem::path& path);
+    Scene(); // Empty scene
+    Scene(const std::filesystem::path& path);
     ~Scene();
 
-    const std::vector<std::string>& GetResourceManifest();
+    /**
+     * @brief Releases the scene data.
+     */
+    virtual void Release();
+
+    /**
+     * @brief Saves the packed node tree to the scene file.
+     */
+    virtual void Save();
 
     /**
      * @brief Packs the a node tree back into this resource.
      */
-    void Pack(std::unique_ptr<Node> tree);
+    void Pack(Node* root);
 
     /**
      * @brief Instantiates the node tree using the scene data from file.
@@ -32,12 +40,6 @@ public:
      *
      */
     std::unique_ptr<Node> Instantiate();
-
-
-    /**
-     * @brief Saves the packed node tree to the scene file.
-     */
-    virtual void Save();
 
 };
 

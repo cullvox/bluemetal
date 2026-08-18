@@ -7,9 +7,6 @@
 namespace bl
 {
 
-template<typename T>
-concept EnumType = std::is_enum_v<T> && std::is_same_v<std::underlying_type_t<T>, int64_t>;
-
 /// - Enum properties are enumerable properties which are a mapping of integers
 /// and strings.
 template<typename TClass, EnumType TEnum>
@@ -24,8 +21,8 @@ class TEnumProperty : public Property
 
 public:
 
-    TEnumProperty(ClassDB& db, std::string_view enumType, std::string_view propertyName, PropertyFlags flags, SetterType setter, GetterType getter)
-        : Property(db, propertyName, flags, GetVariantType<int64_t>())
+    TEnumProperty(std::string_view enumType, std::string_view propertyName, PropertyFlags flags, SetterType setter, GetterType getter)
+        : Property(propertyName, flags, GetVariantType<int64_t>())
         , _type(enumType)
         , _setter(setter)
         , _getter(getter)
@@ -52,8 +49,8 @@ public:
 
         // Ensure the enum value is a valid value.
         auto enumValue = std::get<EnumValue>(value);
-        if (!GetClassDB().IsEnumValid(_type, enumValue.value)) {
-            Print::Error("Invalid enum value ({}) to set on object ({}) with the specified enum type ({}).", enumValue.value, TClass::GetStaticClassName(), enumValue.enumName);
+        if (!ClassDB::Get()->IsEnumValid(_type, enumValue.value)) {
+            Print::Error("Invalid enum value ({}) to set on object ({}) with the specified enum type ({}).", enumValue.value, TClass::GetStaticClassName(), enumValue.type);
             return;
         }
 

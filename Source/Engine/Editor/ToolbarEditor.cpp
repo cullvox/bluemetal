@@ -7,8 +7,8 @@
 
 namespace bl {
 
-ToolbarEditor::ToolbarEditor(Engine& engine, EditorSystem& system)
-    : Editor(engine, system)
+ToolbarEditor::ToolbarEditor()
+    : Editor()
 {
 }
 

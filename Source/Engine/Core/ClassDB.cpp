@@ -1,16 +1,21 @@
 #include "ClassDB.h"
-#include <string_view>
+#include "Core/Reflection/Property.h"
 
 namespace bl
 {
 
-ClassDB::ClassDB(Engine& engine)
-    : _engine(engine)
+ClassDB::ClassDB()
 {
 }
 
 ClassDB::~ClassDB()
 {
+}
+
+ClassDB* ClassDB::Get()
+{
+    static ClassDB db;
+    return &db;
 }
 
 Object* ClassDB::Instantiate(const std::string_view className)
@@ -25,7 +30,7 @@ Object* ClassDB::Instantiate(const std::string_view className)
 
     // Instantiate the new object.
     const std::size_t index = it->second;
-    return _classes[index].instantiationFunc(_engine);
+    return _classes[index].instantiationFunc();
 }
 
 void ClassDB::RegisterClass(const std::string_view className, std::string_view parentClassName, ObjectInstantiationFunc instantiationFunc)
@@ -34,6 +39,12 @@ void ClassDB::RegisterClass(const std::string_view className, std::string_view p
     if (_nameToClassIndex.contains(className)) {
         Print::Error("Could not register class, \"{}\", as it already exists.", className);
         return;
+    }
+
+    // Find parent class name.
+    auto parentClassIt = _nameToClassIndex.find(parentClassName);
+    if (parentClassIt == _nameToClassIndex.end() && !parentClassName.empty()) {
+        throw std::runtime_error("Invalid parent class registered.");
     }
 
     // Create the class data and begin populating.
@@ -135,6 +146,15 @@ std::string_view ClassDB::GetClassParent(const std::string_view className)
     return classData.parentClassName;
 }
 
+const ClassData* ClassDB::FindClass(std::string_view name)
+{
+    auto it = _nameToClassIndex.find(name);
+    if (it == _nameToClassIndex.end()) {
+        return nullptr;
+    }
+    return &_classes[it->second];
+}
+
 std::span<std::pair<std::string_view, int64_t>> ClassDB::GetEnumValues(std::string_view enumName)
 {
     // Find the class data and check if it exists.
@@ -204,6 +224,49 @@ Property* ClassDB::FindPropertyInClassRecursive(std::string_view name, std::stri
     }
 
     return nullptr;
+}
+
+std::string_view ClassData::GetClassName() const
+{
+    return name;
+}
+
+std::string_view ClassData::GetParentClassName() const
+{
+    return parentClassName;
+}
+
+const ClassData* ClassData::GetParentClass() const
+{
+    return ClassDB::Get()->FindClass(parentClassName);
+}
+
+const std::span<Property* const> ClassData::GetProperties() const
+{
+    return std::span{userPropertyPointers.begin(), userPropertyPointers.end()};
+}
+
+Property* ClassData::FindPropertyInHeirarchy() const
+{
+    return nullptr;
+}
+
+bool ClassData::IsChildOf(std::string_view name) const
+{
+    const ClassData* parent = GetParentClass();
+    while (parent) {
+        if (parent->GetClassName() == name)
+            return true;
+
+        parent = parent->GetParentClass();
+    }
+
+    return false;
+}
+
+Object* ClassData::Instantiate() const
+{
+    return instantiationFunc();
 }
 
 }

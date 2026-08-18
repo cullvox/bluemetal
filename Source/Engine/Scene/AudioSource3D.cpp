@@ -6,11 +6,10 @@
 
 namespace bl {
 
-AudioSource3D::AudioSource3D(Engine& engine)
-    : Node3D(engine)
+AudioSource3D::AudioSource3D()
+    : Node3D()
     , _bus(AudioBus::eMaster)
 {
-    _system = GetEngine().GetAudio();
 }
 
 AudioSource3D::~AudioSource3D()
@@ -49,7 +48,7 @@ bool AudioSource3D::IsPlaying()
 
 void AudioSource3D::Play(Ref<Sound> sound, bool repeat)
 {
-    FMOD_CHECK(_system->GetFMOD()->playSound(sound.lock()->Get(), _system->GetBusChannelGroup(_bus), false, &_channel))
+    FMOD_CHECK(AudioSystem::Get()->GetFMOD()->playSound(sound.lock()->Get(), AudioSystem::Get()->GetBusChannelGroup(_bus), false, &_channel))
     FMOD_CHECK(_channel->setLoopCount(repeat ? -1 : 0))
 }
 
@@ -58,9 +57,10 @@ void AudioSource3D::SetVolume(float volume)
     FMOD_CHECK(_channel->setVolume(volume))
 }
 
-void AudioSource3D::RegisterClass(ClassDB& db)
+void AudioSource3D::RegisterClass()
 {
-    db.RegisterClass("AudioSource3D", "Node3D", &AudioSource3D::Create);
+    auto db = ClassDB::Get();
+    db->RegisterClass("AudioSource3D", "Node3D", &AudioSource3D::Create);
 }
 
 } // namespace bl

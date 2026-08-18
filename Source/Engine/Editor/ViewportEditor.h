@@ -18,7 +18,7 @@ class ViewportEditor : public Editor {
     void OnPostViewportResized(Viewport* viewport);
 
 public:
-   ViewportEditor(Engine& engine, EditorSystem& system); 
+   ViewportEditor(); 
    ~ViewportEditor();
 
     virtual void Draw(RenderData& rd);

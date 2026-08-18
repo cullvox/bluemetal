@@ -6,11 +6,15 @@
 
 namespace bl {
 
-Mesh::Mesh(Engine& engine, const std::filesystem::path& path)
-    : Resource(engine, path)
-    , _system(&engine.GetGraphics())
+Mesh::Mesh()
+    : Resource()
 {
+    _system = GraphicsSystem::Get();
+}
 
+Mesh::Mesh(const std::filesystem::path& path)
+    : Resource(path)
+{
 }
 
 Mesh::~Mesh()
@@ -19,6 +23,7 @@ Mesh::~Mesh()
 
 void Mesh::Release()
 {
+    Resource::Release();
     _mesh.reset();
 }
 

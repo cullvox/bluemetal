@@ -14,7 +14,7 @@ class MeshInstance3D : public Node3D {
     Ref<Mesh> _mesh;
 
 public:
-    MeshInstance3D(Engine& engine);
+    MeshInstance3D();
     MeshInstance3D(const MeshInstance3D&);
     virtual ~MeshInstance3D() = default;
 
@@ -25,7 +25,7 @@ public:
     Ref<Mesh> GetMesh() const;
     Ref<MaterialInstance> GetMaterial() const;
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 } // namespace bl

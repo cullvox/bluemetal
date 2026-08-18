@@ -1,0 +1,12 @@
+{
+    "class": "Material",
+    "shaders": {
+        "vertex": "Resources/Shaders/Debug.vert.json",
+        "fragment": "Resources/Shaders/Debug.frag.json"
+    },
+    "descriptorSetLocation": -1,
+    "vertexState": {
+        "vertex": "Debug",
+        "topology": "VK_PRIMITIVE_TOPOLOGY_POINT_LIST"
+    }
+}

@@ -6,8 +6,8 @@
 
 namespace bl {
 
-Camera3D::Camera3D(Engine& engine)
-    : Node3D(engine)
+Camera3D::Camera3D()
+    : Node3D()
     , _projection(CameraProjection::ePerspective)
     , _fov(85.0f)
     , _nearClip(0.01f)
@@ -66,7 +66,7 @@ float Camera3D::GetFOV()
 
 const glm::mat4& Camera3D::GetProjectionMatrix()
 {
-    VkExtent2D extent = GetEngine().GetWindow()->GetExtent();
+    VkExtent2D extent = GetEngine()->GetWindow()->GetExtent();
     float width = static_cast<float>(extent.width);
     float height = static_cast<float>(extent.height);
     float aspect = width / height;
@@ -100,15 +100,16 @@ const glm::mat4& Camera3D::GetViewMatrix()
     return _viewMatrix;
 }
 
-void Camera3D::RegisterClass(ClassDB& db)
+void Camera3D::RegisterClass()
 {
-    db.RegisterClass("Camera3D", "Node3D", &Camera3D::Create);
-    db.RegisterEnum<CameraProjection>("CameraProjection", {{"Perspective", CameraProjection::ePerspective}, {"Orthographic", CameraProjection::eOrthographic}});
+    auto db = ClassDB::Get();
+    db->RegisterClass("Camera3D", "Node3D", &Camera3D::Create);
+    db->RegisterEnum<CameraProjection>("CameraProjection", {{"Perspective", CameraProjection::ePerspective}, {"Orthographic", CameraProjection::eOrthographic}});
 
-    db.RegisterProperty("Camera3D", std::make_unique<TEnumProperty<Camera3D, CameraProjection>>(db, "CameraProjection", "projection", PropertyFlags::Editor, &Camera3D::SetProjection, &Camera3D::GetProjection));
-    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "fov", PropertyFlags::Editor, &Camera3D::SetFOV, &Camera3D::GetFOV));
-    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "nearClip", PropertyFlags::Editor, &Camera3D::SetNearClip, &Camera3D::GetNearClip));
-    db.RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>(db, "farClip", PropertyFlags::Editor, &Camera3D::SetFarClip, &Camera3D::GetFarClip));
+    db->RegisterProperty("Camera3D", std::make_unique<TEnumProperty<Camera3D, CameraProjection>>("CameraProjection", "projection", PropertyFlags::Editor, &Camera3D::SetProjection, &Camera3D::GetProjection));
+    db->RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("fov", PropertyFlags::Editor, &Camera3D::SetFOV, &Camera3D::GetFOV));
+    db->RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("nearClip", PropertyFlags::Editor, &Camera3D::SetNearClip, &Camera3D::GetNearClip));
+    db->RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("farClip", PropertyFlags::Editor, &Camera3D::SetFarClip, &Camera3D::GetFarClip));
 }
 
 } // namespace bl

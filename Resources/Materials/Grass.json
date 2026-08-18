@@ -1,0 +1,11 @@
+{
+    "class": "Material",
+    "renderPass": "geometry",
+    "shaders": {
+        "vertex": "Resources/Shaders/Grass.vert.json",
+        "fragment": "Resources/Shaders/Grass.frag.json"
+    },
+    "rasterizerState": {
+        "cullMode": "VK_CULL_MODE_NONE_BIT"
+    }
+}

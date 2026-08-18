@@ -1,4 +1,5 @@
 {
+    "class": "Sampler",
     "magFilter": "VK_FILTER_NEAREST",
     "minFilter": "VK_FILTER_NEAREST"
 }

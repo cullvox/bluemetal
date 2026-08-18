@@ -43,37 +43,41 @@
 #include <Jolt/Physics/Collision/Shape/SphereShape.h>
 #include <glm/trigonometric.hpp>
 
-int main(int argc, const char** argv)
+namespace bl {
+int Main(int argc, const char** argv)
 {
     (void)argc;
     (void)argv;
 
     try {
-        bl::Engine engine { argc, argv };
+        auto db = ClassDB::Get();
+        auto engine             = Engine::Get();
+        engine->SetArguments(argc, argv);
+        engine->Initialize();
 
-        auto resourceMgr = engine.GetResourceSystem();
-        auto audio = engine.GetAudio();
-        auto& graphics = engine.GetGraphics();
-        auto imgui = engine.GetImGui();
-        auto input = engine.GetInput();
-        auto& keyboard = input->GetKeyboard();
-        auto& mouse = input->GetMouse();
-        auto& physics = engine.GetPhysics();
-        auto renderer = engine.GetRenderer();
-        auto window = engine.GetWindow();
-        auto& editor = engine.GetEditorSystem();
-        auto physicsRenderer = physics.GetPhysicsRenderer();
+        auto resourceMgr        = ResourceSystem::Get();
+        auto audio              = AudioSystem::Get();
+        auto graphics           = GraphicsSystem::Get();
+        auto imgui              = ImGuiSystem::Get();
+        auto input              = InputSystem::Get();
+        auto& keyboard           = input->GetKeyboard();
+        auto& mouse              = input->GetMouse();
+        auto physics            = PhysicsSystem::Get();
+        auto renderer           = graphics->GetRenderer();
+        auto window             = engine->GetWindow();
+        auto editor             = EditorSystem::Get();
+        auto physicsRenderer    = physics->GetPhysicsRenderer();
 
-        auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Aaron Cherof - Anagnorisis - 06 Mare Marginis.ogg");
-        auto source = std::make_unique<bl::AudioSource3D>(engine);
+        auto sound = resourceMgr->Load<bl::Sound>("Resources/Audio/Music/Aaron Cherof - Anagnorisis - 06 Mare Marginis.json");
+        auto source = std::make_unique<bl::AudioSource3D>();
 
         source->Play(sound, true);
 
-        auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.glb");
-        auto cube = resourceMgr->Load<bl::Model>("Resources/Models/cube.glb");
-        auto grass = resourceMgr->Load<bl::Model>("Resources/Models/Grass.glb");
+        auto model = resourceMgr->Load<bl::Model>("Resources/Models/low_poly_fox.json");
+        auto cube = resourceMgr->Load<bl::Model>("Resources/Models/cube.json");
+        auto grass = resourceMgr->Load<bl::Model>("Resources/Models/Grass.json");
 
-        auto rootNode = std::make_unique<bl::Node3D>(engine);
+        auto rootNode = std::make_unique<bl::Node3D>();
         rootNode->SetName("Root");
 
         auto characterNode = model.lock()->GetTree()->Clone();
@@ -81,7 +85,7 @@ int main(int argc, const char** argv)
         characterNode->SetPosition({ 0.0f, -0.6f, 0.0f });
 
         JPH::Ref<JPH::CapsuleShape> shape = new JPH::CapsuleShape(0.5f, 0.3f);
-        auto physicsBody = std::make_unique<bl::CharacterBody3D>(engine);
+        auto physicsBody = std::make_unique<bl::CharacterBody3D>();
         physicsBody->SetName("CharacterBody");
         physicsBody->SetPosition({ 0.0f, 0.0f, -5.0f });
         physicsBody->SetShape(shape.GetPtr());
@@ -93,15 +97,15 @@ int main(int argc, const char** argv)
         physicsBody->AddChild(characterNode);
         rootNode->AddChild(std::move(physicsBody));
 
-        auto floorMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Default.mat");
-        auto floorTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/floor.jpg");
-        auto defaultTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Default.png");
+        auto floorMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Default.json");
+        auto floorTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/floor.json");
+        auto defaultTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Default.json");
         auto defaultSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Default.json");
         auto nearestSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Nearest.json");
         auto noiseTexture = resourceMgr->Load<bl::NoiseTexture2D>("Resources/Textures/Noise.json");
-        auto grssMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Grass.mat");
-        auto physDebugFlatMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/PhysicsDebugFlat.mat");
-        auto skyMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Sky.mat");
+        auto grssMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Grass.json");
+        auto physDebugFlatMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/PhysicsDebugFlat.json");
+        auto skyMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Sky.json");
 
         skyMaterial.lock()->SetSampledTexture2D("starsTexture", defaultSampler, noiseTexture);
         skyMaterial.lock()->SetSampledTexture2D("baseNoiseTexture", defaultSampler, noiseTexture);
@@ -123,7 +127,7 @@ int main(int argc, const char** argv)
 
         resourceMgr->Add("Materials/GrassInstance.mat", grassMaterial);
 
-        auto multimesh = std::make_unique<bl::MultiMeshInstance3D>(engine);
+        auto multimesh = std::make_unique<bl::MultiMeshInstance3D>();
         multimesh->SetName("GrassMultiMesh");
         multimesh->SetMesh(grass.lock()->GetMeshes()[0]);
         multimesh->SetMaterial(grassMaterial);
@@ -152,7 +156,7 @@ int main(int argc, const char** argv)
         floorNode->GetChild("Cube")->As<bl::MeshInstance3D>()->SetMaterial(floorMaterial);
 
         JPH::Ref<JPH::Shape> floorShape = new JPH::BoxShape({ 100.0f, 1.0f, 100.0f });
-        auto floorStaticBody = std::make_unique<bl::PhysicsBody3D>(engine);
+        auto floorStaticBody = std::make_unique<bl::PhysicsBody3D>();
         floorStaticBody->SetName("FloorBody");
         floorStaticBody->SetMotionType(JPH::EMotionType::Static);
         floorStaticBody->SetObjectLayer(bl::ObjectLayers::STATIC);
@@ -167,14 +171,14 @@ int main(int argc, const char** argv)
         rootNode->AddChild(std::move(floorStaticBody));
 
         // Add Sky3D node
-        auto skyNode = std::make_unique<bl::Sky3D>(engine);
+        auto skyNode = std::make_unique<bl::Sky3D>();
         skyNode->SetName("Sky");
         skyNode->SetSkyMaterial(skyMaterial.lock().get());
         
         rootNode->AddChild(std::move(skyNode));
 
 
-        //auto flycam = std::make_unique<bl::FlyCamera3D>(engine);
+        //auto flycam = std::make_unique<bl::FlyCamera3D>();
         //flycam->SetName("FlyCam");
         //flycam->SetPosition({ 0.0f, 0.0f, 5.0f });
         //rootNode->AddChild(std::move(flycam));
@@ -182,11 +186,11 @@ int main(int argc, const char** argv)
         //auto flyCamNode = rootNode->GetChild("FlyCam")->As<bl::FlyCamera3D>();
         auto playerNode = rootNode->GetChild("CharacterBody")->As<bl::Node3D>();
 
-        auto cameraOrbit = std::make_unique<bl::Orbit3D>(engine);
+        auto cameraOrbit = std::make_unique<bl::Orbit3D>();
         cameraOrbit->SetName("Orbiter");
         playerNode->AddChild(std::move(cameraOrbit));
 
-        auto followCamera = std::make_unique<bl::Camera3D>(engine);
+        auto followCamera = std::make_unique<bl::Camera3D>();
         followCamera->SetName("FollowCam");
         //followCamera->SetPosition({ 0.0f, 10.0f, -10.0f });
         followCamera->SetRotationEuler({ 0.0f, 0.0f, 0.0f});
@@ -200,7 +204,7 @@ int main(int argc, const char** argv)
         orbiter->AddChild(std::move(followCamera));
         auto cameraNode = orbiter->GetChild("FollowCam")->As<bl::Camera3D>();
 
-        bl::FrameCounter& frameCounter = engine.GetFrameCounter();
+        FrameCounter* frameCounter = engine->GetFrameCounter();
         auto presentModes = std::vector<VkPresentModeKHR>{};//renderer->GetPresentModes();
         //auto multisampleModes = renderer->GetMultisampleCounts();
 
@@ -209,9 +213,9 @@ int main(int argc, const char** argv)
         auto& profiler = bl::GetGlobalProfiler();
         bool enableEditor = true;
 
-        auto& discord = engine.GetDiscord();
+        auto discord = DiscordSystem::Get();
 
-        bl::DiscordActivity activity;
+        DiscordActivity activity;
         activity.applicationID = 763767974469042178;
         activity.details = "Testing discord rich presence";
         activity.type = bl::DiscordActivityType::ePlaying;
@@ -226,22 +230,22 @@ int main(int argc, const char** argv)
         activity.art.largeImage = "corruptedcanyons";
         activity.art.largeImageTooltip = "I call these, corrupted canyons.";
 
-        discord. UpdateActivity(activity);
+        discord->UpdateActivity(activity);
 
-        auto physFrameCounter = physics.GetPhysFrameCounter();
+        auto physFrameCounter = physics->GetPhysFrameCounter();
 
-        editor.GetHierarchyEditor().SetRootNode(rootNode.get());
+        editor->GetHierarchyEditor().SetRootNode(rootNode.get());
 
-        auto& classDB = engine.GetClassDB();
-        auto classNames = classDB.GetClassNames();
+        auto classDB = ClassDB::Get();
+        auto classNames = classDB->GetClassNames();
 
-        auto viewport = graphics.GetViewport();
+        auto viewport = graphics->GetViewport();
 
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
-            frameCounter.BeginFrame();
+            frameCounter->BeginFrame();
 
-            discord.RunCallbacks();
+            discord->RunCallbacks();
 
             profiler.StartProfile("Input");
             input->Poll([imgui](SDL_Event& event) {
@@ -270,7 +274,7 @@ int main(int argc, const char** argv)
                 rootNode->PhysicsUpdate();
             };
 
-            bool physUpdate = physics.Update(frameCounter.GetDeltaTime(), physUpdater);
+            bool physUpdate = physics->Update(frameCounter->GetDeltaTime(), physUpdater);
 
             profiler.EndProfile("Physics");
 
@@ -285,7 +289,7 @@ int main(int argc, const char** argv)
 
             skyMaterial.lock()->SetVector3("material.eyeDirection", glm::radians(cameraDirection));
 
-            rootNode->Update(frameCounter.GetDeltaTime());
+            rootNode->Update(frameCounter->GetDeltaTime());
             profiler.EndProfile("Update");
 
 
@@ -300,7 +304,7 @@ int main(int argc, const char** argv)
                 {
                     physicsRenderer->SetCameraPosition(cameraNode->GetWorldPosition());
                     physicsRenderer->Reset();
-                    physics.Draw();
+                    physics->Draw();
                     physicsRenderer->WriteInstances();
                     physUpdate = false;
                 }
@@ -309,7 +313,7 @@ int main(int argc, const char** argv)
 
             auto imguiFunc = [&](bl::RenderData& rd){
                 imgui->BeginFrame();
-                editor.Draw(rd);
+                editor->Draw(rd);
                 imgui->EndFrame(rd.GetCommandBuffer());
             };
 
@@ -321,12 +325,12 @@ int main(int argc, const char** argv)
             profiler.EndProfile("Render");
 
 
-            frameCounter.EndFrame();
+            frameCounter->EndFrame();
 
             profiler.EndFrame();
         }
 
-        graphics.GetDevice()->WaitForDevice();
+        graphics->GetDevice()->WaitForDevice();
 
         resourceMgr->ReleaseAll();
 
@@ -336,4 +340,11 @@ int main(int argc, const char** argv)
     }
 
     return 0;
+}
+
+}
+
+int main(int argc, const char** argv)
+{
+    bl::Main(argc, argv);
 }

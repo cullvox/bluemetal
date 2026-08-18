@@ -19,7 +19,6 @@ enum class EVertexType {
 class Material : public MaterialInstance {
     OBJECT_BOILER(Material, MaterialInstance)
 
-    GraphicsSystem* _graphicsSystem;
     Renderer* _renderer;
     std::unique_ptr<VulkanMaterial> _material;
     std::list<std::weak_ptr<MaterialInstance>> _instances;
@@ -28,23 +27,19 @@ protected:
     virtual VulkanMaterialInstance* GetInstance() const override;
 
 public:
-    Material(Engine& engine)
-        : MaterialInstance(engine)
-    {
-        // Empty constructor for creating material instances from a base material.
-    }
+    Material();
 
     /// @brief Loads a material from file.
-    /// @param resourceSystem Pointer to the resource system.
-    /// @param graphicsSystem Pointer to the graphics system.
     /// @param path Filesystem path to the material JSON file.
-    Material(Engine& engine, const std::filesystem::path& path);
+    Material(const std::filesystem::path& path);
 
     Material(Material&&) = default;
     Material(const Material&);
 
-    /// @brief Destructor
+    /** @brief Destructor */
     virtual ~Material();
+
+    virtual void Load() override;
 
     virtual void Release() override;
 
@@ -57,7 +52,7 @@ public:
     /// @brief Creates a material instance for this material.
     std::shared_ptr<MaterialInstance> CreateInstance();
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 }

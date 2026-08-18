@@ -11,14 +11,14 @@ namespace bl {
 
 static auto client = std::make_shared<discordpp::Client>();
 
-DiscordSystem::DiscordSystem(Engine& engine)
-    : System(engine)
+DiscordSystem::DiscordSystem()
+    : System()
 {
 
     // Use engine level variables to get the discord client ID.
-    auto&   vars            = engine.GetVars();
-    auto    clientID        = vars.Get<uint64_t>("discord.clientID");
-    auto    requireDiscord  = vars.Get<bool>("discord.requireDiscord");
+    auto   vars            = GetEngine()->GetVars();
+    auto    clientID        = vars->Get<uint64_t>("discord.clientID");
+    auto    requireDiscord  = vars->Get<bool>("discord.requireDiscord");
 
     //if (clientID == 0) {
     //    
@@ -82,6 +82,12 @@ DiscordSystem::DiscordSystem(Engine& engine)
 
 DiscordSystem::~DiscordSystem()
 {
+}
+
+DiscordSystem* DiscordSystem::Get()
+{
+    static DiscordSystem system;
+    return &system;
 }
 
 static inline discordpp::ActivityTypes DiscordActivityType_ToDiscord(DiscordActivityType type)

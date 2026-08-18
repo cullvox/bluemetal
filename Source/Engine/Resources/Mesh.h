@@ -14,7 +14,8 @@ class Mesh : public Resource {
     void Upload(std::span<const std::byte> bytes, std::span<uint32_t> indices);
 
 public:
-    Mesh(Engine& engine, const std::filesystem::path& path);
+    Mesh();
+    Mesh(const std::filesystem::path& path);
     ~Mesh();
 
     virtual void Release() override;

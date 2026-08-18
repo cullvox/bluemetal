@@ -5,11 +5,12 @@
 #include "Window/Mouse.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Core/ClassDB.h"
+#include "Core/Reflection/Property.h"
 
 namespace bl {
 
-FlyCamera3D::FlyCamera3D(Engine& engine)
-    : Camera3D(engine)
+FlyCamera3D::FlyCamera3D()
+    : Camera3D()
 {
 }
 
@@ -19,9 +20,10 @@ FlyCamera3D::~FlyCamera3D()
 
 void FlyCamera3D::Update(float dt)
 {
-    auto& keyboard = GetEngine().GetInput()->GetKeyboard();
-    auto& mouse = GetEngine().GetInput()->GetMouse();
-    auto window = GetEngine().GetWindow();
+    auto is = InputSystem::Get();
+    auto& keyboard = is->GetKeyboard();
+    auto& mouse = is->GetMouse();
+    auto window = GetEngine()->GetWindow();
 
     glm::vec3 position = GetPosition();
 
@@ -169,11 +171,12 @@ float FlyCamera3D::GetSmoothness()
     return _smooth;
 }
 
-void FlyCamera3D::RegisterClass(ClassDB& db)
+void FlyCamera3D::RegisterClass()
 {
-    db.RegisterClass("FlyCamera3D", "Camera3D", &FlyCamera3D::Create);
-    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>(db, "speed", PropertyFlags::Editor, &FlyCamera3D::SetSpeed, &FlyCamera3D::GetSpeed));
-    db.RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>(db, "smoothness", PropertyFlags::Editor, &FlyCamera3D::SetSmoothness, &FlyCamera3D::GetSmoothness));
+    auto db = ClassDB::Get();
+    db->RegisterClass("FlyCamera3D", "Camera3D", &FlyCamera3D::Create);
+    db->RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>("speed", PropertyFlags::Editor, &FlyCamera3D::SetSpeed, &FlyCamera3D::GetSpeed));
+    db->RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>("smoothness", PropertyFlags::Editor, &FlyCamera3D::SetSmoothness, &FlyCamera3D::GetSmoothness));
 }
 
 }

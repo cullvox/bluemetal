@@ -81,6 +81,7 @@ list(APPEND Sources
   "Resources/MaterialInstance.cpp"
   "Resources/Mesh.cpp"
   "Resources/Model.cpp"
+  "Resources/Scene.cpp"
 
   "Scene/Node.cpp"
   "Scene/Node3D.cpp"

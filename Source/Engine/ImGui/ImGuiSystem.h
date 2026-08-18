@@ -25,11 +25,12 @@ class ImGuiSystem : public System {
     void Init();
     void Unload();
 
-public:
-    ImGuiSystem(Engine& engine, WindowViewport* window, Renderer* renderer);
+    ImGuiSystem();
     ~ImGuiSystem();
 
-    virtual std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path) override;
+public:
+    static ImGuiSystem* Get();
+
     void Process(const SDL_Event& event);
     void BeginFrame();
     void EndFrame(VkCommandBuffer cmd);

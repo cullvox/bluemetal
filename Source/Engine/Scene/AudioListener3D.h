@@ -6,12 +6,12 @@ namespace bl {
 
 class AudioListener3D : public Node3D {
 public:
-    AudioListener3D(Engine& engine);
+    AudioListener3D();
     ~AudioListener3D();
 
     virtual void Update(float dt) override;
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 } // namespace bl

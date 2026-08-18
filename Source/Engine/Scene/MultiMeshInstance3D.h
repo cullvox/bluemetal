@@ -16,7 +16,7 @@ class MultiMeshInstance3D : public Node3D {
     uint32_t _instanceCount;
     std::vector<glm::mat4> _instanceTransforms;
 public:
-    MultiMeshInstance3D(Engine& engine);
+    MultiMeshInstance3D();
     MultiMeshInstance3D(const MultiMeshInstance3D& rhs);
     ~MultiMeshInstance3D();
 
@@ -53,7 +53,7 @@ public:
     /// @param transform Transform matrix for the instance.
     void SetInstanceTransform(uint32_t index, const glm::mat4& transform);
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 } // namespace bl

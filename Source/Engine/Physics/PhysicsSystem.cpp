@@ -4,18 +4,20 @@
 #include <Jolt/RegisterTypes.h>
 #include <Jolt/Core/Factory.h>
 #include <Jolt/Physics/PhysicsSystem.h>
+#include <memory>
 
 #include "Engine/Engine.h"
 #include "Jolt/Core/Memory.h"
 #include "PhysicsRenderer.h"
 #include "BroadPhaseLayerImpl.h"
 #include "Scene/PhysicsBody3D.h"
+#include "Graphics/GraphicsSystem.h"
 #include "Core/Print.h"
 
 namespace bl {
 
-PhysicsSystem::PhysicsSystem(Engine& engine)
-    : System(engine)
+PhysicsSystem::PhysicsSystem()
+    : System()
 {
     JPH::RegisterDefaultAllocator();
     JPH::Factory::sInstance = new JPH::Factory();
@@ -29,11 +31,17 @@ PhysicsSystem::PhysicsSystem(Engine& engine)
 
     _physicsSystem.SetGravity(JPH::Vec3(0.0f, -9.81f, 0.0f));
 
-    _physicsRenderer = std::make_unique<PhysicsRenderer>(engine.GetRenderer());
+    _physicsRenderer = std::make_unique<PhysicsRenderer>(GraphicsSystem::Get()->GetRenderer());
 }
 
 PhysicsSystem::~PhysicsSystem()
 {
+}
+
+PhysicsSystem* PhysicsSystem::Get()
+{
+    static PhysicsSystem system;
+    return &system;
 }
 
 bool PhysicsSystem::Update(float deltaTime, std::function<void()> update)

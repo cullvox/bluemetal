@@ -76,9 +76,10 @@ struct DiscordActivity
 };
 
 class DiscordSystem : public System {
-public:
-    DiscordSystem(Engine& engine);
+    DiscordSystem();
     ~DiscordSystem();
+public:
+    static DiscordSystem* Get();
 
     /// @brief Returns true if the Discord Game SDK was successfully initialized.
     /// If the Discord Game SDK was not successfully initialzed or disabled 

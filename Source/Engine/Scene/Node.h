@@ -19,7 +19,7 @@ class Node : public Object {
     std::unordered_map<std::string, Node*> _childrenMap;
 
 public:
-    Node(Engine& engine);
+    Node();
     Node(const Node&);
     virtual ~Node();
 
@@ -54,7 +54,12 @@ public:
     void DeleteChild(const std::string& child);
     std::vector<std::unique_ptr<Node>>& GetVecChildren();
 
-    static void RegisterClass(ClassDB& db);
+    /**
+     * Packs a node using it's serializable properties into a json object.
+     */
+    virtual nlohmann::json Pack();
+
+    static void RegisterClass();
 };
 
 } // namespace bl

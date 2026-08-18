@@ -21,17 +21,16 @@ class GraphicsSystem : public System {
     VulkanPhysicalDevice* _physicalDevice;
     std::unique_ptr<WindowViewport> _windowViewport;
     std::unique_ptr<Renderer> _renderer;
-    std::unique_ptr<ImGuiSystem> _imgui;
     Ref<Material> _pointMaterial;
     Ref<Material> _lineMaterial;
     Ref<Material> _triangleMaterial;
     Ref<Material> _selectionMaterial;
 
-public:
-    GraphicsSystem(Engine& engine);
+    GraphicsSystem();
     ~GraphicsSystem();
 
-    virtual std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path) override;
+public:
+    static GraphicsSystem* Get();
 
     VulkanInstance* GetInstance();
     VulkanPhysicalDevice* GetPhysicalDevice();

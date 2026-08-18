@@ -16,14 +16,13 @@ class AudioSystem;
 class AudioSource3D : public Node3D {
     OBJECT_BOILER(AudioSource3D, Node3D)
 
-    AudioSystem* _system;
     Ref<Sound> _sound;
     AudioBus _bus;
     glm::vec3 _prevPosition; /** @brief Used for calculating the node's velocity. */
     FMOD::Channel* _channel;
 
 public:
-    AudioSource3D(Engine& engine);
+    AudioSource3D();
     ~AudioSource3D();
 
     virtual void Update(float dt) override;
@@ -36,7 +35,7 @@ public:
     bool IsPlaying();
     bool IsStopped();
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 } // namespace bl

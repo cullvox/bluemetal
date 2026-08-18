@@ -28,7 +28,7 @@ class PhysicsBody3D : public Node3D {
     glm::vec3 _prevLinVel;
 
 public:
-    PhysicsBody3D(Engine& engine);
+    PhysicsBody3D();
     PhysicsBody3D(const PhysicsBody3D& copy);
     ~PhysicsBody3D();
 
@@ -56,7 +56,7 @@ public:
     void ResetBody();
     JPH::BodyID GetBodyID() const;
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 } // namespace bl

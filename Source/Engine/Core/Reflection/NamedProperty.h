@@ -11,8 +11,8 @@ class TNamedProperty : public Property {
     void (TClass::* setter)(std::string_view propertyName, const Variant& value);
 
 public:
-    TNamedProperty(ClassDB& db, const std::string_view name, VariantType type, PropertyFlags flags, void (TClass::* setter)(std::string_view propertyName, const Variant& value), Variant (TClass::* getter)(std::string_view propertyName))
-        : Property(db, name, flags, type)
+    TNamedProperty(const std::string_view name, VariantType type, PropertyFlags flags, void (TClass::* setter)(std::string_view propertyName, const Variant& value), Variant (TClass::* getter)(std::string_view propertyName))
+        : Property(name, flags, type)
         , setter(setter)
         , getter(getter)
     {

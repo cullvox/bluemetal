@@ -1,4 +1,5 @@
 #include "VulkanPipeline.h"
+#include "Graphics/GraphicsSystem.h"
 #include "VulkanDevice.h"
 #include "VulkanShader.h"
 #include "Renderer.h"
@@ -12,6 +13,8 @@ namespace bl {
 VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const VulkanPipelineStateInfo& state, const VulkanReflectedPipeline* reflection)
     : _device(device)
 {
+
+    renderer = GraphicsSystem::Get()->GetRenderer();
 
     // Depending on circumstances the reflection of the pipeline can be edited by the user.
     // To enable this we don't instantaneously preform reflection, we check to see if the user

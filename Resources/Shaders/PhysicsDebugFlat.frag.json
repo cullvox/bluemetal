@@ -1,0 +1,5 @@
+{
+    "class": "Shader",
+    "path": "Resources/Shaders/PhysicsDebugFlat.frag.spv",
+    "stage": "Fragment"
+}

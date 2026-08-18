@@ -1,0 +1,5 @@
+{
+    "class": "Shader",
+    "path": "Resources/Shaders/Debug.vert.spv",
+    "stage": "Vertex"
+}

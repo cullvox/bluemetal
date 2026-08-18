@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Object.h"
 #include "Resources/Resource.h"
 
 namespace tinygltf {
@@ -15,6 +16,8 @@ class Texture2D;
 class Node3D;
 
 class Model : public Resource {
+    OBJECT_BOILER(Model, Resource)
+
     GraphicsSystem* _graphicsSystem;
     std::vector<Ref<Mesh>> _meshes; // For every primitive, for each mesh
     std::vector<Ref<MaterialInstance>> _materials;
@@ -24,8 +27,14 @@ class Model : public Resource {
     std::unique_ptr<Node3D> LoadNode(const tinygltf::Model& model, const tinygltf::Node& node);
 
 public:
-    Model(Engine& engine, const std::filesystem::path& path);
+    Model();
+    Model(const std::filesystem::path& path);
+    Model(const Model& copy);
     ~Model();
+
+    static void RegisterClass();
+    virtual void Load() override;
+    virtual void Release() override;
 
     Node3D* GetTree();
     const std::vector<Ref<Mesh>>& GetMeshes() const;

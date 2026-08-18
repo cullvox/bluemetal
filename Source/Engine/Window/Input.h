@@ -18,10 +18,10 @@ class InputSystem : public System {
     Mouse _mouse;
 
 public:
-    InputSystem(Engine& engine);
+    InputSystem();
     ~InputSystem() = default;
 
-    virtual std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path) override;
+    static InputSystem* Get();
 
     /// @brief Polls the system for events.
     ///

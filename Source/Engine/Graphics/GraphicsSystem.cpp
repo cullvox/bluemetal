@@ -25,20 +25,9 @@
 
 namespace bl {
 
-GraphicsSystem::GraphicsSystem(Engine& engine)
-    : System(engine)
+GraphicsSystem::GraphicsSystem()
+    : System()
 {
-    auto rs = GetEngine().GetResourceSystem();
-
-    rs->AddSystemType<Shader>(this);
-    rs->AddSystemType<Sampler>(this);
-    rs->AddSystemType<Material>(this);
-    rs->AddSystemType<MaterialInstance>(this);
-    rs->AddSystemType<Texture2D>(this);
-    rs->AddSystemType<NoiseTexture2D>(this);
-    rs->AddSystemType<Mesh>(this);
-    rs->AddSystemType<Model>(this);
-
     _vulkanInstance = std::make_unique<VulkanInstance>(engineVersion, "bluemetal", true);
     _physicalDevice = _vulkanInstance->ChoosePhysicalDevice();
     _device = std::make_unique<VulkanDevice>(_vulkanInstance.get(), _physicalDevice);
@@ -48,11 +37,11 @@ GraphicsSystem::GraphicsSystem(Engine& engine)
     _device->WaitForDevice();
 
     // Create the renderer.
-    _renderer = std::make_unique<Renderer>(_device.get(), engine.GetFrameCounter());
-    
+    _renderer = std::make_unique<Renderer>(_device.get());
+
     // Create the default window/surface's viewport.
-    _windowViewport = std::make_unique<WindowViewport>(_renderer.get(), engine.GetWindow());
-    
+    _windowViewport = std::make_unique<WindowViewport>(_renderer.get(), GetEngine()->GetWindow());
+
     // Enable ImGui rendering on the default viewport.
     _windowViewport->SetRenderFlags(_windowViewport->GetRenderFlags() | ViewportRenderFlags::eImGui);
 
@@ -63,27 +52,10 @@ GraphicsSystem::~GraphicsSystem()
 {
 }
 
-std::shared_ptr<Resource> GraphicsSystem::ConstructResource(std::size_t typeHash, const std::filesystem::path& path)
+GraphicsSystem* GraphicsSystem::Get()
 {
-    if (typeHash == typeid(Shader).hash_code()) {
-        return std::make_shared<Shader>(GetEngine(), path);
-    } else if (typeHash == typeid(Sampler).hash_code()) {
-        return std::make_shared<Sampler>(GetEngine(), path);
-    } else if (typeHash == typeid(Material).hash_code()) {
-        return std::make_shared<Material>(GetEngine(), path);
-    } else if (typeHash == typeid(MaterialInstance).hash_code()) {
-        return std::make_shared<MaterialInstance>(GetEngine(), path);
-    } else if (typeHash == typeid(Texture2D).hash_code()) {
-        return std::make_shared<Texture2D>(GetEngine(), path);
-    } else if (typeHash == typeid(NoiseTexture2D).hash_code()) {
-        return std::make_shared<NoiseTexture2D>(GetEngine(), path);
-    } else if (typeHash == typeid(Mesh).hash_code()) {
-        return std::make_shared<Mesh>(GetEngine(), path);
-    } else if (typeHash == typeid(Model).hash_code()) {
-        return std::make_shared<Model>(GetEngine(), path);
-    }
-
-    return nullptr;
+    static GraphicsSystem system;
+    return &system;
 }
 
 VulkanInstance* GraphicsSystem::GetInstance()

@@ -1,0 +1,38 @@
+{
+    "class": "Material",
+    "renderPass": "geometry",
+    "vertexState": {
+        "vertex": "None"
+    },
+    "shaders": {
+        "vertex": "Resources/Shaders/Sky.vert.json",
+        "fragment": "Resources/Shaders/Sky.frag.json"
+    },
+    "properties": {
+        "material.offsetHorizon": 0.0,
+        "material.horizonIntensity": -3.3,
+        "material.sunSet": [ 1.0, 0.8, 1.0, 1.0 ],
+        "material.horizonColorDay": [ 0.0, 0.8, 1.0, 1.0 ],
+        "material.horizonColorNight": [ 0.0, 0.8, 1.0, 1.0 ],
+        "material.cSun": [1.0, 1.0, 1.0, 1.0],
+        "material.sunDirection": [0.7853982, 0.0, 0.0],
+        "material.sunRadius": 0.5,
+        "material.bFlatSun": true,
+        "material.cMoon": [1.0, 1.0, 1.0, 1.0],
+        "material.moonRadius": 0.15,
+        "material.moonCrescent": -0.3,
+        "material.darkFalloff": 4.0,
+        "material.cDayBottom": [ 0.4, 1.0, 1.0, 1.0 ],
+        "material.cDayTop": [ 0.0, 0.8, 1.0, 1.0 ],
+        "material.cNightBottom": [ 0.0, 0.0, 0.2, 1.0 ],
+        "material.cNightTop": [ 0.0, 0.0, 0.0, 1.0 ],
+        "material.baseNoiseScale": 0.2,
+        "material.starsSpeed": 0.3,
+        "material.starsCutoff": 0.08,
+        "material.cStarsSky": [ 0.0, 0.2, 0.1, 1.0 ],
+        "material.offsetStars": 0.083,
+        "material.starsIntensity": -2.829,
+        "material.starFalloff": 1.79,
+        "material.starsFadeModulation": 0.91
+    }
+}

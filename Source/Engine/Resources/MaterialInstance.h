@@ -41,16 +41,16 @@ public:
     ///
     /// @param resourceSystem Pointer to the resource system.
     /// @param graphicsSystem Pointer to the graphics system.
-    MaterialInstance(Engine& engine);
+    MaterialInstance();
 
-    MaterialInstance(Engine& engine, std::unique_ptr<VulkanMaterialInstance> instance);
+    MaterialInstance(std::unique_ptr<VulkanMaterialInstance> instance);
 
     MaterialInstance(MaterialInstance&&) = default;
     MaterialInstance(const MaterialInstance&);
 
     /// @brief Loads a material instance from file.
     /// This constructor is designated for the ResourceSystem.
-    MaterialInstance(Engine& engine, const std::filesystem::path& path);
+    MaterialInstance(const std::filesystem::path& path);
 
     virtual ~MaterialInstance();
 
@@ -79,7 +79,7 @@ public:
     void Bind(RenderData& rd); /** @brief Bind this material for rending using it and it's data. */
     void PushConstant(RenderData& rd, uint32_t offset, uint32_t size, const void* value);
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 }

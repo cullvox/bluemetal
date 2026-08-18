@@ -1,0 +1,13 @@
+{
+    "class": "Scene",
+    "resources": [
+
+    ],
+    "nodes": [
+        {
+            "class": "",
+            "name": "Character",
+        }
+    ]
+
+}

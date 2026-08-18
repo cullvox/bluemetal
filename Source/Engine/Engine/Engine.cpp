@@ -1,3 +1,4 @@
+#include "Resources/NoiseTexture2D.h"
 #include "argparse/argparse.hpp"
 
 #include "Audio/AudioSystem.h"
@@ -17,6 +18,9 @@
 #include "ImGui/ImGuiSystem.h"
 #include "Physics/PhysicsSystem.h"
 #include "Resources/Material.h"
+#include "Resources/Shader.h"
+#include "Resources/Model.h"
+#include "Resources/Texture2D.h"
 #include "Resources/ResourceSystem.h"
 #include "Scene/AudioListener3D.h"
 #include "Scene/AudioSource3D.h"
@@ -45,12 +49,53 @@
 
 namespace bl {
 
-Engine::Engine(int argc, const char** argv)
+Engine::Engine()
 {
-
     // Register all engine classes with the class DB.
-    _classDB = std::make_unique<ClassDB>(*this);
     RegisterClasses();
+
+    _vars = std::make_unique<EngineVars>();
+}
+
+Engine::~Engine()
+{
+    SDL_Quit();
+    Print::Info("Shutting down BlueMetal...");
+}
+
+Engine* Engine::Get()
+{
+    static Engine engine;
+    return &engine;
+}
+
+void Engine::SetArguments(int argc, const char** argv)
+{
+    // Parse out the programs arguments for any relevant to the engine.
+    argparse::ArgumentParser program("BlueMetal Engine");
+
+    program.add_argument("-v", "--verbose")
+        .help("Enable verbose logging")
+        .default_value(false)
+        .implicit_value(true);
+
+    try {
+        program.parse_args(argc, argv);
+    } catch (const std::runtime_error& err) {
+        Print::Error("Argument parsing error: {}", err.what());
+        Print::Info("Use --help to see available options.");
+        throw;
+    }
+}
+
+void Engine::Initialize()
+{
+    // Initialize SDL, it's used all over the place.
+    uint32_t flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS;
+
+    if (SDL_Init(flags) == false) {
+        throw std::runtime_error("Could not initialize SDL!");
+    }
 
     // Print out a pretty little initialization message.
     Print::Raw(fmt::fg(fmt::color::sky_blue), " 888888ba  dP                   8888ba.88ba             dP            dP \n");
@@ -74,161 +119,81 @@ Engine::Engine(int argc, const char** argv)
     Print::NewLine();
 
 
-    // Parse out the programs arguments for any relevant to the engine.
-    argparse::ArgumentParser program("BlueMetal Engine");
-
-    program.add_argument("-v", "--verbose")
-        .help("Enable verbose logging")
-        .default_value(false)
-        .implicit_value(true);
-
-    try {
-        program.parse_args(argc, argv);
-    } catch (const std::runtime_error& err) {
-        Print::Error("Argument parsing error: {}", err.what());
-        Print::Info("Use --help to see available options.");
-        throw;
-    }
-
-    bool verbose = program.get<bool>("--verbose");
-    Print::EnableVerboseLogging(verbose);
-
-    // Initialize SDL, it's used all over the place.
-    uint32_t flags = SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMEPAD | SDL_INIT_EVENTS;
-
-    if (SDL_Init(flags) == false) {
-        throw std::runtime_error("Could not initialize SDL!");
-    }
+    //bool verbose = program->get<bool>("--verbose");
+    //Print::EnableVerboseLogging(verbose);
 
     // Initialize all the in engine systems.
     // Order of initialization here matters, some systems are dependant on others existing.
 
-    _vars = std::make_unique<EngineVars>();
-    _resourceManager = std::make_unique<ResourceSystem>(*this);
-    _audio = std::make_unique<AudioSystem>(*this);
     _counter = std::make_unique<FrameCounter>();
     _window = std::make_unique<Window>("Maginvox", Rect2D{{0, 0}, {1920, 1080}}, false);
-    _graphics = std::make_unique<GraphicsSystem>(*this);
-    _input = std::make_unique<InputSystem>(*this);
-    _imgui = std::make_unique<ImGuiSystem>(*this, _graphics->GetViewport(), _graphics->GetRenderer());
-    _physics = std::make_unique<PhysicsSystem>(*this);
-    _scenes = std::make_unique<SceneSystem>(*this);
-    _editorSystem = std::make_unique<EditorSystem>(*this);
-    _discord = std::make_unique<DiscordSystem>(*this);
 
     // Setup the debug renderer materials.
-    auto _pointMaterial = _resourceManager->Load<Material>("Resources/Materials/DebugPoint.mat");
-    auto _lineMaterial = _resourceManager->Load<Material>("Resources/Materials/DebugLine.mat");
-    auto _triangleMaterial = _resourceManager->Load<Material>("Resources/Materials/DebugTriangle.mat");
-    _graphics->GetRenderer()->SetDebugMaterialInstance(_pointMaterial.lock()->GetVulkanMaterial(), _lineMaterial.lock()->GetVulkanMaterial(), _triangleMaterial.lock()->GetVulkanMaterial());
+    auto rs = ResourceSystem::Get();
+    auto gs = GraphicsSystem::Get();
+    auto _pointMaterial = rs->Load<Material>("Resources/Materials/DebugPoint.json");
+    auto _lineMaterial = rs->Load<Material>("Resources/Materials/DebugLine.json");
+    auto _triangleMaterial = rs->Load<Material>("Resources/Materials/DebugTriangle.json");
+    gs->GetRenderer()->SetDebugMaterialInstance(_pointMaterial.lock()->GetVulkanMaterial(), _lineMaterial.lock()->GetVulkanMaterial(), _triangleMaterial.lock()->GetVulkanMaterial());
 }
 
-Engine::~Engine()
+EngineVars* Engine::GetVars()
 {
-    SDL_Quit();
-    Print::Info("Shutting down BlueMetal...");
+    return _vars.get();
 }
 
-EngineVars& Engine::GetVars()
+FrameCounter* Engine::GetFrameCounter()
 {
-    return *_vars.get();
+    return _counter.get();
 }
 
-FrameCounter& Engine::GetFrameCounter()
-{
-    return *(_counter.get());
-}
-
-ResourceSystem* Engine::GetResourceSystem()
-{
-    return _resourceManager.get();
-}
-
-GraphicsSystem& Engine::GetGraphics()
-{
-    return *_graphics.get();
-}
-
-AudioSystem* Engine::GetAudio()
-{
-    return _audio.get();
-}
-
-InputSystem* Engine::GetInput()
-{
-    return _input.get();
-}
-
-ImGuiSystem* Engine::GetImGui()
-{
-    return _imgui.get();
-}
 
 Window* Engine::GetWindow()
 {
     return _window.get();
 }
 
-Renderer* Engine::GetRenderer()
-{
-    return _graphics->GetRenderer();
-}
-
-PhysicsSystem& Engine::GetPhysics()
-{
-    return *_physics.get();
-}
-
-SceneSystem* Engine::GetSceneSystem()
-{
-    return _scenes.get();
-}
-
-EditorSystem& Engine::GetEditorSystem()
-{
-    return *_editorSystem.get();
-}
-
-DiscordSystem& Engine::GetDiscord()
-{
-    return *_discord.get();
-}
-
-ClassDB& Engine::GetClassDB()
-{
-    return *_classDB.get();
-}
-
-Profiler& Engine::GetProfiler()
+Profiler* Engine::GetProfiler()
 {
     static Profiler profiler;
-    return profiler;
+    return &profiler;
 }
 
 void Engine::RegisterClasses()
 {
 
+    ClassDB* db = ClassDB::Get();
+
     // Resources
-    _classDB->Register<Resource>();
-    _classDB->Register<MaterialInstance>();
-    _classDB->Register<Material>();
+    db->Register<Object>();
+
+    db->Register<Resource>();
+    db->Register<MaterialInstance>();
+    db->Register<Material>();
+    db->Register<Sampler>();
+    db->Register<Shader>();
+    db->Register<Sound>();
+    db->Register<Texture>();
+    db->Register<Texture2D>();
+    db->Register<NoiseTexture2D>();
+    db->Register<Model>();
 
     // Nodes/Scene
-    _classDB->Register<AudioListener3D>();
-    _classDB->Register<AudioSource3D>();
-    _classDB->Register<Camera3D>();
-    _classDB->Register<CharacterBody3D>();
-    _classDB->Register<FlyCamera3D>();
-    _classDB->Register<MeshInstance3D>();
-    _classDB->Register<MultiMeshInstance3D>();
-    _classDB->Register<Node>();
-    _classDB->Register<Node3D>();
+    db->Register<Node>();
+    db->Register<Node3D>();
+    db->Register<AudioListener3D>();
+    db->Register<AudioSource3D>();
+    db->Register<Camera3D>();
+    db->Register<PhysicsBody3D>();
+    db->Register<CharacterBody3D>();
+    db->Register<FlyCamera3D>();
+    db->Register<MeshInstance3D>();
+    db->Register<MultiMeshInstance3D>();
     // _classDB->Register<NodeFilter>();
     // _classDB->Register<NodeFilterFrustumCull>();
     // _classDB->Register<NodeFilterIterator>();
-    _classDB->Register<Orbit3D>();
-    _classDB->Register<PhysicsBody3D>();
-    _classDB->Register<Sky3D>();
+    db->Register<Orbit3D>();
+    db->Register<Sky3D>();
     //_classDB->Register<RigidBody3D>();
     //_classDB->Register<SceneExporter>();
     //_classDB->Register<SkinnedMeshInstance3D>();

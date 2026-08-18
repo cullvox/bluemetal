@@ -20,10 +20,9 @@
 
 namespace bl {
 
-Renderer::Renderer(VulkanDevice* device, FrameCounter& frameCounter)
-    : _device(device)
-    , _frameCounter(frameCounter)
-    , _renderData(this)
+Renderer::Renderer(VulkanDevice* device)
+    : _renderData(this)
+    , _device(device)
 {
 
     // Determine the renderer image formats.
@@ -303,12 +302,12 @@ RenderData& Renderer::GetRenderData()
 
 float Renderer::GetCurrentFrameTime()
 {
-    return _frameCounter.GetBeginFrameTime();
+    return GetEngine()->GetFrameCounter()->GetBeginFrameTime();
 }
 
 float Renderer::GetCurrentFrameDeltaTime()
 {
-    return _frameCounter.GetDeltaTime();
+    return GetEngine()->GetFrameCounter()->GetDeltaTime();
 }
 
 void Renderer::SetDebugMaterialInstance(VulkanMaterialInstance* pointMaterial, VulkanMaterialInstance* lineMaterial, VulkanMaterialInstance* triangleMaterial)

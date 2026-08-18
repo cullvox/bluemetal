@@ -6,13 +6,10 @@
 
 namespace bl {
 
-AudioSystem::AudioSystem(Engine& _engine)
-    : System(_engine)
+AudioSystem::AudioSystem()
+    : System()
     , _fmod(nullptr)
 {
-    // Set engine resource types this system is capable of producing
-    GetEngine().GetResourceSystem()->AddSystemType<Sound>(this);
-
     // Initialize FMOD
     FMOD_CHECK(FMOD::System_Create(&_fmod, FMOD_VERSION))
     FMOD_CHECK(_fmod->init(128, FMOD_INIT_NORMAL, nullptr))
@@ -29,13 +26,10 @@ AudioSystem::~AudioSystem()
     _fmod->close();
 }
 
-std::shared_ptr<Resource> AudioSystem::ConstructResource(std::size_t typeHash, const std::filesystem::path& path)
+AudioSystem* AudioSystem::Get()
 {
-    if (typeHash == typeid(Sound).hash_code()) {
-        return std::make_shared<Sound>(GetEngine(), path);
-    }
-
-    throw std::runtime_error("AudioSystem cannot construct resource of the given type!");
+    static AudioSystem system;
+    return &system;
 }
 
 FMOD::System* AudioSystem::GetFMOD()

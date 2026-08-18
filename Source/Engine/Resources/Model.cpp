@@ -26,9 +26,9 @@ std::unique_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
 {
     std::unique_ptr<Node3D> newNode { nullptr };
     if (node.mesh < 0) {
-        newNode = std::make_unique<Node3D>(_graphicsSystem->GetEngine());
+        newNode = std::make_unique<Node3D>();
     } else {
-        auto meshNode = std::make_unique<MeshInstance3D>(_graphicsSystem->GetEngine());
+        auto meshNode = std::make_unique<MeshInstance3D>();
         auto& primitive = model.meshes[node.mesh].primitives[0];
 
         if (primitive.material == -1) {
@@ -83,16 +83,45 @@ std::unique_ptr<Node3D> Model::LoadNode(const tinygltf::Model& model, const tiny
     return newNode;
 }
 
-Model::Model(Engine& engine, const std::filesystem::path& path)
-    : Resource(engine, path)
-    , _graphicsSystem(&engine.GetGraphics())
+Model::Model()
 {
-    auto resourceSystem = engine.GetResourceSystem();
+}
+
+Model::Model(const std::filesystem::path& path)
+    : Resource(path)
+{
+}
+
+Model::Model(const Model& copy)
+    : Resource(copy)
+{
+}
+
+Model::~Model()
+{
+}
+
+Node3D* Model::GetTree()
+{
+    return _root.get();
+}
+
+const std::vector<Ref<Mesh>>& Model::GetMeshes() const
+{
+    return _meshes;
+}
+
+void Model::Load()
+{
+    auto resourceSystem = ResourceSystem::Get();
 
     tinygltf::TinyGLTF loader;
     tinygltf::Model model;
     std::string err;
     std::string warn;
+
+    const auto& json = GetJson();
+    auto path = std::filesystem::path(json["path"].get<std::string>());
 
     bool res = false;
     if (path.extension() == ".glb") {
@@ -136,14 +165,14 @@ Model::Model(Engine& engine, const std::filesystem::path& path)
 
         const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(image.image.data()), image.image.size());
 
-        auto texture = std::make_shared<Texture2D>(engine, bytes, format, extent);
+        auto texture = std::make_shared<Texture2D>(bytes, format, extent);
         AddSubResource(texture);
         _textures[i] = texture;
     }
 
     // Load materials
     // Here we are assuming a default material type.
-    auto defaultMaterial = resourceSystem->Load<Material>("Resources/Materials/Default.mat");
+    auto defaultMaterial = resourceSystem->Load<Material>("Resources/Materials/Default.json");
     auto defaultSampler = resourceSystem->Load<Sampler>("Resources/Samplers/Default.json");
 
     for (auto& material : model.materials) {
@@ -246,7 +275,7 @@ Model::Model(Engine& engine, const std::filesystem::path& path)
             }
         }
 
-        auto m = std::make_shared<Mesh>(engine, "");
+        auto m = std::make_shared<Mesh>();
         AddSubResource(m);
         _meshes.push_back(m);
         m->Upload<Vertex>(vertices, indices);
@@ -257,25 +286,22 @@ Model::Model(Engine& engine, const std::filesystem::path& path)
     // Build out the scene tree for model loading.
     const auto& scene = model.scenes[model.defaultScene];
 
-    _root = std::make_unique<Node3D>(engine);
+    _root = std::make_unique<Node3D>();
 
     for (int i : scene.nodes) {
         _root->AddChild(LoadNode(model, model.nodes[i]));
     }
 }
 
-Model::~Model()
+void Model::Release()
 {
+    Resource::Release();
 }
 
-Node3D* Model::GetTree()
+void Model::RegisterClass()
 {
-    return _root.get();
-}
-
-const std::vector<Ref<Mesh>>& Model::GetMeshes() const
-{
-    return _meshes;
+    auto db = ClassDB::Get();
+    db->RegisterClass("Model", "Resource", &Model::Create);
 }
 
 }

@@ -2,8 +2,8 @@
 
 namespace bl {
 
-SceneSystem::SceneSystem(Engine& engine)
-    : System(engine)
+SceneSystem::SceneSystem()
+    : System()
 {
 }
 
@@ -11,9 +11,10 @@ SceneSystem::~SceneSystem()
 {
 }
 
-std::shared_ptr<Resource> SceneSystem::ConstructResource(std::size_t typeHash, const std::filesystem::path& path)
+SceneSystem* SceneSystem::Get()
 {
-    throw std::runtime_error("No scene loading made");
+    static SceneSystem system;
+    return &system;
 }
 
 void SceneSystem::SetSceneActive(Ref<Scene> scene)

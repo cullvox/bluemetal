@@ -15,7 +15,7 @@ class Orbit3D : public Node3D
     float _polarAngle;
 
 public:
-    Orbit3D(Engine& engine);
+    Orbit3D();
     Orbit3D(const Orbit3D& rhs);
     ~Orbit3D();
 
@@ -37,7 +37,7 @@ public:
     void RotatePolar(float radians);
     void AddRadius(float radius);
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 
 };
 

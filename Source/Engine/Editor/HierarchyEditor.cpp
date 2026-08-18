@@ -4,8 +4,8 @@
 
 namespace bl {
 
-HierarchyEditor::HierarchyEditor(Engine& engine, EditorSystem& system)
-    : Editor(engine, system)
+HierarchyEditor::HierarchyEditor()
+    : Editor()
     , _rootNode(nullptr)
 {
 }

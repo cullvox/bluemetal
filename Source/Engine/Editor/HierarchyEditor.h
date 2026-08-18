@@ -11,7 +11,7 @@ protected:
     void OnSelectedNodeChanged() override;
 
 public:
-    HierarchyEditor(Engine& engine, EditorSystem& system);
+    HierarchyEditor();
     ~HierarchyEditor();
 
     virtual void Draw(RenderData& rd) override;

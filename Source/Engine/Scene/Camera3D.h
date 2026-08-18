@@ -22,9 +22,9 @@ class Camera3D : public Node3D {
     bool _isDirty;
 
 public:
-    Camera3D(Engine& engine);
+    Camera3D();
     ~Camera3D();
-    
+
     void SetProjection(CameraProjection projection);
     CameraProjection GetProjection();
     void SetFOV(float fov);
@@ -37,7 +37,7 @@ public:
     const glm::mat4& GetProjectionMatrix();
     const glm::mat4& GetViewMatrix();
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 } // namespace bl

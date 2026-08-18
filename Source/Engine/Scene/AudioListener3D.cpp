@@ -6,8 +6,8 @@
 
 namespace bl {
 
-AudioListener3D::AudioListener3D(Engine& engine)
-    : Node3D(engine)
+AudioListener3D::AudioListener3D()
+    : Node3D()
 {
 }
 
@@ -28,13 +28,13 @@ void AudioListener3D::Update(float dt)
     FMOD_VECTOR fmodForward { forward.x, forward.y, forward.z };
     FMOD_VECTOR fmodUp { up.x, up.y, up.z };
 
-    auto audioSystem = GetEngine().GetAudio();
-    FMOD_CHECK(audioSystem->GetFMOD()->set3DListenerAttributes(0, &fmodPosition, nullptr, &fmodForward, &fmodUp))
+    FMOD_CHECK(AudioSystem::Get()->GetFMOD()->set3DListenerAttributes(0, &fmodPosition, nullptr, &fmodForward, &fmodUp))
 }
 
-void AudioListener3D::RegisterClass(ClassDB& db)
+void AudioListener3D::RegisterClass()
 {
-    db.RegisterClass("AudioListener3D", "Node3D", &AudioListener3D::Create);
+    auto db = ClassDB::Get();
+    db->RegisterClass("AudioListener3D", "Node3D", &AudioListener3D::Create);
 }
 
 } // namespace bl

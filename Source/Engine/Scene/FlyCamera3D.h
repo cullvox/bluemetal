@@ -27,7 +27,7 @@ class FlyCamera3D : public Camera3D {
 
 
 public:
-    FlyCamera3D(Engine& engine);
+    FlyCamera3D();
     ~FlyCamera3D();
 
     virtual void Update(float dt) override;
@@ -38,7 +38,7 @@ public:
     void SetSmoothness(float smoothness);
     float GetSmoothness();
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 };
 
 } // namespace bl

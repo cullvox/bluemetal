@@ -15,9 +15,8 @@
 
 namespace bl {
 
-DebugEditor::DebugEditor(Engine& engine, EditorSystem& system)
-    : Editor(engine, system)
-    , _frameCounter(engine.GetFrameCounter())
+DebugEditor::DebugEditor()
+    : Editor()
 {
     _vulkanInstanceVersion = VK_VERSION_1_3;
 }
@@ -33,11 +32,11 @@ void DebugEditor::Show(bool visible)
 
 void DebugEditor::Draw(RenderData& rd)
 {
-    FrameCounter& counter = GetEngine().GetFrameCounter();
-    GraphicsSystem& graphics = GetEngine().GetGraphics();
-    AudioSystem* audio = GetEngine().GetAudio();
-    Window* window = GetEngine().GetWindow();
-    FrameCounter& physFrameCounter = GetEngine().GetPhysics().GetPhysFrameCounter();
+    auto counter = GetEngine()->GetFrameCounter();
+    auto graphics = GraphicsSystem::Get();
+    AudioSystem* audio = AudioSystem::Get();
+    Window* window = GetEngine()->GetWindow();
+    FrameCounter& physFrameCounter = PhysicsSystem::Get()->GetPhysFrameCounter();
 
     if (!_open) return;
 
@@ -70,14 +69,15 @@ void DebugEditor::Draw(RenderData& rd)
 
     ImGui::SeparatorText("Graphics");
 
-    ImGui::Text("Graphics Device: %s", graphics.GetPhysicalDevice()->GetDeviceName().c_str());
+    auto gs = GraphicsSystem::Get();
+    ImGui::Text("Graphics Device: %s", gs->GetPhysicalDevice()->GetDeviceName().c_str());
     ImGui::SameLine();
     ImGui::HelpMarker("Your graphics card.");
-    ImGui::Text("Graphics Vendor: %s", graphics.GetPhysicalDevice()->GetVendorName().c_str());
-    ImGui::Text("F/S: %d", counter.GetFramesPerSecond());
-    ImGui::Text("MS/F: %.2f", counter.GetMillisecondsPerFrame());
-    ImGui::Text("Average F/S (Over 10 Seconds): %.1f", counter.GetAverageFramesPerSecond(10));
-    ImGui::Text("Average MS/F (Over 144 Frames): %.2f", counter.GetAverageMillisecondsPerFrame(144));
+    ImGui::Text("Graphics Vendor: %s", gs->GetPhysicalDevice()->GetVendorName().c_str());
+    ImGui::Text("F/S: %d", counter->GetFramesPerSecond());
+    ImGui::Text("MS/F: %.2f", counter->GetMillisecondsPerFrame());
+    ImGui::Text("Average F/S (Over 10 Seconds): %.1f", counter->GetAverageFramesPerSecond(10));
+    ImGui::Text("Average MS/F (Over 144 Frames): %.2f", counter->GetAverageMillisecondsPerFrame(144));
     // ImGui::Text("Present Mode: %s", bl::ToString(window->GetSwapchain()->GetPresentMode()).data());
     // ImGui::Text("Surface Format: %s", bl::ToString(window->GetSwapchain()->GetSurfaceFormat().format).data());
     // ImGui::Text("Surface Color Space: %s", bl::ToString(window->GetSwapchain()->GetSurfaceFormat().colorSpace).data());
@@ -85,7 +85,7 @@ void DebugEditor::Draw(RenderData& rd)
     ImGui::Text("Phys F/S: %d", physFrameCounter.GetFramesPerSecond());
 
     if (ImGui::TreeNode("Physical Devices")) {
-        auto physicalDevices = graphics.GetInstance()->GetPhysicalDevices();
+        auto physicalDevices = graphics->GetInstance()->GetPhysicalDevices();
 
         for (size_t i = 0; i < physicalDevices.size(); i++) {
             auto& physicalDevice = physicalDevices[i];
@@ -121,7 +121,7 @@ void DebugEditor::Draw(RenderData& rd)
                 ImGui::TreePop();
             }
 
-            if (!treeOpened && physicalDevice == graphics.GetPhysicalDevice()) {
+            if (!treeOpened && physicalDevice == graphics->GetPhysicalDevice()) {
                 ImGui::SameLine();
                 ImGui::TextColored(ImVec4 { 0.2f, 0.5f, 0.8f, 1.0f }, "Current");
             }

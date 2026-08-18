@@ -4,8 +4,8 @@
 
 namespace bl {
 
-MultiMeshInstance3D::MultiMeshInstance3D(Engine& engine)
-    : Node3D(engine)
+MultiMeshInstance3D::MultiMeshInstance3D()
+    : Node3D()
     , _mesh({})
     , _instanceCount(0)
 {
@@ -71,9 +71,10 @@ void MultiMeshInstance3D::SetInstanceTransform(uint32_t index, const glm::mat4& 
     }
 }
 
-void MultiMeshInstance3D::RegisterClass(ClassDB& db)
+void MultiMeshInstance3D::RegisterClass()
 {
-    db.RegisterClass("MultiMeshInstance3D", "Node3D", &MultiMeshInstance3D::Create);
+    auto db = ClassDB::Get();
+    db->RegisterClass("MultiMeshInstance3D", "Node3D", &MultiMeshInstance3D::Create);
 }
 
 }

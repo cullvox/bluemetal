@@ -8,10 +8,10 @@
 
 namespace bl {
 
-MeshInstance3D::MeshInstance3D(Engine& engine)
-    : Node3D(engine)
+MeshInstance3D::MeshInstance3D()
+    : Node3D()
 {
-    _material = GetEngine().GetResourceSystem()->Load<bl::Material>("Resources/Materials/Default.mat");
+    _material = ResourceSystem::Get()->Load<bl::Material>("Resources/Materials/Default.json");
 }
 
 MeshInstance3D::MeshInstance3D(const MeshInstance3D& node)
@@ -44,9 +44,10 @@ void MeshInstance3D::SetMaterial(Ref<MaterialInstance> material)
     _material = material;
 }
 
-void MeshInstance3D::RegisterClass(ClassDB& db)
+void MeshInstance3D::RegisterClass()
 {
-    db.RegisterClass("MeshInstance3D", "Node3D", &MeshInstance3D::Create);
+    auto db = ClassDB::Get();
+    db->RegisterClass("MeshInstance3D", "Node3D", &MeshInstance3D::Create);
     //db.RegisterProperty("MeshInstance3D", std::make_unique<TProperty<MeshInstance3D, ResourceReference<Mesh>>>("mesh", ))
 
 }

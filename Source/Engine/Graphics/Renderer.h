@@ -1,8 +1,6 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
-#include <vulkan/vulkan_core.h>
-
+#include "Core/Object.h"
 #include "Graphics/RenderPass.h"
 #include "UniformData.h"
 #include "VulkanBuffer.h"
@@ -41,9 +39,9 @@ using RenderFunction = std::function<void(RenderData& rd)>;
 ///
 
 
-class Renderer {
+class Renderer : public Object {
 public:
-    Renderer(VulkanDevice* device, FrameCounter& frameCounter); /** @brief Constructor */
+    Renderer(VulkanDevice* device); /** @brief Constructor */
     ~Renderer(); /** @brief Destructor */
 
     VulkanDevice* GetDevice() const;
@@ -90,7 +88,6 @@ public:
 
 private:
     VulkanDevice*                                                   _device;
-    FrameCounter&                                                   _frameCounter;
     Viewport*                                                       _mainViewport;
     RenderData                                                      _renderData;
     uint32_t                                                        _currentFrame = 0;

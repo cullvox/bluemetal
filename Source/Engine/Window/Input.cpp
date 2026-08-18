@@ -2,14 +2,15 @@
 
 namespace bl {
 
-InputSystem::InputSystem(Engine& engine)
-    : System(engine)
+InputSystem::InputSystem()
+    : System()
 {
 }
 
-std::shared_ptr<Resource> InputSystem::ConstructResource(std::size_t, const std::filesystem::path&)
+InputSystem* InputSystem::Get()
 {
-    throw std::runtime_error("Input system does not construct any resources!");
+    static InputSystem system;
+    return &system;
 }
 
 void InputSystem::Poll(std::function<void(SDL_Event&)> extraFunc)

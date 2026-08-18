@@ -6,8 +6,8 @@
 
 namespace bl {
 
-Sky3D::Sky3D(Engine& engine)
-    : Node3D(engine)
+Sky3D::Sky3D()
+    : Node3D()
     , material(nullptr)
 {
 }
@@ -16,12 +16,11 @@ Sky3D::~Sky3D()
 {
 }
 
-void Sky3D::RegisterClass(ClassDB& db)
+void Sky3D::RegisterClass()
 {
-    Object::RegisterClass(db);
-
-    db.RegisterClass("Sky3D", std::string_view("Node3D"), &Sky3D::Create);
-    db.RegisterProperty("Sky3D", std::make_unique<TProperty<Sky3D, MaterialInstance*>>(db, "Sky Material", PropertyFlags::Editor, &Sky3D::SetSkyMaterial, &Sky3D::GetSkyMaterial));
+    auto db = ClassDB::Get();
+    db->RegisterClass("Sky3D", std::string_view("Node3D"), &Sky3D::Create);
+    db->RegisterProperty("Sky3D", std::make_unique<TProperty<Sky3D, MaterialInstance*>>("Sky Material", PropertyFlags::Editor, &Sky3D::SetSkyMaterial, &Sky3D::GetSkyMaterial));
 }
 
 void Sky3D::Draw(RenderData& rd)

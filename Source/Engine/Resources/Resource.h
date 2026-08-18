@@ -34,26 +34,56 @@ enum class ResourceState {
  * Resource objects themselves should be kept relatively lightweight, they will
  * be instantiated throughout the program lifetime. Once the @ref Load function is
  * called, the heavy data lifting will begin.
+ * 
+ * On a default, a Resource will load/save/release it's 
+ * 
  */
 class Resource : public Object, public std::enable_shared_from_this<Resource> {
     OBJECT_BOILER_VIRTUAL(Resource, Object)
 
-    friend class ResourceSystem;
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
     std::vector<std::shared_ptr<Resource>> _subResources; /** @brief Sub-resources that are part of this resource, but managed by it. */
+    nlohmann::json _data;
+    bool _loaded;
+
+protected:
+    friend class ResourceSystem;
+    void SetJson(const nlohmann::json& data) { _data = data; }
+    void SetPath(const std::filesystem::path& path) { _path = path; }
+    void SetLoaded(bool isLoaded) { _loaded = isLoaded; }
 
 public:
+
+    /**
+     * Default Constructor
+     * 
+     * A resource that does not exist in the filesystem. A filepath can be set
+     * by calling SetPath().
+     * 
+     */
+    Resource();
+
     /**
      * @brief Constructs a new Resource object.
      * @param manager Pointer to the resource manager that manages this resource.
      * @param data JSON data describing the resource.
      */
-    Resource(Engine& engine, const std::filesystem::path& path);
+    Resource(const std::filesystem::path& path);
 
     /**
      * @brief Destructor for the Resource class.
      */
     virtual ~Resource() = 0;
+
+    /**
+     * @brief Performs resource tasks to prepare it for use. After this function finishes, the resource must be ready.
+     */
+    virtual void Load();
+
+    /** 
+     * @brief Returns true if the resource is in a loaded state.
+     */
+    bool IsLoaded() { return _loaded; }
 
     /**
      * @brief Release any resource that might need to be released before the engine shuts down.
@@ -72,10 +102,12 @@ public:
      */
     ResourceState GetState() const;
 
+    const nlohmann::json& GetJson() const { return _data; };
+
     /**
      * @brief Returns true if the resource is ready to be used.
      */
-    bool IsReady() const { auto state = GetState(); return state == ResourceState::eReady || state == ResourceState::eReadyUnsaved; }
+    bool IsReady() const;
 
     /**
      * @brief Returns the unique path of this resource.
@@ -83,7 +115,7 @@ public:
      */
     const std::filesystem::path& GetPath();
 
-    static void RegisterClass(ClassDB& db);
+    static void RegisterClass();
 
     void AddSubResource(std::shared_ptr<Resource> res);
 };

@@ -12,10 +12,8 @@
 
 namespace bl {
 
-ImGuiSystem::ImGuiSystem(Engine& engine, WindowViewport* window, Renderer* renderer)
-    : System(engine)
-    , _window(window)
-    , _renderer(renderer)
+ImGuiSystem::ImGuiSystem()
+    : System()
 {
     Init();
 }
@@ -25,9 +23,10 @@ ImGuiSystem::~ImGuiSystem()
     Unload();
 }
 
-std::shared_ptr<Resource> ImGuiSystem::ConstructResource(std::size_t, const std::filesystem::path&)
+ImGuiSystem* ImGuiSystem::Get()
 {
-    throw std::runtime_error("ImGuiSystem does not handle any resources.");
+    static ImGuiSystem system;
+    return &system;
 }
 
 void ImGuiSystem::ApplyStyle()
@@ -99,10 +98,11 @@ void ImGuiSystem::Process(const SDL_Event& event)
 
 void ImGuiSystem::Init()
 {
-    auto& graphics = GetEngine().GetGraphics();
-    auto device = graphics.GetDevice();
-    auto instance = graphics.GetInstance();
-    auto physicalDevice = graphics.GetPhysicalDevice();
+    auto graphics = GraphicsSystem::Get();
+    _renderer = graphics->GetRenderer();
+    auto device = graphics->GetDevice();
+    auto instance = graphics->GetInstance();
+    auto physicalDevice = graphics->GetPhysicalDevice();
     auto window = _window;
 
     device->WaitForDevice();
@@ -136,7 +136,7 @@ void ImGuiSystem::Init()
     VkInstance inst = instance->Get();
     ImGui_ImplVulkan_LoadFunctions(VK_API_VERSION_1_3, [](const char* function_name, void* vulkan_instance) { return vkGetInstanceProcAddr(*(reinterpret_cast<VkInstance*>(vulkan_instance)), function_name); }, &inst);
 
-    ImGui_ImplSDL3_InitForVulkan(GetEngine().GetWindow()->Get());
+    ImGui_ImplSDL3_InitForVulkan(GetEngine()->GetWindow()->Get());
 
     auto colorFormats = _renderer->GetColorAttachmentFormats(RenderPassType::eGeometry);
 
@@ -193,8 +193,7 @@ void ImGuiSystem::Init()
 
 void ImGuiSystem::Unload()
 {
-    auto& graphics = GetEngine().GetGraphics();
-    auto device = graphics.GetDevice();
+    auto device = GraphicsSystem::Get()->GetDevice();
 
     device->WaitForDevice();
     ImGui_ImplSDL3_Shutdown();
@@ -213,9 +212,11 @@ void ImGuiSystem::BeginFrame()
     ImGuiIO& io = ImGui::GetIO();
     ImGuizmo::SetRect(0, 0, io.DisplaySize.x, io.DisplaySize.y);
 
-    SDL_DisplayID displayID = SDL_GetDisplayForWindow(GetEngine().GetWindow()->Get());
+
+    SDL_Window* window = GetEngine()->GetWindow()->Get();
+    SDL_DisplayID displayID = SDL_GetDisplayForWindow(window);
     float scale = SDL_GetDisplayContentScale(displayID);
-    float density = SDL_GetWindowPixelDensity(GetEngine().GetWindow()->Get());
+    float density = SDL_GetWindowPixelDensity(window);
 
     ImGui::GetIO().DisplayFramebufferScale = ImVec2 { density, density };
     ImGui::GetIO().FontGlobalScale = scale;

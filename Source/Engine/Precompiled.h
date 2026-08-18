@@ -25,6 +25,7 @@
 #include <vector>
 #include <vector>
 #include <list>
+#include <fstream>
 
 // Vulkan
 #define VK_ENABLE_BETA_EXTENSIONS
@@ -72,6 +73,7 @@
 
 // JSON
 #include <nlohmann/json.hpp>
+#include <nlohmann/adl_serializer.hpp>
 
 // Fast Noise
 #include <FastNoise/FastNoise.h>

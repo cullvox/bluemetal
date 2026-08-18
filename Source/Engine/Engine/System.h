@@ -1,29 +1,21 @@
 #pragma once
 
-#include <cstdint>
-#include <filesystem>
-#include <memory>
+#include "Core/Object.h"
 
 namespace bl {
 
-class Engine;
 class ResourceSystem;
 class Resource;
 
-class System {
-    Engine& engine;
+class System : public Object {
+protected:
+    friend class Engine;
 
-public:
-    System(Engine& engine)
-        : engine(engine)
-    {
-    }
-
+    System() = default;
     virtual ~System() = default;
 
+public:
     virtual std::shared_ptr<Resource> ConstructResource(std::size_t typeHash, const std::filesystem::path& path);
-
-    Engine& GetEngine() { return engine; }
 };
 
 } // namespace bl

@@ -24,9 +24,13 @@ class EditorSystem : public System {
 
     Node* _selectedNode;
 
-public:
-    EditorSystem(Engine& engine);
+    EditorSystem();
     ~EditorSystem();
+
+
+public:
+
+    static EditorSystem* Get();
 
     SettingsEditor& GetSettingsEditor() { return _settings; }
     DebugEditor& GetDebugEditor() { return _debug; }

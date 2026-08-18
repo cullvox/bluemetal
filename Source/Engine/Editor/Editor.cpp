@@ -7,10 +7,8 @@
 
 namespace bl {
 
-Editor::Editor(Engine& engine, EditorSystem& system)
-    : Object(engine)
-    , _engine(engine)
-    , _system(system)
+Editor::Editor()
+    : Object()
 {
 }
 
@@ -31,24 +29,14 @@ void Editor::OnSelectedNodeChanged()
 {
 }
 
-Engine& Editor::GetEngine() const 
-{ 
-    return _engine; 
-}
-
-EditorSystem& Editor::GetSystem() const 
-{ 
-    return _system; 
-}
-
 Node* Editor::GetSelectedNode() const
 {
-    return GetSystem().GetSelectedNode();
+    return EditorSystem::Get()->GetSelectedNode();
 }
 
 void Editor::SetSelectedNode(Node* node)
 {
-    GetSystem().SetSelectedNode(node);
+    EditorSystem::Get()->SetSelectedNode(node);
 }
 
 } // namespace bl

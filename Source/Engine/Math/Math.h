@@ -3,6 +3,7 @@
 
 #include "Extent.h"
 #include "Rect.h"
+#include "Conversions.h"
 
 namespace bl {
 inline float Lerp(float a, float b, float f)
@@ -34,3 +35,4 @@ namespace Math {
 }
 
 } // namespace bl
+

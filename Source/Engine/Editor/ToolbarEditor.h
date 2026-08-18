@@ -16,7 +16,7 @@ class ToolbarEditor : public Editor {
     TransformMode _transformMode;
 
 public:
-    ToolbarEditor(Engine& engine, EditorSystem& system);
+    ToolbarEditor();
     ~ToolbarEditor();
 
     void SetTransformMode(TransformMode mode);

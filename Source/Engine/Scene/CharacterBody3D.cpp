@@ -6,8 +6,8 @@
 
 namespace bl {
 
-CharacterBody3D::CharacterBody3D(Engine& engine)
-    : PhysicsBody3D(engine)
+CharacterBody3D::CharacterBody3D()
+    : PhysicsBody3D()
 {
     _orbiter = nullptr;
 }
@@ -21,7 +21,7 @@ void CharacterBody3D::Update(float dt)
     if (!_orbiter)
         _orbiter = GetChild("Orbiter")->As<Orbit3D>();
 
-    auto input = GetEngine().GetInput();
+    auto input = InputSystem::Get();
     auto& keyboard = input->GetKeyboard();
     auto& mouse = input->GetMouse();
 
@@ -69,7 +69,7 @@ void CharacterBody3D::Update(float dt)
     SetVelocity(velocity);
 
     // Rotate the player to input.
-    if (mouse.GetCaptured(GetEngine().GetWindow()))
+    if (mouse.GetCaptured(GetEngine()->GetWindow()))
     {
         glm::vec2 delta = mouse.GetMouseDelta() * 0.09f;
         glm::vec2 scrollDelta = mouse.GetMouseScrollDelta() * 0.09f;
@@ -80,9 +80,10 @@ void CharacterBody3D::Update(float dt)
     }
 }
 
-void CharacterBody3D::RegisterClass(ClassDB& db)
+void CharacterBody3D::RegisterClass()
 {
-    db.RegisterClass("CharacterBody3D", "PhysicsBody3D", &CharacterBody3D::Create);
+    auto db = ClassDB::Get();
+    db->RegisterClass("CharacterBody3D", "PhysicsBody3D", &CharacterBody3D::Create);
 }
 
 }

@@ -1,18 +1,33 @@
 #include "NoiseTexture2D.h"
+#include "Core/ClassDB.h"
 #include "Core/Print.h"
 #include "Engine/Engine.h"
 #include "Graphics/GraphicsSystem.h"
+#include "Resources/Texture.h"
 
 namespace bl {
 
-NoiseTexture2D::NoiseTexture2D(Engine& engine, const std::filesystem::path& path)
-    : Texture2D(engine)
+NoiseTexture2D::NoiseTexture2D()
+{
+}
+
+NoiseTexture2D::NoiseTexture2D(const NoiseTexture2D& copy)
+{
+    throw std::runtime_error("Copy not implemented");
+}
+
+NoiseTexture2D::NoiseTexture2D(const std::filesystem::path& path)
+    : Texture2D()
 {
 
-    std::ifstream noiseJsonFile { path };
-    if (!noiseJsonFile.is_open()) {
-        throw std::runtime_error("Could not open noise texture JSON file.");
-    }
+    
+
+}
+
+void NoiseTexture2D::Load()
+{
+  
+    const auto& json = GetJson();
 
     FastNoise::SmartNode<> noise;
     auto remap = FastNoise::New<FastNoise::Remap>();
@@ -24,8 +39,6 @@ NoiseTexture2D::NoiseTexture2D(Engine& engine, const std::filesystem::path& path
     bool tileable = false;
 
     try {
-        nlohmann::json json = nlohmann::json::parse(noiseJsonFile);
-
         width = json.value("width", 64);
         height = json.value("height", 64);
         xOffset = json.value("xOffset", 0);
@@ -84,12 +97,21 @@ NoiseTexture2D::NoiseTexture2D(Engine& engine, const std::filesystem::path& path
     }
 
     // Create texture.
-    auto& graphics = engine.GetGraphics();
     _extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
     VkExtent3D extent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height), 1 };
-    _image = std::make_unique<VulkanImage>(graphics.GetDevice(), VK_IMAGE_TYPE_2D, extent, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    _image = std::make_unique<VulkanImage>(GraphicsSystem::Get()->GetDevice(), VK_IMAGE_TYPE_2D, extent, VK_FORMAT_R8_UNORM, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     _image->UploadData(pixels);
+}
+void NoiseTexture2D::Release()
+{
+    Texture2D::Release();
+    _image.reset();
+}
 
+void NoiseTexture2D::RegisterClass()
+{
+    auto db = ClassDB::Get();
+    db->RegisterClass("NoiseTexture2D", "Texture2D", &NoiseTexture2D::Create);
 }
 
 

@@ -32,9 +32,11 @@ class PhysicsSystem : public System {
     float _interpolationFraction = 0.0f;
     FrameCounter physFrameCounter;
 
-public:
-    PhysicsSystem(Engine& engine);
+    PhysicsSystem();
     ~PhysicsSystem();
+
+public:
+    static PhysicsSystem* Get();
 
     JPH::PhysicsSystem& GetJolt();
     bool Update(float deltaTime, std::function<void()> update);

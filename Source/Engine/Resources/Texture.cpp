@@ -4,8 +4,21 @@
 
 namespace bl {
 
-Texture::Texture(Engine& engine, const std::filesystem::path& path)
-    : Resource(engine, path)
+Texture::Texture()
+    : Resource()
+{
+}
+
+Texture::Texture(const Texture& texture)
+    : _extent(texture._extent)
+    , _format(texture._format)
+    , _colorSpace(texture._colorSpace)
+{
+    throw std::runtime_error("ToDO");
+}
+
+Texture::Texture(const std::filesystem::path& path)
+    : Resource(path)
 {
 }
 
@@ -27,6 +40,12 @@ ColorSpace Texture::GetColorSpace() const
 VulkanImage* Texture::GetImage() const
 {
     return _image.get();
+}
+
+void Texture::RegisterClass()
+{
+    auto db = ClassDB::Get();
+    db->RegisterClass("Texture", "Resource", nullptr);
 }
 
 } // namespace bl

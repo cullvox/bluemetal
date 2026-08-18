@@ -1,0 +1,5 @@
+{
+    "class": "Shader",
+    "path": "Resources/Shaders/Grass.frag.spv",
+    "stage": "Fragment"
+}

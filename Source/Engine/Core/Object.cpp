@@ -1,17 +1,17 @@
 #include "Object.h"
 #include "Engine/Engine.h"
 #include "Core/ClassDB.h"
+#include "Core/ClassDB.h"
+#include "Reflection/Property.h"
 
 namespace bl
 {
 
-Object::Object(Engine& engine)
-    : _engine(engine)
+Object::Object()
 {
 }
 
 Object::Object(const Object& rhs)
-    : _engine(rhs._engine)
 {
 }
 
@@ -31,17 +31,17 @@ void Object::AddInstanceProperty(std::unique_ptr<Property> property)
     _instancePropertiesPointers.push_back(_instanceProperties.back().get());
 }
 
-Engine& Object::GetEngine()
+Engine* Object::GetEngine()
 {
-    return _engine;
+    return Engine::Get();
 }
 
 Variant Object::Get(std::string_view name)
 {
-    ClassDB& db = GetEngine().GetClassDB();
+    ClassDB* db = ClassDB::Get();
 
     // Look for the property in the class db.
-    auto property = db.FindPropertyInClassRecursive(GetClassName(), name);
+    auto property = db->FindPropertyInClassRecursive(GetClassName(), name);
     if (property) 
         return property->Get(this);
 
@@ -57,10 +57,9 @@ Variant Object::Get(std::string_view name)
 
 void Object::Set(std::string_view name, const Variant& value)
 {
-    ClassDB& db = GetEngine().GetClassDB();
 
     // Look for the property in the class db.
-    auto property = db.FindPropertyInClassRecursive(GetClassName(), name);
+    auto property = ClassDB::Get()->FindPropertyInClassRecursive(GetClassName(), name);
     if (property) 
         return property->Set(this, value);
 
@@ -76,7 +75,7 @@ void Object::Set(std::string_view name, const Variant& value)
 
 bool Object::IsA(std::string_view className)
 {
-    ClassDB& db = GetEngine().GetClassDB();
+    ClassDB* db = ClassDB::Get();
 
     std::string_view currentClass = GetClassName();
     while (!currentClass.empty()) {
@@ -84,15 +83,16 @@ bool Object::IsA(std::string_view className)
             return true;
         }
 
-        currentClass = db.GetClassParent(currentClass);
+        currentClass = db->GetClassParent(currentClass);
     }
 
     return false;
 }
 
-void Object::RegisterClass(ClassDB& db)
+void Object::RegisterClass()
 {
-    db.RegisterClass("Object", "", &Object::Create);
+    auto db = ClassDB::Get();
+    db->RegisterClass("Object", "", &Object::Create);
 }
 
 } // namespace bl

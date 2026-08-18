@@ -10,10 +10,9 @@ class RenderData;
 
 class DebugEditor : public Editor {
     bool _open;
-    FrameCounter& _frameCounter;
     uint32_t _vulkanInstanceVersion;
 public:
-    DebugEditor(Engine& engine, EditorSystem& system);
+    DebugEditor();
     ~DebugEditor();
 
     void Show(bool visible);

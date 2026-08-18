@@ -8,14 +8,8 @@
 
 namespace bl {
 
-EditorSystem::EditorSystem(Engine& engine)
-    : System(engine)
-    , _debug(engine, *this)
-    , _settings(engine, *this)
-    , _hierarchy(engine, *this)
-    , _inspector(engine, *this)
-    , _toolbar(engine, *this)
-    , _viewport(engine, *this)
+EditorSystem::EditorSystem()
+    : System()
     , _selectedNode(nullptr)
 {
 
@@ -23,6 +17,12 @@ EditorSystem::EditorSystem(Engine& engine)
 
 EditorSystem::~EditorSystem()
 {
+}
+
+EditorSystem* EditorSystem::Get()
+{
+    static EditorSystem system;
+    return &system;
 }
 
 void EditorSystem::SetSelectedNode(Node* node)

@@ -1,0 +1,14 @@
+{
+    "class": "Material",
+    "shaders": {
+        "vertex": "Resources/Shaders/PhysicsDebugFlat.vert.json",
+        "fragment": "Resources/Shaders/PhysicsDebugFlat.frag.json"
+    },
+    "vertexState": {
+        "vertex": "Debug",
+        "topology": "VK_PRIMITIVE_TOPOLOGY_LINE_STRIP"
+    },
+    "dynamicStates": [
+        "VK_DYNAMIC_STATE_LINE_WIDTH"
+    ]
+}
