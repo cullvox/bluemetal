@@ -42,7 +42,7 @@ void Scene::Pack(Node* root)
 std::unique_ptr<Node> Scene::Instantiate()
 {
     std::unique_ptr<Node> root;
-
+    return nullptr;
 }
 
 } // namespace bl

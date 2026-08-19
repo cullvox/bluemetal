@@ -65,7 +65,7 @@ protected:
     }
 
 public:
-    virtual ~Property() = default;
+    virtual ~Property() {}
 
     std::string_view GetName()          { return _name; }
     VariantType GetType()               { return _type; }

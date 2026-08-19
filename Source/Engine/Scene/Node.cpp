@@ -255,7 +255,7 @@ nlohmann::json Node::Pack()
 //
     //classData->GetProperties(GetClassName());
 
-
+    return {};
 }
 
 void Node::RegisterClass()

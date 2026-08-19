@@ -31,6 +31,10 @@ class ClassData
 
 public:
     ClassData() = default;
+    ClassData(const ClassData&) = delete;
+    ClassData& operator=(const ClassData&) = delete;
+    ClassData(ClassData&&) = default;
+    ClassData& operator=(ClassData&&) = default;
 
     /** @brief Returns the name of the class represented here. */
     std::string_view GetClassName() const;
