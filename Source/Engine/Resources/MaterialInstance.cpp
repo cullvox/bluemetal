@@ -89,7 +89,7 @@ VulkanMaterialInstance* MaterialInstance::GetInstance() const
 Variant MaterialInstance::GetMaterialProperty(std::string_view name)
 {
     // Make sure the uniform exists in the material, and then get it using the material instance.
-    const auto& uniforms = _materialInstance->GetBaseMaterial()->GetUniforms();
+    const auto& uniforms =  GetInstance()->GetBaseMaterial()->GetUniforms();
     auto it = uniforms.find(std::string{name});
     if (it == uniforms.end()) {
         Print::Error("Could not get material uniform, it does not exist!");
@@ -102,43 +102,43 @@ Variant MaterialInstance::GetMaterialProperty(std::string_view name)
     {
     case VulkanVariableBlockType::eScalarBool: {
         int32_t v;
-        _materialInstance->GetGenericUniform(name.data(), v);
+        GetInstance()->GetGenericUniform(name.data(), v);
         value = static_cast<bool>(v);
         break;
     }
     case VulkanVariableBlockType::eScalarInt: {
         int v;
-        _materialInstance->GetGenericUniform(name.data(), v);
+        GetInstance()->GetGenericUniform(name.data(), v);
         value = v;
         break;
     }
     case VulkanVariableBlockType::eScalarFloat: {
         float v;
-        _materialInstance->GetGenericUniform(name.data(), v);
+        GetInstance()->GetGenericUniform(name.data(), v);
         value = v;
         break;
     }
     case VulkanVariableBlockType::eVector2: {
         glm::vec2 v;
-        _materialInstance->GetGenericUniform(name.data(), v);
+        GetInstance()->GetGenericUniform(name.data(), v);
         value = v;
         break;
     }
     case VulkanVariableBlockType::eVector3: {
         glm::vec3 v;
-        _materialInstance->GetGenericUniform(name.data(), v);
+        GetInstance()->GetGenericUniform(name.data(), v);
         value = v;
         break;
     }
     case VulkanVariableBlockType::eVector4: {
         glm::vec4 v;
-        _materialInstance->GetGenericUniform(name.data(), v);
+        GetInstance()->GetGenericUniform(name.data(), v);
         value = v;
         break;
     }
     case VulkanVariableBlockType::eMatrix4: {
         glm::mat4 v;
-        _materialInstance->GetGenericUniform(name.data(), v);
+        GetInstance()->GetGenericUniform(name.data(), v);
         value = v;
         break;
     }
