@@ -241,6 +241,9 @@ int Main(int argc, const char** argv)
 
         auto viewport = graphics->GetViewport();
 
+        auto viewport1 = editor->AddViewport();
+        auto viewport2 = editor->AddViewport();
+
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
             frameCounter->BeginFrame();

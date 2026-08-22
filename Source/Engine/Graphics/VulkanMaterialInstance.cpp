@@ -24,7 +24,7 @@ VulkanMaterialInstance::VulkanMaterialInstance(VulkanDevice* device, VulkanMater
 VulkanMaterialInstance::~VulkanMaterialInstance()
 {
     FreeSets();
-    std::erase( GetBaseMaterial()->_instances, this);
+    GetBaseMaterial()->RemoveInstance(this);
 }
 
 void VulkanMaterialInstance::SetBool(const std::string& name, bool value)

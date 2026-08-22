@@ -33,6 +33,8 @@ ViewportEditor::ViewportEditor()
     _viewport->onPreViewportResized.AddRaw(this, &ViewportEditor::OnPreViewportResized);
     _viewport->onPostViewportResized.AddRaw(this, &ViewportEditor::OnPostViewportResized);
 
+    _viewport->SetRenderingPriority(100);
+
     renderer->AddViewport(_viewport.get());
 
     _geometryColorDescriptor = geometryColorDescriptor;
@@ -49,6 +51,8 @@ ViewportEditor::~ViewportEditor()
 void ViewportEditor::OnPreViewportResized(Viewport* viewport)
 {
     // Add this descriptor to the deleter queue for this frame.
+
+    //ImGui_ImplVulkan_RemoveTexture(_geometryColorDescriptor);
     _viewportDescriptorDeleter[GraphicsSystem::Get()->GetRenderer()->GetRenderData().GetCurrentFrame()] = _geometryColorDescriptor;
 }
 
@@ -83,10 +87,14 @@ void ViewportEditor::Draw(RenderData& rd)
     _viewport->SetView(view);
     _viewport->SetProjection(projection);
 
-    bool isOpen = GetShown();
-    ImGui::Begin("Viewport", &isOpen);
+    bool isOpen = true;
+    
+    std::string name = "Viewport##" + _id;
+    ImGui::Begin(name.c_str(), &isOpen);
 
     ImVec2 region = ImGui::GetContentRegionAvail();
+    region = { std::max(1.0f, region.x), std::max(1.0f, region.y) };
+
     float scale = ImGui::GetWindowDpiScale(); 
 
     float density = SDL_GetWindowPixelDensity(GetEngine()->GetWindow()->Get());

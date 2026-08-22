@@ -62,6 +62,10 @@ class Renderer;
  */
 class VulkanMaterial : public VulkanMaterialInstance {
 
+protected:
+    friend class VulkanMaterialInstance;
+    void RemoveInstance(VulkanMaterialInstance* instance);
+
 public:
     /**
      * @brief Map from uniform name to a uniform variable block.

@@ -73,6 +73,8 @@ protected:
     VkRenderingAttachmentInfo _depthAttachment;
     RendererViewportData* data;
 
+    int32_t _priority = 0;
+
     virtual void RecreateImages();
 
 public:
@@ -88,7 +90,8 @@ public:
     void SetProjection(const glm::mat4& projection);
     void SetView(const glm::mat4& view);
     void SetRendererData(RendererViewportData* data);
-
+    void SetRenderingPriority(int32_t priority) { _priority = priority; }
+    
     VkExtent2D GetExtent() const;
     VkImageView GetColorImageView();
     VkImageView GetColorResolveImageView();
@@ -98,7 +101,8 @@ public:
     VkSampleCountFlagBits GetSampleCount();
     VkPresentModeKHR GetPresentMode();
     ViewportRenderFlags GetRenderFlags() const;
-
+    int32_t GetRenderingPriority() const { return _priority; }
+    
     virtual void GetColorRenderingAttachments(std::vector<VkRenderingAttachmentInfo>& attachments);
     virtual void GetDepthRenderingAttachment(VkRenderingAttachmentInfo& attachment);
 

@@ -14,12 +14,19 @@ class ViewportEditor : public Editor {
 
     std::array<VkDescriptorSet, VulkanConfig::maxFramesInFlight> _viewportDescriptorDeleter = {};
 
+    int32_t _id = 0;
+
     void OnPreViewportResized(Viewport* viewport);
     void OnPostViewportResized(Viewport* viewport);
 
 public:
-   ViewportEditor(); 
-   ~ViewportEditor();
+    ViewportEditor();
+    ViewportEditor(ViewportEditor&& move) = default;
+    ~ViewportEditor();
+
+    void SetIndex(int32_t id) { _id = id; };
+
+    ViewportEditor& operator=(ViewportEditor&& move) = default;
 
     virtual void Draw(RenderData& rd);
 

@@ -12,6 +12,7 @@ class EditorSystem;
 class Editor : public Object {
     bool _shown;
 
+
 protected:
     virtual void OnSelectedNodeChanged();
     bool GetShown() const;

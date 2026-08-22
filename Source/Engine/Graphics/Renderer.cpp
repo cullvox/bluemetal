@@ -107,9 +107,6 @@ void Renderer::RenderFrame()
 {
     _renderData.SetCurrentFrame(_currentFrame);
 
-    // Apply the deleter queue for this frame.
-    _deletionQueues[_currentFrame].clear();
-
     // Wait for the any viewport images coming in the chain to finish.
     VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
     VK_CHECK(vkResetFences(_device->Get(), 1, &_inFlightFences[_currentFrame]))
@@ -117,6 +114,9 @@ void Renderer::RenderFrame()
     // Reset the command buffer for this frame.
     auto cmd = _commandBuffers[_currentFrame];
     VK_CHECK(vkResetCommandBuffer(cmd, 0))
+
+    // Apply the deleter queue for this frame.
+    _deletionQueues[_currentFrame].clear();
 
     // Begin this frames command buffer.
     VkCommandBufferBeginInfo beginInfo = {};
@@ -293,6 +293,9 @@ void Renderer::UpdateMaterialUniforms()
 void Renderer::AddViewport(Viewport* viewport)
 {
     _viewports.push_back(viewport);
+    std::sort(_viewports.begin(), _viewports.end(), [](Viewport* a, Viewport* b){
+        return a->GetRenderingPriority() > b->GetRenderingPriority();
+    });
 }
 
 RenderData& Renderer::GetRenderData()

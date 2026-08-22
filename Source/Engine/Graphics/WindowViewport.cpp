@@ -82,6 +82,9 @@ void WindowViewport::RecreateImages()
     _swapchainImages.reserve(_swapchain->GetImageCount());
     _swapchainImageViews.reserve(_swapchain->GetImageCount());
 
+    _swapchainImages.clear();
+    _swapchainImageViews.clear();
+
     auto swapImages = _swapchain->GetImages();
     auto swapExtent = _swapchain->GetExtent();
 

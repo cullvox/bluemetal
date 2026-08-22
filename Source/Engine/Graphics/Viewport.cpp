@@ -83,6 +83,11 @@ void Viewport::RecreateImages()
         // Add images to the deleter queue.
         _renderer->AddToDeletionQueue(std::move(_colorImageView));
         _renderer->AddToDeletionQueue(std::move(_colorImage));
+
+
+
+        //_colorImageResolved->
+
         _renderer->AddToDeletionQueue(std::move(_colorImageResolvedView));
         _renderer->AddToDeletionQueue(std::move(_colorImageResolved));
 
@@ -214,7 +219,7 @@ bool Viewport::Ready()
     if (_imagesDirty)
     {
         RecreateImages();
-        return false;
+        return true;
     }
 
     return true;
@@ -228,7 +233,7 @@ bool Viewport::Bind(RenderData& rd)
 
     if (_imagesDirty) {
         RecreateImages();
-        return false; // Skip this frame.
+        //return false; // Skip this frame.
     }
 
     // Setup the vulkan viewport commands.

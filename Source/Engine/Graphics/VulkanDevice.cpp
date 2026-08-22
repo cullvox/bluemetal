@@ -8,10 +8,10 @@
 #include "VulkanConfig.h"
 
 
-#define VMA_DEBUG_LOG(format, ...) do { \
-    printf(format, ##__VA_ARGS__); \
-    printf("\n"); \
-} while(false)
+// #define VMA_DEBUG_LOG(format, ...) do { \
+//     printf(format, ##__VA_ARGS__); \
+//     printf("\n"); \
+// } while(false)
 
 // Route leak reports to printf
 #define VMA_LEAK_LOG_FORMAT(format, ...) do { \

@@ -118,6 +118,18 @@ VulkanMaterial::~VulkanMaterial()
     }
 }
 
+void VulkanMaterial::RemoveInstance(VulkanMaterialInstance* instance)
+{
+    if (instance == this)
+        return;
+
+    auto it = std::find(_instances.begin(), _instances.end(), instance);
+    if (it == _instances.end())
+        throw std::runtime_error("Trying to remove instance that isn't in this material.");
+
+    _instances.erase(it);
+}
+
 VulkanMaterialSupportFlags VulkanMaterial::GetSupportFlags() const
 {
     return _flags;

@@ -90,7 +90,37 @@ void EditorSystem::Draw(RenderData& rd)
     _hierarchy.Draw(rd);
     _inspector.Draw(rd);
     _toolbar.Draw(rd);
-    _viewport.Draw(rd);
+
+    for (auto& vp : _viewports)
+        vp->Draw(rd);
+}
+
+
+ViewportEditor* EditorSystem::AddViewport()
+{
+    auto& viewport = _viewports.emplace_back(std::make_unique<ViewportEditor>());
+
+    for (int i = 0; i < _viewports.size(); i++)
+        _viewports[i]->SetIndex(i);
+
+    return viewport.get();
+}
+
+//std::span<ViewportEditor> EditorSystem::GetViewports()
+//{
+//    return _viewports;
+//}
+
+void EditorSystem::RemoveViewport(ViewportEditor* viewport)
+{
+    auto it = std::find_if(_viewports.begin(), _viewports.end(), [viewport](auto& vp){return vp.get() == viewport;});
+    if (it == _viewports.end())
+    {
+        Print::Error("Cannot remove an invalid viewport.");
+        return;
+    }
+
+    _viewports.erase(it);
 }
 
 } // namespace bl
