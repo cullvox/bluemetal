@@ -21,8 +21,12 @@ class ViewportEditor : public Editor {
 
 public:
     ViewportEditor();
+    ViewportEditor(ViewportEditor& copy);
     ViewportEditor(ViewportEditor&& move) = default;
     ~ViewportEditor();
+
+    ViewportEditor& operator=(const ViewportEditor& other) = default;
+    ViewportEditor& operator=(ViewportEditor&& other) = default;
 
     void SetIndex(int32_t id) { _id = id; };
 

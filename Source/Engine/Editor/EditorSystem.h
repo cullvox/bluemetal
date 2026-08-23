@@ -20,7 +20,7 @@ class EditorSystem : public System {
     HierarchyEditor _hierarchy;
     InspectorEditor _inspector;
     ToolbarEditor _toolbar;
-    std::vector<std::unique_ptr<ViewportEditor>> _viewports;
+    std::vector<ViewportEditor> _viewports;
 
     Node* _selectedNode;
 
@@ -41,7 +41,7 @@ public:
     Node* GetSelectedNode() const;
     void Draw(RenderData& rd);
     ViewportEditor* AddViewport();
-    // std::span<ViewportEditor> GetViewports();
+    std::span<ViewportEditor> GetViewports();
     void RemoveViewport(ViewportEditor* viewport);
 
 };

@@ -19,6 +19,10 @@ Object::~Object()
 {
 }
 
+Object& Object::operator=(const Object& other) = default;
+
+Object& Object::operator=(Object&& other) = default;
+
 std::span<Property*> Object::GetInstanceProperties()
 {
     return _instancePropertiesPointers;

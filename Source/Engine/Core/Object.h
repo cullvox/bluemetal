@@ -18,7 +18,8 @@ public: \
     virtual std::string_view GetClassName() override { return BL_STRINGIFY(name); } \
     constexpr static std::string_view GetStaticClassName() { return BL_STRINGIFY(name); } \
     constexpr static std::string_view GetParentClassName() { return BL_STRINGIFY(parent); } \
-    static Object* Create() { return nullptr; } \
+    virtual name* Clone() override { throw std::runtime_error("Cannot clone a virtual class that hasn't been overriden."); } \
+    static Object* Create() { throw std::runtime_error("Cannot create a virtual object."); } \
 private:
 
 namespace bl
@@ -44,8 +45,11 @@ protected:
 
 public:
     Object();
-    Object(const Object& rhs);
+    Object(const Object& other);
     virtual ~Object();
+
+    Object& operator=(Object& other);
+    Object& operator=(Object&& other);
 
     static void RegisterClass();
 

@@ -50,8 +50,10 @@ inline PropertyFlags& operator|=(PropertyFlags& a, PropertyFlags b) { a = static
 inline PropertyFlags& operator&=(PropertyFlags& a, PropertyFlags b) { a = static_cast<PropertyFlags>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b)); return a; }
 
 /// - A member of a class to be set, changed, or viewed by various systems.
-class Property
+class Property : public Object
 {
+    OBJECT_BOILER_VIRTUAL(Property, Object)
+
     std::string_view _name;
     PropertyFlags _flags;
     VariantType _type;
@@ -65,6 +67,8 @@ protected:
     }
 
 public:
+    Property(Property&) = default;
+    Property(Property&&) = default;
     virtual ~Property() {}
 
     std::string_view GetName()          { return _name; }

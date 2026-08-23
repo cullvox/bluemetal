@@ -58,6 +58,8 @@ Viewport::Viewport(Renderer* renderer)
         };
     }
 
+    _uboData.bConvertGamma = 1;
+
     vkUpdateDescriptorSets(_device->Get(), static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 

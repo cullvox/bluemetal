@@ -40,6 +40,11 @@ ViewportEditor::ViewportEditor()
     _geometryColorDescriptor = geometryColorDescriptor;
 }
 
+ViewportEditor::ViewportEditor(ViewportEditor& copy)
+{
+    
+}
+
 ViewportEditor::~ViewportEditor()
 {
     auto renderer = GraphicsSystem::Get()->GetRenderer();
@@ -89,7 +94,7 @@ void ViewportEditor::Draw(RenderData& rd)
 
     bool isOpen = true;
     
-    std::string name = "Viewport##" + _id;
+    std::string name = "Viewport##" + std::to_string(_id);
     ImGui::Begin(name.c_str(), &isOpen);
 
     ImVec2 region = ImGui::GetContentRegionAvail();

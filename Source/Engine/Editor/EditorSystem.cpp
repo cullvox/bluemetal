@@ -92,18 +92,18 @@ void EditorSystem::Draw(RenderData& rd)
     _toolbar.Draw(rd);
 
     for (auto& vp : _viewports)
-        vp->Draw(rd);
+        vp.Draw(rd);
 }
 
 
 ViewportEditor* EditorSystem::AddViewport()
 {
-    auto& viewport = _viewports.emplace_back(std::make_unique<ViewportEditor>());
+    auto& viewport = _viewports.emplace_back();
 
     for (int i = 0; i < _viewports.size(); i++)
-        _viewports[i]->SetIndex(i);
+        _viewports[i].SetIndex(i);
 
-    return viewport.get();
+    return &viewport;
 }
 
 //std::span<ViewportEditor> EditorSystem::GetViewports()
@@ -113,7 +113,8 @@ ViewportEditor* EditorSystem::AddViewport()
 
 void EditorSystem::RemoveViewport(ViewportEditor* viewport)
 {
-    auto it = std::find_if(_viewports.begin(), _viewports.end(), [viewport](auto& vp){return vp.get() == viewport;});
+    // auto it = std::find_if(_viewports.begin(), _viewports.end(), [viewport](auto& vp){return vp.get() == viewport;});
+    auto it = std::find_if(_viewports.begin(), _viewports.end(), [viewport](auto& vp){ return &vp == viewport; });
     if (it == _viewports.end())
     {
         Print::Error("Cannot remove an invalid viewport.");
