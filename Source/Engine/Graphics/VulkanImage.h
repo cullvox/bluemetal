@@ -3,6 +3,7 @@
 #include "Vulkan.h"
 #include "VulkanDevice.h"
 #include "VulkanResource.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -19,6 +20,8 @@ class VulkanImage : public VulkanResource
     uint32_t _mipLevels;
     VkSampleCountFlagBits _samples;
     VkImageLayout _layout;
+    VkPipelineStageFlags2 _layoutStage;
+    VkAccessFlags2 _layoutAccess;
     VkImage _image;
     VkImageView _defaultView;
     std::vector<VkImageView> _views;
@@ -67,6 +70,8 @@ public:
         VkImageUsageFlags       usage, 
         VkSampleCountFlagBits   samples,
         VkImageLayout           layout);
+
+    VulkanImage(const VulkanImage&);
 
     /// @brief Move Constructor
     /// @param image The other image to move it's data into this new object.

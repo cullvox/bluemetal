@@ -12,9 +12,15 @@ Editor::Editor()
 {
 }
 
+Editor::Editor(const Editor&) = default;
+
+Editor::Editor(Editor&&) = default;
+
 Editor::~Editor()
 {
 }
+
+Editor& Editor::operator=(Editor&&) = default;
 
 bool Editor::GetShown() const
 {

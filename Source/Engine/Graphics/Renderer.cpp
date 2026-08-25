@@ -143,7 +143,7 @@ void Renderer::RenderFrame()
     // Write the instance data to the storage buffer.
     _renderData.WriteInstanceBuffer();
 
-    for (auto& viewport : _viewports)
+    for (auto viewport : _viewports)
     {
         viewport->PrepareForFrame(_renderData);
     }

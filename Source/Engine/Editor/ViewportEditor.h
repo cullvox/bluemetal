@@ -21,16 +21,14 @@ class ViewportEditor : public Editor {
 
 public:
     ViewportEditor();
-    ViewportEditor(ViewportEditor& copy);
-    ViewportEditor(ViewportEditor&& move) = default;
+    ViewportEditor(const ViewportEditor& copy);
+    ViewportEditor(ViewportEditor&& move);
     ~ViewportEditor();
 
-    ViewportEditor& operator=(const ViewportEditor& other) = default;
-    ViewportEditor& operator=(ViewportEditor&& other) = default;
+    ViewportEditor& operator=(const ViewportEditor& other);
+    ViewportEditor& operator=(ViewportEditor&& other);
 
     void SetIndex(int32_t id) { _id = id; };
-
-    ViewportEditor& operator=(ViewportEditor&& move) = default;
 
     virtual void Draw(RenderData& rd);
 

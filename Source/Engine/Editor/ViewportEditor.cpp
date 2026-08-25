@@ -40,10 +40,17 @@ ViewportEditor::ViewportEditor()
     _geometryColorDescriptor = geometryColorDescriptor;
 }
 
-ViewportEditor::ViewportEditor(ViewportEditor& copy)
+ViewportEditor::ViewportEditor(const ViewportEditor& other)
+    : Editor(other)
 {
-    
+    _geometryColorDescriptor = ;
+    _viewport;
+    _viewportDescriptorDeleter = {};
+    _id = 0;
+
 }
+
+ViewportEditor::ViewportEditor(ViewportEditor&&) = default;
 
 ViewportEditor::~ViewportEditor()
 {
@@ -52,6 +59,8 @@ ViewportEditor::~ViewportEditor()
 
     ImGui_ImplVulkan_RemoveTexture(_geometryColorDescriptor);
 }
+
+ViewportEditor& ViewportEditor::operator=(ViewportEditor&&) = default;
 
 void ViewportEditor::OnPreViewportResized(Viewport* viewport)
 {

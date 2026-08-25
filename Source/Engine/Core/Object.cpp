@@ -19,7 +19,13 @@ Object::~Object()
 {
 }
 
-Object& Object::operator=(const Object& other) = default;
+Object& Object::operator=(const Object& other)
+{
+    for (auto& property : other._instanceProperties)
+        _instanceProperties.emplace_back(std::unique_ptr<Property>(property->Clone()));
+
+    return *this;
+}
 
 Object& Object::operator=(Object&& other) = default;
 

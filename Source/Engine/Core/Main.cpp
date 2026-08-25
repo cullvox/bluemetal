@@ -97,7 +97,7 @@ int Main(int argc, const char** argv)
         physicsBody->AddChild(characterNode);
         rootNode->AddChild(std::move(physicsBody));
 
-        auto floorMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Default.json");
+        auto floorMaterial =resourceMgr->Load<bl::Material>("Resources/Materials/Default.json");
         auto floorTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/floor.json");
         auto defaultTexture = resourceMgr->Load<bl::Texture2D>("Resources/Textures/Default.json");
         auto defaultSampler = resourceMgr->Load<bl::Sampler>("Resources/Samplers/Default.json");

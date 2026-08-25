@@ -19,7 +19,12 @@ protected:
 
 public:
     Editor();
+    Editor(const Editor&);
+    Editor(Editor&&);
     ~Editor();
+
+    Editor& operator=(const Editor&);
+    Editor& operator=(Editor&&);
 
     virtual void Draw(RenderData& rd);
     void Show(bool visible) { _shown = visible; }

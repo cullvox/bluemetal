@@ -18,14 +18,123 @@ VulkanImage::VulkanImage()
 {
 }
 
+VulkanImage::VulkanImage(const VulkanImage& other)
+    : VulkanImage(
+        other._device,
+        other._type,
+        other._extent,
+        other._format,
+        other._usage,
+        other._mipLevels > 1,
+        other._samples,
+        VK_IMAGE_LAYOUT_UNDEFINED)
+{
+
+    _device->ImmediateSubmit([this, other](VkCommandBuffer cmd){
+
+        std::array<VkImageMemoryBarrier2, 2> barriers;
+
+        VkImageLayout prevLayout = other.GetLayout();
+
+        // Transition to trans-dest layout.
+        barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+        barriers[0].pNext = nullptr;
+        barriers[0].srcStageMask = other._layoutStage;
+        barriers[0].srcAccessMask = other._layoutAccess;
+        barriers[0].dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        barriers[0].dstAccessMask = VK_ACCESS_2_TRANSFER_READ_BIT;
+        barriers[0].oldLayout = other._layout;
+        barriers[0].newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[0].image = other._image;
+        barriers[0].subresourceRange = {VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM, 0, other._mipLevels, 0, 1 };
+
+        barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+        barriers[1].pNext = nullptr;
+        barriers[1].srcStageMask = 0;
+        barriers[1].srcAccessMask = 0;
+        barriers[1].dstStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        barriers[1].dstAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        barriers[1].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        barriers[1].newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[1].image = _image;
+        barriers[1].subresourceRange = {VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM, 0, other._mipLevels, 0, 1 };
+
+        VkDependencyInfo dependencyInfo = {};
+        dependencyInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;
+        dependencyInfo.pNext = nullptr;
+        dependencyInfo.dependencyFlags = 0;
+        dependencyInfo.imageMemoryBarrierCount = 2;
+        dependencyInfo.pImageMemoryBarriers = barriers.data();
+
+        vkCmdPipelineBarrier2(cmd, &dependencyInfo);
+
+        VkImageCopy2 region = {};
+        region.sType = VK_STRUCTURE_TYPE_IMAGE_COPY_2;
+        region.pNext = nullptr;
+        region.srcSubresource = {VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM, 0, 0, 1};
+        region.srcOffset = {};
+        region.dstSubresource = {VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM, 0, 0, 1};
+        region.dstOffset = {};
+        region.extent = _extent;
+
+        VkCopyImageInfo2 copy = {};
+        copy.sType = VK_STRUCTURE_TYPE_COPY_IMAGE_INFO_2;
+        copy.pNext = nullptr;
+        copy.srcImage = other._image,
+        copy.srcImageLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        copy.dstImage = _image,
+        copy.dstImageLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        copy.regionCount = 1;
+        copy.pRegions = &region;
+        vkCmdCopyImage2(cmd, &copy);
+
+        // Transition both images to the same old format.
+        barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+        barriers[0].pNext = nullptr;
+        barriers[0].srcStageMask = VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
+        barriers[0].srcAccessMask = VK_ACCESS_2_MEMORY_WRITE_BIT;
+        barriers[0].dstStageMask = other._layoutStage;
+        barriers[0].dstAccessMask = other._layoutAccess;
+        barriers[0].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+        barriers[0].newLayout = other._layout;
+        barriers[0].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[0].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[0].image = other._image;
+        barriers[0].subresourceRange = {VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM, 0, other._mipLevels, 0, 1 };
+
+        _layoutStage = other._layoutStage;
+        _layoutAccess = other._layoutAccess;
+        _layout = other._layout;
+
+        barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
+        barriers[1].pNext = nullptr;
+        barriers[1].srcStageMask = VK_PIPELINE_STAGE_2_TRANSFER_BIT;
+        barriers[1].srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT;
+        barriers[1].dstStageMask = _layoutStage;
+        barriers[1].dstAccessMask = _layoutAccess;
+        barriers[1].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+        barriers[1].newLayout = _layout;
+        barriers[1].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[1].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+        barriers[1].image = _image;
+        barriers[1].subresourceRange = {VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM, 0, other._mipLevels, 0, 1 };
+
+    });
+
+}
+
 VulkanImage::VulkanImage(
-    VulkanDevice*           device, 
-    VkImageType             type, 
-    VkExtent3D              extent, 
-    VkFormat                format, 
-    VkImageUsageFlags       usage, 
-    bool                    generateMipmaps, 
-    VkSampleCountFlagBits   samples, 
+    VulkanDevice*           device,
+    VkImageType             type,
+    VkExtent3D              extent,
+    VkFormat                format,
+    VkImageUsageFlags       usage,
+    bool                    generateMipmaps,
+    VkSampleCountFlagBits   samples,
     VkImageLayout           initialLayout)
     : _device(device)
     , _extent(extent)
