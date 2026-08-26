@@ -80,8 +80,12 @@ protected:
 public:
     Viewport(Renderer* renderer); // Does not create images until Recreate is called.
     Viewport(Renderer* renderer, VkExtent2D extent); // Creates the viewport and its images.
-    Viewport(Renderer* renderer, VulkanSwapchain* swapchain); // Creates the viewport using images from a swapchain.
+    Viewport(const Viewport&);
+    Viewport(Viewport&&);
     ~Viewport();
+
+    Viewport& operator=(const Viewport&);
+    Viewport& operator=(Viewport&&);
 
     void SetSize(VkExtent2D extent); // Size of the images rendered.
     void SetRenderFlags(ViewportRenderFlags renderFlags); // Render flags determine what passes get drawn onto the viewport.

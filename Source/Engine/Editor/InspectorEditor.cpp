@@ -76,7 +76,7 @@ void InspectorEditor::DrawProperties(Object* object, std::span<Property*> proper
                 prop->Set(object, value);
             } else if constexpr (std::is_same_v<T, std::string>) {
                 char buffer[256];
-                strncpy(buffer, value.c_str(), sizeof(buffer));
+                snprintf(buffer, sizeof(buffer), "%s", value.data());
                 if (ImGui::InputText(("##" + std::string(prop->GetName())).c_str(), buffer, sizeof(buffer))) {
                     prop->Set(object, std::string(buffer));
                 }

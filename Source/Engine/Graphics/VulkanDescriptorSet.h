@@ -6,16 +6,18 @@ namespace bl
 {
 
 class VulkanDevice;
+class VulkanDescriptorSetLayout;
 class VulkanDescriptorSetAllocatorCache;
 
 class VulkanDescriptorSet : public VulkanResource
 {
     VulkanDescriptorSetAllocatorCache* _cache;
+    VulkanDescriptorSetLayout* _layout;
     VkDescriptorSet _set;
-    VkDescriptorSetLayout _layout;
 
+    VulkanDescriptorSet();
 public:
-    VulkanDescriptorSet(VulkanDescriptorSetAllocatorCache* cache, VkDescriptorSetLayout layout, VkDescriptorSet set);
+    VulkanDescriptorSet(VulkanDescriptorSetAllocatorCache* cache, VulkanDescriptorSetLayout* layout);
     VulkanDescriptorSet(VulkanDescriptorSet&& set);
     VulkanDescriptorSet(const VulkanDescriptorSet& set) = delete;
     ~VulkanDescriptorSet();

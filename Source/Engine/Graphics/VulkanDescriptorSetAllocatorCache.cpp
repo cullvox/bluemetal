@@ -1,5 +1,6 @@
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanDevice.h"
+#include "VulkanDescriptorSetLayout.h"
 #include "Vulkan.h"
 
 namespace bl {
@@ -22,16 +23,15 @@ VulkanDescriptorSetAllocatorCache::~VulkanDescriptorSetAllocatorCache()
     {
         vkDestroyDescriptorPool(_device->Get(), pool, nullptr);
     }
-    
+
     for (auto pool : _usedPools)
     {
         vkDestroyDescriptorPool(_device->Get(), pool, nullptr);
     }
 }
- 
-std::unique_ptr<VulkanDescriptorSet> VulkanDescriptorSetAllocatorCache::Allocate(VkDescriptorSetLayout layout)
-{
 
+VkDescriptorSet VulkanDescriptorSetAllocatorCache::AllocateRaw(VkDescriptorSetLayout layout)
+{
     // Check if there is already a free set from the same layout.
     auto it = _freeSets.find(layout);
     if (it != _freeSets.end()) {
@@ -45,7 +45,7 @@ std::unique_ptr<VulkanDescriptorSet> VulkanDescriptorSetAllocatorCache::Allocate
             freeSets.erase(set);
 
             // The descriptor set is no longer considered free, return it.
-            return std::make_unique<VulkanDescriptorSet>(this, layout, set);
+            return set;
         }
     }
 
@@ -77,10 +77,15 @@ std::unique_ptr<VulkanDescriptorSet> VulkanDescriptorSetAllocatorCache::Allocate
 
     _freePools.push_back(pool);
 
-    return std::make_unique<VulkanDescriptorSet>(this, layout, set);
+    return set;
 }
 
-void VulkanDescriptorSetAllocatorCache::Free(VkDescriptorSetLayout layout, VkDescriptorSet set)
+VulkanDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VulkanDescriptorSetLayout& layout)
+{
+    return VulkanDescriptorSet{this, &layout};
+}
+
+void VulkanDescriptorSetAllocatorCache::FreeRaw(VkDescriptorSetLayout layout, VkDescriptorSet set)
 {
     _freeSets[layout].insert(set);
 }

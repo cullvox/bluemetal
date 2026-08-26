@@ -38,32 +38,8 @@ struct VulkanDescriptorRatio {
 /// @brief Tracks descriptor sets that aren't being used anymore.
 /// Will allocate more from a growable descriptor set pool as needed.
 class VulkanDescriptorSetAllocatorCache {
-public:
-    /// @brief Descriptor Set Cache Constructor
-    /// @param[in] device The device used to create descriptor sets.
-    VulkanDescriptorSetAllocatorCache(
-        const VulkanDevice* device,
-        uint32_t maxSets,
-        std::span<VulkanDescriptorRatio> ratios);
-
-    /// @brief Destructor
-    ~VulkanDescriptorSetAllocatorCache();
-
-    /// @brief Allocates/retrieves a descriptor set created with this layout.
-    std::unique_ptr<VulkanDescriptorSet> Allocate(VkDescriptorSetLayout layout);
-
-    /// @brief Frees the descriptor set back into the cache.
-    void Free(VkDescriptorSetLayout layout, VkDescriptorSet set);
-
-    /// @brief Completely resets every descriptor set in every pool, use before destroying resources.  */
-    void ResetPools();
-
-private:
-    /// @brief Grabs us a new pool allocating as required.
-    VkDescriptorPool GrabPool();
-
-    /// @brief Creates a new pool after the previous one was used up.
-    VkDescriptorPool CreatePool(uint32_t setCount);
+    VkDescriptorPool GrabPool(); /** @brief Grabs us a new pool allocating as required. */
+    VkDescriptorPool CreatePool(uint32_t setCount); /** @brief Creates a new pool after the previous one was used up. */
 
     const VulkanDevice* _device;
     std::unordered_map<VkDescriptorSetLayout, std::unordered_set<VkDescriptorSet>> _freeSets;
@@ -71,6 +47,24 @@ private:
     std::vector<VulkanDescriptorRatio> _ratios;
     std::vector<VkDescriptorPool> _usedPools;
     std::vector<VkDescriptorPool> _freePools;
+
+protected:
+    friend class VulkanDescriptorSet;
+    VkDescriptorSet AllocateRaw(VkDescriptorSetLayout layout);
+    void FreeRaw(VkDescriptorSetLayout layout, VkDescriptorSet set);
+
+    VulkanDescriptorSetAllocatorCache();
+public:
+    VulkanDescriptorSetAllocatorCache(const VulkanDevice* device, uint32_t maxSets, std::span<VulkanDescriptorRatio> ratios);
+    VulkanDescriptorSetAllocatorCache(const VulkanDescriptorSetAllocatorCache&) = delete;
+    VulkanDescriptorSetAllocatorCache(VulkanDescriptorSetAllocatorCache&&) = default;
+    ~VulkanDescriptorSetAllocatorCache();
+
+    VulkanDescriptorSetAllocatorCache& operator=(const VulkanDescriptorSetAllocatorCache&) = delete;
+    VulkanDescriptorSetAllocatorCache& operator=(VulkanDescriptorSetAllocatorCache&&) = default;
+
+    VulkanDescriptorSet Allocate(VulkanDescriptorSetLayout& layout); /** @brief Allocates/retrieves a descriptor set created with this layout. */
+    void ResetPools(); /** @brief Completely resets every descriptor set in every pool, use before destroying resources. */
 };
 
 } // namespace bl
