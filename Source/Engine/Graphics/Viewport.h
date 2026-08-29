@@ -1,10 +1,13 @@
 #pragma once
 
 #include "Graphics/VulkanBuffer.h"
+#include "Graphics/VulkanDevice.h"
 #include "Graphics/VulkanImage.h"
 #include "Graphics/VulkanImageView.h"
 #include "Graphics/VulkanConfig.h"
 #include "VulkanBufferFrameRing.h"
+#include "VulkanDescriptorSet.h"
+#include "VulkanDescriptorSetLayout.h"
 #include "Core/Delegates.h"
 #include "UniformData.h"
 
@@ -64,8 +67,8 @@ protected:
 
     ViewportUBO _uboData = {};
     VulkanBufferFrameRing _globalBuffer;
-    VkDescriptorSetLayout _globalDescriptorSetLayout;
-    std::array<std::unique_ptr<VulkanDescriptorSet>, VulkanConfig::maxFramesInFlight> _globalDescriptorSets;
+    VulkanDescriptorSetLayout _globalDescriptorSetLayout;
+    std::array<VulkanDescriptorSet, VulkanConfig::maxFramesInFlight> _globalDescriptorSets;
 
     VkBool32 _imagesDirty = VK_TRUE; // Determines if images need to be recreated at the beginning of a frame.
 

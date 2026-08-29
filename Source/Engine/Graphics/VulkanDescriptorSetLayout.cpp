@@ -1,6 +1,8 @@
 #include "VulkanDescriptorSetLayout.h"
+#include "Graphics/VulkanDescriptorSetLayoutCache.h"
 #include "GraphicsSystem.h"
 #include "VulkanDevice.h"
+#include "Vulkan.h"
 
 namespace bl {
 
@@ -10,19 +12,15 @@ VulkanDescriptorSetLayout::VulkanDescriptorSetLayout()
 {
 }
 
-VulkanDescriptorSetLayout::VulkanDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings)
+VulkanDescriptorSetLayout::VulkanDescriptorSetLayout(VulkanDescriptorSetLayoutCache* cache, std::span<VkDescriptorSetLayoutBinding> bindings)
+    : _cache(cache)
 {
     _bindings.assign(bindings.begin(), bindings.end());
+    _layout = cache->AcquireRaw(bindings);
+}
 
-    VkDescriptorSetLayoutCreateInfo info = {};
-    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    info.pNext = nullptr;
-    info.flags = 0;
-    info.bindingCount = _bindings.size();
-    info.pBindings = _bindings.data();
-
-    auto device = GraphicsSystem::Get()->GetDevice();
-    VK_CHECK(vkCreateDescriptorSetLayout(device->Get(), &info, nullptr, &_layout));
+VulkanDescriptorSetLayout::~VulkanDescriptorSetLayout()
+{
 }
 
 VkDescriptorSetLayout VulkanDescriptorSetLayout::GetLayout() const

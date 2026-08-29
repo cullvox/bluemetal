@@ -7,6 +7,7 @@
 
 // StdCpp
 #include <array>
+#include <atomic>
 #include <filesystem>
 #include <fstream>
 #include <functional>

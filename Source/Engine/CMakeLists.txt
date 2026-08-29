@@ -7,6 +7,7 @@ list(APPEND Sources
   "Core/Profiler.cpp"
   "Core/Print.cpp"
   "Core/Logger.cpp"
+  "Core/ReferenceCounted.cpp"
   "Core/Object.cpp"
   "Core/Delegates.cpp"
   

@@ -1,5 +1,6 @@
 #include "VulkanDevice.h"
 #include "Core/Print.h"
+#include "Graphics/VulkanDescriptorSetLayout.h"
 #include "VulkanPhysicalDevice.h"
 #include "VulkanInstance.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
@@ -193,9 +194,9 @@ void VulkanDevice::WaitForDevice()
     vkDeviceWaitIdle(_device);
 }
 
-VkDescriptorSetLayout VulkanDevice::AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings)
+VulkanDescriptorSetLayout VulkanDevice::AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings)
 {
-    return _descriptorSetLayoutCache->Acquire(bindings);
+    return VulkanDescriptorSetLayout{_descriptorSetLayoutCache, bindings};
 }
 
 VkPipelineLayout VulkanDevice::AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges)
@@ -203,14 +204,9 @@ VkPipelineLayout VulkanDevice::AcquirePipelineLayout(const std::span<VkDescripto
     return _pipelineLayoutCache->Acquire(layouts, ranges);
 }
 
-std::unique_ptr<VulkanDescriptorSet> VulkanDevice::AllocateDescriptorSet(VkDescriptorSetLayout layout)
+VulkanDescriptorSet VulkanDevice::AllocateDescriptorSet(VulkanDescriptorSetLayout& layout)
 {
     return _descriptorSetCache->Allocate(layout);
-}
-
-void VulkanDevice::FreeDescriptorSet(VkDescriptorSet set, VkDescriptorSetLayout layout)
-{
-    _descriptorSetCache->Free(layout, set);
 }
 
 std::vector<const char*> VulkanDevice::GetValidationLayers()

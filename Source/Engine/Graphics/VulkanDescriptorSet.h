@@ -19,14 +19,14 @@ class VulkanDescriptorSet : public VulkanResource
 public:
     VulkanDescriptorSet(VulkanDescriptorSetAllocatorCache* cache, VulkanDescriptorSetLayout* layout);
     VulkanDescriptorSet(VulkanDescriptorSet&& set);
-    VulkanDescriptorSet(const VulkanDescriptorSet& set) = delete;
+    VulkanDescriptorSet(const VulkanDescriptorSet& set);
     ~VulkanDescriptorSet();
 
     VulkanDescriptorSet& operator=(VulkanDescriptorSet&& set);
-    VulkanDescriptorSet& operator=(const VulkanDescriptorSet& set) = delete;
+    VulkanDescriptorSet& operator=(const VulkanDescriptorSet& set);
 
     VkDescriptorSet Get() const;
-    VkDescriptorSetLayout GetLayout() const;
+    const VulkanDescriptorSetLayout& GetLayout() const;
 };
 
 

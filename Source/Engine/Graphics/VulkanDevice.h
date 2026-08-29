@@ -10,6 +10,7 @@ class VulkanPhysicalDevice;
 class VulkanDescriptorSetLayoutCache;
 class VulkanPipelineLayoutCache;
 class VulkanDescriptorSetAllocatorCache;
+class VulkanDescriptorSetLayout;
 class VulkanDescriptorSet;
 
 /**
@@ -146,7 +147,7 @@ public:
      * @param bindings The bindings to use for the descriptor set layout.
      * @return The VkDescriptorSetLayout handle.
      */
-    VkDescriptorSetLayout AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings);
+    VulkanDescriptorSetLayout AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings);
 
     /**
      * @brief Acquires a pipeline layout with the specified descriptor set layouts and push constant ranges.
@@ -156,10 +157,7 @@ public:
      */
     VkPipelineLayout AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges);
 
-
-    std::unique_ptr<VulkanDescriptorSet> AllocateDescriptorSet(VkDescriptorSetLayout layout);
-
-    void FreeDescriptorSet(VkDescriptorSet set, VkDescriptorSetLayout layout);
+    VulkanDescriptorSet AllocateDescriptorSet(VulkanDescriptorSetLayout& layout);
 
     /**
      * @brief Calculates the dynamic alignment for a uniform buffer.

@@ -6,16 +6,16 @@
 namespace bl
 {
 
-VulkanDescriptorSet::VulkanDescriptorSet(VulkanDescriptorSetAllocatorCache* cache, VulkanDescriptorSetLayout layout)
+VulkanDescriptorSet::VulkanDescriptorSet(VulkanDescriptorSetAllocatorCache* cache, VulkanDescriptorSetLayout* layout)
     : _cache(cache)
     , _layout(layout)
 {
-    cache->Allocate(layout);
+    cache->Allocate(*layout);
 }
 
 VulkanDescriptorSet::VulkanDescriptorSet(const VulkanDescriptorSet& other)
 {
-    *this = other._cache->Allocate(*other._layout);
+    *this = other;
 }
 
 VulkanDescriptorSet::VulkanDescriptorSet(VulkanDescriptorSet&& set)
@@ -30,7 +30,7 @@ VulkanDescriptorSet::VulkanDescriptorSet(VulkanDescriptorSet&& set)
 
 VulkanDescriptorSet::~VulkanDescriptorSet()
 {
-    _cache->Free(this);
+    _cache->FreeRaw(_layout->GetLayout(), _set);
 }
 
 VulkanDescriptorSet& VulkanDescriptorSet::operator=(const VulkanDescriptorSet& other)
@@ -41,37 +41,40 @@ VulkanDescriptorSet& VulkanDescriptorSet::operator=(const VulkanDescriptorSet& o
 
     _cache = other._cache;
     _layout = other._layout;
+    _set = _cache->AllocateRaw(_layout->GetLayout());
 
-    std::vector<VkCopyDescriptorSet> copy{_layout->GetBindings().size()};
+    std::vector<VkCopyDescriptorSet> copies{_layout->GetBindings().size()};
     const auto bindings = _layout->GetBindings();
 
     for (int i = 0; i < _layout->GetBindings().size(); i++) {
-        auto& c = copy[i];
+        auto& c = copies[i];
         const auto& b = bindings[i];
 
-        copy.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
-        copy.pNext = nullptr;
-        copy.srcSet = other._set;
-        copy.srcBinding = b.binding;
-        copy.srcArrayElement = 0;
-        copy.
+        c.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
+        c.pNext = nullptr;
+        c.srcSet = other._set;
+        c.srcBinding = b.binding;
+        c.srcArrayElement = 0;
+        c.dstSet = _set;
+        c.dstBinding = b.binding;
+        c.dstArrayElement = 0;
+        c.descriptorCount = b.descriptorCount;
+
+        // Does not copy array elements yet. This could cause problems later.
+        // Be warned.
     }
 
-    VkCopyDescriptorSet copy;
-    copy.sType = VK_STRUCTURE_TYPE_COPY_DESCRIPTOR_SET;
-    copy.pNext = nullptr;
-    copy.srcSet = other._set;
-    copy.
-
     auto device = GraphicsSystem::Get()->GetDevice();
-    vkUpdateDescriptorSets(device, 0, nullptr, 1, &copy);
+    vkUpdateDescriptorSets(device->Get(), 0, nullptr, static_cast<uint32_t>(copies.size()), copies.data());
+
+    return *this;
 }
 
 VulkanDescriptorSet& VulkanDescriptorSet::operator=(VulkanDescriptorSet&& set)
 {
     if (this != &set)
     {
-        _cache->Free(_layout, _set);
+        _cache->FreeRaw(_layout->GetLayout(), _set);
 
         _cache = set._cache;
         _layout = set._layout;
@@ -90,9 +93,9 @@ VkDescriptorSet VulkanDescriptorSet::Get() const
     return _set;
 }
 
-VkDescriptorSetLayout VulkanDescriptorSet::GetLayout() const
+const VulkanDescriptorSetLayout& VulkanDescriptorSet::GetLayout() const
 {
-    return _layout;
+    return *_layout;
 }
 
 }

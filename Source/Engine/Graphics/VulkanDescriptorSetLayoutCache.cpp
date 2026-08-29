@@ -1,6 +1,8 @@
 #include "VulkanDescriptorSetLayoutCache.h"
+#include "Graphics/VulkanDescriptorSetLayout.h"
 #include "VulkanDevice.h"
 #include "Vulkan.h"
+#include "Core/Hash.h"
 
 namespace bl {
 
@@ -46,7 +48,7 @@ VulkanDescriptorSetLayoutCache::~VulkanDescriptorSetLayoutCache()
         vkDestroyDescriptorSetLayout(_device->Get(), pair.second, nullptr);
 }
 
-VkDescriptorSetLayout VulkanDescriptorSetLayoutCache::Acquire(std::span<VkDescriptorSetLayoutBinding> bindings)
+VkDescriptorSetLayout VulkanDescriptorSetLayoutCache::AcquireRaw(std::span<VkDescriptorSetLayoutBinding> bindings)
 {
     VulkanDescriptorLayoutCacheData data;
     data.bindings.assign(bindings.begin(), bindings.end());
