@@ -196,7 +196,7 @@ void VulkanDevice::WaitForDevice()
 
 VulkanDescriptorSetLayout VulkanDevice::AcquireDescriptorSetLayout(std::span<VkDescriptorSetLayoutBinding> bindings)
 {
-    return VulkanDescriptorSetLayout{_descriptorSetLayoutCache, bindings};
+    return VulkanDescriptorSetLayout{_descriptorSetLayoutCache.get(), bindings};
 }
 
 VkPipelineLayout VulkanDevice::AcquirePipelineLayout(const std::span<VkDescriptorSetLayout> layouts, const std::span<VkPushConstantRange> ranges)

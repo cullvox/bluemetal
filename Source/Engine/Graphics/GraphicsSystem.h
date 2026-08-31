@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/System.h"
-#include "Core/ReferenceCounted.h"
+#include "Core/Reference.h"
 
 namespace bl {
 

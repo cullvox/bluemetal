@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Reference.h"
 #include "Graphics/VulkanMaterialInstance.h"
 #include "Math/Math.h"
 #include "Resource.h"

@@ -2,6 +2,7 @@
 
 #include "Core/Print.h"
 #include "Core/ReferenceCounted.h"
+#include "Core/Reference.h"
 #include "Engine/System.h"
 #include "Resource.h"
 #include <memory>
@@ -13,7 +14,7 @@ namespace bl {
  * @brief A manager of all engine resources, including models, sounds, textures, +more.
  */
 class ResourceSystem : public System {
-    std::unordered_map<std::filesystem::path, std::shared_ptr<Resource>> _resources;
+    std::unordered_map<std::filesystem::path, Ref<Resource>> _resources;
     std::unordered_map<std::size_t, System*> _resourceTypes; /** @brief Maps resource typeid(T).hash_code() to the system that handles it. */
 
     ResourceSystem();
@@ -31,10 +32,10 @@ public:
     Ref<T> Get(const std::filesystem::path& path);
 
     template <typename T>
-    Ref<T> Add(const std::filesystem::path& path, std::shared_ptr<T> resource); /** @brief Adds a resource to the manager assuming it's loaded. */
+    Ref<T> Add(const std::filesystem::path& path, Ref<T> resource); /** @brief Adds a resource to the manager assuming it's loaded. */
 
     template <typename T>
-    Ref<T> AddSubResource(Ref<Resource> parent, std::shared_ptr<T> resource); /** @brief Adds a sub-resource to a parent resource. */
+    Ref<T> AddSubResource(Ref<Resource> parent, Ref<T> resource); /** @brief Adds a sub-resource to a parent resource. */
 
     template <typename T>
     Ref<T> AddSubResource(Ref<Resource> parent); /** @brief Adds a sub-resource to a parent resource. */
@@ -67,7 +68,7 @@ Ref<T> ResourceSystem::Get(const std::filesystem::path& path)
 }
 
 template <typename T>
-Ref<T> ResourceSystem::Add(const std::filesystem::path& path, std::shared_ptr<T> resource)
+Ref<T> ResourceSystem::Add(const std::filesystem::path& path, Ref<T> resource)
 {
     auto it = _resources.find(path);
     if (it != _resources.end()) {
@@ -80,9 +81,9 @@ Ref<T> ResourceSystem::Add(const std::filesystem::path& path, std::shared_ptr<T>
 }
 
 template <typename T>
-Ref<T> ResourceSystem::AddSubResource(Ref<Resource> parent, std::shared_ptr<T> resource)
+Ref<T> ResourceSystem::AddSubResource(Ref<Resource> parent, Ref<T> resource)
 {
-    parent.lock()->_subResources.push_back(std::move(resource));
+    parent->_subResources.push_back(std::move(resource));
     return resource;
 }
 

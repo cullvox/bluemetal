@@ -10,12 +10,14 @@ void ReferenceCounted::AddReference()
 
 void ReferenceCounted::RemoveReference()
 {
-    _count.fetch_sub(1, std::memory_order_relaxed);
+    if (_count.fetch_sub(1, std::memory_order_relaxed) == 1) {
+        delete this;
+    }
 }
 
 uint32_t ReferenceCounted::GetReferenceCount()
 {
-    _count.load(std::memory_order_relaxed);
+    return _count.load(std::memory_order_relaxed);
 }
 
 }

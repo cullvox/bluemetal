@@ -49,7 +49,7 @@ Viewport::Viewport(Renderer* renderer)
         descriptorWrites[i] = {
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .pNext = nullptr,
-            .dstSet = _globalDescriptorSets[i]->Get(),
+            .dstSet = _globalDescriptorSets[i].Get(),
             .dstBinding = 0,
             .dstArrayElement = 0,
             .descriptorCount = 1,
@@ -257,7 +257,7 @@ bool Viewport::Bind(RenderData& rd)
     vkCmdSetScissor(cmd, 0, 1, &_scissor);
 
     // Set the current sample count and descriptor set.
-    rd.SetGlobalDescriptorSet(_globalDescriptorSets[rd.GetCurrentFrame()]->Get());
+    rd.SetGlobalDescriptorSet(_globalDescriptorSets[rd.GetCurrentFrame()].Get());
     rd.SetSampleCount(_sampleCount);
 
     return true;
