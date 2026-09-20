@@ -18,7 +18,7 @@ DiscordSystem::DiscordSystem()
     // Use engine level variables to get the discord client ID.
     auto   vars            = GetEngine()->GetVars();
     auto    clientID        = vars->Get<uint64_t>("discord.clientID");
-    auto    requireDiscord  = vars->Get<bool>("discord.requireDiscord");
+    //auto    requireDiscord  = vars->Get<bool>("discord.requireDiscord");
 
     //if (clientID == 0) {
     //    

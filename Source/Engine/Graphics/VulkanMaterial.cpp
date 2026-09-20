@@ -76,11 +76,12 @@ VulkanMaterial::VulkanMaterial(VulkanDevice* device, Renderer* renderer, const V
     if (materialSet == -1) return;
 
     const auto& pipelineDescriptorSetLayouts = _pipeline->GetDescriptorSetLayouts();
-    _layout = pipelineDescriptorSetLayouts.at(materialSet);
+    _layout = &pipelineDescriptorSetLayouts.at(materialSet);
 
-    BuildPerFrameBindings(_layout);
+    BuildPerFrameBindings(*_layout);
 
-    _emptySet = _descriptorSetCache.Allocate(_device->AcquireDescriptorSetLayout({}));
+    auto emptyLayout = _device->AcquireDescriptorSetLayout({});
+    _emptySet = _descriptorSetCache.Allocate(emptyLayout);
 
     // Create buffers/sampler uniform data.
 

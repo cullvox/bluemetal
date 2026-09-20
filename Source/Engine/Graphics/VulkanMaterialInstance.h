@@ -11,6 +11,7 @@
 #include "VulkanImage.h"
 #include "VulkanConfig.h"
 #include "VulkanSampler.h"
+#include "VulkanDescriptorSet.h"
 
 namespace bl {
 
@@ -160,7 +161,7 @@ protected:
      * @brief Creates the per frame descriptor sets for the material instance.
      * @param layout Descriptor set layout to create the per frame bindings for.
      */
-    void BuildPerFrameBindings(VkDescriptorSetLayout layout);
+    void BuildPerFrameBindings(const VulkanDescriptorSetLayout& layout);
 
     /**
      * @brief Sets a binding dirty for all frames except the current frame.
@@ -194,7 +195,7 @@ private:
      * a descriptor set while it's bound.
      */
     struct PerFrameData {
-        std::unique_ptr<VulkanDescriptorSet> set;
+        VulkanDescriptorSet set;
         std::unordered_map<int, VulkanBuffer> buffer;
         std::bitset<32> dirty; /// @brief If a binding is dirty it must be updated somehow.
     };

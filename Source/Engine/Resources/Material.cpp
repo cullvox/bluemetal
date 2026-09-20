@@ -248,7 +248,7 @@ void Material::Load()
         auto rs = ResourceSystem::Get();
         auto vertexShader = rs->Load<Shader>(vertexPath);
         auto fragmentShader = rs->Load<Shader>(fragmentPath);
-        info.stages.shaders = std::vector<VulkanShader*> { vertexShader.lock()->Get(), fragmentShader.lock()->Get() };
+        info.stages.shaders = std::vector<VulkanShader*> { vertexShader->Get(), fragmentShader->Get() };
     } catch (const nlohmann::json::exception& e) {
         Print::Error("Could not parse material JSON file. Error: {}", e.what());
         return;
@@ -326,7 +326,7 @@ void Material::Release()
 {
     // Material instances must be released before this material they depend on can be.
     for (auto& instance : _instances) {
-        if (auto value = instance.lock()) {
+        if (auto value = instance) {
             value->Release();
         }
     }
@@ -341,9 +341,9 @@ VulkanMaterialInstance* Material::GetInstance() const
     return _material.get();
 }
 
-std::shared_ptr<MaterialInstance> Material::CreateInstance()
+Ref<MaterialInstance> Material::CreateInstance()
 {
-    auto instance = std::make_shared<MaterialInstance>(_material->CreateInstance());
+    auto instance = MakeRef<MaterialInstance>(_material->CreateInstance());
     _instances.push_back(instance);
     return instance;
 }

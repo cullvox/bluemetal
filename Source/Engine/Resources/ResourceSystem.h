@@ -52,7 +52,7 @@ template <typename T>
 Ref<T> ResourceSystem::Load(const std::filesystem::path& path)
 {
     static_assert(std::is_base_of<Resource, T>::value, "T must be a Resource type.");
-    return std::dynamic_pointer_cast<T>(Load(path).lock());
+    return Load(path).Cast<T>();
 }
 
 template <typename T>
@@ -77,7 +77,7 @@ Ref<T> ResourceSystem::Add(const std::filesystem::path& path, Ref<T> resource)
 
     _resources[path] = resource;
 
-    return std::dynamic_pointer_cast<T>(_resources[path]);
+    return _resources[path].Cast<T>();
 }
 
 template <typename T>

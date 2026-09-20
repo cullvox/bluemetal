@@ -88,24 +88,24 @@ void WindowViewport::RecreateImages()
     auto swapImages = _swapchain->GetImages();
     auto swapExtent = _swapchain->GetExtent();
 
-    for (int i = 0; i < _swapchain->GetImageCount(); i++)
+    for (std::size_t i = 0; i < _swapchain->GetImageCount(); i++)
     {
         _swapchainImages.emplace_back(_device, swapImages[i], VK_IMAGE_TYPE_2D, VkExtent3D{swapExtent.width, swapExtent.height, 1}, _swapchain->GetFormat(), _swapchain->GetImageUsageFlags(), VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_UNDEFINED);
         _swapchainImageViews.emplace_back(_device, &_swapchainImages[i], VK_IMAGE_VIEW_TYPE_2D, _swapchain->GetFormat(), VkComponentMapping{VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY}, VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
     }
     // Transition all the swapchain images to color attachments.
     
-    _device->ImmediateSubmit([&](VkCommandBuffer cmd) {
-        for (auto& image : _swapchainImages)
-        {
-            image.Transition(
-                cmd,
-                0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
-        }
-    });
+    //_device->ImmediateSubmit([&](VkCommandBuffer cmd) {
+    //    for (auto& image : _swapchainImages)
+    //    {
+    //        image.Transition(
+    //            cmd,
+    //            0, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+    //            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    //            0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+    //            VkImageSubresourceRange{VK_IMAGE_ASPECT_COLOR_BIT, 0, 1, 0, 1});
+    //    }
+    //});
     
     _extent = swapExtent;
 
@@ -288,7 +288,7 @@ void WindowViewport::GetColorRenderingAttachments(std::vector<VkRenderingAttachm
     attachments[0].resolveImageLayout = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_UNDEFINED : _swapchainImages[_imageIndex].GetLayout();
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[0].clearValue = VkClearValue{VkClearColorValue{0.98f, 0.98f, 0.98f, 1.0f}};
+    attachments[0].clearValue = VkClearValue{VkClearColorValue{{0.98f, 0.98f, 0.98f, 1.0f}}};
 
     attachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     attachments[1].pNext = nullptr;
@@ -299,7 +299,7 @@ void WindowViewport::GetColorRenderingAttachments(std::vector<VkRenderingAttachm
     attachments[1].resolveImageLayout = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_UNDEFINED : _selectionImageResolved->GetLayout();
     attachments[1].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachments[1].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[1].clearValue = VkClearValue {VkClearColorValue{ -1, -1, -1, -1 }};
+    attachments[1].clearValue = VkClearValue {VkClearColorValue{{ -1, -1, -1, -1 }}};
 }
 
 void WindowViewport::FillColorRenderingAttachmentsForUI(std::vector<VkRenderingAttachmentInfo>& attachments)
@@ -315,7 +315,7 @@ void WindowViewport::FillColorRenderingAttachmentsForUI(std::vector<VkRenderingA
     attachments[0].resolveImageLayout = VK_IMAGE_LAYOUT_UNDEFINED;
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
     attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[0].clearValue = VkClearValue{VkClearColorValue{0.98f, 0.98f, 0.98f, 1.0f}};
+    attachments[0].clearValue = VkClearValue{VkClearColorValue{{0.98f, 0.98f, 0.98f, 1.0f}}};
 
 }
 

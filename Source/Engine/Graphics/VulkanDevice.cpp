@@ -9,14 +9,16 @@
 #include "VulkanConfig.h"
 
 
-// #define VMA_DEBUG_LOG(format, ...) do { \
-//     printf(format, ##__VA_ARGS__); \
-//     printf("\n"); \
-// } while(false)
+/*
+#define VMA_DEBUG_LOG(format, ...) do { \
+    printf(format, ##__VA_ARGS__); \
+    printf("\n"); \
+} while(false)
+*/
 
 // Route leak reports to printf
 #define VMA_LEAK_LOG_FORMAT(format, ...) do { \
-    std::printf("[VMA LEAK] " format "\n", ##__VA_ARGS__); \
+    std::printf("[VMA LEAK] " format "\n" __VA_OPT__(,) __VA_ARGS__); \
 } while(false)
 
 // VMA has a lot of warnings on a lot of different platforms.
@@ -346,8 +348,8 @@ void VulkanDevice::CreateDevice()
     createInfo.flags = 0;
     createInfo.queueCreateInfoCount = (uint32_t)queueCreateInfos.size();
     createInfo.pQueueCreateInfos = queueCreateInfos.data();
-    createInfo.enabledLayerCount = (uint32_t)layers.size();
-    createInfo.ppEnabledLayerNames = layers.data();
+    createInfo.enabledLayerCount = 0;
+    createInfo.ppEnabledLayerNames = nullptr;
     createInfo.enabledExtensionCount = (uint32_t)extensions.size();
     createInfo.ppEnabledExtensionNames = extensions.data();
     createInfo.pEnabledFeatures = &features;

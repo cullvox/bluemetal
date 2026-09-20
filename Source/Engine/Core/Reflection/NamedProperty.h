@@ -7,8 +7,8 @@ namespace bl {
 template<typename TClass>
 class TNamedProperty : public Property {
 
-    Variant (TClass::* getter)(std::string_view propertyName);
     void (TClass::* setter)(std::string_view propertyName, const Variant& value);
+    Variant (TClass::* getter)(std::string_view propertyName);
 
 public:
     TNamedProperty(const std::string_view name, VariantType type, PropertyFlags flags, void (TClass::* setter)(std::string_view propertyName, const Variant& value), Variant (TClass::* getter)(std::string_view propertyName))
@@ -20,6 +20,11 @@ public:
 
     ~TNamedProperty()
     {
+    }
+
+    virtual TNamedProperty<TClass>* Clone() const override
+    {
+        return new TNamedProperty<TClass>(GetName(), GetType(), GetFlags(), setter, getter);
     }
 
     virtual void Set(Object* object, Variant value) override

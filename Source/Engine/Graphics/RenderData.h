@@ -3,8 +3,8 @@
 #include "Core/Color.h"
 #include "VulkanBufferFrameRing.h"
 #include "VulkanDescriptorSetAllocatorCache.h"
+#include "VulkanDescriptorSetLayout.h"
 #include "Vertex.h"
-#include <vulkan/vulkan_core.h>
 
 namespace bl
 {
@@ -35,8 +35,8 @@ class RenderData
     std::vector<glm::mat4> _instances;
     VulkanBufferFrameRing _instanceBuffer;
     VulkanDescriptorSetAllocatorCache _descriptorCache;
-    VkDescriptorSetLayout _instanceSetLayout;
-    std::array<std::unique_ptr<VulkanDescriptorSet>, VulkanConfig::maxFramesInFlight> _instanceSets;
+    VulkanDescriptorSetLayout _instanceSetLayout;
+    std::array<VulkanDescriptorSet, VulkanConfig::maxFramesInFlight> _instanceSets;
 
     std::vector<VkSemaphoreSubmitInfo> _waitSemaphores; // The semaphores we're waiting on before rendering begins.
     std::vector<VkSemaphoreSubmitInfo> _signalSemaphores; // The semaphores we signal when rendering finishes.

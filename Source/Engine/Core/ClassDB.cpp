@@ -1,4 +1,5 @@
 #include "ClassDB.h"
+#include "Core/ClonePtr.h"
 #include "Core/Reflection/Property.h"
 
 namespace bl
@@ -83,7 +84,7 @@ void ClassDB::RegisterVirtualClass(std::string_view className, std::string_view 
     _classNames.push_back(className);
 }
 
-void ClassDB::RegisterProperty(const std::string_view className, std::unique_ptr<Property> property)
+void ClassDB::RegisterProperty(const std::string_view className, ClonePtr<Property> property)
 {
     // Find the class data and check if it exists.
     auto it = _nameToClassIndex.find(className);
@@ -106,7 +107,7 @@ void ClassDB::RegisterProperty(const std::string_view className, std::unique_ptr
     classData.properties.push_back(std::move(property));
 
     // Store the user pointer.
-    classData.userPropertyPointers.push_back(classData.properties.back().get());
+    classData.userPropertyPointers.push_back(classData.properties.back().Get());
 
     // Add property name to map.
     classData.nameToPropertyIndex[classData.properties.back()->GetName()] = classData.properties.size() - 1;
@@ -217,7 +218,7 @@ Property* ClassDB::FindPropertyInClassRecursive(std::string_view name, std::stri
 
         auto propertyIt = classData.nameToPropertyIndex.find(property);
         if (propertyIt != classData.nameToPropertyIndex.end()) {
-            return classData.properties[propertyIt->second].get();
+            return classData.properties[propertyIt->second].Get();
         };
 
         className = GetClassParent(className);

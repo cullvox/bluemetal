@@ -5,6 +5,7 @@
 #include "VulkanDescriptorSetLayoutCache.h"
 #include "VulkanPipelineState.h"
 #include "VulkanReflectedPipeline.h"
+#include "VulkanDescriptorSetLayout.h"
 
 namespace bl {
 
@@ -24,7 +25,7 @@ class VulkanPipeline {
     VulkanReflectedPipeline _reflection;
     VkPipelineLayout _layout;
     std::unordered_map<uint32_t, VkPipeline> _pipelines;
-    std::map<uint32_t, VkDescriptorSetLayout> _descriptorSetLayouts;
+    std::map<uint32_t, VulkanDescriptorSetLayout> _descriptorSetLayouts;
 
 public:
     VulkanPipeline() = default;
@@ -88,7 +89,7 @@ public:
      * This map contains all the descriptor set layouts that were used for the pipeline.
      * It allows the user to query the descriptor set layouts and their bindings.
      */
-    const std::map<uint32_t, VkDescriptorSetLayout>& GetDescriptorSetLayouts() const;
+    const std::map<uint32_t, VulkanDescriptorSetLayout>& GetDescriptorSetLayouts() const;
 };
 
 // NLOHMANN_DEFINE_TYPE_NON_INTRUSIVE_WITH_DEFAULT(VulkanPipelineStateInfo::Stages, shaders)

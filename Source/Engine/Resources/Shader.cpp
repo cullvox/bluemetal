@@ -1,5 +1,6 @@
 #include "Shader.h"
 #include "Engine/Engine.h"
+#include "Core/ClassDB.h"
 
 namespace bl {
 

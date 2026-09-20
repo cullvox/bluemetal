@@ -5,7 +5,7 @@
 #include "Window/Mouse.h"
 #include "Graphics/GraphicsSystem.h"
 #include "Core/ClassDB.h"
-#include "Core/Reflection/Property.h"
+#include "Core/Reflection/TProperty.h"
 
 namespace bl {
 
@@ -175,8 +175,8 @@ void FlyCamera3D::RegisterClass()
 {
     auto db = ClassDB::Get();
     db->RegisterClass("FlyCamera3D", "Camera3D", &FlyCamera3D::Create);
-    db->RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>("speed", PropertyFlags::Editor, &FlyCamera3D::SetSpeed, &FlyCamera3D::GetSpeed));
-    db->RegisterProperty("FlyCamera3D", std::make_unique<TProperty<FlyCamera3D, float>>("smoothness", PropertyFlags::Editor, &FlyCamera3D::SetSmoothness, &FlyCamera3D::GetSmoothness));
+    db->RegisterProperty("FlyCamera3D", MakeClone<TProperty<FlyCamera3D, float>>("speed", PropertyFlags::Editor, &FlyCamera3D::SetSpeed, &FlyCamera3D::GetSpeed));
+    db->RegisterProperty("FlyCamera3D", MakeClone<TProperty<FlyCamera3D, float>>("smoothness", PropertyFlags::Editor, &FlyCamera3D::SetSmoothness, &FlyCamera3D::GetSmoothness));
 }
 
 }

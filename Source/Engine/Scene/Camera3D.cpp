@@ -3,6 +3,8 @@
 #include "Window/Window.h"
 #include "Core/ClassDB.h"
 #include "Core/Reflection/EnumProperty.h"
+#include "Core/Reflection/TProperty.h"
+
 
 namespace bl {
 
@@ -106,10 +108,10 @@ void Camera3D::RegisterClass()
     db->RegisterClass("Camera3D", "Node3D", &Camera3D::Create);
     db->RegisterEnum<CameraProjection>("CameraProjection", {{"Perspective", CameraProjection::ePerspective}, {"Orthographic", CameraProjection::eOrthographic}});
 
-    db->RegisterProperty("Camera3D", std::make_unique<TEnumProperty<Camera3D, CameraProjection>>("CameraProjection", "projection", PropertyFlags::Editor, &Camera3D::SetProjection, &Camera3D::GetProjection));
-    db->RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("fov", PropertyFlags::Editor, &Camera3D::SetFOV, &Camera3D::GetFOV));
-    db->RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("nearClip", PropertyFlags::Editor, &Camera3D::SetNearClip, &Camera3D::GetNearClip));
-    db->RegisterProperty("Camera3D", std::make_unique<TProperty<Camera3D, float>>("farClip", PropertyFlags::Editor, &Camera3D::SetFarClip, &Camera3D::GetFarClip));
+    db->RegisterProperty("Camera3D", MakeClone<TEnumProperty<Camera3D, CameraProjection>>("CameraProjection", "projection", PropertyFlags::Editor, &Camera3D::SetProjection, &Camera3D::GetProjection));
+    db->RegisterProperty("Camera3D", MakeClone<TProperty<Camera3D, float>>("fov", PropertyFlags::Editor, &Camera3D::SetFOV, &Camera3D::GetFOV));
+    db->RegisterProperty("Camera3D", MakeClone<TProperty<Camera3D, float>>("nearClip", PropertyFlags::Editor, &Camera3D::SetNearClip, &Camera3D::GetNearClip));
+    db->RegisterProperty("Camera3D", MakeClone<TProperty<Camera3D, float>>("farClip", PropertyFlags::Editor, &Camera3D::SetFarClip, &Camera3D::GetFarClip));
 }
 
 } // namespace bl

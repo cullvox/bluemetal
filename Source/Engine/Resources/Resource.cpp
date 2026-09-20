@@ -20,9 +20,7 @@ Resource::Resource(const std::filesystem::path& path)
 Resource::~Resource()
 {
     // Delete all subresources
-    for (auto subResource : _subResources) {
-        subResource.reset();
-    }
+    _subResources.clear();
 }
 
 const std::filesystem::path& Resource::GetPath()
@@ -60,7 +58,7 @@ bool Resource::IsReady() const
     return state == ResourceState::eReady || state == ResourceState::eReadyUnsaved; 
 }
 
-void Resource::AddSubResource(std::shared_ptr<Resource> res)
+void Resource::AddSubResource(Ref<Resource> res)
 {
     _subResources.push_back(res);
 }

@@ -2,15 +2,23 @@
 #include "VulkanDescriptorSetAllocatorCache.h"
 #include "VulkanDescriptorSetLayout.h"
 #include "GraphicsSystem.h"
+#include <vulkan/vulkan_core.h>
 
 namespace bl
 {
 
-VulkanDescriptorSet::VulkanDescriptorSet(VulkanDescriptorSetAllocatorCache* cache, VulkanDescriptorSetLayout* layout)
+VulkanDescriptorSet::VulkanDescriptorSet()
+    : _cache(nullptr)
+    , _layout(nullptr)
+    , _set(VK_NULL_HANDLE)
+{
+}
+
+VulkanDescriptorSet::VulkanDescriptorSet(VulkanDescriptorSetAllocatorCache* cache, const VulkanDescriptorSetLayout* layout)
     : _cache(cache)
     , _layout(layout)
 {
-    cache->Allocate(*layout);
+    _set = cache->AllocateRaw(layout->GetLayout());
 }
 
 VulkanDescriptorSet::VulkanDescriptorSet(const VulkanDescriptorSet& other)
@@ -30,7 +38,8 @@ VulkanDescriptorSet::VulkanDescriptorSet(VulkanDescriptorSet&& set)
 
 VulkanDescriptorSet::~VulkanDescriptorSet()
 {
-    _cache->FreeRaw(_layout->GetLayout(), _set);
+    if (_cache && _set)
+        _cache->FreeRaw(_layout->GetLayout(), _set);
 }
 
 VulkanDescriptorSet& VulkanDescriptorSet::operator=(const VulkanDescriptorSet& other)
@@ -46,7 +55,7 @@ VulkanDescriptorSet& VulkanDescriptorSet::operator=(const VulkanDescriptorSet& o
     std::vector<VkCopyDescriptorSet> copies{_layout->GetBindings().size()};
     const auto bindings = _layout->GetBindings();
 
-    for (int i = 0; i < _layout->GetBindings().size(); i++) {
+    for (std::size_t i = 0; i < _layout->GetBindings().size(); i++) {
         auto& c = copies[i];
         const auto& b = bindings[i];
 
@@ -74,7 +83,8 @@ VulkanDescriptorSet& VulkanDescriptorSet::operator=(VulkanDescriptorSet&& set)
 {
     if (this != &set)
     {
-        _cache->FreeRaw(_layout->GetLayout(), _set);
+        if (_cache && _set)
+            _cache->FreeRaw(_layout->GetLayout(), _set);
 
         _cache = set._cache;
         _layout = set._layout;

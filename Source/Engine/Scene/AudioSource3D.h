@@ -4,6 +4,7 @@
 #include "Node3D.h"
 #include "Resources/Sound.h"
 #include "Audio/AudioBus.h"
+#include "Core/Reference.h"
 
 namespace FMOD {
     class Channel;

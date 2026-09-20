@@ -27,7 +27,7 @@ void MeshInstance3D::Draw(RenderData& rd)
     //bl::InstanceData object {};
     //object.model = GetWorldMatrix();
 
-    rd.DrawInstance(this, _material.lock().get()->GetInstance(), _mesh.lock().get()->GetMesh(), GetWorldMatrix());
+    rd.DrawInstance(this, _material->GetInstance(), _mesh->GetMesh(), GetWorldMatrix());
 
     //rd.renderer->AddInstance(_mesh.get(), object);
 

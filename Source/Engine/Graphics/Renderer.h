@@ -6,6 +6,7 @@
 #include "VulkanBuffer.h"
 #include "RenderData.h"
 #include "Vertex.h"
+#include "Core/Reference.h"
 #include "RenderPassType.h"
 
 namespace bl {
@@ -81,8 +82,8 @@ public:
 
     void AddToDeletionQueue(std::unique_ptr<VulkanResource> resource); // Adds a resource to the deletion queue for the current frame. It will be deleted after the frame is finished rendering.
 
-    void AddViewport(Viewport* viewport);
-    void RemoveViewport(Viewport* viewport);
+    void AddViewport(Ref<Viewport> viewport);
+    void RemoveViewport(Ref<Viewport> viewport);
 
     void RenderFrame();
 
@@ -102,7 +103,7 @@ private:
     void CreateCommandBuffers();
     void DestroyCommandBuffers();
 
-    std::vector<Viewport*> _viewports;
+    std::vector<Ref<Viewport>> _viewports;
     std::vector<VkSemaphoreSubmitInfo> _submitWaitInfos;
     std::vector<VkSemaphoreSubmitInfo> _submitSignalInfos;
 

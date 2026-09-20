@@ -1,9 +1,8 @@
 #include "ResourceSystem.h"
 #include "Core/Print.h"
 #include "Resources/Resource.h"
-#include <algorithm>
-#include <memory>
-#include <unordered_map>
+#include "Core/ClassDB.h"
+#include "Core/Reference.h"
 
 namespace bl {
 
@@ -58,7 +57,7 @@ Ref<Resource> ResourceSystem::Load(const std::filesystem::path& path)
         throw std::runtime_error("Object type is not based on a resource!");
     }
 
-    std::shared_ptr<Resource> res = std::shared_ptr<Resource>(data->Instantiate()->As<Resource>());
+    Ref<Resource> res = Ref<Resource>(data->Instantiate()->As<Resource>());
     res->SetJson(json);
     res->SetPath(path);
 

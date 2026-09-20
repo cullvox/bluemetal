@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Core/MacroUtils.h"
+#include "Core/ReferenceCounted.h"
 #include "Core/Variant.h"
-#include <type_traits>
+#include "Core/ClonePtr.h"
+#include "Core/Reflection/Property.h"
 
 #define OBJECT_BOILER(name, parent) \
 public: \
@@ -24,10 +26,11 @@ private:
 
 namespace bl
 {
+class Engine;
 class ClassDB;
 class Property;
 
-class Object {
+class Object : public ReferenceCounted {
 public:
     virtual std::string_view GetClassName() { return "Object"; }
     constexpr static std::string_view GetStaticClassName() { return "Object"; }
@@ -35,13 +38,13 @@ public:
     static Object* Create() { return new Object(); }
     virtual Object* Clone() { return new Object(*this); }
 private:
-    std::vector<std::unique_ptr<Property>> _instanceProperties;
+    std::vector<ClonePtr<Property>> _instanceProperties;
     std::vector<Property*> _instancePropertiesPointers;
     std::unordered_map<std::string_view, std::size_t> _nameToPropertyIndex;
 
 protected:
     
-    void AddInstanceProperty(std::unique_ptr<Property> property);
+    void AddInstanceProperty(ClonePtr<Property> property);
 
 public:
     Object();

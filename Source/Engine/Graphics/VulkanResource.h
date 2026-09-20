@@ -1,9 +1,11 @@
 #pragma once
 
+#include "Core/ReferenceCounted.h"
+
 namespace bl
 {
 
-class VulkanResource
+class VulkanResource : public ReferenceCounted
 {
 public:
     virtual ~VulkanResource() = default;

@@ -39,7 +39,7 @@ void InspectorEditor::DrawProperties(Object* object, std::span<Property*> proper
         ImGui::SameLine(); // Align the editor to the right side.
 
         // Align to the right, 150 px from the right edge of the window.
-        float available = ImGui::GetContentRegionAvail().x;
+        //float available = ImGui::GetContentRegionAvail().x;
         ImGui::SetCursorPosX(ImGui::GetWindowContentRegionMax().x - 200.0f);
         ImGui::SetNextItemWidth(-1.0f);
 
@@ -52,9 +52,9 @@ void InspectorEditor::DrawProperties(Object* object, std::span<Property*> proper
                 auto enumValues = ClassDB::Get()->GetEnumValues(value.type);
 
                 if (ImGui::BeginCombo(("##" + std::string(prop->GetName())).c_str(), current.data())) {
-                    for (int i = 0; i < enumValues.size(); i++) {
+                    for (std::size_t i = 0; i < enumValues.size(); i++) {
 
-                        const bool isSelected = (value.value == i);
+                        const bool isSelected = (value.value == static_cast<int64_t>(i));
                         if (ImGui::Selectable(enumValues[i].first.data(), isSelected)) {
                             current = enumValues[i].first.data();
                             prop->Set(object, EnumValue{value.type, enumValues[i].second});
@@ -93,7 +93,7 @@ void InspectorEditor::DrawProperties(Object* object, std::span<Property*> proper
                 prop->Set(object, value);
             } else if constexpr (std::is_same_v<T, glm::vec4>) {
 
-                bool changed = false;
+                //bool changed = false;
                 if (prop->HasFlag(PropertyFlags::Color)) {
 
                     std::string popupId = ("##Picker" + std::string(prop->GetName()));
@@ -102,23 +102,23 @@ void InspectorEditor::DrawProperties(Object* object, std::span<Property*> proper
                     }
 
                     if (ImGui::BeginPopup(popupId.c_str())) {
-                        if (ImGui::ColorPicker4(("##ColorPicker" + std::string(prop->GetName())).c_str(), glm::value_ptr(value))) { 
-                            changed = true;
-                        }
+                        /*if (*/ImGui::ColorPicker4(("##ColorPicker" + std::string(prop->GetName())).c_str(), glm::value_ptr(value));/*) { 
+                            //changed = true;
+                        }*/
 
                         if (ImGui::Button("##Close")) ImGui::CloseCurrentPopup();
                         ImGui::EndPopup();
                     }
                 } else {
-                    changed = ImGui::DragFloat4(("##" + std::string(prop->GetName())).c_str(), &value.x, 0.01f);
+                    /*changed = */ImGui::DragFloat4(("##" + std::string(prop->GetName())).c_str(), &value.x, 0.01f);
                 }
 
                 prop->Set(object, value);
-            } else if constexpr (std::is_same_v<T, Object*>) {
+            } else if constexpr (std::is_same_v<T, Ref<Object>>) {
 
                 // Resource objects can be edited.
                 if (value && value->IsA("Resource")) {
-                    DrawObjectProperties(value);
+                    DrawObjectProperties(&(*value));
                 }
 
             } else {

@@ -21,8 +21,8 @@
 namespace bl {
 
 Renderer::Renderer(VulkanDevice* device)
-    : _renderData(this)
-    , _device(device)
+    : _device(device)
+    , _renderData(this)
 {
 
     // Determine the renderer image formats.
@@ -148,12 +148,15 @@ void Renderer::RenderFrame()
         viewport->PrepareForFrame(_renderData);
     }
 
+    bool waitSemaphoreUsed = false;
     for (auto& viewport : _viewports)
     {
         if (!viewport->Ready())
         {
             continue;
         }
+
+        waitSemaphoreUsed = true;
 
         viewport->TransitionPreRender(_renderData);
 
@@ -186,8 +189,8 @@ void Renderer::RenderFrame()
     submitInfo.pNext = nullptr;
     submitInfo.flags = 0;
     submitInfo.waitSemaphoreInfoCount = static_cast<uint32_t>(waitSemaphores.size());
-    submitInfo.pWaitSemaphoreInfos = waitSemaphores.data();
-    submitInfo.commandBufferInfoCount = 1;
+    submitInfo.pWaitSemaphoreInfos = waitSemaphoreUsed ? waitSemaphores.data() : nullptr;
+    submitInfo.commandBufferInfoCount = waitSemaphoreUsed ? 1 : 0;
     submitInfo.pCommandBufferInfos = &commandBufferInfo;
     submitInfo.signalSemaphoreInfoCount = static_cast<uint32_t>(signalSemaphores.size());
     submitInfo.pSignalSemaphoreInfos = signalSemaphores.data();
@@ -290,10 +293,21 @@ void Renderer::UpdateMaterialUniforms()
     }
 }
 
-void Renderer::AddViewport(Viewport* viewport)
+void Renderer::AddViewport(Ref<Viewport> viewport)
 {
+    // Ensure that the viewport isn't already within the pool of viewports.
+    auto it = std::find_if(_viewports.begin(), _viewports.end(), [&viewport](const auto& vp){
+        return vp == viewport;
+    });
+
+    if (it != _viewports.end()) {
+        Print::Warn("Attempting to add a viewport that is already in the renderer.");
+        return;
+    }
+
+
     _viewports.push_back(viewport);
-    std::sort(_viewports.begin(), _viewports.end(), [](Viewport* a, Viewport* b){
+    std::sort(_viewports.begin(), _viewports.end(), [](Ref<Viewport>& a, Ref<Viewport>& b){
         return a->GetRenderingPriority() > b->GetRenderingPriority();
     });
 }
@@ -343,12 +357,6 @@ void Renderer::RenderSceneToViewport(RenderData& rd, Viewport& vp)
     vp.Bind(rd);
 
     // Setup the render pass for dynamic rendering.
-    std::array clearColors = {
-        VkClearValue { .color = { { 0.96f, 0.97f, 0.96f, 1.0f } } }, // Clear Color
-        VkClearValue { .depthStencil = { 1.0f, 0 } }, // Clear Depth
-        VkClearValue { .color = { -1, -1, -1, -1 } }
-    };
-
     auto extent = vp.GetExtent();
 
     VkRect2D renderArea = {};
@@ -372,13 +380,6 @@ void Renderer::RenderSceneToViewport(RenderData& rd, Viewport& vp)
     renderingInfo.pColorAttachments = colorAttachments.data();
     renderingInfo.pDepthAttachment = &depthAttachment;
     renderingInfo.pStencilAttachment = nullptr;
-
-    VkImageSubresourceRange range = {};
-    range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    range.baseMipLevel = 0;
-    range.levelCount = 1;
-    range.baseArrayLayer = 0;
-    range.layerCount = 1;
 
     vkCmdBeginRendering(cmd, &renderingInfo);
 

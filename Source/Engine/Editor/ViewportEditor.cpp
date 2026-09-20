@@ -1,18 +1,16 @@
 #include "ViewportEditor.h"
 
-#include "Graphics/Viewport.h"
-#include "ImGui/imgui.h"
-#include "ImGui/imgui_impl_vulkan.h"
-
 #include "Engine/Engine.h"
+#include "Graphics/GraphicsSystem.h"
 #include "Graphics/Renderer.h"
-#include "ImGui/imgui_internal.h"
+#include "Graphics/Viewport.h"
+#include "Graphics/Viewport.h"
+#include "Graphics/VulkanDescriptorSetLayoutCache.h"
+#include "ImGui/imgui_impl_vulkan.h"
+#include "ImGui/imgui.h"
 #include "Resources/ResourceSystem.h"
 #include "Resources/Sampler.h"
-#include "Graphics/Viewport.h"
-#include "Graphics/GraphicsSystem.h"
 #include "Window/Window.h"
-#include <vulkan/vulkan_core.h>
 
 namespace bl {
 
@@ -26,16 +24,16 @@ ViewportEditor::ViewportEditor()
     auto renderer = GraphicsSystem::Get()->GetRenderer();
     auto defaultSampler = ResourceSystem::Get()->Load<Sampler>("Resources/Samplers/Default.json");
 
-    _viewport = std::make_unique<Viewport>(GraphicsSystem::Get()->GetRenderer(), VkExtent2D{1, 1});
+    _viewport = MakeRef<Viewport>(GraphicsSystem::Get()->GetRenderer(), VkExtent2D{1, 1});
     auto geometryColor = _viewport->GetRenderedImageView();
-    auto geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler.lock()->Get(), geometryColor, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    auto geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler->Get(), geometryColor, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     _viewport->onPreViewportResized.AddRaw(this, &ViewportEditor::OnPreViewportResized);
     _viewport->onPostViewportResized.AddRaw(this, &ViewportEditor::OnPostViewportResized);
 
     _viewport->SetRenderingPriority(100);
 
-    renderer->AddViewport(_viewport.get());
+    renderer->AddViewport(_viewport);
 
     _geometryColorDescriptor = geometryColorDescriptor;
 }
@@ -43,26 +41,27 @@ ViewportEditor::ViewportEditor()
 ViewportEditor::ViewportEditor(const ViewportEditor& other)
     : Editor(other)
 {
-    _geometryColorDescriptor = ;
-    _viewport;
+    // _geometryColorDescriptor = other._geometryColorDescriptor;
+    _viewport = other._viewport;
     _viewportDescriptorDeleter = {};
     _id = 0;
 
+    ViewportEditor();
 }
 
 ViewportEditor::ViewportEditor(ViewportEditor&&) = default;
 
 ViewportEditor::~ViewportEditor()
 {
-    auto renderer = GraphicsSystem::Get()->GetRenderer();
-    auto geometryColor = _viewport->GetRenderedImageView();
+    //auto renderer = GraphicsSystem::Get()->GetRenderer();
+    //auto geometryColor = _viewport->GetRenderedImageView();
 
     ImGui_ImplVulkan_RemoveTexture(_geometryColorDescriptor);
 }
 
 ViewportEditor& ViewportEditor::operator=(ViewportEditor&&) = default;
 
-void ViewportEditor::OnPreViewportResized(Viewport* viewport)
+void ViewportEditor::OnPreViewportResized(Viewport& viewport)
 {
     // Add this descriptor to the deleter queue for this frame.
 
@@ -70,7 +69,7 @@ void ViewportEditor::OnPreViewportResized(Viewport* viewport)
     _viewportDescriptorDeleter[GraphicsSystem::Get()->GetRenderer()->GetRenderData().GetCurrentFrame()] = _geometryColorDescriptor;
 }
 
-void ViewportEditor::OnPostViewportResized(Viewport* viewport)
+void ViewportEditor::OnPostViewportResized(Viewport& viewport)
 {
     auto newView = _viewport->GetRenderedImageView();
 
@@ -78,7 +77,7 @@ void ViewportEditor::OnPostViewportResized(Viewport* viewport)
     _viewportDescriptorDeleter[GraphicsSystem::Get()->GetRenderer()->GetRenderData().GetCurrentFrame()] = _geometryColorDescriptor;
 
     auto defaultSampler = ResourceSystem::Get()->Load<Sampler>("Resources/Samplers/Default.json");
-    _geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler.lock()->Get(), newView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    _geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler->Get(), newView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
 void ViewportEditor::Draw(RenderData& rd)
@@ -109,7 +108,7 @@ void ViewportEditor::Draw(RenderData& rd)
     ImVec2 region = ImGui::GetContentRegionAvail();
     region = { std::max(1.0f, region.x), std::max(1.0f, region.y) };
 
-    float scale = ImGui::GetWindowDpiScale(); 
+    //float scale = ImGui::GetWindowDpiScale(); 
 
     float density = SDL_GetWindowPixelDensity(GetEngine()->GetWindow()->Get());
 

@@ -63,8 +63,8 @@ void ToolbarEditor::Draw(RenderData& rd)
 
         if (ImGuizmo::Manipulate(glm::value_ptr(rd.GetViewMatrix()), glm::value_ptr(projection), mode, ImGuizmo::WORLD, glm::value_ptr(localMatrix))) {
 
-            auto parent = dynamic_cast<Node3D*>(node->GetParent());
-            auto parentMatrix = parent ? parent->GetWorldMatrix() : glm::identity<glm::mat4>();
+            //auto parent = dynamic_cast<Node3D*>(node->GetParent());
+            //auto parentMatrix = parent ? parent->GetWorldMatrix() : glm::identity<glm::mat4>();
             glm::vec3 scale;
             glm::quat rotation;
             glm::vec3 position;

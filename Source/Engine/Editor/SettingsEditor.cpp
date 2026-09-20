@@ -37,42 +37,42 @@ void SettingsEditor::SetCollapsed(bool collapsed)
     _collapsed = collapsed;
 }
 
-static const char* UserFriendlyPresentModeName(VkPresentModeKHR mode)
-{
-    switch (mode) {
-        case VK_PRESENT_MODE_IMMEDIATE_KHR: return "Immediate (VSync Off)";
-        case VK_PRESENT_MODE_FIFO_KHR: return "VSync";
-        case VK_PRESENT_MODE_MAILBOX_KHR: return "Triple Buffered VSync (Recommended)";
-        case VK_PRESENT_MODE_FIFO_RELAXED_KHR: return "Relaxed VSync";
-        default: return bl::ToString(mode).data();
-    }
-}
+// static const char* UserFriendlyPresentModeName(VkPresentModeKHR mode)
+// {
+//     switch (mode) {
+//         case VK_PRESENT_MODE_IMMEDIATE_KHR: return "Immediate (VSync Off)";
+//         case VK_PRESENT_MODE_FIFO_KHR: return "VSync";
+//         case VK_PRESENT_MODE_MAILBOX_KHR: return "Triple Buffered VSync (Recommended)";
+//         case VK_PRESENT_MODE_FIFO_RELAXED_KHR: return "Relaxed VSync";
+//         default: return bl::ToString(mode).data();
+//     }
+// }
 
-static const char* UserFriendlyPresentModeDescription(VkPresentModeKHR mode)
-{
-    switch (mode) {
-        case VK_PRESENT_MODE_IMMEDIATE_KHR: return "Displays a frame as soon as it's available. The fastest experience with likely screen tearing.";
-        case VK_PRESENT_MODE_FIFO_KHR: return "Displays frames in the order they were rendered and synced to your monitor. A smooth experience without screen tearing.";
-        case VK_PRESENT_MODE_MAILBOX_KHR: return "Displays the latest frame synced to your monitor. A smooth and fast experience without screen tearing.";
-        case VK_PRESENT_MODE_FIFO_RELAXED_KHR: return "Displays a frame usually on the vertical sync, sometimes presents off sync if waiting too long. A smooth-ish and fast-ish experience with possible screen tearing.";
-        default: return "No witty description available.";
-    }
-}
+// static const char* UserFriendlyPresentModeDescription(VkPresentModeKHR mode)
+// {
+//     switch (mode) {
+//         case VK_PRESENT_MODE_IMMEDIATE_KHR: return "Displays a frame as soon as it's available. The fastest experience with likely screen tearing.";
+//         case VK_PRESENT_MODE_FIFO_KHR: return "Displays frames in the order they were rendered and synced to your monitor. A smooth experience without screen tearing.";
+//         case VK_PRESENT_MODE_MAILBOX_KHR: return "Displays the latest frame synced to your monitor. A smooth and fast experience without screen tearing.";
+//         case VK_PRESENT_MODE_FIFO_RELAXED_KHR: return "Displays a frame usually on the vertical sync, sometimes presents off sync if waiting too long. A smooth-ish and fast-ish experience with possible screen tearing.";
+//         default: return "No witty description available.";
+//     }
+// }
 
-static const char* UserFriendlyMultisampleModeName(VkSampleCountFlagBits samples)
-{
-    switch (samples)
-    {
-    case VK_SAMPLE_COUNT_1_BIT: return "x1 (Off)";
-    case VK_SAMPLE_COUNT_2_BIT: return "x2 (Low)";
-    case VK_SAMPLE_COUNT_4_BIT: return "x4 (Medium)";
-    case VK_SAMPLE_COUNT_8_BIT: return "x8 (High)";
-    case VK_SAMPLE_COUNT_16_BIT: return "x16 (Ultra)";
-    case VK_SAMPLE_COUNT_32_BIT: return "x32 (Super Duper)";
-    case VK_SAMPLE_COUNT_64_BIT: return "x64 (What hardware supports this? Email me!)";
-    default: return "Undefined Sample Count";
-    }
-}
+// static const char* UserFriendlyMultisampleModeName(VkSampleCountFlagBits samples)
+// {
+//     switch (samples)
+//     {
+//     case VK_SAMPLE_COUNT_1_BIT: return "x1 (Off)";
+//     case VK_SAMPLE_COUNT_2_BIT: return "x2 (Low)";
+//     case VK_SAMPLE_COUNT_4_BIT: return "x4 (Medium)";
+//     case VK_SAMPLE_COUNT_8_BIT: return "x8 (High)";
+//     case VK_SAMPLE_COUNT_16_BIT: return "x16 (Ultra)";
+//     case VK_SAMPLE_COUNT_32_BIT: return "x32 (Super Duper)";
+//     case VK_SAMPLE_COUNT_64_BIT: return "x64 (What hardware supports this? Email me!)";
+//     default: return "Undefined Sample Count";
+//     }
+// }
 
 void SettingsEditor::Draw(RenderData& rd)
 {

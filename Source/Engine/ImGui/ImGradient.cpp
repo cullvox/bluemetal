@@ -89,7 +89,7 @@ namespace ImGradient
       }
       for (size_t i = 0; i < delegate.GetPointCount(); i++)
       {
-         int ptSel = DrawPoint(draw_list, pts[i], size, i == currentSelection, offset);
+         int ptSel = DrawPoint(draw_list, pts[i], size, i == static_cast<size_t>(currentSelection), offset);
          if (ptSel == 2)
          {
             currentSelection = int(i);

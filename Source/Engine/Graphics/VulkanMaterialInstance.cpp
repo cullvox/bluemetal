@@ -18,7 +18,7 @@ VulkanMaterialInstance::VulkanMaterialInstance(VulkanDevice* device, VulkanMater
     , _materialSet(material->_materialSet)
     , _currentFrame(0)
 {
-    BuildPerFrameBindings(material->_layout);
+    BuildPerFrameBindings(*material->_layout);
 }
 
 VulkanMaterialInstance::~VulkanMaterialInstance()
@@ -75,26 +75,26 @@ void VulkanMaterialInstance::Bind(RenderData& rd) const
     auto& frame = _perFrameData[_currentFrame];
     auto& materialSet = frame.set;
     
-    if (!frame.set) {
+    if (!frame.set.Get()) {
         throw std::runtime_error("Cannot bind a material instance who's parent material was destroyed.");
     }
 
-    std::array<VkDescriptorSet, 4> descriptorSets { globalSet, instanceSet, materialSet->Get() };
+    std::array<VkDescriptorSet, 4> descriptorSets { globalSet, instanceSet, materialSet.Get() };
 
     auto support = _material->GetSupportFlags();
     std::span<VkDescriptorSet> sets = descriptorSets;
 
     // If any of the buffers aren't used, bind an empty set to ensure that the pipeline doesn't read from a random set.
     if ((support & VulkanMaterialSupportFlags::eGlobalBuffer) == VulkanMaterialSupportFlags::eNone) {
-        descriptorSets[0] = _material->_emptySet->Get();
+        descriptorSets[0] = _material->_emptySet.Get();
     }
 
     if ((support & VulkanMaterialSupportFlags::eInstanceBuffer) == VulkanMaterialSupportFlags::eNone) {
-        descriptorSets[1] = _material->_emptySet->Get();
+        descriptorSets[1] = _material->_emptySet.Get();
     }
 
     if ((support & VulkanMaterialSupportFlags::eMaterialBuffer) != VulkanMaterialSupportFlags::eMaterialBuffer) {
-        descriptorSets[2] = _material->_emptySet->Get();
+        descriptorSets[2] = _material->_emptySet.Get();
     }
 
     vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
@@ -109,7 +109,7 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
         return;
     }
 
-    if (!_perFrameData[_currentFrame].set) {
+    if (!_perFrameData[_currentFrame].set.Get()) {
         throw std::runtime_error("Cannot set a sampled image to a material instance who's parent material was destroyed.");
     }
 
@@ -127,7 +127,7 @@ void VulkanMaterialInstance::SetSampledImage2D(const std::string& name, VulkanSa
     VkWriteDescriptorSet write = {};
     write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     write.pNext = nullptr;
-    write.dstSet = _perFrameData[_currentFrame].set->Get(); /* Since this is getting added to the queue, every descriptor set will be updated later. */
+    write.dstSet = _perFrameData[_currentFrame].set.Get(); /* Since this is getting added to the queue, every descriptor set will be updated later. */
     write.dstBinding = binding;
     write.dstArrayElement = 0;
     write.descriptorCount = 1;
@@ -168,7 +168,7 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
 
     PerFrameData& currentFrameData = _perFrameData[currentFrame];
 
-    if (!currentFrameData.set) {
+    if (!currentFrameData.set.Get()) {
         throw std::runtime_error("Cannot update a material instance who's parent material is already destroyed.");
     }
 
@@ -202,7 +202,7 @@ void VulkanMaterialInstance::UpdateUniforms(uint32_t currentFrame)
             VkWriteDescriptorSet write = {};
             write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
             write.pNext = nullptr;
-            write.dstSet = _perFrameData[currentFrame].set->Get();
+            write.dstSet = _perFrameData[currentFrame].set.Get();
             write.dstBinding = i;
             write.dstArrayElement = 0;
             write.descriptorCount = 1;
@@ -227,7 +227,7 @@ VulkanMaterial* VulkanMaterialInstance::GetBaseMaterial()
     return _material;
 }
 
-void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
+void VulkanMaterialInstance::BuildPerFrameBindings(const VulkanDescriptorSetLayout& layout)
 {
     if (_materialSet == -1) {
         return;
@@ -274,7 +274,7 @@ void VulkanMaterialInstance::BuildPerFrameBindings(VkDescriptorSetLayout layout)
                 bufferInfos.push_back(std::get<UniformData>(variant).buffer.GetDescriptorInfo(i));
 
                 write.pBufferInfo = &bufferInfos.back();
-                write.dstSet = _perFrameData[i].set->Get();
+                write.dstSet = _perFrameData[i].set.Get();
                 writes.push_back(write);
             }
             break;
@@ -303,7 +303,7 @@ void VulkanMaterialInstance::SetBindingDirty(uint32_t binding)
 void VulkanMaterialInstance::FreeSets()
 {
     for (auto& data : _perFrameData) {
-        data.set.reset();
+        data.set = {};
     }
 }
 

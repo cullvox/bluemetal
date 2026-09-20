@@ -1,6 +1,7 @@
 #pragma once
 
-#include <memory>
+#include <atomic>
+#include <cstdint>
 
 namespace bl {
 
@@ -11,9 +12,11 @@ class ReferenceCounted
 public:
     ReferenceCounted() = default;
     ReferenceCounted(const ReferenceCounted&) = delete;
-    ~ReferenceCounted() = default;
+    ReferenceCounted(ReferenceCounted&&) = delete;
+    virtual ~ReferenceCounted() = default;
 
     ReferenceCounted& operator=(const ReferenceCounted&) = delete;
+    ReferenceCounted& operator=(ReferenceCounted&&) = delete;
 
     void AddReference();
     void RemoveReference();

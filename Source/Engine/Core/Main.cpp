@@ -50,7 +50,7 @@ int Main(int argc, const char** argv)
     (void)argv;
 
     try {
-        auto db = ClassDB::Get();
+        //auto db = ClassDB::Get();
         auto engine             = Engine::Get();
         engine->SetArguments(argc, argv);
         engine->Initialize();
@@ -80,7 +80,7 @@ int Main(int argc, const char** argv)
         auto rootNode = std::make_unique<bl::Node3D>();
         rootNode->SetName("Root");
 
-        auto characterNode = model.lock()->GetTree()->Clone();
+        auto characterNode = model->GetTree()->Clone();
         characterNode->SetName("Character");
         characterNode->SetPosition({ 0.0f, -0.6f, 0.0f });
 
@@ -107,13 +107,13 @@ int Main(int argc, const char** argv)
         auto physDebugFlatMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/PhysicsDebugFlat.json");
         auto skyMaterial = resourceMgr->Load<bl::Material>("Resources/Materials/Sky.json");
 
-        skyMaterial.lock()->SetSampledTexture2D("starsTexture", defaultSampler, noiseTexture);
-        skyMaterial.lock()->SetSampledTexture2D("baseNoiseTexture", defaultSampler, noiseTexture);
+        skyMaterial->SetSampledTexture2D("starsTexture", defaultSampler, noiseTexture);
+        skyMaterial->SetSampledTexture2D("baseNoiseTexture", defaultSampler, noiseTexture);
 
 
-        physicsRenderer->SetMaterial(physDebugFlatMaterial.lock()->GetVulkanMaterial());
+        physicsRenderer->SetMaterial(physDebugFlatMaterial->GetVulkanMaterial());
 
-        auto grassMaterial = grssMaterial.lock()->CreateInstance();
+        auto grassMaterial = grssMaterial->CreateInstance();
         grassMaterial->SetSampledTexture2D("noiseSampler", defaultSampler, noiseTexture);
         grassMaterial->SetSampledTexture2D("windNoiseTexture", defaultSampler, noiseTexture);
         grassMaterial->SetVector4("material.factors", { 1.0f, 0.4f, 0.0f, 0.0f });
@@ -129,7 +129,7 @@ int Main(int argc, const char** argv)
 
         auto multimesh = std::make_unique<bl::MultiMeshInstance3D>();
         multimesh->SetName("GrassMultiMesh");
-        multimesh->SetMesh(grass.lock()->GetMeshes()[0]);
+        multimesh->SetMesh(grass->GetMeshes()[0]);
         multimesh->SetMaterial(grassMaterial);
         multimesh->SetInstanceCount(6000);
 
@@ -146,10 +146,10 @@ int Main(int argc, const char** argv)
         }
         rootNode->AddChild(std::move(multimesh));
 
-        floorMaterial.lock()->SetSampledTexture2D("inAlbedo", defaultSampler, floorTexture);
-        floorMaterial.lock()->SetBool("material.useTriplanar", true);
+        floorMaterial->SetSampledTexture2D("inAlbedo", defaultSampler, floorTexture);
+        floorMaterial->SetBool("material.useTriplanar", true);
 
-        auto floorNode = cube.lock()->GetTree()->Clone();
+        auto floorNode = cube->GetTree()->Clone();
         floorNode->SetName("Floor");
         floorNode->SetScale({ 100.0f, 1.0f, 100.0f });
 
@@ -173,7 +173,7 @@ int Main(int argc, const char** argv)
         // Add Sky3D node
         auto skyNode = std::make_unique<bl::Sky3D>();
         skyNode->SetName("Sky");
-        skyNode->SetSkyMaterial(skyMaterial.lock().get());
+        skyNode->SetSkyMaterial(skyMaterial);
         
         rootNode->AddChild(std::move(skyNode));
 
@@ -211,7 +211,7 @@ int Main(int argc, const char** argv)
         ImPlot::CreateContext();
 
         auto& profiler = bl::GetGlobalProfiler();
-        bool enableEditor = true;
+        //bool enableEditor = true;
 
         auto discord = DiscordSystem::Get();
 
@@ -236,13 +236,13 @@ int Main(int argc, const char** argv)
 
         editor->GetHierarchyEditor().SetRootNode(rootNode.get());
 
-        auto classDB = ClassDB::Get();
-        auto classNames = classDB->GetClassNames();
+        //auto classDB = ClassDB::Get();
+        //auto classNames = classDB->GetClassNames();
 
         auto viewport = graphics->GetViewport();
 
-        auto viewport1 = editor->AddViewport();
-        auto viewport2 = editor->AddViewport();
+        //auto viewport1 = editor->AddViewport();
+        //auto viewport2 = editor->AddViewport();
 
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
@@ -290,7 +290,7 @@ int Main(int argc, const char** argv)
             glm::vec3 cameraDirection = cameraNode->GetWorldRotationEuler();
             cameraDirection.z = 0.0f; // Remove roll for skybox calculations.
 
-            skyMaterial.lock()->SetVector3("material.eyeDirection", glm::radians(cameraDirection));
+            skyMaterial->SetVector3("material.eyeDirection", glm::radians(cameraDirection));
 
             rootNode->Update(frameCounter->GetDeltaTime());
             profiler.EndProfile("Update");

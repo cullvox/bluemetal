@@ -21,7 +21,7 @@ class Material : public MaterialInstance {
 
     Renderer* _renderer;
     std::unique_ptr<VulkanMaterial> _material;
-    std::list<std::weak_ptr<MaterialInstance>> _instances;
+    std::list<Ref<MaterialInstance>> _instances;
 
 protected:
     virtual VulkanMaterialInstance* GetInstance() const override;
@@ -50,7 +50,7 @@ public:
     const VulkanPipeline* GetVulkanPipeline();
 
     /// @brief Creates a material instance for this material.
-    std::shared_ptr<MaterialInstance> CreateInstance();
+    Ref<MaterialInstance> CreateInstance();
 
     static void RegisterClass();
 };

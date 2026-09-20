@@ -136,8 +136,8 @@ private:
     UniformMap _uniforms;
     SamplerMap _samplers;
     VulkanDescriptorSetAllocatorCache _descriptorSetCache;
-    std::unique_ptr<VulkanDescriptorSet> _emptySet;
-    VkDescriptorSetLayout _layout;
+    VulkanDescriptorSet _emptySet;
+    const VulkanDescriptorSetLayout* _layout;
     VulkanMaterialSupportFlags _flags;
     uint32_t _setCount;
 };

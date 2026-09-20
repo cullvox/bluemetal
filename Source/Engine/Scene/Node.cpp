@@ -2,7 +2,7 @@
 #include "Core/ClassDB.h"
 #include "Core/Print.h"
 #include "Engine/Engine.h"
-#include "Core/Reflection/Property.h"
+#include "Core/Reflection/StringProperty.h"
 
 namespace bl {
 
@@ -239,14 +239,12 @@ std::vector<std::unique_ptr<Node>>& Node::GetVecChildren()
 
 nlohmann::json Node::Pack()
 {
-    auto db = ClassDB::Get();
-
     nlohmann::json package;
     package["class"] = GetClassName();
 
     // Retrieve class property information for saving.
 
-    nlohmann::json& properties = package["properties"];
+   // nlohmann::json& properties = package["properties"];
 
     //auto classData = db->FindClass(GetClassName());
     //classData->ForEachProperty([this, &properties](Property* property) {
@@ -262,7 +260,7 @@ void Node::RegisterClass()
 {
     auto db = ClassDB::Get();
     db->RegisterClass("Node", "Object", &Node::Create);
-    db->RegisterProperty("Node", std::make_unique<TStringProperty<Node>>("name", PropertyFlags::Editor, &Node::SetName, &Node::GetName));
+    db->RegisterProperty("Node", MakeClone<TStringProperty<Node>>("name", PropertyFlags::Editor, &Node::SetName, &Node::GetName));
 
 }
 

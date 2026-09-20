@@ -63,7 +63,7 @@ public:
     VulkanDescriptorSetAllocatorCache& operator=(const VulkanDescriptorSetAllocatorCache&) = delete;
     VulkanDescriptorSetAllocatorCache& operator=(VulkanDescriptorSetAllocatorCache&&) = default;
 
-    VulkanDescriptorSet Allocate(VulkanDescriptorSetLayout& layout); /** @brief Allocates/retrieves a descriptor set created with this layout. */
+    VulkanDescriptorSet Allocate(const VulkanDescriptorSetLayout& layout); /** @brief Allocates/retrieves a descriptor set created with this layout. */
     void ResetPools(); /** @brief Completely resets every descriptor set in every pool, use before destroying resources. */
 };
 

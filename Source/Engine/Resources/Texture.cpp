@@ -1,6 +1,7 @@
 
 #include "Texture.h"
 #include "Core/Print.h"
+#include "Core/ClassDB.h"
 
 namespace bl {
 

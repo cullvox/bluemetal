@@ -2,7 +2,8 @@
 
 #include "Core/Variant.h"
 #include "Property.h"
-#include <type_traits>
+#include "Core/ClassDB.h"
+#include "Core/Object.h"
 
 namespace bl
 {
@@ -23,14 +24,18 @@ public:
 
     TEnumProperty(std::string_view enumType, std::string_view propertyName, PropertyFlags flags, SetterType setter, GetterType getter)
         : Property(propertyName, flags, GetVariantType<int64_t>())
-        , _type(enumType)
         , _setter(setter)
         , _getter(getter)
+        , _type(enumType)
     {
     }
 
     ~TEnumProperty()
     {
+    }
+
+    TEnumProperty* Clone() const override {
+        return new TEnumProperty<TClass, TEnum>(_type, GetName(), GetFlags(), _setter, _getter);
     }
 
     void Set(Object* object, Variant value) override

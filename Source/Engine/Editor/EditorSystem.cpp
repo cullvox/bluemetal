@@ -100,7 +100,7 @@ ViewportEditor* EditorSystem::AddViewport()
 {
     auto& viewport = _viewports.emplace_back();
 
-    for (int i = 0; i < _viewports.size(); i++)
+    for (std::size_t i = 0; i < _viewports.size(); i++)
         _viewports[i].SetIndex(i);
 
     return &viewport;

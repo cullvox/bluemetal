@@ -68,7 +68,6 @@ bool FrameCounter::EndFrame()
     // Add the ms to the frames
     _millisecondsPerFrame.push_back(ns);
 
-    using sec = std::chrono::seconds;
     using durf = std::chrono::duration<float>;
 
     durf duration = _endOfFrame - _startOfFrame;

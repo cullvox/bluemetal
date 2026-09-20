@@ -1,6 +1,6 @@
 #include "Node3D.h"
 #include "Core/ClassDB.h"
-#include "Core/Reflection/Property.h"
+#include "Core/Reflection/TProperty.h"
 
 namespace bl {
 
@@ -218,14 +218,14 @@ void Node3D::RegisterClass()
 {
     auto db = ClassDB::Get();
     db->RegisterClass("Node3D", "Node", &Node3D::Create);
-    db->RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("position", PropertyFlags::Editor, &Node3D::SetPosition, &Node3D::GetPosition));
-    db->RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::quat>>("rotation", PropertyFlags::Editor, &Node3D::SetRotation, &Node3D::GetRotation));
-    db->RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("rotationEuler", PropertyFlags::Editor, &Node3D::SetRotationEuler, &Node3D::GetRotationEuler));
-    db->RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("scale", PropertyFlags::Editor, &Node3D::SetScale, &Node3D::GetScale));
-    db->RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("worldPosition", PropertyFlags::None, &Node3D::SetWorldPosition, &Node3D::GetWorldPosition));
-    db->RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::quat>>("worldRotation", PropertyFlags::None, &Node3D::SetWorldRotation, &Node3D::GetWorldRotation));
-    db->RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("worldRotationEuler", PropertyFlags::None, &Node3D::SetWorldRotationEuler, &Node3D::GetWorldRotationEuler));
-    db->RegisterProperty("Node3D", std::make_unique<TProperty<Node3D, glm::vec3>>("worldScale", PropertyFlags::None, &Node3D::SetWorldScale, &Node3D::GetWorldScale));
+    db->RegisterProperty("Node3D", MakeClone<TProperty<Node3D, glm::vec3>>("position", PropertyFlags::Editor, &Node3D::SetPosition, &Node3D::GetPosition));
+    db->RegisterProperty("Node3D", MakeClone<TProperty<Node3D, glm::quat>>("rotation", PropertyFlags::Editor, &Node3D::SetRotation, &Node3D::GetRotation));
+    db->RegisterProperty("Node3D", MakeClone<TProperty<Node3D, glm::vec3>>("rotationEuler", PropertyFlags::Editor, &Node3D::SetRotationEuler, &Node3D::GetRotationEuler));
+    db->RegisterProperty("Node3D", MakeClone<TProperty<Node3D, glm::vec3>>("scale", PropertyFlags::Editor, &Node3D::SetScale, &Node3D::GetScale));
+    db->RegisterProperty("Node3D", MakeClone<TProperty<Node3D, glm::vec3>>("worldPosition", PropertyFlags::None, &Node3D::SetWorldPosition, &Node3D::GetWorldPosition));
+    db->RegisterProperty("Node3D", MakeClone<TProperty<Node3D, glm::quat>>("worldRotation", PropertyFlags::None, &Node3D::SetWorldRotation, &Node3D::GetWorldRotation));
+    db->RegisterProperty("Node3D", MakeClone<TProperty<Node3D, glm::vec3>>("worldRotationEuler", PropertyFlags::None, &Node3D::SetWorldRotationEuler, &Node3D::GetWorldRotationEuler));
+    db->RegisterProperty("Node3D", MakeClone<TProperty<Node3D, glm::vec3>>("worldScale", PropertyFlags::None, &Node3D::SetWorldScale, &Node3D::GetWorldScale));
 }
 
 

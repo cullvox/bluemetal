@@ -7,6 +7,8 @@
 #include <span>
 
 #include "Core/Print.h"
+#include "Core/ClonePtr.h"
+#include "Core/Reflection/Property.h"
 
 namespace bl
 {
@@ -14,7 +16,6 @@ namespace bl
 using namespace std;
 
 class Object;
-class Property;
 
 using ObjectInstantiationFunc = Object* (* )();
 
@@ -25,7 +26,7 @@ class ClassData
     std::string_view name = "";
     std::string_view parentClassName = "";
     ObjectInstantiationFunc instantiationFunc = nullptr;
-    std::vector<std::unique_ptr<Property>> properties = {};
+    std::vector<ClonePtr<Property>> properties = {};
     std::vector<Property*> userPropertyPointers = {};
     std::unordered_map<std::string_view, std::size_t> nameToPropertyIndex = {};
 
@@ -177,15 +178,13 @@ public:
 
     void RegisterClass(std::string_view className, std::string_view parentClassName, ObjectInstantiationFunc instantiationFunc);
     void RegisterVirtualClass(std::string_view className, std::string_view parentClassName);
-    void RegisterProperty(std::string_view className, std::unique_ptr<Property> property);
+    void RegisterProperty(std::string_view className, ClonePtr<Property> property);
 
     const ClassData* FindClass(std::string_view name);
     const EnumData* FindEnum(std::string_view name);
 
     std::span<std::pair<std::string_view, int64_t>> GetEnumValues(std::string_view enumName);
-    std::string_view GetEnumValueName(std::string_view enumName, int64_t value);
-
-    
+    std::string_view GetEnumValueName(std::string_view enumName, int64_t value);    
 
     bool HasClass(std::string_view name);
     std::span<const std::string_view> GetClassNames() const;

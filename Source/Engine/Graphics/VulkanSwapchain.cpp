@@ -169,8 +169,8 @@ void VulkanSwapchain::ChooseFormat()
     std::vector<VkSurfaceFormatKHR> formats = _physicalDevice->GetSurfaceFormats(_surface);
 
     // Look for the desired surface format.
-    for (int i = 0; i < defaultSurfaceFormats.size(); i++) {
-        for (int j = 0; j < formats.size(); j++) {
+    for (std::size_t i = 0; i < defaultSurfaceFormats.size(); i++) {
+        for (std::size_t j = 0; j < formats.size(); j++) {
             if (formats[j].format == defaultSurfaceFormats[i].format && formats[j].colorSpace == defaultSurfaceFormats[i].colorSpace) {
                 _surfaceFormat = defaultSurfaceFormats[i];
                 return;
@@ -180,7 +180,7 @@ void VulkanSwapchain::ChooseFormat()
 
     Print::Warn("Surface format not found, using first found with appropriate color space.");
     
-    for (int i = 0; i < formats.size(); i++) {
+    for (std::size_t i = 0; i < formats.size(); i++) {
         if (formats[i].colorSpace == defaultPresentColorspace) {
             _surfaceFormat = formats[i];
             return;
@@ -220,7 +220,6 @@ void VulkanSwapchain::ChooseExtent(VkExtent2D suggestedExtent)
     if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
         _extent = capabilities.currentExtent;
     } else {
-        auto extent = suggestedExtent;
         _extent = {
             std::clamp(suggestedExtent.width, capabilities.minImageExtent.width, capabilities.maxImageExtent.width),
             std::clamp(suggestedExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height)

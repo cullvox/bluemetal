@@ -103,7 +103,6 @@ void ImGuiSystem::Init()
     auto device = graphics->GetDevice();
     auto instance = graphics->GetInstance();
     auto physicalDevice = graphics->GetPhysicalDevice();
-    auto window = _window;
 
     device->WaitForDevice();
 

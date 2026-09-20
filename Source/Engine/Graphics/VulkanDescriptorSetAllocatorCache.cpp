@@ -80,7 +80,7 @@ VkDescriptorSet VulkanDescriptorSetAllocatorCache::AllocateRaw(VkDescriptorSetLa
     return set;
 }
 
-VulkanDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(VulkanDescriptorSetLayout& layout)
+VulkanDescriptorSet VulkanDescriptorSetAllocatorCache::Allocate(const VulkanDescriptorSetLayout& layout)
 {
     return VulkanDescriptorSet{this, &layout};
 }

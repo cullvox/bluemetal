@@ -128,6 +128,7 @@ You can read releases logs https://github.com/epezent/implot/releases for more d
 
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include "ImGui/imgui.h"
 #endif
 #include "implot.h"
 #ifndef IMGUI_DISABLE
@@ -1836,7 +1837,7 @@ bool UpdateInput(ImPlotPlot& plot) {
     // BUTTON STATE -----------------------------------------------------------
 
     const ImGuiButtonFlags plot_button_flags = ImGuiButtonFlags_AllowOverlap
-                                             | ImGuiButtonFlags_PressedOnClick
+                                             | static_cast<ImGuiButtonFlags_>(ImGuiButtonFlags_PressedOnClick)
                                              | ImGuiButtonFlags_PressedOnDoubleClick
                                              | ImGuiButtonFlags_MouseButtonLeft
                                              | ImGuiButtonFlags_MouseButtonRight
@@ -3050,7 +3051,7 @@ void EndPlot() {
                                                         legend_out ? gp.Style.PlotPadding : gp.Style.LegendPadding
                                                         );
         const ImGuiButtonFlags legend_button_flags = ImGuiButtonFlags_AllowOverlap
-                                                    | ImGuiButtonFlags_PressedOnClick
+                                                    | static_cast<ImGuiButtonFlags_>(ImGuiButtonFlags_PressedOnClick)
                                                     | ImGuiButtonFlags_PressedOnDoubleClick
                                                     | ImGuiButtonFlags_MouseButtonLeft
                                                     | ImGuiButtonFlags_MouseButtonRight
@@ -3573,7 +3574,7 @@ void EndSubplots() {
         legend.RectClamped = legend.Rect;
         const bool legend_scrollable = ClampLegendRect(legend.RectClamped,subplot.FrameRect, gp.Style.PlotPadding);
         const ImGuiButtonFlags legend_button_flags = ImGuiButtonFlags_AllowOverlap
-                                                    | ImGuiButtonFlags_PressedOnClick
+                                                    | static_cast<ImGuiButtonFlags_>(ImGuiButtonFlags_PressedOnClick)
                                                     | ImGuiButtonFlags_PressedOnDoubleClick
                                                     | ImGuiButtonFlags_MouseButtonLeft
                                                     | ImGuiButtonFlags_MouseButtonRight

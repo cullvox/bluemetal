@@ -63,14 +63,14 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
         // Acquire a layout from cache or create a new descriptor set layout.
         auto sortedBindings = meta.GetSortedBindings();
         auto layout = device->AcquireDescriptorSetLayout(sortedBindings);
-        _descriptorSetLayouts.emplace(meta.GetLocation(), layout);
-        layouts[pair.first] = layout;
+        layouts[pair.first] = layout.GetLayout();
+        _descriptorSetLayouts.emplace(meta.GetLocation(), std::move(layout));
     }
 
     // Fill the empty descriptor set layout indices with empty an layout.
-    for (int i = 0; i < descriptorSetCount; i++) {
+    for (uint32_t i = 0; i < descriptorSetCount; i++) {
         if (layouts[i] == VK_NULL_HANDLE)
-            layouts[i] = device->AcquireDescriptorSetLayout({});
+            layouts[i] = device->AcquireDescriptorSetLayout({}).GetLayout();
     }
 
     // Extract the push constant ranges from reflection.
@@ -194,7 +194,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
     multisampleStates.reserve(maxSampleCount);
     pipelineCreateInfos.reserve(maxSampleCount);
 
-    for (uint32_t i = 0; i < maxSampleCount; i++)
+    for (int i = 0; i < maxSampleCount; i++)
     {
         VkPipelineMultisampleStateCreateInfo multisampleState = {};
         multisampleState.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -236,7 +236,7 @@ VulkanPipeline::VulkanPipeline(VulkanDevice* device, Renderer* renderer, const V
     std::vector<VkPipeline> pipelines(pipelineCreateInfos.size());
     VK_CHECK(vkCreateGraphicsPipelines(_device->Get(), VK_NULL_HANDLE, static_cast<uint32_t>(pipelineCreateInfos.size()), pipelineCreateInfos.data(), nullptr, pipelines.data()))
 
-    for (std::size_t i = 0; i < maxSampleCount; i++)
+    for (int i = 0; i < maxSampleCount; i++)
     {
         _pipelines[1 << i] = pipelines[i];
     }
@@ -277,7 +277,7 @@ VkPipeline VulkanPipeline::GetPipeline(VkSampleCountFlagBits multisampleCount) c
     return _pipelines.at(sc);
 }
 
-const std::map<uint32_t, VkDescriptorSetLayout>& VulkanPipeline::GetDescriptorSetLayouts() const
+const std::map<uint32_t, VulkanDescriptorSetLayout>& VulkanPipeline::GetDescriptorSetLayouts() const
 {
     return _descriptorSetLayouts;
 }

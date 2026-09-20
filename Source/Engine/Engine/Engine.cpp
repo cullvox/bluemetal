@@ -134,7 +134,7 @@ void Engine::Initialize()
     auto _pointMaterial = rs->Load<Material>("Resources/Materials/DebugPoint.json");
     auto _lineMaterial = rs->Load<Material>("Resources/Materials/DebugLine.json");
     auto _triangleMaterial = rs->Load<Material>("Resources/Materials/DebugTriangle.json");
-    gs->GetRenderer()->SetDebugMaterialInstance(_pointMaterial.lock()->GetVulkanMaterial(), _lineMaterial.lock()->GetVulkanMaterial(), _triangleMaterial.lock()->GetVulkanMaterial());
+    gs->GetRenderer()->SetDebugMaterialInstance(_pointMaterial->GetVulkanMaterial(), _lineMaterial->GetVulkanMaterial(), _triangleMaterial->GetVulkanMaterial());
 }
 
 EngineVars* Engine::GetVars()

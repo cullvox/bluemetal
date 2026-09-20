@@ -48,7 +48,7 @@ bool AudioSource3D::IsPlaying()
 
 void AudioSource3D::Play(Ref<Sound> sound, bool repeat)
 {
-    FMOD_CHECK(AudioSystem::Get()->GetFMOD()->playSound(sound.lock()->Get(), AudioSystem::Get()->GetBusChannelGroup(_bus), false, &_channel))
+    FMOD_CHECK(AudioSystem::Get()->GetFMOD()->playSound(sound->Get(), AudioSystem::Get()->GetBusChannelGroup(_bus), false, &_channel))
     FMOD_CHECK(_channel->setLoopCount(repeat ? -1 : 0))
 }
 

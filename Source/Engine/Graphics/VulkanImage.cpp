@@ -34,8 +34,6 @@ VulkanImage::VulkanImage(const VulkanImage& other)
 
         std::array<VkImageMemoryBarrier2, 2> barriers;
 
-        VkImageLayout prevLayout = other.GetLayout();
-
         // Transition to trans-dest layout.
         barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2;
         barriers[0].pNext = nullptr;

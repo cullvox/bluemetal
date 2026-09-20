@@ -1,6 +1,6 @@
 #include "Orbit3D.h"
 #include "Core/ClassDB.h"
-#include "Core/Reflection/Property.h"
+#include "Core/Reflection/TProperty.h"
 
 //ref: https://www.mbsoftworks.sk/tutorials/opengl4/026-camera-pt3-orbit-camera/
 
@@ -149,11 +149,11 @@ void Orbit3D::RegisterClass()
 {
     auto db = ClassDB::Get();
     db->RegisterClass("Orbit3D", "Node3D", &Orbit3D::Create);
-    db->RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>("minRadius", PropertyFlags::Editor, &Orbit3D::SetMinRadius, &Orbit3D::GetMinRadius));
-    db->RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>("maxRadius", PropertyFlags::Editor, &Orbit3D::SetMaxRadius, &Orbit3D::GetMaxRadius));
-    db->RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>("radius", PropertyFlags::Editor, &Orbit3D::SetRadius, &Orbit3D::GetRadius));
-    db->RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>("azimuthAngle", PropertyFlags::Editor, &Orbit3D::SetAzimuthAngle, &Orbit3D::GetAzimuthAngle));
-    db->RegisterProperty("Orbit3D", std::make_unique<TProperty<Orbit3D, float>>("polarAngle", PropertyFlags::Editor, &Orbit3D::SetPolarAngle, &Orbit3D::GetPolarAngle));
+    db->RegisterProperty("Orbit3D", MakeClone<TProperty<Orbit3D, float>>("minRadius", PropertyFlags::Editor, &Orbit3D::SetMinRadius, &Orbit3D::GetMinRadius));
+    db->RegisterProperty("Orbit3D", MakeClone<TProperty<Orbit3D, float>>("maxRadius", PropertyFlags::Editor, &Orbit3D::SetMaxRadius, &Orbit3D::GetMaxRadius));
+    db->RegisterProperty("Orbit3D", MakeClone<TProperty<Orbit3D, float>>("radius", PropertyFlags::Editor, &Orbit3D::SetRadius, &Orbit3D::GetRadius));
+    db->RegisterProperty("Orbit3D", MakeClone<TProperty<Orbit3D, float>>("azimuthAngle", PropertyFlags::Editor, &Orbit3D::SetAzimuthAngle, &Orbit3D::GetAzimuthAngle));
+    db->RegisterProperty("Orbit3D", MakeClone<TProperty<Orbit3D, float>>("polarAngle", PropertyFlags::Editor, &Orbit3D::SetPolarAngle, &Orbit3D::GetPolarAngle));
 }
 
 } // namespace bl

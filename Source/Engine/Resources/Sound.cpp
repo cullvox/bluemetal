@@ -1,6 +1,7 @@
 #include "Sound.h"
 #include "Engine/Engine.h"
 #include "Audio/AudioSystem.h"
+#include "Core/ClassDB.h"
 
 namespace bl {
 

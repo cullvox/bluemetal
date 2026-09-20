@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Engine/System.h"
-
+#include "Core/Reference.h"
 #include "Resources/Scene.h"
 
 namespace bl {

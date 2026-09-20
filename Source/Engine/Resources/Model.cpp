@@ -18,6 +18,7 @@
 #include "Resources/Texture2D.h"
 
 #include "Scene/MeshInstance3D.h"
+#include "Core/ClassDB.h"
 #include <glm/gtc/type_ptr.hpp>
 
 namespace bl {
@@ -165,7 +166,7 @@ void Model::Load()
 
         const std::span<const std::byte> bytes(reinterpret_cast<const std::byte*>(image.image.data()), image.image.size());
 
-        auto texture = std::make_shared<Texture2D>(bytes, format, extent);
+        auto texture = MakeRef<Texture2D>(bytes, format, extent);
         AddSubResource(texture);
         _textures[i] = texture;
     }
@@ -176,7 +177,7 @@ void Model::Load()
     auto defaultSampler = resourceSystem->Load<Sampler>("Resources/Samplers/Default.json");
 
     for (auto& material : model.materials) {
-        auto instance = defaultMaterial.lock()->CreateInstance();
+        auto instance = defaultMaterial->CreateInstance();
         instance->SetBool("material.useTriplanar", false);
         AddSubResource(instance);
 
@@ -190,7 +191,7 @@ void Model::Load()
     }
 
     if (model.materials.size() == 0) {
-        auto instance = defaultMaterial.lock()->CreateInstance();
+        auto instance = defaultMaterial->CreateInstance();
         instance->SetBool("material.useTriplanar", false);
         AddSubResource(instance);
 
@@ -275,7 +276,7 @@ void Model::Load()
             }
         }
 
-        auto m = std::make_shared<Mesh>();
+        auto m = MakeRef<Mesh>();
         AddSubResource(m);
         _meshes.push_back(m);
         m->Upload<Vertex>(vertices, indices);

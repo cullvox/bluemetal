@@ -50,7 +50,7 @@ MaterialInstance::MaterialInstance(const std::filesystem::path& path)
 
     auto resourceSystem = ResourceSystem::Get();
     auto mat = resourceSystem->Load<Material>(json["material"].get<std::string>());
-    _materialInstance = mat.lock()->GetVulkanMaterial()->CreateInstance();
+    _materialInstance = mat->GetVulkanMaterial()->CreateInstance();
 
     // Ensure that the material buffers get properly cleaned updated every frame.
     _renderer->AddMaterial(_materialInstance.get());
@@ -176,7 +176,7 @@ void MaterialInstance::RegisterMaterialProperties(VulkanMaterialInstance* materi
             flags |= PropertyFlags::Color;
         }
 
-        AddInstanceProperty(std::make_unique<TNamedProperty<MaterialInstance>>(uniform.second.GetName(), type, PropertyFlags::Editor | PropertyFlags::Serialize | flags, &MaterialInstance::SetMaterialProperty, &MaterialInstance::GetMaterialProperty));
+        AddInstanceProperty(MakeClone<TNamedProperty<MaterialInstance>>(uniform.second.GetName(), type, PropertyFlags::Editor | PropertyFlags::Serialize | flags, &MaterialInstance::SetMaterialProperty, &MaterialInstance::GetMaterialProperty));
     }
 }
 
@@ -271,7 +271,7 @@ void MaterialInstance::SetMatrix(const std::string& name, glm::mat4 value)
 
 void MaterialInstance::SetSampledTexture2D(const std::string& name, Ref<Sampler> sampler, Ref<Texture> image)
 {
-    GetInstance()->SetSampledImage2D(name, sampler.lock()->GetSampler(), image.lock()->GetImage());
+    GetInstance()->SetSampledImage2D(name, sampler->GetSampler(), image->GetImage());
 }
 
 void MaterialInstance::Bind(RenderData& rd)

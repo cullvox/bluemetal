@@ -35,7 +35,7 @@ void DebugEditor::Draw(RenderData& rd)
     auto counter = GetEngine()->GetFrameCounter();
     auto graphics = GraphicsSystem::Get();
     AudioSystem* audio = AudioSystem::Get();
-    Window* window = GetEngine()->GetWindow();
+    //Window* window = GetEngine()->GetWindow();
     FrameCounter& physFrameCounter = PhysicsSystem::Get()->GetPhysFrameCounter();
 
     if (!_open) return;

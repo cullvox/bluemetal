@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/ReferenceCounted.h"
 #include "Graphics/VulkanBuffer.h"
 #include "Graphics/VulkanDevice.h"
 #include "Graphics/VulkanImage.h"
@@ -48,7 +49,7 @@ static inline bool HasFlag(ViewportRenderFlags value, ViewportRenderFlags flag)
 }
 
 // Viewports manage their own frames and render images. They are responsible for presenting to the swapchain, but not for managing synchronization or determining what gets drawn.
-class Viewport {
+class Viewport : public ReferenceCounted {
 protected:
     VulkanDevice* _device;
     Renderer* _renderer;
@@ -126,8 +127,8 @@ public:
     virtual void TransitionPrePresent(RenderData& rd);
     virtual void QueuePresent(RenderData& rd);
 
-    MulticastDelegate<Viewport*> onPreViewportResized;
-    MulticastDelegate<Viewport*> onPostViewportResized;
+    MulticastDelegate<Viewport&> onPreViewportResized;
+    MulticastDelegate<Viewport&> onPostViewportResized;
 
     virtual VkImageView GetRenderedImageView();
 };

@@ -78,7 +78,7 @@ Viewport::~Viewport()
 
 void Viewport::RecreateImages()
 {
-    onPreViewportResized.Broadcast(this);
+    onPreViewportResized.Broadcast(*this);
 
     if (_colorImage && _colorImageResolved && _selectionImage && _selectionImageResolved && _depthImage)
     {
@@ -172,7 +172,7 @@ void Viewport::RecreateImages()
 
     _imagesDirty = false;
 
-    onPostViewportResized.Broadcast(this);
+    onPostViewportResized.Broadcast(*this);
 }
 
 void Viewport::SetSize(VkExtent2D extent)

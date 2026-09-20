@@ -12,12 +12,12 @@ class VulkanDescriptorSetAllocatorCache;
 class VulkanDescriptorSet : public VulkanResource
 {
     VulkanDescriptorSetAllocatorCache* _cache;
-    VulkanDescriptorSetLayout* _layout;
+    const VulkanDescriptorSetLayout* _layout;
     VkDescriptorSet _set;
 
-    VulkanDescriptorSet();
 public:
-    VulkanDescriptorSet(VulkanDescriptorSetAllocatorCache* cache, VulkanDescriptorSetLayout* layout);
+    VulkanDescriptorSet();
+    VulkanDescriptorSet(VulkanDescriptorSetAllocatorCache* cache, const VulkanDescriptorSetLayout* layout);
     VulkanDescriptorSet(VulkanDescriptorSet&& set);
     VulkanDescriptorSet(const VulkanDescriptorSet& set);
     ~VulkanDescriptorSet();

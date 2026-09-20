@@ -22,23 +22,29 @@ Object::~Object()
 Object& Object::operator=(const Object& other)
 {
     for (auto& property : other._instanceProperties)
-        _instanceProperties.emplace_back(std::unique_ptr<Property>(property->Clone()));
+        _instanceProperties.emplace_back(ClonePtr<Property>(property->Clone()));
 
     return *this;
 }
 
-Object& Object::operator=(Object&& other) = default;
+Object& Object::operator=(Object&& other)
+{
+    _instanceProperties = std::move(other._instanceProperties);
+    _instancePropertiesPointers = other._instancePropertiesPointers;
+    _nameToPropertyIndex = other._nameToPropertyIndex;
+    return *this;
+}
 
 std::span<Property*> Object::GetInstanceProperties()
 {
     return _instancePropertiesPointers;
 }
 
-void Object::AddInstanceProperty(std::unique_ptr<Property> property)
+void Object::AddInstanceProperty(ClonePtr<Property> property)
 {
     _instanceProperties.push_back(std::move(property));
     _nameToPropertyIndex[_instanceProperties.back()->GetName()] = _instanceProperties.size() - 1;
-    _instancePropertiesPointers.push_back(_instanceProperties.back().get());
+    _instancePropertiesPointers.push_back(_instanceProperties.back().Get());
 }
 
 Engine* Object::GetEngine()

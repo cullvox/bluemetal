@@ -22,7 +22,7 @@ RenderData::RenderData(Renderer* renderer)
     _instanceBuffer = VulkanBufferFrameRing{renderer->GetDevice(), VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_DEVICE, MAX_INSTANCE_BUFFER_SIZE * sizeof(InstanceData)};
 
     std::array<VkDescriptorSetLayoutBinding, 1> instanceBindings = {
-        {0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}
+        {{0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, nullptr}}
     };
 
     _instanceSetLayout = renderer->GetDevice()->AcquireDescriptorSetLayout(instanceBindings);
@@ -32,13 +32,13 @@ RenderData::RenderData(Renderer* renderer)
 
     for (uint32_t i = 0; i < VulkanConfig::maxFramesInFlight; i++)
     {
-        _instanceSets[i] = _descriptorCache.Allocate(_instanceSetLayout);
+        _instanceSets[i] = VulkanDescriptorSet{&_descriptorCache, &_instanceSetLayout};
 
         descriptorBufferInfos[i] = _instanceBuffer.GetDescriptorInfo(i);
         descriptorWrites[i] = {
             .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
             .pNext = nullptr,
-            .dstSet = _instanceSets[i]->Get(),
+            .dstSet = _instanceSets[i].Get(),
             .dstBinding = 0,
             .dstArrayElement = 0,
             .descriptorCount = 1,
@@ -97,7 +97,7 @@ VkDescriptorSet RenderData::GetGlobalDescriptorSet()
 
 VkDescriptorSet RenderData::GetInstanceDescriptorSet()
 {
-    return _instanceSets[_currentFrame]->Get();
+    return _instanceSets[_currentFrame].Get();
 }
 
 glm::mat4 RenderData::GetProjectionMatrix()

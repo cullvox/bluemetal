@@ -10,6 +10,7 @@ list(APPEND Sources
   "Core/ReferenceCounted.cpp"
   "Core/Object.cpp"
   "Core/Delegates.cpp"
+  "Core/Variant.cpp"
   
   # Audio
   "Audio/AudioSystem.cpp"

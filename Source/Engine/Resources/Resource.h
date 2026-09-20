@@ -5,6 +5,7 @@
 #include "Core/Object.h"
 #include "Core/ReferenceCounted.h"
 #include "ResourceID.h"
+#include "Core/Reference.h"
 
 namespace bl {
 
@@ -42,7 +43,7 @@ class Resource : public Object, public std::enable_shared_from_this<Resource> {
     OBJECT_BOILER_VIRTUAL(Resource, Object)
 
     std::filesystem::path _path; /** @brief Usually a path to the resource in the filesystem or name of the resource as described in the manifest, must be unique. */
-    std::vector<std::shared_ptr<Resource>> _subResources; /** @brief Sub-resources that are part of this resource, but managed by it. */
+    std::vector<Ref<Resource>> _subResources; /** @brief Sub-resources that are part of this resource, but managed by it. */
     nlohmann::json _data;
     bool _loaded;
 
@@ -117,7 +118,7 @@ public:
 
     static void RegisterClass();
 
-    void AddSubResource(std::shared_ptr<Resource> res);
+    void AddSubResource(Ref<Resource> res);
 };
 
 } // namespace bl

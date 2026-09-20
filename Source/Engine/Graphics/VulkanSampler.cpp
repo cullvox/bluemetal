@@ -24,9 +24,9 @@ VulkanSampler::VulkanSampler(
 {
 
 
-    bool supportsSamplerMipLodBias = true;
-
+    
 #ifdef BLUEMETAL_VULKAN_PORTABILITY
+    bool supportsSamplerMipLodBias = true;
     supportsSamplerMipLodBias = device->GetPhysicalDevice()->GetPortabilityFeatures().samplerMipLodBias;
 #endif
 
