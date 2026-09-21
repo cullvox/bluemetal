@@ -40,12 +40,12 @@ GraphicsSystem::GraphicsSystem()
     _renderer = std::make_unique<Renderer>(_device.get());
 
     // Create the default window/surface's viewport.
-    _windowViewport = std::make_unique<WindowViewport>(_renderer.get(), GetEngine()->GetWindow());
+    _windowViewport = MakeRef<WindowViewport>(_renderer.get(), GetEngine()->GetWindow());
 
     // Enable ImGui rendering on the default viewport.
     _windowViewport->SetRenderFlags(_windowViewport->GetRenderFlags() | ViewportRenderFlags::eImGui);
 
-    _renderer->AddViewport(_windowViewport.get());
+    _renderer->AddViewport(_windowViewport);
 }
 
 GraphicsSystem::~GraphicsSystem()
@@ -78,9 +78,9 @@ Renderer* GraphicsSystem::GetRenderer()
     return _renderer.get(); 
 }
 
-WindowViewport* GraphicsSystem::GetViewport()
+Ref<WindowViewport> GraphicsSystem::GetViewport()
 {
-    return _windowViewport.get();
+    return _windowViewport;
 }
 
 } // namespace bl

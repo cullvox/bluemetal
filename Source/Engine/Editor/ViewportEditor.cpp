@@ -80,6 +80,11 @@ void ViewportEditor::OnPostViewportResized(Viewport& viewport)
     _geometryColorDescriptor = ImGui_ImplVulkan_AddTexture(defaultSampler->Get(), newView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 }
 
+Ref<Viewport> ViewportEditor::GetViewport()
+{
+    return _viewport;
+}
+
 void ViewportEditor::Draw(RenderData& rd)
 {
     // Clear the deleter for this frame.
@@ -101,7 +106,7 @@ void ViewportEditor::Draw(RenderData& rd)
     _viewport->SetProjection(projection);
 
     bool isOpen = true;
-    
+
     std::string name = "Viewport##" + std::to_string(_id);
     ImGui::Begin(name.c_str(), &isOpen);
 

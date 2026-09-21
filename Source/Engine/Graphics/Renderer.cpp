@@ -106,6 +106,7 @@ Profiler profiler;
 void Renderer::RenderFrame()
 {
     _renderData.SetCurrentFrame(_currentFrame);
+    _renderData.SetCurrentFrameTime(GetEngine()->GetFrameCounter()->GetBeginFrameTime());
 
     // Wait for the any viewport images coming in the chain to finish.
     VK_CHECK(vkWaitForFences(_device->Get(), 1, &_inFlightFences[_currentFrame], VK_TRUE, UINT64_MAX))
@@ -387,19 +388,21 @@ void Renderer::RenderSceneToViewport(RenderData& rd, Viewport& vp)
     vp.UpdateUniform(rd);
 
     // Set the viewport and scissor sizing for this viewport render.
-    VkViewport viewport;
-    viewport.x = 0.0f;
-    viewport.y = 0.0f;
-    viewport.width = (float)extent.width;
-    viewport.height = (float)extent.height;
-    viewport.minDepth = 0.0f;
-    viewport.maxDepth = 1.0f;
-    vkCmdSetViewportWithCount(cmd, 1, &viewport);
+    // VkViewport viewport;
+    // viewport.x = 0.0f;
+    // viewport.y = 0.0f;
+    // viewport.width = (float)extent.width;
+    // viewport.height = (float)extent.height;
+    // viewport.minDepth = 0.0f;
+    // viewport.maxDepth = 1.0f;
+    // vkCmdSetViewportWithCount(cmd, 1, &viewport);
 
-    VkRect2D scissor;
-    scissor.offset = { 0, 0 };
-    scissor.extent = { extent.width, extent.height };
-    vkCmdSetScissorWithCount(cmd, 1, &scissor);
+    // VkRect2D scissor;
+    // scissor.offset = { 0, 0 };
+    // scissor.extent = { extent.width, extent.height };
+    // vkCmdSetScissorWithCount(cmd, 1, &scissor);
+
+    vp.Bind(rd);
 
     // Write the scenes draw commands to the command buffer.
     _renderData.WriteDrawCommands();

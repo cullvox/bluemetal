@@ -241,8 +241,14 @@ int Main(int argc, const char** argv)
 
         auto viewport = graphics->GetViewport();
 
-        //auto viewport1 = editor->AddViewport();
-        //auto viewport2 = editor->AddViewport();
+        ViewportEditor editor1;
+        editor1.SetIndex(1);
+
+        auto e1vp = editor1.GetViewport();
+        e1vp->SetScissor(0.2f, 0.2f, 0.0f, 0.0f);
+
+        ViewportEditor editor2;
+        editor2.SetIndex(2);
 
         while (!window->GetCloseRequested()) {
             profiler.StartFrame();
@@ -317,6 +323,8 @@ int Main(int argc, const char** argv)
             auto imguiFunc = [&](bl::RenderData& rd){
                 imgui->BeginFrame();
                 editor->Draw(rd);
+                editor1.Draw(rd);
+                editor2.Draw(rd);
                 imgui->EndFrame(rd.GetCommandBuffer());
             };
 

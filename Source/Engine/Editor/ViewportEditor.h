@@ -32,6 +32,7 @@ public:
 
     void SetIndex(int32_t id) { _id = id; };
     void SetViewport(Ref<Viewport> viewport);
+    Ref<Viewport> GetViewport();
 
     virtual void Draw(RenderData& rd);
 

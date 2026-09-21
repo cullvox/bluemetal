@@ -246,15 +246,15 @@ bool Viewport::Bind(RenderData& rd)
     viewport.height = static_cast<float>(extent.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
-    vkCmdSetViewport(cmd, 0, 1, &viewport);
+    vkCmdSetViewportWithCount(cmd, 1, &viewport);
  
     // Setup the vulkan scissor.
     // We have to convert from normalized scissor dimensions to pixels.
     _scissor.offset.x = static_cast<int32_t>(_scissorLeft * static_cast<float>(extent.width));
     _scissor.offset.y = static_cast<int32_t>(_scissorTop * static_cast<float>(extent.height));
-    _scissor.extent.width = static_cast<int32_t>((1.0f - _scissorRight) * static_cast<float>(extent.width));
-    _scissor.extent.height = static_cast<int32_t>((1.0f - _scissorBottom) * static_cast<float>(extent.height));
-    vkCmdSetScissor(cmd, 0, 1, &_scissor);
+    _scissor.extent.width = static_cast<int32_t>((1.0f - _scissorRight) * static_cast<float>(extent.width)) - static_cast<int32_t>(_scissorLeft * static_cast<float>(extent.width));
+    _scissor.extent.height = static_cast<int32_t>((1.0f - _scissorBottom) * static_cast<float>(extent.height)) - static_cast<int32_t>(_scissorTop * static_cast<float>(extent.height));
+    vkCmdSetScissorWithCount(cmd, 1, &_scissor);
 
     // Set the current sample count and descriptor set.
     rd.SetGlobalDescriptorSet(_globalDescriptorSets[rd.GetCurrentFrame()].Get());
@@ -384,7 +384,7 @@ void Viewport::GetColorRenderingAttachments(std::vector<VkRenderingAttachmentInf
     attachments[0].resolveImageLayout = _sampleCount == VK_SAMPLE_COUNT_1_BIT ? VK_IMAGE_LAYOUT_UNDEFINED : _colorImageResolved->GetLayout();
     attachments[0].loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
     attachments[0].storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-    attachments[0].clearValue = VkClearValue{VkClearColorValue{0.98f, 0.98f, 0.98f, 1.0f}};
+    attachments[0].clearValue = VkClearValue{VkClearColorValue{0.0f, 0.0f, 0.0f, 1.0f}};
 
     attachments[1].sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
     attachments[1].pNext = nullptr;

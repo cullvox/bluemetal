@@ -19,7 +19,7 @@ class GraphicsSystem : public System {
     std::unique_ptr<VulkanInstance> _vulkanInstance;
     std::unique_ptr<VulkanDevice> _device;
     VulkanPhysicalDevice* _physicalDevice;
-    std::unique_ptr<WindowViewport> _windowViewport;
+    Ref<WindowViewport> _windowViewport;
     std::unique_ptr<Renderer> _renderer;
     Ref<Material> _pointMaterial;
     Ref<Material> _lineMaterial;
@@ -35,7 +35,7 @@ public:
     VulkanInstance* GetInstance();
     VulkanPhysicalDevice* GetPhysicalDevice();
     VulkanDevice* GetDevice();
-    WindowViewport* GetViewport();
+    Ref<WindowViewport> GetViewport();
     Renderer* GetRenderer();
 };
 
